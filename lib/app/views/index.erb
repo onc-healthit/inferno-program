@@ -1,0 +1,50 @@
+
+<div class="container">
+  <div class="main index-page">
+
+    <% unless tls_testing_supported? %>
+      <div class="alert alert-warning" role="alert">
+        TLS testing does not appear to be available on this platform.
+        Please read the installation instructions for more information.
+      </div>
+    <% end %>
+
+    <% if modules.length == 1%>
+      <div class="index-description">
+        <h2><%=modules.first.title%></h2>
+        <%= markdown_to_html(modules.first.description) %>
+      </div>
+    <% else %>
+      <p class='headline'>
+          Inferno is an open source tool that tests whether patients can access their health data. It makes HTTP(S) requests to test your server's conformance to authentication, authorization, and FHIR content standards and reports the results back to you.
+          <br><br>
+          Please choose a test set and enter a FHIR URI to begin testing.
+      </p>
+
+    <% end%>
+
+    <h2>Start Testing</h2>
+
+    <form method="POST" action="<%=base_path%>/">
+      <input type="hidden" name="client_endpoint_key" value="static" />
+      <%= erb(:module_options,{},modules: modules) %>
+      <div class="form-group">
+        <label for="fhir_server" class="endpoint-label sr-only">FHIR Server Endpoint</label>
+        <div class="input-group">
+          <input type="url" required class="form-control form-control-lg" name="fhir_server" placeholder="http://your-fhir-server.org" aria-label="Create App">
+          <div class="input-group-btn">
+            <button class="btn btn-lg btn-secondary" type="submit">Begin</button>
+          </div>
+        </div>
+
+      </div>
+    </form>
+
+    <div class='alert alert-warning'>
+      <span class="oi oi-wrench "></span> This software is under active development.  Please report bugs and submit feature requests as <a href='https://github.com/siteadmin/inferno/issues' target="_blank">GitHub issues</a>.
+    </div>
+
+
+
+  </div>
+</div>
