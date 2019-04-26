@@ -6,7 +6,7 @@ rvm:
   - 2.6
 script:
   - bundle exec rake
-  - docker-compose run ruby_server bundle exec ruby -I test test/unit/assertions_test.rb
+  - docker-compose run ruby_program_server bundle exec ruby -I test test/unit/assertions_test.rb
 notifications:
   email:
     recipients:

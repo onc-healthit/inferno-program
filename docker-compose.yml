@@ -1,18 +1,18 @@
 version: '3'
 services:
   # the main ruby server
-  ruby_server:
+  ruby_program_server:
     # build the image from ./Dockerfile (this installs the dependencies into the image)
     build:
       context: ./
     # map the project directory into the running container
     volumes:
-      - .:/var/www/inferno
+      - .:/var/www/inferno-program
     # expose the internal application to direct HTTP requests
     #ports:
     #  - "4567:8080"
     # run the application
-    working_dir: /var/www/inferno
+    working_dir: /var/www/inferno-program
     command: rackup -o 0.0.0.0
   nginx_server:
     image: nginx
@@ -22,6 +22,6 @@ services:
       - "8080:80"
     command: [nginx, '-g', 'daemon off;']
     links:
-      - ruby_server:ruby_server
+      - ruby_program_server:ruby_program_server
     depends_on:
-      - ruby_server
+      - ruby_program_server
