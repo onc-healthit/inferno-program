@@ -4,13 +4,31 @@
 
 # Inferno Program Edition
 
-ONC 21st Century Cures open API certification testing with [Inferno](https://github.com/siteadmin/inferno).
+## ONC 21st Century Cures open API certification Testing
 
-## Using Inferno
+**Inferno Program Edition** performs API conformance testing for the [Notice of Proposed Rulemaking (NPRM) to Improve the Interoperability of Health Information](https://www.healthit.gov/topic/laws-regulation-and-policy/notice-proposed-rulemaking-improve-interoperability-health).  It 
+implements the test steps described in the [NPRM draft test method for 170.315(g)(10) Standardized API for patient and population services](https://www.healthit.gov/sites/default/files/page/2019-03/170_315g_10_Standardized_API_for_Patient_and_Population_Services.pdf). This application can be [installed locally](#installation-and-deployment), and a public reference instance of this application can be accessed at [https://inferno.healthit.gov/inferno](https://inferno.healthit.gov/inferno).
 
-If you are new to FHIR or SMART-on-FHIR, you may want to review the [Inferno Quick Start Guide](https://github.com/siteadmin/inferno/wiki/Quick-Start-Guide).
+**Inferno Program Edition** is a pre-configured and customized
+version of the open source [Inferno](https://github.com/siteadmin/inferno) FHIR testing tool, and only contains tests and functionality
+relevant to the ONC Certification Program.  Users interested 
+in extending or reusing this open testing capability to meet their own needs 
+are encouraged to visit the [Inferno GitHub repository](https://github.com/siteadmin/inferno).
+
+
+**Inferno Program Edition** currently tests conformance to the following standards as described in the proposed rule:
+* FHIR DSTU2
+* Argonaut Data Query Implementation Guide v1
+* SMART on FHIR App Launch Guide v1
+
+Prior to final release of the rule, these tests are considered draft and are subject to change.  Users are encouraged to [provide feedback](#contact-us) regarding these tests to ensure they are complete
+and accurately reflect the requirements of these sets of standards.
 
 ## Installation and Deployment
+
+Local installation is intended for users that are familiar with
+either [Docker](https://www.docker.com/) or installing Ruby web applications using command line tools.  Users not familiar
+with these options are encouraged to visit the [ONC hosted public instance](https://inferno.healthit.gov/inferno).
 
 ### Docker Installation
 
@@ -51,14 +69,6 @@ If you would like to use a different port it can be specified when calling `rack
 ```sh
 rackup -p 3000
 ```
-
-### Remote Deployment
-
-Inferno can also be deployed onto a server to test many different instances of the FHIR Servers by multiple users.  Test results are kept private at a unique, unguessable URI that can be saved for future reference or shared.
-
-Deployment on a remote server can be done by using a modified form of the Docker containers provided (see above) or by direct installation on the remote host.
-
-Please see the file [deployment-configuration.md](https://github.com/siteadmin/inferno/blob/master/deployment-configuration.md) for details.
 
 ### Reference Implementation
 
@@ -140,7 +150,7 @@ The Inferno development team can be reached by email at inferno@groups.mitre.org
 
 ## License
 
-Copyright 2018 The MITRE Corporation
+Copyright 2018 - 2019 The MITRE Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 ```
