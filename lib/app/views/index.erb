@@ -15,10 +15,19 @@
         <%= markdown_to_html(modules.first.description) %>
       </div>
     <% else %>
-      <p class='headline'>
-          Inferno is an open source tool that tests whether patients can access their health data. It makes HTTP(S) requests to test your server's conformance to authentication, authorization, and FHIR content standards and reports the results back to you.
-          <br><br>
-          Please choose a test set and enter a FHIR URI to begin testing.
+      <p>
+        The Program Edition is designed to verify that the developers’ FHIR server meet the standards requirements currently
+        proposed in the Application Programming Interface (API) Conditions of Certification in the <a href="https://www.healthit.gov/sites/default/files/nprm/ONCCuresActNPRM.pdf" target="_blank">21<sup>st</sup> Century Cures
+        Act: Interoperability, Information Blocking, and the ONC Health IT Certification Program Proposed Rule</a>.
+      </p>
+      <p>
+        The proposed rule names FHIR DSTU2 as the required version of FHIR for certification, but
+        requests comment regarding which version(s) of FHIR should be required in the final rule.  Inferno currently
+        provides reference tests for FHIR DSTU2 and FHIR R4.  Note the FHIR R4 tests are under active
+        development to reflect updates to the core FHIR specification and required FHIR profiles.
+      </p>
+      <p>
+        Please select a version of FHIR to test and enter a FHIR endpoint to get started.
       </p>
 
     <% end%>
