@@ -171,6 +171,11 @@ module Inferno
                      'MedicationStatement',
                      'MedicationOrder',
                      'Observation',
+                     'Location',
+                     'MedicationRequest',
+                     'Organization',
+                     'Practioner',
+                     'PractionerRole',
                      'Procedure',
                      'DocumentReference',
                      'Provenance']
