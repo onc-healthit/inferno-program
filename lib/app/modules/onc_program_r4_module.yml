@@ -154,7 +154,7 @@ test_sets:
           - sequence: UsCoreR4PatientSequence
             title: Patient
           - sequence: UsCoreR4AllergyintoleranceSequence
-            title: Allergy Intoleraance
+            title: Allergy Intolerance
           - sequence: UsCoreR4CareplanSequence
             title: Careplan
           - sequence: UsCoreR4CareteamSequence
@@ -178,13 +178,13 @@ test_sets:
           - sequence: UsCoreR4MedicationSequence
             title: Medication
           - sequence: UsCoreR4MedicationrequestSequence
-            title: Medication Requeste
+            title: Medication Request
           - sequence: UsCoreR4MedicationstatementSequence
             title: Medication Statement
           - sequence: UsCoreR4SmokingstatusSequence
             title: Smoking Status
           - sequence: PediatricWeightForHeightSequence
-            title: Pediatric Weight for HEight
+            title: Pediatric Weight for Height
           - sequence: UsCoreR4ObservationLabSequence
             title: Observation Lab
           - sequence: PediatricBmiForAgeSequence
