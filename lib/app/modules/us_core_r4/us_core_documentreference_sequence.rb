@@ -56,7 +56,7 @@ module Inferno
       
       test 'Server rejects DocumentReference search without authorization' do
         metadata {
-          id '1'
+          id '01'
           link 'http://www.fhir.org/guides/argonaut/r2/Conformance-server.html'
           desc %(
           )
@@ -74,7 +74,7 @@ module Inferno
       
       test 'Server returns expected results from DocumentReference search by patient' do
         metadata {
-          id '2'
+          id '02'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -104,7 +104,7 @@ module Inferno
       
       test 'Server returns expected results from DocumentReference search by _id' do
         metadata {
-          id '3'
+          id '03'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -124,7 +124,7 @@ module Inferno
       
       test 'Server returns expected results from DocumentReference search by patient+category' do
         metadata {
-          id '4'
+          id '04'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -145,7 +145,7 @@ module Inferno
       
       test 'Server returns expected results from DocumentReference search by patient+category+date' do
         metadata {
-          id '5'
+          id '05'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -167,7 +167,7 @@ module Inferno
       
       test 'Server returns expected results from DocumentReference search by patient+type' do
         metadata {
-          id '6'
+          id '06'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -188,7 +188,7 @@ module Inferno
       
       test 'Server returns expected results from DocumentReference search by patient+status' do
         metadata {
-          id '7'
+          id '07'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -209,7 +209,7 @@ module Inferno
       
       test 'Server returns expected results from DocumentReference search by patient+type+period' do
         metadata {
-          id '8'
+          id '08'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -231,7 +231,7 @@ module Inferno
       
       test 'DocumentReference create resource supported' do
         metadata {
-          id '9'
+          id '09'
           link 'https://build.fhir.org/ig/HL7/US-Core-R4/CapabilityStatement-us-core-server.html'
           desc %(
           )
@@ -296,7 +296,7 @@ module Inferno
       test 'DocumentReference resources associated with Patient conform to Argonaut profiles' do
         metadata {
           id '13'
-          link ''
+          link 'https://build.fhir.org/ig/HL7/US-Core-R4/StructureDefinition-us-core-documentreference.json'
           desc %(
           )
           versions :r4

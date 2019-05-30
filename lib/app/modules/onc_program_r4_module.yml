@@ -1,5 +1,5 @@
 name: onc_r4
-title: Preliminary ONC Health IT Certification Tests (FHIR R4)
+title: Preliminary ONC Health IT Certification Tests
 
 description : |
 
@@ -13,48 +13,6 @@ fhir_version: r4
 default_test_set: test_procedure
 hide_optional: true
 test_sets:
-  ad_hoc_testing:
-    view: default
-    tests:
-      - name: Discovery
-        sequences:
-        - USCoreR4CapabilityStatementSequence
-        - SMARTDiscoverySequence
-        run_all: true
-      - name: Authorization and Authentication
-        sequences:
-        - DynamicRegistrationSequence
-        - ManualRegistrationSequence
-        - StandaloneLaunchSequence
-        - EHRLaunchSequence
-      - name: USCDI Access (FHIR R4)
-        run_all: true
-        sequences:
-          - UsCoreR4PatientSequence
-          - UsCoreR4AllergyintoleranceSequence
-          - UsCoreR4CareplanSequence
-          - UsCoreR4CareteamSequence
-          - UsCoreR4ConditionSequence
-          - UsCoreR4DeviceSequence
-          - UsCoreR4DiagnosticreportNoteSequence
-          - UsCoreR4DiagnosticreportLabSequence
-          - UsCoreR4DocumentreferenceSequence
-          - UsCoreR4EncounterSequence
-          - UsCoreR4GoalSequence
-          - UsCoreR4ImmunizationSequence
-          - UsCoreR4LocationSequence
-          - UsCoreR4MedicationSequence
-          - UsCoreR4MedicationrequestSequence
-          - UsCoreR4MedicationstatementSequence
-          - UsCoreR4SmokingstatusSequence
-          - PediatricWeightForHeightSequence
-          - UsCoreR4ObservationLabSequence
-          - PediatricBmiForAgeSequence
-          - UsCoreR4OrganizationSequence
-          - UsCoreR4PractitionerSequence
-          - UsCoreR4PractitionerroleSequence
-          - UsCoreR4ProcedureSequence
-          - UsCoreR4ProcedureSequence
   test_procedure:
     view: guided
     tests:

@@ -44,3 +44,6 @@ badge_text: Program Edition
 modules:
   - onc
   - onc_r4
+  - smart
+  - us_core_r4
+  - argonaut
