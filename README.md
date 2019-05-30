@@ -17,8 +17,8 @@ are encouraged to visit the [Inferno GitHub repository](https://github.com/sitea
 
 
 **Inferno Program Edition** currently tests conformance to the following standards as described in the proposed rule:
-* FHIR DSTU2
-* Argonaut Data Query Implementation Guide v1
+* FHIR DSTU2 and Argonaut Data Query Implementation Guide v1
+* FHIR R4 and US Core R4 (an alternative to DSTU2 for comment)
 * SMART on FHIR App Launch Guide v1
 
 Prior to final release of the rule, these tests are considered draft and are subject to change.  Users are encouraged to [provide feedback](#contact-us) regarding these tests to ensure they are complete
