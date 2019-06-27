@@ -347,7 +347,7 @@ $(function(){
     var all = $('#preset-select option:selected').data('all');
     var modules = $('#preset-select option:selected').data('module_names').split(",");
     var preset = all[preset_id] == undefined ? "" : all[preset_id];
-
+    
     if (preset != "") {
       document.getElementById("preset-select").selectedIndex = Object.keys(all).indexOf(preset_id) + 1;
     }
