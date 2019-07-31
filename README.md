@@ -1,6 +1,6 @@
-<img src="https://github.com/siteadmin/inferno/blob/master/public/images/inferno_logo.png" width="300px" />
+<img src="https://github.com/onc-healthit/inferno/blob/master/public/images/inferno_logo.png" width="300px" />
 
-[![Build Status](https://travis-ci.org/siteadmin/inferno.svg?branch=master)](https://travis-ci.org/siteadmin/inferno-program)
+[![Build Status](https://travis-ci.org/onc-healthit/inferno.svg?branch=master)](https://travis-ci.org/onc-healthit/inferno-program)
 
 # Inferno Program Edition
 
@@ -10,10 +10,10 @@
 implements the test steps described in the [NPRM draft test method for 170.315(g)(10) Standardized API for patient and population services](https://www.healthit.gov/sites/default/files/page/2019-03/170_315g_10_Standardized_API_for_Patient_and_Population_Services.pdf). This application can be [installed locally](#installation-and-deployment), and a public reference instance of this application can be accessed at [https://inferno.healthit.gov/inferno](https://inferno.healthit.gov/inferno).
 
 **Inferno Program Edition** is a pre-configured and customized
-version of the open source [Inferno](https://github.com/siteadmin/inferno) FHIR testing tool, and only contains tests and functionality
+version of the open source [Inferno](https://github.com/onc-healthit/inferno-program) FHIR testing tool, and only contains tests and functionality
 relevant to the ONC Certification Program.  Users interested 
 in extending or reusing this open testing capability to meet their own needs 
-are encouraged to visit the [Inferno GitHub repository](https://github.com/siteadmin/inferno).
+are encouraged to visit the [Inferno GitHub repository](https://github.com/onc-healthit/inferno).
 
 
 **Inferno Program Edition** currently tests conformance to the following standards as described in the proposed rule:
@@ -26,23 +26,19 @@ and accurately reflect the requirements of these sets of standards.
 
 ## Installation and Deployment
 
-Local installation is intended for users that are familiar with
-either [Docker](https://www.docker.com/) or installing Ruby web applications using command line tools.  Users not familiar
-with these options are encouraged to visit the [ONC hosted public instance](https://inferno.healthit.gov/inferno).
-
 ### Docker Installation
 
 Docker is the recommended installation method for Windows devices and can also be used on Linux and MacOS hosts.
 
 1. Install [Docker](https://www.docker.com/) for the host platform as well as the [docker-compose](https://docs.docker.com/compose/install/) tool (which may be included in the distribution, as is the case for Windows and MacOS).
-2. Download the [latest release of the `inferno` project](https://github.com/siteadmin/inferno/releases) to your local computer on a directory of your choice.
+2. Download the [latest release of the `inferno` project](https://github.com/onc-healthit/inferno/releases) to your local computer on a directory of your choice.
 3. Open a terminal in the directory where the project was downloaded (above).
 4. Run the command `docker-compose up` to start the server. This will automatically build the Docker image and launch both the ruby server (using unicorn) and an NGINX web server.
 5. Navigate to http://localhost:8080 to find the running application.
 
 If the docker image gets out of sync with the underlying system, such as when new dependencies are added to the application, you need to run `docker-compose up --build` to rebuild the containers.
 
-Check out the [Troubleshooting Documentation](https://github.com/siteadmin/inferno/wiki/Troubleshooting) for help.
+Check out the [Troubleshooting Documentation](https://github.com/onc-healthit/inferno/wiki/Troubleshooting) for help.
 
 ### Native Installation
 
@@ -56,7 +52,7 @@ And run the following commands from the terminal:
 
 ```sh
 # MacOS or Linux
-git clone https://github.com/siteadmin/inferno
+git clone https://github.com/onc-healthit/inferno
 cd inferno
 bundle install
 bundle exec rackup
@@ -69,6 +65,14 @@ If you would like to use a different port it can be specified when calling `rack
 ```sh
 rackup -p 3000
 ```
+
+### Remote Deployment
+
+Inferno can also be deployed onto a server to test many different instances of the FHIR Servers by multiple users.  Test results are kept private at a unique, unguessable URI that can be saved for future reference or shared.
+
+Deployment on a remote server can be done by using a modified form of the Docker containers provided (see above) or by direct installation on the remote host.
+
+Please see the file [deployment-configuration.md](https://github.com/onc-healthit/inferno-program/blob/master/deployment-configuration.md) for details.
 
 ### Reference Implementation
 
@@ -91,7 +95,7 @@ bundle exec rake test
 ## Inspecting and Exporting Tests
 
 Tests are written to be easily understood, even by those who aren't familiar with Ruby.  They can be
-viewed directly [in this repository](https://github.com/siteadmin/inferno/tree/master/lib/app/modules).
+viewed directly [in this repository](https://github.com/onc-healthit/inferno/tree/master/lib/app/modules).
 
 Tests contain metadata that provide additional details and traceability to standards.  The active tests and related metadata can be exported into CSV format and saved to a file named `testlist.csv` with the following command:
 
@@ -143,7 +147,7 @@ bundle exec rake inferno:generate_script[https://my-server.org/data,onc]
 * The `confidential_client` field is a boolean and must be provided as `true` or `false`
 
 ## Using with Continuous Integration Systems
-Instructions and examples are available in the [Continuous Integration Section of the Wiki](https://github.com/siteadmin/inferno/wiki/Using-with-Continuous-Integration-Systems).
+Instructions and examples are available in the [Continuous Integration Section of the Wiki](https://github.com/onc-healthit/inferno/wiki/Using-with-Continuous-Integration-Systems).
 
 ## Contact Us
 The Inferno development team can be reached by email at inferno@groups.mitre.org.  Inferno also has a dedicated [HL7 FHIR chat channel](https://chat.fhir.org/#narrow/stream/153-inferno).
