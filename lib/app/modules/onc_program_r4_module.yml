@@ -151,3 +151,5 @@ test_sets:
             title: Procedure
           - sequence: R4ProvenanceSequence
             title: Provenance
+          - sequence: UsCoreR4ClinicalNotesSequence
+            title: Clinical Notes
