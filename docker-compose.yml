@@ -5,10 +5,6 @@ services:
       context: ./
     volumes:
       - ./config.yml:/var/www/inferno/config.yml
-    depends_on:
-      - bdt_service
-  bdt_service:
-    image: infernocommunity/inferno-bdt-service
   nginx_server:
     image: nginx
     volumes:
