@@ -1,28 +1,15 @@
-<img src="https://github.com/onc-healthit/inferno/blob/master/public/images/inferno_logo.png" width="300px" />
+<img src="https://raw.githubusercontent.com/onc-healthit/inferno/master/public/images/inferno_logo.png" width="300px" />
 
-[![Build Status](https://travis-ci.org/onc-healthit/inferno.svg?branch=master)](https://travis-ci.org/onc-healthit/inferno-program)
+[![Build Status](https://travis-ci.org/onc-healthit/inferno.svg?branch=master)](https://travis-ci.org/onc-healthit/inferno)
 
-# Inferno Program Edition
+Inferno is an open source tool that tests whether patients can access their health data through a standard interface.
+It makes HTTP(S) requests to test your server's conformance to authentication, authorization, and FHIR content standards and reports the results back to you.
 
-## ONC 21st Century Cures open API certification Testing
+This application creates test clients that exercise the range of requirements of a [SMART on FHIR](http://smarthealthit.org/smart-on-fhir/) server. These clients have tests for the [SMART App Launch Framework](http://www.hl7.org/fhir/smart-app-launch/), [Argonaut](http://hl7.org/fhir/DSTU2/argonaut/argonaut.html) Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
 
-**Inferno Program Edition** performs API conformance testing for the [Notice of Proposed Rulemaking (NPRM) to Improve the Interoperability of Health Information](https://www.healthit.gov/topic/laws-regulation-and-policy/notice-proposed-rulemaking-improve-interoperability-health).  It 
-implements the test steps described in the [NPRM draft test method for 170.315(g)(10) Standardized API for patient and population services](https://www.healthit.gov/sites/default/files/page/2019-03/170_315g_10_Standardized_API_for_Patient_and_Population_Services.pdf). This application can be [installed locally](#installation-and-deployment), and a public reference instance of this application can be accessed at [https://inferno.healthit.gov/inferno](https://inferno.healthit.gov/inferno).
+## Using Inferno
 
-**Inferno Program Edition** is a pre-configured and customized
-version of the open source [Inferno](https://github.com/onc-healthit/inferno-program) FHIR testing tool, and only contains tests and functionality
-relevant to the ONC Certification Program.  Users interested 
-in extending or reusing this open testing capability to meet their own needs 
-are encouraged to visit the [Inferno GitHub repository](https://github.com/onc-healthit/inferno).
-
-
-**Inferno Program Edition** currently tests conformance to the following standards as described in the proposed rule:
-* FHIR DSTU2 and Argonaut Data Query Implementation Guide v1
-* FHIR R4 and US Core R4 (an alternative to DSTU2 for comment)
-* SMART on FHIR App Launch Guide v1
-
-Prior to final release of the rule, these tests are considered draft and are subject to change.  Users are encouraged to [provide feedback](#contact-us) regarding these tests to ensure they are complete
-and accurately reflect the requirements of these sets of standards.
+If you are new to FHIR or SMART-on-FHIR, you may want to review the [Inferno Quick Start Guide](https://github.com/onc-healthit/inferno/wiki/Quick-Start-Guide).
 
 ## Installation and Deployment
 
@@ -72,7 +59,7 @@ Inferno can also be deployed onto a server to test many different instances of t
 
 Deployment on a remote server can be done by using a modified form of the Docker containers provided (see above) or by direct installation on the remote host.
 
-Please see the file [deployment-configuration.md](https://github.com/onc-healthit/inferno-program/blob/master/deployment-configuration.md) for details.
+Please see the file [deployment-configuration.md](https://github.com/onc-healthit/inferno/blob/master/deployment-configuration.md) for details.
 
 ### Reference Implementation
 
