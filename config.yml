@@ -40,7 +40,6 @@ badge_text: Program Edition
 # module options: one or more must be set.  The first option in the list will be checked by default
 modules:
   - onc
-  - onc_r4
 
 # preset fhir servers: optional. Minimally requires name, uri, module, optional inferno_uri, client_id, client_secret, scopes, instructions link
 presets:
@@ -50,6 +49,7 @@ presets:
     module: onc
     inferno_uri: https://inferno.healthit.gov
     client_id: vkPKDPcTIEMaw5Uf-DdUUtNMFMZaX0
+    confidential_client: true
     client_secret: LS1nY3JFU3FDeEs0cWoxQWF6TVJFNU05RmZZNGZhZ2Vwb2JYWjdSWWJGakwwNTZ2Vng=
     instructions: https://github.com/onc-healthit/inferno/wiki/SITE-Preset-Instructions
   site_test_healthit_gov:
@@ -58,6 +58,7 @@ presets:
     module: onc
     inferno_uri: https://infernotest.healthit.gov
     client_id: TrToU5piE-dJ1g6PBG1elFV4r9KLmH
+    confidential_client: true
     client_secret: ckFqb1ZhbmFMQS13WDE0c1dTLWxSdGRLSE8yUXpWNS1vSnd6azNrMmU3Y0JPdDRja3U=
     instructions: https://github.com/onc-healthit/inferno/wiki/SITE-Preset-Instructions
   site_local:
@@ -66,5 +67,6 @@ presets:
     module: onc
     inferno_uri: http://localhost:4567
     client_id: Yg0o6sJ8I8CfVVyHz1eA0m8jv6sXwe
+    confidential_client: true
     client_secret: UDVrTXlna0NvcGRQZ1VhMkZaZzQ0R1FxVGdtTWxFMXVoT3pPd1VRMUN4MFVkV25Gejk=
     instructions: https://github.com/onc-healthit/inferno/wiki/SITE-Preset-Instructions
