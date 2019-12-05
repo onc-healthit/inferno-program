@@ -13,12 +13,6 @@ test_sets:
     tests:
       - name: Standalone Patient App
         overview: |
-          Servers must provide the ability to register Inferno as a SMART on FHIR application.  This set of tests provides the tester with
-          registration information to be entered into the system under test.  Once registered, the tester should be provided
-          a *Client ID*, and optionally a *Client Secret*, to enter into Inferno.  This set of tests also requires the server to demonstrate
-          the ability to provide required service metadata through the discovery endpoints, including OAuth endpoints,
-          supported resources and searches.
-
           Demonstrate the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
           refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
           on the patient in context.  The access token is then refreshed, and the Patient resource is read using the new
@@ -57,12 +51,6 @@ test_sets:
             description: Ensure new token is functional by performing a simple read of the Patient resource.
       - name: EHR Practitioner App
         overview: |
-          Servers must provide the ability to register Inferno as a SMART on FHIR application.  This set of tests provides the tester with
-          registration information to be entered into the system under test.  Once registered, the tester should be provided
-          a *Client ID*, and optionally a *Client Secret*, to enter into Inferno.  This set of tests also requires the server to demonstrate
-          the ability to provide required service metadata through the discovery endpoints, including OAuth endpoints,
-          supported resources and searches
-
           Demonstrate the ability to perform an EHR launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
           refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
           on the patient in context.  The access token is then refreshed, and the Patient resource is read using the new
