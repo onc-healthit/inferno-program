@@ -121,7 +121,6 @@ test_sets:
           - USCore310PulseOximetrySequence
           - USCore310PatientSequence
           - USCore310ProcedureSequence
-          - R4ProvenanceSequence
           - USCoreR4ClinicalNotesSequence
           - USCore310LocationSequence
           - USCore310MedicationSequence
