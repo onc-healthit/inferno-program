@@ -99,9 +99,9 @@ test_sets:
           query to generate other queries and checks that the results are consistent with the provided search parameters.  It then performs a read on each Resource returned and validates the response against the 
           relevant [profile](http://www.fhir.org/guides/argonaut/r2/profiles.html) as currently defined in the Argonaut Data Query Implementation Guide.
         lock_variables: 
-          - patient_id
           - token
         sequences:
+          - USCore310PatientSequence
           - USCore310AllergyintoleranceSequence
           - USCore310CareplanSequence
           - USCore310CareteamSequence
@@ -119,7 +119,6 @@ test_sets:
           - USCore310ObservationLabSequence
           - USCore310PediatricBmiForAgeSequence
           - USCore310PulseOximetrySequence
-          - USCore310PatientSequence
           - USCore310ProcedureSequence
           - USCoreR4ClinicalNotesSequence
           - USCore310LocationSequence
