@@ -47,6 +47,43 @@ module Inferno
         * [The OAuth 2.0 Authorization Framework](https://tools.ietf.org/html/rfc6749)
         * [OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html)
       )
+
+      REQUIRED_SMART_CAPABILITIES = [
+        'launch-ehr',
+        'launch-standalone',
+        'client-public',
+        'client-confidential-symmetric',
+        'sso-openid-connect',
+        'context-banner',
+        'context-style',
+        'context-ehr-patient',
+        'context-standalone-patient',
+        'context-standalone-encounter',
+        'permission-offline',
+        'permission-patient',
+        'permission-user'
+      ].freeze
+
+      test :required_capabilities do
+        metadata do
+          id '06'
+          name 'Well-known configuration declares support for required capabilities'
+          link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#core-capabilities'
+          description %(
+            A SMART on FHIR server SHALL convey its capabilities to app
+            developers by listing a set of the capabilities. The following
+            capabilities are required: #{REQUIRED_SMART_CAPABILITIES.join(', ')}
+          )
+        end
+
+        skip_if @well_known_configuration.blank?, 'No well-known SMART configuration found.'
+
+        capabilities = @well_known_configuration['capabilities']
+        assert capabilities.is_a?(Array), 'The well-known capabilities are not an array'
+
+        missing_capabilities = REQUIRED_SMART_CAPABILITIES - capabilities
+        assert missing_capabilities.empty?, "The following required capabilities are missing: #{missing_capabilities.join(', ')}"
+      end
     end
   end
 end
