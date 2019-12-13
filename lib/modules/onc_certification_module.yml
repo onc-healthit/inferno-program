@@ -133,7 +133,5 @@ test_sets:
         overview: >
            TODO POPULATION LEVEL INFORMATION HERE
         sequences:
-          - BulkDataCapabilityStatementSequence
-          - BulkDataDiscoverySequence
           - BulkDataAuthorizationSequence
           - BulkDataGroupExportSequence
