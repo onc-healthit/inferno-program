@@ -9,7 +9,7 @@ default_test_set: test_procedure
 hide_optional: true
 test_sets:
   test_procedure:
-    view: guided
+    view: onc_certification
     tests:
       - name: Standalone Patient App
         overview: |
