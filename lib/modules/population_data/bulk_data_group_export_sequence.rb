@@ -13,7 +13,7 @@ module Inferno
 
       description 'Verify that Group compartment export on the Bulk Data server follow the Bulk Data Access Implementation Guide'
 
-      test_id_prefix 'Group'
+      test_id_prefix 'BDGE'
 
       requires :group_id, :bulk_access_token, :bulk_lines_to_validate
 

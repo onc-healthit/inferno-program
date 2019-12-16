@@ -94,6 +94,8 @@ module Inferno
             assert file.key?(key), "Output file did not contain \"#{key}\" as required"
           end
         end
+
+        @instance.bulk_status_output = output.to_json
       end
 
       def assert_output_has_correct_type(output = @output,
@@ -116,10 +118,16 @@ module Inferno
       def check_all_files(output = @output, lines_to_validate = @instance.bulk_lines_to_validate)
         skip 'Server response did not have output data' unless output.present?
 
+        if lines_to_validate.present? && lines_to_validate == '*'
+          validate_all = true
+        else
+          lines_to_validate_num = lines_to_validate.to_i
+        end
+
         errors = []
 
         (0..output.length - 1).each do |i|
-          check_file_request(output, i, lines_to_validate)
+          check_file_request(output, i, validate_all, lines_to_validate_num)
         rescue Inferno::AssertionException => e
           errors.push(e.message)
         end
@@ -127,7 +135,7 @@ module Inferno
         assert errors.empty?, errors.to_s
       end
 
-      def check_file_request(output, index, lines_to_validate)
+      def check_file_request(output, index, validate_all, lines_to_validate)
         skip 'Server response did not have output data' unless output.present?
 
         file = output[index]
@@ -135,16 +143,16 @@ module Inferno
         reply = get_file(file)
         assert_response_content_type(reply, 'application/fhir+ndjson')
 
-        check_ndjson(reply.body, type, lines_to_validate)
+        check_ndjson(reply.body, type, validate_all, lines_to_validate) if validate_all || lines_to_validate.positive?
       end
 
-      def check_ndjson(ndjson, file_type, lines_to_validate)
-        lines_to_validate = 1 if lines_to_validate.nil?
-        validate_all = lines_to_validate < 1
+      def check_ndjson(ndjson, file_type, validate_all, lines_to_validate)
+        return if !validate_all && lines_to_validate < 1
+
         line_count = 0
 
         ndjson.each_line do |line|
-          break if !validate_all && line_count == lines_to_validate
+          break if !validate_all && line_count >= lines_to_validate
 
           line_count += 1
 
@@ -160,17 +168,10 @@ module Inferno
             errors = resource.validate
           end
 
-          #puts "line count: #{line_count}" unless errors.empty?
+          # puts "line count: #{line_count}" unless errors.empty?
           assert errors.empty?, errors.to_s
         end
-        #puts "line count: #{line_count}"
-      end
-
-      def check_cancel_request
-        @content_location = nil
-        check_export_kick_off
-        reply = delete_request(@content_location)
-        assert_response_accepted(reply)
+        # puts "line count: #{line_count}"
       end
 
       details %(
@@ -182,7 +183,7 @@ module Inferno
 
       @resources_found = false
 
-      test 'Server rejects $export request without authorization' do
+      test 'Bulk Data Server rejects $export request without authorization' do
         metadata do
           id '01'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
@@ -199,9 +200,37 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test 'Server shall return "202 Accepted" and "Content-location" for $export operation' do
+      test 'Bulk Data Server rejects $export operation with invalid Accept header' do
         metadata do
           id '02'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
+          description %(
+            Accept (string, required)
+
+            * Specifies the format of the optional OperationOutcome resource response to the kick-off request. Currently, only application/fhir+json is supported.
+          )
+        end
+
+        check_export_kick_off_fail_invalid_accept
+      end
+
+      test 'Bulk Data Server rejects $export operation with invalid Prefer header' do
+        metadata do
+          id '03'
+          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
+          description %(
+            Prefer (string, required)
+
+            * Specifies whether the response is immediate or asynchronous. The header SHALL be set to respond-async https://tools.ietf.org/html/rfc7240.
+          )
+        end
+
+        check_export_kick_off_fail_invalid_prefer
+      end
+
+      test 'Bulk Data Server returns "202 Accepted" and "Content-location" for $export operation' do
+        metadata do
+          id '04'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
           description %(
             Response - Success
@@ -214,35 +243,7 @@ module Inferno
         check_export_kick_off
       end
 
-      test 'Server shall reject $export operation with invalid Accept header' do
-        metadata do
-          id '03'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
-          description %(
-            Accept (string, required)
-
-            * Specifies the format of the optional OperationOutcome resource response to the kick-off request. Currently, only application/fhir+json is supported.
-          )
-        end
-
-        check_export_kick_off_fail_invalid_accept
-      end
-
-      test 'Server shall reject $export operation with invalid Prefer header' do
-        metadata do
-          id '04'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
-          description %(
-            Prefer (string, required)
-
-            * Specifies whether the response is immediate or asynchronous. The header SHALL be set to respond-async https://tools.ietf.org/html/rfc7240.
-          )
-        end
-
-        check_export_kick_off_fail_invalid_prefer
-      end
-
-      test 'Server shall return "202 Accepted" or "200 OK" for status check' do
+      test 'Bulk Data Server returns "202 Accepted" or "200 OK" for status check' do
         metadata do
           id '05'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
@@ -261,7 +262,7 @@ module Inferno
         check_export_status
       end
 
-      test 'Completed Status Check shall return output with type and url' do
+      test 'Bulk Data Server returns output with type and url for status complete' do
         metadata do
           id '06'
           link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
@@ -282,148 +283,19 @@ module Inferno
         assert_output_has_type_url
       end
 
-      test :validate_ndjson do
-        metadata do
-          id '07'
-          name 'Server shall return FHIR resources in ndjson file'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
-          description %(
-            Servers SHALL support [Newline Delimited JSON](http://ndjson.org),
-            but MAY choose to support additional output formats.
-          )
-        end
+      # test :validate_ndjson do
+      #   metadata do
+      #     id '07'
+      #     name 'Bulk Data Server returns FHIR resources in ndjson file'
+      #     link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
+      #     description %(
+      #       Servers SHALL support [Newline Delimited JSON](http://ndjson.org),
+      #       but MAY choose to support additional output formats.
+      #     )
+      #   end
 
-        check_all_files
-      end
-
-      test 'Server shall return "202 Accepted" for cancel export request' do
-        metadata do
-          id '08'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-delete-request'
-          description %(
-            Response - Success
-
-            * HTTP Status Code of 202 Accepted
-          )
-          optional
-        end
-
-        check_cancel_request
-      end
-
-      test 'Server should accept $export operation with _type parameter' do
-        metadata do
-          id '09'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
-          description %(
-            Server should accept $export operation with _type parameter
-          )
-          optional
-        end
-
-        check_export_kick_off(search_params: { '_type' => type_parameter })
-      end
-
-      test 'Server shall return FHIR resources required by _type parameter' do
-        metadata do
-          id '10'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
-          description %(
-            Only resources of the specified resource types(s) SHALL be included in the response.
-            If this parameter is omitted, the server SHALL return all supported resources within the scope of the client authorization.
-            For Patient- and Group-level requests, the Patient Compartment SHOULD be used as a point of reference for
-            recommended resources to be returned.
-          )
-          optional
-        end
-
-        skip 'Server does not support _type parameter' unless @server_supports_type_parameter
-
-        check_export_status
-        assert_output_has_correct_type
-      end
-
-      test 'Server shall reject $export operation with invalid _type parameter' do
-        metadata do
-          id '11'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
-          description %(
-            Server SHALL return HTTP Code 400 for invalid _type parameters
-          )
-          optional
-        end
-
-        check_export_kick_off_fail_invalid_parameter('_type' => 'UnknownResource')
-      end
-
-      test 'Server should accept $export operation with _since parameter' do
-        metadata do
-          id '12'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
-          description %(
-            Server should accept $export operation with _since parameter
-          )
-          optional
-        end
-
-        check_export_kick_off(search_params: { '_type' => type_parameter, '_since' => '2019-01-01' })
-        delete_request(@content_location)
-      end
-
-      test 'Server shall rejct $export operation with invalid _since parameter' do
-        metadata do
-          id '13'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
-          description %(
-            Server SHALL return HTTP Code 400 for invalid _since parameters
-          )
-          optional
-        end
-
-        check_export_kick_off_fail_invalid_parameter('_type' => type_parameter, '_since' => '2018-13-13')
-      end
-
-      test 'Server should accept $export operation with parameter _outputFormat=application/fhir+ndjson' do
-        metadata do
-          id '14'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
-          description %(
-            Server should accept $export operation with parameter _outputFormat=application/fhir+ndjson
-          )
-          optional
-        end
-
-        check_export_kick_off(search_params: { '_outputFormat' => 'application/fhir+ndjson' })
-        delete_request(@content_location)
-      end
-
-      test 'Server should accept $export operation with parameter _outputFormat=application/ndjson' do
-        metadata do
-          id '15'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
-          description %(
-            Server should accept $export operation with parameter _outputFormat=application/ndjson
-          )
-          optional
-        end
-
-        check_export_kick_off(search_params: { '_outputFormat' => 'application/ndjson' })
-        delete_request(@content_location)
-      end
-
-      test 'Server should accept $export operation with parameter _outputFormat=ndjson' do
-        metadata do
-          id '16'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#query-parameters'
-          description %(
-            Server should accept $export operation with parameter _outputFormat=ndjson
-          )
-          optional
-        end
-
-        check_export_kick_off(search_params: { '_outputFormat' => 'ndjson' })
-        delete_request(@content_location)
-      end
+      #   check_all_files
+      # end
 
       private
 
@@ -472,10 +344,6 @@ module Inferno
         else
           wait_time * 2
         end
-      end
-
-      def delete_request(url)
-        @client.delete(url, {})
       end
 
       def assert_status_reponse_required_field(response_body)

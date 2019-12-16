@@ -36,7 +36,7 @@ describe Inferno::Sequence::ONCSMARTDiscoverySequence do
         capabilities = @sequence_class::REQUIRED_SMART_CAPABILITIES.dup
         capabilities.delete(capability)
 
-        @sequence.instance_variable_set(:@well_known_configuration, { 'capabilities' => capabilities })
+        @sequence.instance_variable_set(:@well_known_configuration, 'capabilities' => capabilities)
 
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
@@ -46,7 +46,7 @@ describe Inferno::Sequence::ONCSMARTDiscoverySequence do
 
     it 'succeeds if all required capabilities are present' do
       capabilities = @sequence_class::REQUIRED_SMART_CAPABILITIES
-      @sequence.instance_variable_set(:@well_known_configuration, { 'capabilities' => capabilities })
+      @sequence.instance_variable_set(:@well_known_configuration, 'capabilities' => capabilities)
 
       @sequence.run_test(@test)
     end

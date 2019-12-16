@@ -402,7 +402,43 @@
               label: 'Group ID',
               instance: instance,
               value: instance.group_id,
-              })%>              
+              })%>    
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_client_id,
+              label: 'Bulk Data Client ID',
+              instance: instance,
+              value: instance.bulk_client_id,
+              })%>    
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_token_endpoint,
+              label: 'Bulk Data Server Token Endpoint',
+              instance: instance,
+              value: instance.bulk_token_endpoint,
+              })%>       
+
+        <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_private_key).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="bulk_private_key">
+
+              <label for="bulk_private_key">Bulk Private Key
+                  <small>
+                          If you have provided your JWKS at registration time, please enter the private key here. Leave it blank if the keys have not
+                          been exchanged ahead of time.
+                        </small>
+                
+              </label>
+              <textarea type="text" class="form-control" name="bulk_private_key" id="bulk_private_key" placeholder="" rows="5"><%=instance.bulk_private_key %></textarea>
+          </div>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_lines_to_validate,
+              instance: instance,
+              label: 'Lines to validate',
+              description: %(
+                While testing we need to validate resources in downloaded NDJSON file.
+                Please enter the number of lines/resources that would be validated for each NDJSON file. 
+                To skip resource validation, enter 0.
+                To validate all resources, leave this field blank.
+              ),              
+              value: instance.bulk_lines_to_validate}); %>        
+     
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />
