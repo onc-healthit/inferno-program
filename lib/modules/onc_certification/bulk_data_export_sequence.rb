@@ -109,71 +109,6 @@ module Inferno
         end
       end
 
-      def get_file(file)
-        headers = { accept: 'application/fhir+ndjson' }
-        url = file['url']
-        @client.get(url, @client.fhir_headers(headers))
-      end
-
-      def check_all_files(output = @output, lines_to_validate = @instance.bulk_lines_to_validate)
-        skip 'Server response did not have output data' unless output.present?
-
-        if lines_to_validate.present? && lines_to_validate == '*'
-          validate_all = true
-        else
-          lines_to_validate_num = lines_to_validate.to_i
-        end
-
-        errors = []
-
-        (0..output.length - 1).each do |i|
-          check_file_request(output, i, validate_all, lines_to_validate_num)
-        rescue Inferno::AssertionException => e
-          errors.push(e.message)
-        end
-
-        assert errors.empty?, errors.to_s
-      end
-
-      def check_file_request(output, index, validate_all, lines_to_validate)
-        skip 'Server response did not have output data' unless output.present?
-
-        file = output[index]
-        type = file['type']
-        reply = get_file(file)
-        assert_response_content_type(reply, 'application/fhir+ndjson')
-
-        check_ndjson(reply.body, type, validate_all, lines_to_validate) if validate_all || lines_to_validate.positive?
-      end
-
-      def check_ndjson(ndjson, file_type, validate_all, lines_to_validate)
-        return if !validate_all && lines_to_validate < 1
-
-        line_count = 0
-
-        ndjson.each_line do |line|
-          break if !validate_all && line_count >= lines_to_validate
-
-          line_count += 1
-
-          resource = versioned_resource_class.from_contents(line)
-          resource_type = resource.class.name.demodulize
-          assert resource_type == file_type, "Resource type \"#{resource_type}\" at line \"#{line_count}\" does not match type defined in output \"#{file_type}\")"
-
-          p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
-          if p && @instance.fhir_version == 'r4'
-            errors = p.validate_resource(resource)
-          else
-            warn { assert false, 'No profiles found for this Resource' }
-            errors = resource.validate
-          end
-
-          # puts "line count: #{line_count}" unless errors.empty?
-          assert errors.empty?, errors.to_s
-        end
-        # puts "line count: #{line_count}"
-      end
-
       details %(
 
       The #{title} Sequence tests `#{title}` operations.  The operation steps will be checked for consistency against the
@@ -282,20 +217,6 @@ module Inferno
 
         assert_output_has_type_url
       end
-
-      # test :validate_ndjson do
-      #   metadata do
-      #     id '07'
-      #     name 'Bulk Data Server returns FHIR resources in ndjson file'
-      #     link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#file-request'
-      #     description %(
-      #       Servers SHALL support [Newline Delimited JSON](http://ndjson.org),
-      #       but MAY choose to support additional output formats.
-      #     )
-      #   end
-
-      #   check_all_files
-      # end
 
       private
 
