@@ -23,24 +23,20 @@ test_sets:
         lock_variables: 
           - redirect_uris
         sequences:
-          - sequence: ManualRegistrationSequence
-            title: Manual App Registration
-            prefix: SPA
-          - sequence: UsCoreR4CapabilityStatementSequence
-            prefix: SPB
           - sequence: ONCSMARTDiscoverySequence
-            prefix: SPC
+            prefix: SPA
           - sequence: OncStandaloneLaunchSequence
-            prefix: SPD
+            prefix: SPB
             title: Standalone Launch with Patient Scope
             description: Perform Standalone SMART launch sequence and test OpenID Connect and token refresh functionality.
             variable_defaults:
               scopes: launch/patient launch/encounter patient/*.read openid fhirUser offline_access
           - sequence: OpenIDConnectSequence
-            prefix: SPF
+            prefix: SPC
             description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
           - sequence: ONCTokenRefreshSequence
-            prefix: SPG
+            prefix: SPD
+            description: Use refresh token to get new access token and verify it can access resources.
       - name: EHR Practitioner App
         overview: |
           Demonstrate the ability to perform an EHR launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
@@ -50,24 +46,20 @@ test_sets:
         lock_variables: 
           - redirect_uris
         sequences:
-          - sequence: ManualRegistrationSequence
-            title: Manual App Registration
-            prefix: EHA
-          - sequence: UsCoreR4CapabilityStatementSequence
-            prefix: EHB
           - sequence: ONCSMARTDiscoverySequence
-            prefix: EHC
+            prefix: EHA
           - sequence: OncEHRLaunchSequence
-            prefix: EHD
+            prefix: EHB
             title: EHR Launch with Practitioner Scope
             description: Perform EHR SMART launch sequence and test OpenID Connect and token refresh functionality.
             variable_defaults:
               scopes: launch user/*.read openid fhirUser offline_access
           - sequence: OpenIDConnectSequence
-            prefix: EHF
+            prefix: EHC
             description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
           - sequence: ONCTokenRefreshSequence
-            prefix: EHG
+            prefix: EHD
+            description: Use refresh token to retrieve new access token and verify it can access resources.
         input_instructions: |
           Enter in the appropriate scope to enable user-level access to all relevant resources.  In addition, support for the 
           OpenID Connect (`openid fhirUser`), refresh tokens (`offline_access`), and EHR context (`launch`) are required.  This test
@@ -85,6 +77,7 @@ test_sets:
         lock_variables: 
           - token
         sequences:
+          - UsCoreR4CapabilityStatementSequence
           - USCore310PatientSequence
           - USCore310AllergyintoleranceSequence
           - USCore310CareplanSequence

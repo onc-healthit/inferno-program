@@ -12,6 +12,7 @@ module Inferno
       test_id_prefix 'OSD'
 
       requires :url
+      defines :oauth_authorize_endpoint, :oauth_token_endpoint, :oauth_register_endpoint
 
       description "Retrieve server's SMART on FHIR configuration"
 
