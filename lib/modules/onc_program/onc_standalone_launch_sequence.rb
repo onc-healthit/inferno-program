@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative '../smart/standalone_launch_sequence'
+require_relative './shared_onc_launch_tests'
 
 module Inferno
   module Sequence
     class OncStandaloneLaunchSequence < StandaloneLaunchSequence
       extends_sequence StandaloneLaunchSequence
+      include Inferno::Sequence::SharedONCLaunchTests
 
       title 'ONC Standalone Launch Sequence'
 
@@ -46,49 +48,35 @@ module Inferno
       end
 
       def required_scopes
-        ['openid', 'fhirUser', 'launch/patient', 'offline_access']
+        ['openid', 'fhirUser', 'launch/patient', 'launch/encounter', 'offline_access']
       end
 
-      test :onc_scopes do
+      required_scope_test(index: '10', patient_or_user: 'patient')
+
+      test :unauthorized_read do
         metadata do
-          id '10'
-          name 'Patient-level access with OpenID Connect and Refresh Token scopes used.'
-          link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#quick-start'
+          id '11'
+          name 'Server rejects unauthorized access'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
           description %(
-            The scopes being input must follow the guidelines specified in the smart-app-launch guide
+            A server SHALL reject any unauthorized requests by returning an HTTP
+            401 unauthorized response code.
           )
+          versions :r4
         end
 
-        scopes = @instance.received_scopes.split(' ')
+        @client.set_no_auth
+        skip_if_auth_failed
 
-        missing_scopes = required_scopes - scopes
-        assert missing_scopes.empty?, "Required scopes missing: #{missing_scopes.join(', ')}"
+        reply = @client.read(FHIR::Patient, @instance.patient_id)
+        @client.set_bearer_token(@instance.token)
 
-        scopes -= required_scopes
-        # Other 'okay' scopes
-        scopes.delete('online_access')
-
-        patient_scope_found = false
-
-        scopes.each do |scope|
-          bad_format_message = "Scope '#{scope}' does not follow the format: patient/[ resource | * ].[ read | * ]"
-          scope_pieces = scope.split('/')
-
-          assert scope_pieces.count == 2, bad_format_message
-          assert scope_pieces[0] == 'patient', bad_format_message
-
-          resource_access = scope_pieces[1].split('.')
-          bad_resource_message = "'#{resource_access[0]}' must be either a valid resource type or '*'"
-
-          assert resource_access.count == 2, bad_format_message
-          assert valid_resource_types.include?(resource_access[0]), bad_resource_message
-          assert resource_access[1] =~ /^(\*|read)/, bad_format_message
-
-          patient_scope_found = true
-        end
-
-        assert patient_scope_found, 'Must contain a patient-level scope in the format: patient/[ resource | * ].[ read | *].'
+        assert_response_unauthorized reply
       end
+
+      patient_context_test(index: '12')
+
+      encounter_context_test(index: '13')
     end
   end
 end

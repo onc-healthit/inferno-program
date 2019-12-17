@@ -9,7 +9,7 @@ module Inferno
 
       title 'SMART on FHIR Discovery'
 
-      test_id_prefix 'ONCSD'
+      test_id_prefix 'OSD'
 
       requires :url
 

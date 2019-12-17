@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative '../smart/ehr_launch_sequence'
+require_relative './shared_onc_launch_tests'
 
 module Inferno
   module Sequence
     class OncEHRLaunchSequence < EHRLaunchSequence
       extends_sequence EHRLaunchSequence
+      include Inferno::Sequence::SharedONCLaunchTests
 
       title 'ONC EHR Launch Sequence'
 
@@ -49,45 +51,48 @@ module Inferno
         ['openid', 'fhirUser', 'launch', 'offline_access']
       end
 
-      test :onc_scopes do
+      required_scope_test(index: '12', patient_or_user: 'user')
+
+      patient_context_test(index: '13')
+
+      encounter_context_test(index: '14')
+
+      test :smart_style_url do
         metadata do
-          id '12'
-          name 'Scopes enabling user-level access with OpenID Connect and Refresh Token present'
-          link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#quick-start'
+          id '15'
+          link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#styling'
+          name 'Launch context contains smart_style_url which links to valid JSON'
           description %(
-            The scopes being input must follow the guidelines specified in the smart-app-launch guide
+            In order to mimic the style of the SMART host more closely, SMART
+            apps can check for the existence of this launch context parameter
+            and download the JSON file referenced by the URL value.
           )
         end
 
-        scopes = @instance.received_scopes.split(' ')
+        skip_if_auth_failed
 
-        missing_scopes = required_scopes - scopes
-        assert missing_scopes.empty?, "Required scopes missing: #{missing_scopes.join(', ')}"
+        assert @token_response['smart_style_url'].present?, 'Token response did not contain smart_style_url'
 
-        scopes -= required_scopes
-        # Other 'okay' scopes
-        scopes.delete('online_access')
+        response = LoggedRestClient.get(@token_response['smart_style_url'])
+        assert_response_ok(response)
+        assert_valid_json(response.body)
+      end
 
-        user_scope_found = false
-
-        scopes.each do |scope|
-          bad_format_message = "Scope '#{scope}' does not follow the format: user/[ resource | * ].[ read | * ]"
-          scope_pieces = scope.split('/')
-
-          assert scope_pieces.count == 2, bad_format_message
-          assert scope_pieces[0] == 'user', bad_format_message
-
-          resource_access = scope_pieces[1].split('.')
-          bad_resource_message = "'#{resource_access[0]}' must be either a valid resource type or '*'"
-
-          assert resource_access.count == 2, bad_format_message
-          assert valid_resource_types.include?(resource_access[0]), bad_resource_message
-          assert resource_access[1] =~ /^(\*|read)/, bad_format_message
-
-          user_scope_found = true
+      test :need_patient_banner do
+        metadata do
+          id '16'
+          link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#launch-context-arrives-with-your-access_token'
+          name 'Launch context contains need_patient_banner'
+          description %(
+            `need_patient_banner` is a boolean value indicating whether the app
+            was launched in a UX context where a patient banner is required
+            (when true) or not required (when false).
+          )
         end
 
-        assert user_scope_found, 'Must contain a user-level scope in the format: user/[ resource | * ].[ read | *].'
+        skip_if_auth_failed
+
+        assert @token_response.key?('need_patient_banner'), 'Token response did not contain need_patient_banner'
       end
     end
   end

@@ -1,16 +1,37 @@
-name: onc_certification
-title: ONC 21st Century Cures (g)(10) Certification
+name: onc_r4
+title: Preliminary ONC Health IT Certification
 
 description : |
-  TODO
+
+  The US Core R4 Test verifies conformance to the US Core R4 Implementation Guide.
+
+  This section is under development and tested against the CI Build of the IG.
+
+  [US Core R4 Implementation Guide](http://hl7.org/fhir/us/core/2019Jan/index.html)
 
 fhir_version: r4
 default_test_set: test_procedure
 hide_optional: true
 test_sets:
   test_procedure:
-    view: onc_certification
+    view: guided
     tests:
+      - name: Discovery and Registration
+        overview: |
+          Servers must provide the ability to register Inferno as a SMART on FHIR application.  This set of tests provides the tester with
+          registration information to be entered into the system under test.  Once registered, the tester should be provided
+          a *Client ID*, and optionally a *Client Secret*, to enter into Inferno.  This set of tests also requires the server to demonstrate
+          the ability to provide required service metadata through the discovery endpoints, including OAuth endpoints,
+          supported resources and searches.
+        input_instructions: |
+          Register Inferno as a SMART on FHIR app with the following *Launch URI* and *Redirect URI*.  You may either register the app as 
+          a confidential client or a public client.  Enter in the *Client ID*, and the *Client Secret* if applicable, as provided by the
+          authentication system through a manual registration process.
+        sequences:
+          - sequence: ManualRegistrationSequence
+            title: Manual App Registration
+          - sequence: UsCoreR4CapabilityStatementSequence
+          - ONCSMARTDiscoverySequence
       - name: Standalone Patient App
         overview: |
           Demonstrate the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
@@ -21,60 +42,51 @@ test_sets:
           Enter in the appropriate scope to enable patient-level access to all relevant resources.  In addition, support for the 
           OpenID Connect (`openid fhirUser`), refresh tokens (`offline_access`), and patient context (`launch/patient`) are required.
         lock_variables: 
+          - client_id
+          - confidential_client
+          - client_secret
+          - oauth_authorize_endpoint
+          - oauth_token_endpoint
           - redirect_uris
         sequences:
-          - sequence: ManualRegistrationSequence
-            title: Manual App Registration
-            prefix: SPA
-          - sequence: UsCoreR4CapabilityStatementSequence
-            prefix: SPB
-          - sequence: ONCSMARTDiscoverySequence
-            prefix: SPC
           - sequence: OncStandaloneLaunchSequence
-            prefix: SPD
             title: Standalone Launch with Patient Scope
             description: Perform Standalone SMART launch sequence and test OpenID Connect and token refresh functionality.
             variable_defaults:
               scopes: launch/patient launch/encounter patient/*.read openid fhirUser offline_access
           - sequence: OpenIDConnectSequence
-            prefix: SPF
             description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
-          - sequence: ONCTokenRefreshSequence
-            prefix: SPG
+          - ONCTokenRefreshSequence
       - name: EHR Practitioner App
         overview: |
           Demonstrate the ability to perform an EHR launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
           refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
           on the patient in context.  The access token is then refreshed, and the Patient resource is read using the new
           access token to ensure that the refresh was successful.  Finally, the authentication information provided by OpenID Connect is decoded and validated.
-        lock_variables: 
-          - redirect_uris
         sequences:
-          - sequence: ManualRegistrationSequence
-            title: Manual App Registration
-            prefix: EHA
-          - sequence: UsCoreR4CapabilityStatementSequence
-            prefix: EHB
-          - sequence: ONCSMARTDiscoverySequence
-            prefix: EHC
           - sequence: OncEHRLaunchSequence
-            prefix: EHD
             title: EHR Launch with Practitioner Scope
             description: Perform EHR SMART launch sequence and test OpenID Connect and token refresh functionality.
             variable_defaults:
               scopes: launch user/*.read openid fhirUser offline_access
+            description: Demonstrate successful authorization by reading Patient resource.
           - sequence: OpenIDConnectSequence
-            prefix: EHF
             description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
-          - sequence: ONCTokenRefreshSequence
-            prefix: EHG
+          - ONCTokenRefreshSequence
         input_instructions: |
           Enter in the appropriate scope to enable user-level access to all relevant resources.  In addition, support for the 
           OpenID Connect (`openid fhirUser`), refresh tokens (`offline_access`), and EHR context (`launch`) are required.  This test
           expects that the EHR will launch the application with a patient context.
 
           After `execute` is pressed, Inferno will wait for the system under test to launch the application.
-      - name: Single Patient Data Access
+        lock_variables: 
+          - client_id
+          - confidential_client
+          - client_secret
+          - oauth_authorize_endpoint
+          - oauth_token_endpoint
+          - redirect_uris
+      - name: Data Access
         run_all: true
         run_skipped: true
         overview: >
@@ -83,9 +95,9 @@ test_sets:
           query to generate other queries and checks that the results are consistent with the provided search parameters.  It then performs a read on each Resource returned and validates the response against the 
           relevant [profile](http://www.fhir.org/guides/argonaut/r2/profiles.html) as currently defined in the Argonaut Data Query Implementation Guide.
         lock_variables: 
+          - patient_id
           - token
         sequences:
-          - USCore310PatientSequence
           - USCore310AllergyintoleranceSequence
           - USCore310CareplanSequence
           - USCore310CareteamSequence
@@ -102,21 +114,12 @@ test_sets:
           - USCore310PediatricWeightForHeightSequence
           - USCore310ObservationLabSequence
           - USCore310PediatricBmiForAgeSequence
-          - USCore310PulseOximetrySequence
+          - USCore310PatientSequence
           - USCore310ProcedureSequence
+          - R4ProvenanceSequence
           - USCoreR4ClinicalNotesSequence
           - USCore310LocationSequence
           - USCore310MedicationSequence
           - USCore310OrganizationSequence
           - USCore310PractitionerSequence
           - USCore310PractitionerroleSequence
-          - USCore310ProvenanceSequence
-      - name: Population Data Access
-        run_all: true
-        run_skipped: false
-        overview: >
-           TODO POPULATION LEVEL INFORMATION HERE
-        sequences:
-          - BulkDataAuthorizationSequence
-          - BulkDataGroupExportSequence
-          - BulkDataGroupExportValidationSequence
