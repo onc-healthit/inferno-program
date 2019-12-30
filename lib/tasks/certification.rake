@@ -39,17 +39,19 @@ namespace :certification do |_argv|
     columns = [
       ['Inferno Test', 14, ->(_group, test_case, test) { "#{test_case.prefix}#{test.id}" }],
       ['Rule No', 14, ->(_group, _test_case, _test) { '' }],
+      ['Test Step', 14, ->(_group, _test_case, _test) { '' }],
       ['Rule Section', 14, ->(_group, _test_case, _test) { '' }],
       ['Test Case Name', 20, ->(_group, test_case, _test) { test_case.title }],
       ['Test Name', 50, ->(_group, _test_case, test) { test.name }],
       ['Test Case Description', 45, ->(_group, test_case, _test) { test_case.description }],
       ['Required?', 9, ->(_group, test_case, test) { (!test_case.sequence.optional? && !test.optional?).to_s }],
+      ['Elaborated Testable Requirements', 14, ->(_group, _test_case, _test) { '' }],
       ['Comments', 14, ->(_group, _test_case, _test) { '' }],
       ['Rule Language', 14, ->(_group, _test_case, _test) { '' }],
       ['Preamble Language', 14, ->(_group, _test_case, _test) { '' }],
       ['Test Link', 85, ->(_group, _test_case, test) { test.link }],
-      ['', 3, ->(_group, _test_case, _test) { '' }],
       ['Group', 30, ->(group, _test_case, _test) { group.name }],
+      ['', 100, ->(_group, _test_case, _test) { '' }],
       ['Group Overview', 30, ->(group, _test_case, _test) { group.overview }],
       ['', 3, ->(_group, _test_case, _test) { '' }],
       ['Test Case Details', 30, ->(_group, test_case, _test) { unindent_markdown(test_case.sequence.details) }],
@@ -63,12 +65,21 @@ namespace :certification do |_argv|
     end
 
     worksheet.change_row_bold(0, true)
+    worksheet.change_row_fill(0, 'BBBBBB')
+    worksheet.change_row_height(0, 40)
 
     test_module = Inferno::Module.get(args.module)
     test_set = test_module.test_sets[args.test_set.to_sym]
     row = 1
 
     test_set.groups.each do |group|
+      cell = worksheet.add_cell(row, 0, group.name)
+      cell.change_text_wrap(true)
+      worksheet.merge_cells(row, 0, row, columns.length)
+      worksheet.change_row_fill(row, 'EEEEEE')
+      worksheet.change_row_height(row, 25)
+      worksheet.change_row_vertical_alignment(row, 'distributed')
+      row += 1
       group.test_cases.each do |test_case|
         test_case.sequence.tests.each do |test|
           this_row = columns.map do |col|
