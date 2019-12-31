@@ -43,7 +43,7 @@ modules:
 
 # preset fhir servers: optional. Minimally requires name, uri, module, optional inferno_uri, client_id, client_secret, scopes, instructions link
 presets:
-  refernce_server: 
+  reference_server:
     name: FHIR Reference Server
     uri: http://localhost:8080/r4
     module: onc_certification
@@ -51,3 +51,26 @@ presets:
     client_id: SAMPLE_CONFIDENTIAL_CLIENT_ID
     confidential_client: true
     client_secret: SAMPLE_CONFIDENTIAL_CLIENT_SECRET
+  cerner:
+    name: Cerner
+    uri: https://fhir-ehr.sandboxcerner.com/r4/0b8a0111-e8e6-4c26-a91c-5069cbc6b1ca
+    module: onc_certification
+    inferno_uri: http://localhost:4567
+    client_id: a710f7e1-9e4b-4518-b5ba-69d0a25caebe
+    confidential_client: false
+    instructions: |
+      To login for EHR launch https://cernercare.com/accounts/login Login/Password: smacvicar@mitre.org/TUAuAJnDyen59dn-
+      You must use scopes: launch online_access openid profile patient/AllergyIntolerance.read patient/Condition.read patient/DocumentReference.read patient/Device.read patient/Encounter.read patient/Immunization.read patient/Organization.read patient/MedicationRequest.read patient/Patient.read patient/Procedure.read user/Practitioner.read
+      use portal/portal for standalone patient launch
+  care_evolution:
+    name: Care Evolution
+    uri: https://fhir.careevolution.com/Master.Adapter1.WebClient/api/fhir-r4
+    client_id: 55990bf8-d85f-4a60-84b3-4699d1892f58
+    confidential_client: true
+    client_secret: secret
+    instructions: |
+      https://fhir.careevolution.com/Master.Adapter1.WebClient/fhir?prefix=fhir-r4
+      click on 'smart clients can be registered here'
+      user: rscanlon@mitre.org/InfernoInferno1
+      only patient launch supported?
+      use scope launch/patient patient/*.*
