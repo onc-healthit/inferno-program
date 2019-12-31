@@ -61,7 +61,8 @@ presets:
     instructions: |
       To login for EHR launch https://cernercare.com/accounts/login Login/Password: smacvicar@mitre.org/TUAuAJnDyen59dn-
       You must use scopes: launch online_access openid profile patient/AllergyIntolerance.read patient/Condition.read patient/DocumentReference.read patient/Device.read patient/Encounter.read patient/Immunization.read patient/Organization.read patient/MedicationRequest.read patient/Patient.read patient/Procedure.read user/Practitioner.read
-      use portal/portal for standalone patient launch
+      ehr launch only, go to https://code.cerner.com/developer/smart-on-fhir/apps after logging in
+      use portal/portal for user login
   care_evolution:
     name: Care Evolution
     uri: https://fhir.careevolution.com/Master.Adapter1.WebClient/api/fhir-r4
