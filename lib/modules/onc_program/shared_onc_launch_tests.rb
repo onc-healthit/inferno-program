@@ -96,7 +96,6 @@ module Inferno
             skip_if_no_access_token
 
             skip_if @instance.patient_id.blank?, 'Token response did not contain `patient` field'
-            skip_unless @instance.conformance_supported?(:Patient, [:read]), 'Patient read interaction is not supported.'
 
             @client.set_bearer_token(@instance.token)
             patient_read_response = @client.read(versioned_resource_class('Patient'), @instance.patient_id)
@@ -130,7 +129,6 @@ module Inferno
             skip_if_no_access_token
 
             skip_if @instance.encounter_id.blank?, 'Token response did not contain `encounter` field'
-            skip_unless @instance.conformance_supported?(:Encounter, [:read]), 'Encounter read interaction is not supported.'
 
             @client.set_bearer_token(@instance.token)
             encounter_read_response = @client.read(versioned_resource_class('Encounter'), @instance.encounter_id)

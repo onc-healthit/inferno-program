@@ -26,7 +26,6 @@ describe Inferno::Sequence::SharedONCLaunchTests do
       @test = @sequence_class[:patient_context]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:@params, 'abc' => 'def')
-      set_resource_support(@instance, 'Patient')
     end
 
     it 'skips when authorization failed' do
@@ -48,14 +47,6 @@ describe Inferno::Sequence::SharedONCLaunchTests do
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
       assert_equal 'Token response did not contain `patient` field', exception.message
-    end
-
-    it 'skips when the patient read interaction is not supported' do
-      @instance.server_capabilities = nil
-
-      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
-
-      assert_equal 'Patient read interaction is not supported.', exception.message
     end
 
     it 'fails when a non-200 response is received' do
@@ -89,7 +80,6 @@ describe Inferno::Sequence::SharedONCLaunchTests do
       @test = @sequence_class[:encounter_context]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:@params, 'abc' => 'def')
-      set_resource_support(@instance, 'Encounter')
     end
 
     it 'skips when authorization failed' do
@@ -111,14 +101,6 @@ describe Inferno::Sequence::SharedONCLaunchTests do
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
       assert_equal 'Token response did not contain `encounter` field', exception.message
-    end
-
-    it 'skips when the encounter read interaction is not supported' do
-      @instance.server_capabilities = nil
-
-      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
-
-      assert_equal 'Encounter read interaction is not supported.', exception.message
     end
 
     it 'fails when a non-200 response is received' do
