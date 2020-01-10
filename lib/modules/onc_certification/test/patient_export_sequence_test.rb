@@ -2,6 +2,47 @@
 
 require_relative '../../../../test/test_helper'
 
+describe Inferno::Sequence::BulkDataExportSequence do
+  before do
+    @sequence_class = Inferno::Sequence::BulkDataExportSequence
+
+    @instance = Inferno::Models::TestingInstance.create(
+      url: 'http://www.example.com',
+      bulk_url: 'https://www.example.com/bulk',
+      bulk_access_token: 99_897_979
+    )
+
+    @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'stu3'))
+
+    @client = FHIR::Client.new(@instance.url)
+  end
+
+  describe 'endpoint TLS tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+      @test = @sequence_class[:bulk_endpoint_tls]
+    end
+
+    it 'fails when the auth endpoint does not support tls' do
+      @instance.bulk_url = 'http://www.example.com/bulk'
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/^URI is not HTTPS/, error.message)
+    end
+
+    it 'succeeds when TLS 1.2 is supported' do
+      @instance.bulk_url = 'https://www.example.com/bulk'
+
+      stub_request(:get, @instance.bulk_url)
+
+      @sequence.run_test(@test)
+    end
+  end
+end
+
 class BulkDataPatientExportSequenceTest < MiniTest::Test
   def setup
     @content_location = 'http://www.example.com/status'
@@ -17,6 +58,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     @instance = Inferno::Models::TestingInstance.new(
       url: 'http://www.example.com',
+      bulk_url: 'https://www.example.com/bulk',
       client_name: 'Inferno',
       base_url: 'http://localhost:4567',
       client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
@@ -53,13 +95,19 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     client.default_json
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
     @sequence.run_all_kick_off_tests = true
+
+    @operation_outcome = load_json_fixture('operation_outcome')
+  end
+
+  def include_tls_stub
+    stub_request(:get, @instance.bulk_url)
   end
 
   def include_export_stub_no_token
     headers = @export_request_headers.clone
     headers.delete(:authorization)
 
-    stub_request(:get, 'http://www.example.com/Patient/$export')
+    stub_request(:get, 'https://www.example.com/bulk/Patient/$export')
       .with(headers: headers)
       .to_return(
         status: 401
@@ -68,7 +116,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
   def include_export_stub(status_code: 202,
                           response_headers: { content_location: @content_location })
-    stub_request(:get, 'http://www.example.com/Patient/$export')
+    stub_request(:get, 'https://www.example.com/bulk/Patient/$export')
       .with(headers: @export_request_headers)
       .to_return(
         status: status_code,
@@ -80,10 +128,12 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     headers = @export_request_headers.clone
     headers[:accept] = 'application/fhir+xml'
 
-    stub_request(:get, 'http://www.example.com/Patient/$export')
+    stub_request(:get, 'https://www.example.com/bulk/Patient/$export')
       .with(headers: headers)
       .to_return(
-        status: 400
+        status: 400,
+        headers: { content_type: 'application/json' },
+        body: @operation_outcome.to_json
       )
   end
 
@@ -91,10 +141,12 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     headers = @export_request_headers.clone
     headers[:prefer] = 'return=representation'
 
-    stub_request(:get, 'http://www.example.com/Patient/$export')
+    stub_request(:get, 'https://www.example.com/bulk/Patient/$export')
       .with(headers: headers)
       .to_return(
-        status: 400
+        status: 400,
+        headers: { content_type: 'application/json' },
+        body: @operation_outcome.to_json
       )
   end
 
@@ -113,6 +165,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
   def test_all_pass
     WebMock.reset!
 
+    include_tls_stub
     include_export_stub_no_token
     include_export_stub
     include_export_stub_invalid_accept
@@ -213,13 +266,6 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
 
     assert_raises Inferno::AssertionException do
       @sequence.assert_output_has_type_url(output)
-    end
-  end
-
-  def test_output_file_fail_unmached_type
-    search_params = { '_type' => 'Condition' }
-    assert_raises Inferno::AssertionException do
-      @sequence.assert_output_has_correct_type(@complete_status['output'], search_params)
     end
   end
 end

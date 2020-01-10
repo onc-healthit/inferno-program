@@ -97,11 +97,30 @@ module Inferno
         uri.query
       end
 
-      test :require_content_type do
+      test :bulk_token_endpoint_tls do
         metadata do
           id '01'
+          name 'Bulk Data Server is secured by transport layer security'
+          link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#security-considerations'
+          description %(
+            All exchanges described herein between a client and a server SHALL be secured using Transport Layer Security (TLS) Protocol Version 1.2 (RFC5246)
+          )
+        end
+
+        omit_if_tls_disabled
+
+        assert_tls_1_2 @instance.bulk_token_endpoint
+
+        warning do
+          assert_deny_previous_tls @instance.bulk_token_endpoint
+        end
+      end
+
+      test :require_content_type do
+        metadata do
+          id '02'
           name 'Bulk Data Server rejects authorization requests which do not use content_type "application/x-www-form-urlencoded"'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
           description %(
             After generating an authentication JWT, the client requests a new access token via HTTP POST to the FHIR authorization server’s token endpoint URL, using content-type application/x-www-form-urlencoded
           )
@@ -113,9 +132,9 @@ module Inferno
 
       test :require_system_scope do
         metadata do
-          id '02'
+          id '03'
           name 'Bulk Data Server rejects authorization requests which do not use "system" scope'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#scopes'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#scopes'
           description %(
             clients SHALL use `system` scopes.
 
@@ -129,9 +148,9 @@ module Inferno
 
       test :require_grant_type do
         metadata do
-          id '03'
+          id '04'
           name 'Bulk Data Server rejects authorization requests which do not use grant_type "client_credentials"'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
           description %(
             | Parameter | Required? | Description |
             | --- | --- | --- |
@@ -145,9 +164,9 @@ module Inferno
 
       test :require_client_assertion_type do
         metadata do
-          id '04'
+          id '05'
           name 'Bulk Data Server rejects authorization requests which do not use client_assertion_type "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
           description %(
             | Parameter | Required? | Description |
             | --- | --- | --- |
@@ -161,9 +180,9 @@ module Inferno
 
       test :require_jwt_iss do
         metadata do
-          id '05'
+          id '06'
           name 'Bulk Data Server rejects authorization requests which do not use client_id as JWT issuer '
-          link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
           description %(
             | JWT Claim | Required? | Description |
             | --- | --- | --- |
@@ -177,9 +196,9 @@ module Inferno
 
       test :require_jwt_sub do
         metadata do
-          id '06'
+          id '07'
           name 'Bulk Data Server rejects authorization requests which do not use client_id as JWT subject '
-          link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
           description %(
             | JWT Claim | Required? | Description |
             | --- | --- | --- |
@@ -193,9 +212,9 @@ module Inferno
 
       test :require_jwt_aud do
         metadata do
-          id '07'
+          id '08'
           name 'Bulk Data Server rejects authorization requests which do not use token url as JWT audience '
-          link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
           description %(
             | JWT Claim | Required? | Description |
             | --- | --- | --- |
@@ -209,9 +228,9 @@ module Inferno
 
       test :require_jwt_exp do
         metadata do
-          id '08'
+          id '09'
           name 'Bulk Data Server rejects authorization requests which do not have JWT expiration time'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
           description %(
             | JWT Claim | Required? | Description |
             | --- | --- | --- |
@@ -225,9 +244,9 @@ module Inferno
 
       test :require_jwt_exp_value do
         metadata do
-          id '09'
+          id '10'
           name 'Bulk Data Server rejects authorization requests which have JWT expiration time more than 5 minutes in the future'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
           description %(
             | JWT Claim | Required? | Description |
             | --- | --- | --- |
@@ -241,9 +260,9 @@ module Inferno
 
       test :require_jwt_jti do
         metadata do
-          id '10'
+          id '11'
           name 'Bulk Data Server rejects authorization requests which do not have JWT ID'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
           description %(
             | JWT Claim | Required? | Description |
             | --- | --- | --- |
@@ -257,9 +276,9 @@ module Inferno
 
       test :correct_signature do
         metadata do
-          id '11'
+          id '12'
           name 'Bulk Data Server rejects authorization requests which are not signed by client private key'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#protocol-details'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
           description %(
             The authentication JWT SHALL include the following claims, and SHALL be signed with the client’s private key
 
@@ -273,9 +292,9 @@ module Inferno
 
       test :return_access_token do
         metadata do
-          id '12'
+          id '13'
           name 'Bulk Data Token Endpoint returns access token'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/authorization/index.html#issuing-access-tokens'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#issuing-access-tokens'
           description %(
             If the access token request is valid and authorized, the authorization server SHALL issue an access token in response.
 

@@ -397,12 +397,13 @@
               instance: instance,
               value: instance.refresh_token,
               })%>
-
-        <%= erb(:prerequisite_field,{},{prerequisite: :group_id,
-              label: 'Group ID',
+                
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_url,
+              label: 'Bulk Data Base URL',
+              description: 'The full URL of the server to which we can append "/$export".',
               instance: instance,
-              value: instance.group_id,
-              })%>    
+              value: instance.bulk_url,
+              })%> 
 
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_client_id,
               label: 'Bulk Data Client ID',
@@ -427,6 +428,12 @@
               </label>
               <textarea type="text" class="form-control" name="bulk_private_key" id="bulk_private_key" placeholder="" rows="5"><%=instance.bulk_private_key %></textarea>
           </div>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :group_id,
+              label: 'Group ID',
+              instance: instance,
+              value: instance.group_id,
+              })%>    
 
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_lines_to_validate,
               instance: instance,

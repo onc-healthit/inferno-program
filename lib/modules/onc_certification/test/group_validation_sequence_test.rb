@@ -6,26 +6,137 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
   before do
     @sequence_class = Inferno::Sequence::BulkDataGroupExportValidationSequence
 
+    @patient_file_location = 'https://www.example.com/patient_export.ndjson'
+    @condition_file_location = 'https://www.example.com/condition_export.ndjson'
+
+    @output = [
+      { 'type' => 'Patient', 'url' => @patient_file_location },
+      { 'type' => 'Condition', 'url' => @condition_file_location }
+    ]
+
+    @status_response = {
+      'output' => @output,
+      'requiresAccessToken' => true
+    }
+
     @instance = Inferno::Models::TestingInstance.create(
-      url: 'http://www.example.com'
+      url: 'http://www.example.com',
+      bulk_status_output: @status_response.to_json,
+      bulk_access_token: 99_897_979
     )
 
     @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'stu3'))
 
     @client = FHIR::Client.new(@instance.url)
 
-    @file_request_headers = { accept: 'application/fhir+ndjson' }
-
-    @patient_file_location = 'http://www.example.com/patient_export.ndjson'
-    @condition_file_location = 'http://www.example.com/condition_export.ndjson'
+    @file_request_headers = { accept: 'application/fhir+ndjson',
+                              authorization: "Bearer #{@instance.bulk_access_token}" }
 
     @patient_export = load_fixture_with_extension('bulk_data_patient.ndjson')
     @condition_export = load_fixture_with_extension('bulk_data_condition.ndjson')
+  end
 
-    @output = [
-      { 'type' => 'Patient', 'url' => @patient_file_location },
-      { 'type' => 'Condition', 'url' => @condition_file_location }
-    ]
+  describe 'initialize' do
+    it 'not initialize if status response is nil' do
+      copy_instance = @instance.clone
+      copy_instance.bulk_status_output = nil
+      sequence = @sequence_class.new(copy_instance, @client)
+      assert sequence.output.nil?
+      assert sequence.requires_access_token.nil?
+    end
+
+    it 'initialize output' do
+      sequence = @sequence_class.new(@instance, @client)
+      assert sequence.output.to_json == @output.to_json
+    end
+
+    it 'initialize requiresAccessToken' do
+      sequence = @sequence_class.new(@instance, @client)
+      assert sequence.requires_access_token == @status_response['requiresAccessToken']
+    end
+  end
+
+  describe 'endpoint TLS tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+      @test = @sequence_class[:require_tls]
+    end
+
+    it 'fails when the auth endpoint does not support tls' do
+      a_sequence = @sequence.clone
+      a_sequence.output[0]['url'] = 'http://www.example.com/patient_export.ndjson'
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/^URI is not HTTPS/, error.message)
+    end
+
+    it 'succeeds when TLS 1.2 is supported' do
+      stub_request(:get, @patient_file_location)
+
+      @sequence.run_test(@test)
+    end
+  end
+
+  describe 'require access token test' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+      @test = @sequence_class[:require_access_token]
+      @headers_no_token = @file_request_headers.clone
+      @headers_no_token.delete(:authorization)
+    end
+
+    it 'skips when requiresAccessToken is false' do
+      a_sequence = @sequence.clone
+      a_sequence.requires_access_token = false
+
+      error = assert_raises(Inferno::SkipException) do
+        a_sequence.run_test(@test)
+      end
+
+      assert error.message == 'Could not verify this functionality when requireAccessToken is false'
+    end
+
+    it 'skips when bulk_access_token is nil' do
+      a_instance = Inferno::Models::TestingInstance.create(
+        url: 'http://www.example.com',
+        bulk_status_output: @status_response.to_json
+      )
+
+      a_sequence = @sequence_class.new(a_instance, @client)
+
+      error = assert_raises(Inferno::SkipException) do
+        a_sequence.run_test(@test)
+      end
+
+      assert error.message == 'Could not verify this functionality when bearer token is not set'
+    end
+
+    it 'catches non 401 status code' do
+      stub_request(:get, @patient_file_location)
+        .with(headers: @headers_no_token)
+        .to_return(
+          status: 200
+        )
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/^Bad response code: expected 401/, error.message)
+    end
+
+    it 'catches 401 error' do
+      stub_request(:get, @patient_file_location)
+        .with(headers: @headers_no_token)
+        .to_return(
+          status: 401
+        )
+
+      @sequence.run_test(@test)
+    end
   end
 
   describe 'get lines-to-validate' do
@@ -84,7 +195,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
 
     it 'skip when resource is not exported' do
       error = assert_raises(Inferno::SkipException) do
-        @sequence.test_output_against_profile('Observation', @output.to_json, '1')
+        @sequence.test_output_against_profile('Observation', @output, '1')
       end
 
       assert error.message == 'Bulk Data Server export does not have Observation data'
@@ -99,7 +210,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
           body: @patient_export
         )
 
-      @sequence.test_output_against_profile('Patient', @output.to_json, '1')
+      @sequence.test_output_against_profile('Patient', @output, '1')
     end
 
     it 'fails when content-type is invalid' do
@@ -112,7 +223,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
         )
 
       error = assert_raises(Inferno::AssertionException) do
-        @sequence.test_output_against_profile('Patient', @output.to_json, '1')
+        @sequence.test_output_against_profile('Patient', @output, '1')
       end
 
       assert_match(/Expected content-type/, error.message)

@@ -86,6 +86,31 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     end
   end
 
+  describe 'endpoint TLS tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+      @test = @sequence_class[:bulk_token_endpoint_tls]
+    end
+
+    it 'fails when the auth endpoint does not support tls' do
+      @instance.bulk_token_endpoint = 'http://www.example.com/bulk'
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/^URI is not HTTPS/, error.message)
+    end
+
+    it 'succeeds when TLS 1.2 is supported' do
+      @instance.bulk_token_endpoint = 'https://www.example.com/bulk'
+
+      stub_request(:get, @instance.bulk_token_endpoint)
+
+      @sequence.run_test(@test)
+    end
+  end
+
   describe 'require correct content-type' do
     before do
       @test = @sequence_class[:require_content_type]

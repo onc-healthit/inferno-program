@@ -11,7 +11,7 @@ module Inferno
 
       test_id_prefix 'BDE'
 
-      requires :bulk_access_token, :bulk_lines_to_validate
+      requires :bulk_url, :bulk_access_token, :bulk_lines_to_validate
 
       attr_accessor :run_all_kick_off_tests
 
@@ -27,42 +27,32 @@ module Inferno
         'Patient'
       end
 
-      def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
-        super(instance, client, disable_tls_tests, sequence_result)
-        @client.set_bearer_token(@instance.bulk_access_token) unless @client.nil? || @instance.nil? || @instance.bulk_access_token.nil?
-      end
-
-      def check_export_kick_off(search_params: nil)
-        @search_params = search_params
-        reply = export_kick_off(endpoint, resource_id, search_params: search_params)
-        @server_supports_type_parameter = search_params&.key?('_type')
-
-        # Servers unable to support _type SHOULD return an error and OperationOutcome resource
-        # so clients can re-submit a request omitting the _type parameter.
-        if @server_supports_type_parameter && is_4xx_error?(reply)
-          @server_supports_type_parameter = false
-          skip 'Server does not support _type operation parameter'
-        end
+      def check_export_kick_off
+        reply = export_kick_off(endpoint, resource_id)
 
         assert_response_accepted(reply)
-        @content_location = reply.response[:headers]['content-location']
+        @content_location = reply.headers[:content_location]
 
         assert @content_location.present?, 'Export response header did not include "Content-Location"'
       end
 
       def check_export_kick_off_fail_invalid_accept
         reply = export_kick_off(endpoint, resource_id, headers: { accept: 'application/fhir+xml', prefer: 'respond-async' })
-        assert_response_bad(reply)
+        assert_kick_off_error_response(reply)
       end
 
       def check_export_kick_off_fail_invalid_prefer
         reply = export_kick_off(endpoint, resource_id, headers: { accept: 'application/fhir+json', prefer: 'return=representation' })
-        assert_response_bad(reply)
+        assert_kick_off_error_response(reply)
       end
 
-      def check_export_kick_off_fail_invalid_parameter(search_params)
-        reply = export_kick_off(endpoint, resource_id, search_params: search_params)
-        assert_response_bad(reply)
+      def assert_kick_off_error_response(reply)
+        assert reply.code >= 400, "Bad response code: expected 4xx or 5xx, but found #{reply.code}"
+        assert_response_content_type(reply, 'application/json')
+
+        resource = versioned_resource_class.from_contents(reply.body)
+        resource_type = resource.class.name.demodulize
+        assert resource_type == 'OperationOutcome', "Bad response body. Expected OperationOutcome but received #{resource_type}"
       end
 
       def check_export_status(url = @content_location, timeout: 180)
@@ -83,6 +73,7 @@ module Inferno
 
         assert_status_reponse_required_field(response_body)
 
+        @status_response = response_body
         @output = response_body['output']
       end
 
@@ -93,19 +84,6 @@ module Inferno
           ['type', 'url'].each do |key|
             assert file.key?(key), "Output file did not contain \"#{key}\" as required"
           end
-        end
-
-        @instance.bulk_status_output = output.to_json
-      end
-
-      def assert_output_has_correct_type(output = @output,
-                                         search_params = @search_params)
-        assert output.present?, 'Server response did not have output data'
-
-        search_type = search_params['_type'].split(',').map(&:strip) if search_params&.key?('_type')
-
-        output.each do |file|
-          assert search_type.include?(file['type']), "Output file had type #{file['type']} not specified in export parameter #{search_params['_type']}" if search_type.present?
         end
       end
 
@@ -118,27 +96,44 @@ module Inferno
 
       @resources_found = false
 
-      test 'Bulk Data Server rejects $export request without authorization' do
+      test :bulk_endpoint_tls do
         metadata do
           id '01'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
+          name 'Bulk Data Server is secured by transport layer security'
+          link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#security-considerations'
+          description %(
+            All exchanges described herein between a client and a server SHALL be secured using Transport Layer Security (TLS) Protocol Version 1.2 (RFC5246)
+          )
+        end
+
+        omit_if_tls_disabled
+
+        assert_tls_1_2 @instance.bulk_url
+
+        warning do
+          assert_deny_previous_tls @instance.bulk_url
+        end
+      end
+
+      test 'Bulk Data Server rejects $export request without authorization' do
+        metadata do
+          id '02'
+          link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#bulk-data-kick-off-request'
           description %(
             The FHIR server SHALL limit the data returned to only those FHIR resources for which the client is authorized.
           )
         end
 
-        @client.set_no_auth
         skip 'Could not verify this functionality when bearer token is not set' if @instance.bulk_access_token.blank?
 
-        reply = export_kick_off(endpoint, resource_id)
-        @client.set_bearer_token(@instance.bulk_access_token)
+        reply = export_kick_off(endpoint, resource_id, use_token: false)
         assert_response_unauthorized reply
       end
 
       test 'Bulk Data Server rejects $export operation with invalid Accept header' do
         metadata do
-          id '02'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
+          id '03'
+          link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#headers'
           description %(
             Accept (string, required)
 
@@ -151,8 +146,8 @@ module Inferno
 
       test 'Bulk Data Server rejects $export operation with invalid Prefer header' do
         metadata do
-          id '03'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#headers'
+          id '04'
+          link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#headers'
           description %(
             Prefer (string, required)
 
@@ -165,8 +160,8 @@ module Inferno
 
       test 'Bulk Data Server returns "202 Accepted" and "Content-location" for $export operation' do
         metadata do
-          id '04'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-kick-off-request'
+          id '05'
+          link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#response---success'
           description %(
             Response - Success
 
@@ -180,8 +175,8 @@ module Inferno
 
       test 'Bulk Data Server returns "202 Accepted" or "200 OK" for status check' do
         metadata do
-          id '05'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
+          id '06'
+          link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#bulk-data-status-request'
           description %(
             Clients SHOULD follow an exponential backoff approach when polling for status. Servers SHOULD respond with
 
@@ -199,8 +194,8 @@ module Inferno
 
       test 'Bulk Data Server returns output with type and url for status complete' do
         metadata do
-          id '06'
-          link 'https://build.fhir.org/ig/HL7/bulk-data/export/index.html#bulk-data-status-request'
+          id '07'
+          link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#response---complete-status'
           description %(
             The value of output field is an array of file items with one entry for each generated file.
             If no resources are returned from the kick-off request, the server SHOULD return an empty array.
@@ -216,6 +211,7 @@ module Inferno
         end
 
         assert_output_has_type_url
+        @instance.bulk_status_output = @status_response.to_json
       end
 
       private
@@ -223,8 +219,15 @@ module Inferno
       def export_kick_off(endpoint,
                           id = nil,
                           search_params: nil,
-                          headers: { accept: 'application/fhir+json', prefer: 'respond-async' })
-        url = ''
+                          headers: { accept: 'application/fhir+json', prefer: 'respond-async' },
+                          use_token: true)
+        if @instance.bulk_url.present?
+          url = @instance.bulk_url
+          url = url.chop if url.end_with?('/')
+        else
+          url = ''
+        end
+
         url += "/#{endpoint}" if endpoint.present?
         url += "/#{id}" if endpoint.present? && id.present?
         url += '/$export'
@@ -233,7 +236,7 @@ module Inferno
         uri.query_values = search_params if search_params.present?
         full_url = uri.to_s
 
-        @client.get(full_url, @client.fhir_headers(headers))
+        LoggedRestClient.get(full_url, build_header(headers, use_token: use_token))
       end
 
       def export_status_check(url, timeout)
@@ -243,7 +246,7 @@ module Inferno
         start = Time.now
 
         loop do
-          reply = @client.get(url, @client.fhir_headers(headers))
+          reply = LoggedRestClient.get(url, build_header(headers))
 
           wait_time = get_wait_time(wait_time, reply)
           seconds_used = Time.now - start + wait_time
@@ -257,7 +260,7 @@ module Inferno
       end
 
       def get_wait_time(wait_time, reply)
-        retry_after = reply.response[:headers]['retry-after']
+        retry_after = reply.headers[:retry_after]
         retry_after_int = (retry_after.presence || 0).to_i
 
         if retry_after_int.positive?
@@ -273,8 +276,9 @@ module Inferno
         end
       end
 
-      def is_4xx_error?(response)
-        response.code >= 400 && response.code < 500
+      def build_header(headers, use_token: true)
+        headers['Authorization'] = 'Bearer ' + @instance.bulk_access_token if use_token && @instance.bulk_access_token.present?
+        headers
       end
     end
   end
