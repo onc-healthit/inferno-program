@@ -19,7 +19,7 @@ require_relative '../app/models'
 include Inferno
 # rubocop: enable Style/MixinUsage
 
-namespace :certification do |_argv|
+namespace :onc_program do |_argv|
   desc 'Generate a rich excel file'
   task :tests_to_xls, [:module, :test_set, :filename] do |_task, args|
     require 'rubyXL'

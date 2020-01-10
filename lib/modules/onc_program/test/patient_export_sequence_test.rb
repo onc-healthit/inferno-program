@@ -96,7 +96,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
     @sequence.run_all_kick_off_tests = true
 
-    @operation_outcome = load_json_fixture('operation_outcome')
+    @operation_outcome = load_json_fixture('bulk_data_operation_outcome')
   end
 
   def include_tls_stub
