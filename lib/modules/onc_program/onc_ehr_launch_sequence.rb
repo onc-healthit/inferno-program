@@ -71,9 +71,11 @@ module Inferno
 
         skip_if_auth_failed
 
-        assert @token_response['smart_style_url'].present?, 'Token response did not contain smart_style_url'
+        skip_if @token_response_body.blank?, 'No valid token response received'
 
-        response = LoggedRestClient.get(@token_response['smart_style_url'])
+        assert @token_response_body['smart_style_url'].present?, 'Token response did not contain smart_style_url'
+
+        response = LoggedRestClient.get(@token_response_body['smart_style_url'])
         assert_response_ok(response)
         assert_valid_json(response.body)
       end
@@ -92,7 +94,9 @@ module Inferno
 
         skip_if_auth_failed
 
-        assert @token_response.key?('need_patient_banner'), 'Token response did not contain need_patient_banner'
+        skip_if @token_response_body.blank?, 'No valid token response received'
+
+        assert @token_response_body.key?('need_patient_banner'), 'Token response did not contain need_patient_banner'
       end
     end
   end

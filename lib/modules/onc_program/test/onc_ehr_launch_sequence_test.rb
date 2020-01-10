@@ -109,7 +109,7 @@ describe Inferno::Sequence::OncEHRLaunchSequence do
     before do
       @test = @sequence_class[:smart_style_url]
       @url = 'http://www.example.com/style'
-      @sequence.instance_variable_set(:@token_response, 'smart_style_url' => @url)
+      @sequence.instance_variable_set(:@token_response_body, 'smart_style_url' => @url)
     end
 
     it 'skips when the launch failed' do
@@ -120,8 +120,16 @@ describe Inferno::Sequence::OncEHRLaunchSequence do
       assert_equal @sequence.oauth_redirect_failed_message, exception.message
     end
 
+    it 'skips when the token response body is blank' do
+      @sequence.instance_variable_set(:@token_response_body, nil)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No valid token response received', exception.message
+    end
+
     it 'fails if the token response does not contain a smart style url' do
-      @sequence.instance_variable_set(:@token_response, {})
+      @sequence.instance_variable_set(:@token_response_body, 'need_patient_banner' => true)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
@@ -157,7 +165,7 @@ describe Inferno::Sequence::OncEHRLaunchSequence do
   describe 'need patient banner test' do
     before do
       @test = @sequence_class[:need_patient_banner]
-      @sequence.instance_variable_set(:@token_response, 'need_patient_banner' => false)
+      @sequence.instance_variable_set(:@token_response_body, 'need_patient_banner' => false)
     end
 
     it 'skips when the launch failed' do
@@ -168,8 +176,16 @@ describe Inferno::Sequence::OncEHRLaunchSequence do
       assert_equal @sequence.oauth_redirect_failed_message, exception.message
     end
 
+    it 'skips when the token response body is blank' do
+      @sequence.instance_variable_set(:@token_response_body, nil)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No valid token response received', exception.message
+    end
+
     it 'fails if the token response does not contain need_patient_banner' do
-      @sequence.instance_variable_set(:@token_response, {})
+      @sequence.instance_variable_set(:@token_response_body, 'smart_style_url': 'abc')
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
