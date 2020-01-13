@@ -178,15 +178,31 @@ module Inferno
         assert_response_bad(response)
       end
 
-      test :require_jwt_iss do
+      test :require_jwt do
         metadata do
           id '06'
-          name 'Bulk Data Server rejects authorization requests which do not use client_id as JWT issuer '
+          name 'Bulk Data Server rejects authorization requests which have invalid JWT token'
           link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
           description %(
+            ##### SMART Backend Services: Authorization Guide
+
+            ###### 6 Obtaining an Access Token
+
+            The authentication JWT SHALL include the following claims, and SHALL be signed with the client’s private key.
+
             | JWT Claim | Required? | Description |
             | --- | --- | --- |
             | iss | required | Issuer of the JWT -- the client's client_id, as determined during registration with the FHIR authorization server (note that this is the same as the value for the sub claim) |
+            | sub | required | The service's client_id, as determined during registration with the FHIR authorization server (note that this is the same as the value for the iss claim) |
+            | aud | required | The FHIR authorization server's "token URL" (the same URL to which this authentication JWT will be posted) |
+            | exp | required | Expiration time integer for this authentication JWT, expressed in seconds since the "Epoch" (1970-01-01T00:00:00Z UTC). This time SHALL be no more than five minutes in the future. |
+            | jti | required | A nonce string value that uniquely identifies this authentication JWT. |
+
+            ##### RFC-6974 The OAuth 2.0 Authorization Framework
+
+            ###### 5.2.  Error Response
+
+            The authorization server responds with an HTTP 400 (Bad Request) status code
           )
         end
 
@@ -194,118 +210,13 @@ module Inferno
         assert_response_bad(response)
       end
 
-      test :require_jwt_sub do
-        metadata do
-          id '07'
-          name 'Bulk Data Server rejects authorization requests which do not use client_id as JWT subject '
-          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
-          description %(
-            | JWT Claim | Required? | Description |
-            | --- | --- | --- |
-            | sub | required | The service's client_id, as determined during registration with the FHIR authorization server (note that this is the same as the value for the iss claim) |
-          )
-        end
-
-        response = authorize(sub: 'not_a_sub')
-        assert_response_bad(response)
-      end
-
-      test :require_jwt_aud do
-        metadata do
-          id '08'
-          name 'Bulk Data Server rejects authorization requests which do not use token url as JWT audience '
-          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
-          description %(
-            | JWT Claim | Required? | Description |
-            | --- | --- | --- |
-            | aud | required | The FHIR authorization server's "token URL" (the same URL to which this authentication JWT will be posted) |
-          )
-        end
-
-        response = authorize(aud: 'not_a_aud')
-        assert_response_bad(response)
-      end
-
-      test :require_jwt_exp do
-        metadata do
-          id '09'
-          name 'Bulk Data Server rejects authorization requests which do not have JWT expiration time'
-          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
-          description %(
-            | JWT Claim | Required? | Description |
-            | --- | --- | --- |
-            | exp | required | Expiration time integer for this authentication JWT, expressed in seconds since the "Epoch" (1970-01-01T00:00:00Z UTC). This time SHALL be no more than five minutes in the future. |
-          )
-        end
-
-        response = authorize(exp: nil)
-        assert_response_bad(response)
-      end
-
-      test :require_jwt_exp_value do
-        metadata do
-          id '10'
-          name 'Bulk Data Server rejects authorization requests which have JWT expiration time more than 5 minutes in the future'
-          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
-          description %(
-            | JWT Claim | Required? | Description |
-            | --- | --- | --- |
-            | exp | required | Expiration time integer for this authentication JWT, expressed in seconds since the "Epoch" (1970-01-01T00:00:00Z UTC). This time SHALL be no more than five minutes in the future. |
-          )
-        end
-
-        response = authorize(exp: 10.minutes.from_now)
-        assert_response_bad(response)
-      end
-
-      test :require_jwt_jti do
-        metadata do
-          id '11'
-          name 'Bulk Data Server rejects authorization requests which do not have JWT ID'
-          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
-          description %(
-            | JWT Claim | Required? | Description |
-            | --- | --- | --- |
-            | jti | required | A nonce string value that uniquely identifies this authentication JWT. |
-          )
-        end
-
-        response = authorize(jti: nil)
-        assert_response_bad(response)
-      end
-
-      test :correct_signature do
-        metadata do
-          id '12'
-          name 'Bulk Data Server rejects authorization requests which are not signed by client private key'
-          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
-          description %(
-            The authentication JWT SHALL include the following claims, and SHALL be signed with the client’s private key
-
-            The EHR’s authorization server SHALL validate the JWT according to the processing requirements defined in Section 3 of RFC7523 including validation of the signature on the JWT.
-          )
-        end
-
-        response = authorize(bulk_private_key: invalid_private_key.to_json)
-        assert_response_bad(response)
-      end
-
       test :return_access_token do
         metadata do
-          id '13'
-          name 'Bulk Data Token Endpoint returns access token'
+          id '07'
+          name 'Bulk Data Token Endpoint returns token response in JSON format'
           link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#issuing-access-tokens'
           description %(
             If the access token request is valid and authorized, the authorization server SHALL issue an access token in response.
-
-            The access token response SHALL be a JSON object with the following properties:
-
-            | Token Property | Required? | Description |
-            | --- | --- | --- |
-            | access_token | required | The access token issued by the authorization server. |
-            | token_type | required | Fixed value: bearer. |
-            | expires_in | required | The lifetime in seconds of the access token. The recommended value is 300, for a five-minute token lifetime. |
-            | scope | required | Scope of access authorized. Note that this can be different from the scopes requested by the app. |
           )
         end
 
@@ -313,16 +224,88 @@ module Inferno
 
         assert_response_ok(response)
         response_body = JSON.parse(response.body)
-        access_token = response_body['access_token']
+        assert response_body.present?, 'Server response is empty, or not in JSON format'
+        @token_response = response_body
+      end
+
+      test :have_access_token do
+        metadata do
+          id '08'
+          name 'Bulk Data Token Response has access token'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#issuing-access-tokens'
+          description %(
+            The access token response SHALL be a JSON object with the following properties:
+
+            | Token Property | Required? | Description |
+            | --- | --- | --- |
+            | access_token | required | The access token issued by the authorization server. |
+          )
+        end
+
+        skip 'Server response is empty, or not in correct format' if @token_response.nil?
+        access_token = @token_response['access_token']
         assert access_token.present?, 'access_token is empty'
 
         @instance.update(
           bulk_access_token: access_token
         )
+      end
 
-        assert response_body['token_type'] == 'bearer', 'token_type expected to be "bearer"'
-        assert response_body['expires_in'].present?, 'expires_in is empty'
-        assert response_body['scope'].present?, 'scope is empty'
+      test :have_bearer_token do
+        metadata do
+          id '09'
+          name 'Bulk Data Token Response has token type'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#issuing-access-tokens'
+          description %(
+            The access token response SHALL be a JSON object with the following properties:
+
+            | Token Property | Required? | Description |
+            | --- | --- | --- |
+            | token_type | required | Fixed value: bearer. |
+          )
+        end
+
+        skip 'Server response is empty, or not in correct format' if @token_response.nil?
+
+        assert @token_response['token_type'] == 'bearer', 'token_type expected to be "bearer"'
+      end
+
+      test :have_expires_in do
+        metadata do
+          id '10'
+          name 'Bulk Data Token Reponse has expiration'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#issuing-access-tokens'
+          description %(
+            The access token response SHALL be a JSON object with the following properties:
+
+            | Token Property | Required? | Description |
+            | --- | --- | --- |
+            | expires_in | required | The lifetime in seconds of the access token. The recommended value is 300, for a five-minute token lifetime. |
+          )
+        end
+
+        skip 'Server response is empty, or not in correct format' if @token_response.nil?
+
+        assert @token_response['expires_in'].present?, 'expires_in is empty'
+      end
+
+      test :have_scope do
+        metadata do
+          id '11'
+          name 'Bulk Data Token Reponse has scope'
+          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#issuing-access-tokens'
+          description %(
+            The access token response SHALL be a JSON object with the following properties:
+
+            | Token Property | Required? | Description |
+            | --- | --- | --- |
+            | scope | required | Scope of access authorized. Note that this can be different from the scopes requested by the app. |
+          )
+        end
+
+        skip 'Server response is empty, or not in correct format' if @token_response.nil?
+
+        assert @token_response['scope'].present?, 'scope is empty'
       end
     end
   end

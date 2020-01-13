@@ -147,67 +147,13 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     it_tests_required_parameter(request_parameter: { client_assertion_type: 'not_a_assertion_type' })
   end
 
-  describe 'require JWT iss' do
+  describe 'require JWT' do
     before do
-      @test = @sequence_class[:require_jwt_iss]
+      @test = @sequence_class[:require_jwt]
       @sequence = @sequence_class.new(@instance, @client)
     end
 
     it_tests_required_parameter(jwt_token_parameter: { name: 'iss', value: 'not_a_iss' })
-  end
-
-  describe 'require JWT sub' do
-    before do
-      @test = @sequence_class[:require_jwt_sub]
-      @sequence = @sequence_class.new(@instance, @client)
-    end
-
-    it_tests_required_parameter(jwt_token_parameter: { name: 'sub', value: 'not_a_sub' })
-  end
-
-  describe 'require JWT aud' do
-    before do
-      @test = @sequence_class[:require_jwt_aud]
-      @sequence = @sequence_class.new(@instance, @client)
-    end
-
-    it_tests_required_parameter(jwt_token_parameter: { name: 'aud', value: 'not_a_aud' })
-  end
-
-  describe 'require JWT exp' do
-    before do
-      @test = @sequence_class[:require_jwt_exp]
-      @sequence = @sequence_class.new(@instance, @client)
-    end
-
-    it_tests_required_parameter(jwt_token_parameter: { name: 'exp', value: nil })
-  end
-
-  describe 'require JWT exp less than 5 minutes' do
-    before do
-      @test = @sequence_class[:require_jwt_exp_value]
-      @sequence = @sequence_class.new(@instance, @client)
-    end
-
-    it_tests_required_parameter(jwt_token_parameter: { name: 'exp', value: 10.minutes.from_now })
-  end
-
-  describe 'require JWT jti' do
-    before do
-      @test = @sequence_class[:require_jwt_jti]
-      @sequence = @sequence_class.new(@instance, @client)
-    end
-
-    it_tests_required_parameter(jwt_token_parameter: { name: 'jti', value: nil })
-  end
-
-  describe 'sign with private key' do
-    before do
-      @test = @sequence_class[:correct_signature]
-      @sequence = @sequence_class.new(@instance, @client)
-    end
-
-    it_tests_required_parameter(jwt_token_parameter: { name: 'bulk_private_key', value: nil })
   end
 
   describe 'return access token tests' do
@@ -225,88 +171,6 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
         )
 
       @sequence.run_test(@test)
-      assert @instance.bulk_access_token == @access_token['access_token']
-    end
-
-    it 'fail when server returns status other than 200' do
-      stub_request(:post, @instance.bulk_token_endpoint)
-        .to_return(
-          status: 400
-        )
-
-      error = assert_raises(Inferno::AssertionException) do
-        @sequence.run_test(@test)
-      end
-
-      assert_match(/^Bad response code/, error.message)
-    end
-
-    it 'fail when server returns empty access_token' do
-      invalid_access_token = @access_token.clone
-      invalid_access_token.delete('access_token')
-
-      stub_request(:post, @instance.bulk_token_endpoint)
-        .to_return(
-          status: 200,
-          body: invalid_access_token.to_json
-        )
-
-      error = assert_raises(Inferno::AssertionException) do
-        @sequence.run_test(@test)
-      end
-
-      assert_match(/access_token is empty/, error.message)
-    end
-
-    it 'fail when server returns empty token_type' do
-      invalid_access_token = @access_token.clone
-      invalid_access_token.delete('token_type')
-
-      stub_request(:post, @instance.bulk_token_endpoint)
-        .to_return(
-          status: 200,
-          body: invalid_access_token.to_json
-        )
-
-      error = assert_raises(Inferno::AssertionException) do
-        @sequence.run_test(@test)
-      end
-
-      assert_match(/^token_type expected to be/, error.message)
-    end
-
-    it 'fail when server returns empty expires_in' do
-      invalid_access_token = @access_token.clone
-      invalid_access_token.delete('expires_in')
-
-      stub_request(:post, @instance.bulk_token_endpoint)
-        .to_return(
-          status: 200,
-          body: invalid_access_token.to_json
-        )
-
-      error = assert_raises(Inferno::AssertionException) do
-        @sequence.run_test(@test)
-      end
-
-      assert_match(/expires_in is empty/, error.message)
-    end
-
-    it 'fail when server returns empty scope' do
-      invalid_access_token = @access_token.clone
-      invalid_access_token.delete('scope')
-
-      stub_request(:post, @instance.bulk_token_endpoint)
-        .to_return(
-          status: 200,
-          body: invalid_access_token.to_json
-        )
-
-      error = assert_raises(Inferno::AssertionException) do
-        @sequence.run_test(@test)
-      end
-
-      assert_match(/scope is empty/, error.message)
     end
   end
 end
