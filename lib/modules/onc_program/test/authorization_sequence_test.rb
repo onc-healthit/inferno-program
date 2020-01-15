@@ -158,7 +158,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
 
   describe 'return access token tests' do
     before do
-      @test = @sequence_class[:return_access_token]
+      @test = @sequence_class[:authorization_success]
       @sequence = @sequence_class.new(@instance, @client)
     end
 
