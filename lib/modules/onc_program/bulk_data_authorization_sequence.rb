@@ -275,7 +275,7 @@ module Inferno
         assert_valid_json(@token_response.body)
         @token_response_body = JSON.parse(@token_response.body)
 
-        access_token = @token_response['access_token']
+        access_token = @token_response_body['access_token']
         assert access_token.present?, 'Token response did not contain access_token as required'
 
         @instance.update(
