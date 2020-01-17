@@ -77,7 +77,7 @@ module Inferno
 
         jwt_token.header[:kid] = jwk['kid']
         jwk_private_key = jwk.to_key
-        client_assertion = jwt_token.sign(jwk_private_key, 'RS384')
+        client_assertion = jwt_token.sign(jwk_private_key)
 
         query_values =
           {
