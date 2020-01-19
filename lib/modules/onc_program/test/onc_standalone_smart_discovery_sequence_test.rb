@@ -2,9 +2,9 @@
 
 require_relative '../../../../test/test_helper'
 
-describe Inferno::Sequence::OncSMARTDiscoverySequence do
+describe Inferno::Sequence::OncStandaloneSMARTDiscoverySequence do
   before do
-    @sequence_class = Inferno::Sequence::OncSMARTDiscoverySequence
+    @sequence_class = Inferno::Sequence::OncStandaloneSMARTDiscoverySequence
     @client = FHIR::Client.new('http://www.example.com/fhir')
     @instance = Inferno::Models::TestingInstance.new
   end
@@ -56,9 +56,11 @@ end
 class OncSMARTDiscoveryTest < MiniTest::Test
   def setup
     instance = get_test_instance
+    instance.url = 'bad'
+    instance.onc_sl_url = 'http://www.example.com'
     client = get_client(instance)
 
-    @sequence = Inferno::Sequence::OncSMARTDiscoverySequence.new(instance, client)
+    @sequence = Inferno::Sequence::OncStandaloneSMARTDiscoverySequence.new(instance, client)
   end
 
   def full_sequence_stubs

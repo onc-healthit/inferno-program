@@ -300,6 +300,19 @@
       </div>
       <div class="prerequisites-forms" style="display:none">
 
+        <%= erb(:prerequisite_field,{},{prerequisite: :url,
+              label: 'Practioner-facing apps URL',
+              description: 'FHIR URL',
+              instance: instance,
+              value: instance.url,
+              })%> 
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_url,
+              label: 'Patient-facing apps URL',
+              description: 'FHIR URL',
+              instance: instance,
+              value: instance.onc_sl_url,
+              })%> 
 
         <%= erb(:prerequisite_field,{},{prerequisite: :oauth_register_endpoint,
               instance: instance,
@@ -320,6 +333,13 @@
               instance: instance,
               label: 'Client ID',
               value: instance.client_id}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_client_id,
+              label: 'Patient APP Client ID',
+              description: 'FHIR URL',
+              instance: instance,
+              value: instance.onc_sl_client_id,
+              })%> 
 
         <%= erb(:prerequisite_field,{},{prerequisite: :dynamic_registration_token,
               instance: instance,
@@ -343,10 +363,32 @@
 
         </div>
 
+        <%# SPECIAL CASE: CLIENT SECRET %>
+        <div class="form-group"
+          data-requiredby="<%= test_set.variable_required_by(:onc_sl_confidential_client).map {|seq| seq.sequence_name}.join(',')%>"
+          data-prerequisite="onc_sl_confidential_client"
+          id="onc_sl_is_confidential"
+          >
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="onc_sl_confidential_client" id="onc_sl_confidential_client_off" value="false" <%=!instance.onc_sl_confidential_client ? "checked" : "" %>>
+            <label class="form-check-label" for="onc_sl_confidential_client_off">Public Client</label>
+          </div>
+          <div class="form-check form-check-inline" data-requiredby>
+            <input class="form-check-input" type="radio" name="onc_sl_confidential_client" id="onc_sl_confidential_client_on" value="true" <%=instance.onc_sl_confidential_client ? "checked" : "" %>>
+            <label class="form-check-label" for="onc_sl_confidential_client_on">Confidential Client</label>
+          </div>
+
+        </div>
+
         <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
               label: 'Client Secret',
               instance: instance,
               value: instance.client_secret}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_client_secret,
+              label: 'Patient App Client Secret',
+              instance: instance,
+              value: instance.onc_sl_client_secret}); %>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :client_name,
               label: 'OAuth Client Name',
@@ -357,6 +399,13 @@
               label: 'Scopes',
               instance: instance,
               value: instance.scopes || default_scopes,
+              required: true,
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_scopes,
+              label: 'App Scopes',
+              instance: instance,
+              value: instance.onc_sl_scopes || default_scopes,
               required: true,
               })%>
 
