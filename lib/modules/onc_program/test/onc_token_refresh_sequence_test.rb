@@ -300,15 +300,13 @@ class OncTokenRefreshSequenceTest < MiniTest::Test
       body['client_id'] = body_with_scope['client_id'] = @instance.client_id
     end
 
-
-
     stub_request(:get, "#{@instance.url}/Patient/#{exchange_response['patient']}")
       .to_return(status: 200,
-            body: FHIR::Patient.new.to_json)
+                 body: FHIR::Patient.new.to_json)
 
     stub_request(:get, "#{@instance.url}/Encounter/#{exchange_response['encounter']}")
       .to_return(status: 200,
-            body: FHIR::Encounter.new.to_json)
+                 body: FHIR::Encounter.new.to_json)
 
     stub_request(:post, @instance.oauth_token_endpoint)
       .with(headers: headers,

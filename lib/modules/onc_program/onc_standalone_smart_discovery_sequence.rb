@@ -52,7 +52,6 @@ module Inferno
       def url_property
         'onc_sl_url'
       end
-
     end
   end
 end

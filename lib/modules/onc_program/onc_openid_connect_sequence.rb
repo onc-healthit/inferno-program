@@ -40,7 +40,7 @@ module Inferno
         * [OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html)
       )
 
-      def url_property 
+      def url_property
         'url'
       end
 

@@ -3,7 +3,6 @@
 module Inferno
   module Sequence
     class OncSMARTDiscoverySequence < SequenceBase
-
       title 'SMART on FHIR Discovery'
 
       test_id_prefix 'OSD'
@@ -111,7 +110,6 @@ module Inferno
         @client = FHIR::Client.for_testing_instance(@instance, url_property: url_property)
         @client.set_bearer_token(@instance.token) unless @client.nil? || @instance.nil? || @instance.token.nil?
         @client&.monitor_requests
-
 
         well_known_configuration_url = instance_url.chomp('/') + '/.well-known/smart-configuration'
         well_known_configuration_response = LoggedRestClient.get(well_known_configuration_url)

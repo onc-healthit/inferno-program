@@ -337,7 +337,7 @@ module Inferno
             validate_token_response_headers(@token_response)
           end
         end
-      
+
         def required_scope_test(index:, patient_or_user:)
           test :onc_scopes do
             metadata do
@@ -353,7 +353,7 @@ module Inferno
 
             [
               {
-                scopes: instance_scopes, 
+                scopes: instance_scopes,
                 received_or_requested: 'requested'
               },
               {

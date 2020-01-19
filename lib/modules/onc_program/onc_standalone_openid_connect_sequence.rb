@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require_relative 'onc_openid_connect_sequence'
 
 module Inferno
