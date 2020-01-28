@@ -8,7 +8,7 @@ module Inferno
 
       test_id_prefix 'BDA'
 
-      requires :bulk_client_id, :bulk_private_key, :bulk_token_endpoint
+      requires :bulk_client_id, :bulk_public_key, :bulk_private_key, :bulk_token_endpoint
       defines :bulk_access_token
 
       details %(

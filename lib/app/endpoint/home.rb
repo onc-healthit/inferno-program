@@ -2,6 +2,7 @@
 
 require_relative 'oauth2_endpoints'
 require_relative 'test_set_endpoints'
+require_relative 'jwks_endpoints'
 
 module Inferno
   class App
@@ -15,6 +16,7 @@ module Inferno
 
         include OAuth2Endpoints
         include TestSetEndpoints
+        include JwksEndpoints
 
         # Return the index page of the application
         get '/?' do

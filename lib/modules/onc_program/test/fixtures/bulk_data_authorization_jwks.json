@@ -27,8 +27,8 @@
     "ext": true,
     "kid": "b41528b6f37a9500edb8a905a595bdd7"
   },
-  "jwks_url": "http://localhost:4567/.well-known/jwks.json",
-  "client_id": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJlZ2lzdHJhdGlvbi10b2tlbiJ9.eyJqd2tzX3VybCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDU2Ny8ud2VsbC1rbm93bi9qd2tzLmpzb24iLCJhY2Nlc3NUb2tlbnNFeHBpcmVJbiI6MSwiaWF0IjoxNTc5NjI0MjYyfQ.7aplKYCeGxpzGQo48vVMJYYwX9Q_leN9yaet-w1kkCI",
-  "fhir_url": "https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwMCwiZHVyIjowLCJ0bHQiOjEsIm0iOjEsInN0dSI6NH0/fhir",
+  "jwks_url": "http://localhost:4567/inferno/.well-known/jwks.json",
+  "client_id": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJlZ2lzdHJhdGlvbi10b2tlbiJ9.eyJqd2tzX3VybCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDU2Ny9pbmZlcm5vLy53ZWxsLWtub3duL2p3a3MuanNvbiIsImFjY2Vzc1Rva2Vuc0V4cGlyZUluIjoxNSwiaWF0IjoxNTgwMjMwMjIyfQ.C5IKIh8Ly771yc2QS3h1MNdDW8_gsQ8yicGkPVfkgOc",
+  "fhir_url": "https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwMCwiZHVyIjoxMCwidGx0IjoxNSwibSI6MSwic3R1IjozfQ/fhir",
   "token_url": "https://bulk-data.smarthealthit.org/auth/token"
 }
