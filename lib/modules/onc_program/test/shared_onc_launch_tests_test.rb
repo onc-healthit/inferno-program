@@ -121,9 +121,20 @@ describe Inferno::Sequence::SharedONCLaunchTests do
       assert_equal 'Expected response to be an Encounter resource', exception.message
     end
 
-    it 'succeeds when a Encounter resource is received' do
+    it 'fails when the Encounter does not refer to the patient' do
+      encounter = FHIR::Encounter.new(subject: { reference: "Patient/#{@instance.patient_id + 'x'}" })
       stub_request(:get, "#{@base_url}/Encounter/#{@instance.encounter_id}")
-        .to_return(status: 200, body: FHIR::Encounter.new.to_json)
+        .to_return(status: 200, body: encounter.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Encounter subject (Patient/123x) does not match patient id (123)', exception.message
+    end
+
+    it 'succeeds when an Encounter resource referring to the patient is received' do
+      encounter = FHIR::Encounter.new(subject: { reference: "Patient/#{@instance.patient_id}" })
+      stub_request(:get, "#{@base_url}/Encounter/#{@instance.encounter_id}")
+        .to_return(status: 200, body: encounter.to_json)
 
       @sequence.run_test(@test)
     end
