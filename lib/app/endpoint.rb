@@ -14,6 +14,7 @@ module Inferno
 
       config_file File.join('..', '..', ENV['INFERNO_CONFIG_FILE'] || 'config.yml')
 
+      binding.pry
       OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE if settings.disable_verify_peer
       Inferno::BASE_PATH = "/#{settings.base_path.gsub(/[^0-9a-z_-]/i, '')}"
       Inferno::DEFAULT_SCOPES = settings.default_scopes

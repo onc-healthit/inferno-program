@@ -8,6 +8,7 @@ module Inferno
           get '/.well-known/jwks.json' do
             an_instance = Inferno::Models::TestingInstance.first()
             content_type :json
+            binding.pry
             an_instance.bulk_public_key
           end
         end
