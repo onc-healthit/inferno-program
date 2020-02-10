@@ -485,29 +485,37 @@
               value: instance.bulk_token_endpoint,
               })%>       
 
-        <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_public_key).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="bulk_public_key">
+        <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_use_jwks_url).map {|seq| seq.sequence_name}.join(',')%>" 
+          data-prerequisite="bulk_use_jwks_url">
+          <input class="form-check-input" type="checkbox" name="bulk_use_jwks_url" id="check_bulk_jwks_url" value="true" <%=!instance.bulk_use_jwks_url.nil? ? "checked" : "" %>>
+          <label class="form-check-label" for="bulk_use_jwks_url">Use JWKS URL</label>
+        </div>
 
-              <label for="bulk_public_key">Bulk Public Key
-                  <small>
-                          If you have provided your JWKS at registration time, please enter the public key here. Leave it blank if the keys have not
-                          been exchanged ahead of time.
-                        </small>
-                
-              </label>
-              <textarea type="text" class="form-control" name="bulk_public_key" id="bulk_public_key" placeholder="" rows="5"><%=instance.bulk_public_key %></textarea>
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_jwks_url_auth,
+              label: 'JWKS Url Auth',
+              instance: instance,
+              description: %(
+                This URL is our dedicated endpoint, created to host JWK sets. You can use it while registering a client
+                and then your server is supposed query it and obtain the JWK from it.  Leave blank if you do not support JWK url authentication.
+              ),
+              value: instance.bulk_jwks_url_auth,
+              })%>
+
+        <div class="form-group"
+          data-requiredby="<%= test_set.variable_required_by(:bulk_encryption_method).map {|seq| seq.sequence_name}.join(',')%>"
+          data-prerequisite="bulk_encryption_method"
+          id="bulk_encryption_method"
+          >
+          <label>Encryption Method:</label>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="bulk_encryption_method" id="bulk_encryption_es384" value="ES384" <%=instance.bulk_encryption_method == "ES384" ? "checked" : "" %>>
+            <label class="form-check-label" for="bulk_encryption_es384">ES384</label>
           </div>
-
-        <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_private_key).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="bulk_private_key">
-
-              <label for="bulk_private_key">Bulk Private Key
-                  <small>
-                          If you have provided your JWKS at registration time, please enter the private key here. Leave it blank if the keys have not
-                          been exchanged ahead of time.
-                        </small>
-                
-              </label>
-              <textarea type="text" class="form-control" name="bulk_private_key" id="bulk_private_key" placeholder="" rows="5"><%=instance.bulk_private_key %></textarea>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="bulk_encryption_method" id="bulk_encryption_rs384" value="RS384" <%=instance.bulk_encryption_method == "RS384" ? "checked" : "" %>>
+            <label class="form-check-label" for="bulk_encryption_es384">RS384</label>
           </div>
+        </div>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :group_id,
               label: 'Group ID',

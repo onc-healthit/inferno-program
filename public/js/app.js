@@ -131,6 +131,12 @@ $(function(){
         $('div[data-prerequisite="onc_sl_client_secret"]').show();
       } else if (e.target.id === 'onc_sl_confidential_client_off_active'){
         $('div[data-prerequisite="onc_sl_client_secret"]').hide();
+      } else if (e.target.id === 'check_bulk_jwks_url') {
+        if (e.target.checked) {
+          $('div[data-prerequisite="bulk_jwks_url_auth"]').show();
+        } else {
+          $('div[data-prerequisite="bulk_jwks_url_auth"]').hide();
+        }
       }
     });
 

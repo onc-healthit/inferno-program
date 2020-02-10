@@ -45,8 +45,10 @@ module Inferno
           @instance.onc_sl_url = url if @instance.respond_to?(:onc_sl_url)
           @instance.bulk_url = url if @instance.respond_to?(:bulk_url)
 
-          unless params['preset'].blank?
+          @instance.bulk_data_jwks = settings.bulk_data_jwks.to_json
+          @instance.bulk_use_jwks_url = "true"
 
+          unless params['preset'].blank?
             JSON.parse(params['preset']).each do |key, value|
               value = value.tr('\'', '"') if ['bulk_private_key', 'bulk_public_key'].include? key
 

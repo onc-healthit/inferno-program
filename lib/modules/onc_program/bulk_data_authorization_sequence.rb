@@ -8,7 +8,7 @@ module Inferno
 
       test_id_prefix 'BDA'
 
-      requires :bulk_client_id, :bulk_public_key, :bulk_private_key, :bulk_token_endpoint
+      requires :bulk_client_id, :bulk_use_jwks_url, :bulk_jwks_url_auth, :bulk_encryption_method, :bulk_token_endpoint
       defines :bulk_access_token
 
       details %(
@@ -24,6 +24,19 @@ module Inferno
         This test returns an access token.
 
       )
+
+      def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
+        super(instance, client, disable_tls_tests, sequence_result)
+
+        binding.pry
+        if (instance.bulk_encryption_method == 'ES384')
+          instance.bulk_public_key = JSON.parse(instance.bulk_data_jwks)['es384_public'].to_json
+          instance.bulk_private_key = JSON.parse(instance.bulk_data_jwks)['es384_private'].to_json
+        elsif (instance.bulk_encryption_method == 'RS384')
+          instance.bulk_public_key = JSON.parse(instance.bulk_data_jwks)['rs384_public'].to_json
+          instance.bulk_private_key = JSON.parse(instance.bulk_data_jwks)['rs384_private'].to_json
+        end
+      end
 
       def authorize(bulk_private_key: @instance.bulk_private_key,
                     content_type: 'application/x-www-form-urlencoded',
