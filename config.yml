@@ -90,7 +90,7 @@ bulk_data_jwks:
     key_ops:
     - sign
     ext: true
-    kid: b41528b6f37a9500edb8a905a595bdd72
+    kid: b41528b6f37a9500edb8a905a595bdd7
 
     
 # preset fhir servers: optional. Minimally requires name, uri, module, optional inferno_uri, client_id, client_secret, scopes, instructions link

@@ -45,7 +45,7 @@ module Inferno
           @instance.onc_sl_url = url if @instance.respond_to?(:onc_sl_url)
           @instance.bulk_url = url if @instance.respond_to?(:bulk_url)
 
-          if settings.method_defined? :bulk_data_jwks
+          if settings.respond_to? :bulk_data_jwks
             @instance.bulk_data_jwks = settings.bulk_data_jwks.to_json
           end
 

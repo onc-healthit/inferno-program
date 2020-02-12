@@ -7,7 +7,7 @@ module Inferno
         klass.class_eval do
           get '/.well-known/jwks.json' do
             binding.pry
-            if settings.method_defined? :bulk_data_jwks
+            if settings.respond_to? :bulk_data_jwks
               keys = []
               if settings.bulk_data_jwks['es384_public'].present?
                 keys.push(settings.bulk_data_jwks['es384_public'])
