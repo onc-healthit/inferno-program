@@ -487,7 +487,7 @@
 
         <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_use_jwks_url).map {|seq| seq.sequence_name}.join(',')%>" 
           data-prerequisite="bulk_use_jwks_url">
-          <input class="form-check-input" type="checkbox" name="bulk_use_jwks_url" id="check_bulk_jwks_url" value="true" <%=!instance.bulk_use_jwks_url.nil? ? "checked" : "" %>>
+          <input class="form-check-input" type="checkbox" name="bulk_use_jwks_url" id="check_bulk_jwks_url" value=true <%=!instance.bulk_use_jwks_url.nil? ? "checked" : "" %>>
           <label class="form-check-label" for="bulk_use_jwks_url">Use JWKS URL</label>
         </div>
 

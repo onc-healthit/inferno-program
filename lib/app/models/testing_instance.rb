@@ -78,7 +78,7 @@ module Inferno
       property :bulk_since_param, String
       property :bulk_jwks_url_auth, String
       property :bulk_jwks_auth, String
-      property :bulk_use_jwks_url, String
+      property :bulk_use_jwks_url, Boolean
       property :bulk_encryption_method, String
       property :bulk_data_jwks, String
       property :bulk_public_key, String

@@ -28,7 +28,6 @@ module Inferno
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
         super(instance, client, disable_tls_tests, sequence_result)
 
-        binding.pry
         if (instance.bulk_encryption_method == 'ES384')
           instance.bulk_public_key = JSON.parse(instance.bulk_data_jwks)['es384_public'].to_json
           instance.bulk_private_key = JSON.parse(instance.bulk_data_jwks)['es384_private'].to_json
