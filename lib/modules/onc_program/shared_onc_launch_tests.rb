@@ -136,6 +136,9 @@ module Inferno
 
             encounter = encounter_read_response.resource
             assert encounter.is_a?(versioned_resource_class('Encounter')), 'Expected response to be an Encounter resource'
+
+            encounter_matches_patient = encounter&.subject&.reference&.split('/')&.last == @instance.patient_id
+            assert encounter_matches_patient, "Encounter subject (#{encounter&.subject&.reference}) does not match patient id (#{@instance.patient_id})"
           end
         end
       end
