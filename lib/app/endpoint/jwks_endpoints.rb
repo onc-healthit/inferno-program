@@ -12,8 +12,8 @@ module Inferno
               if settings.bulk_data_jwks['es384_public'].present?
                 keys.push(settings.bulk_data_jwks['es384_public'])
               end
-              if settings.bulk_data_jwks['es384_public'].present?
-                keys.push(settings.bulk_data_jwks['es384_public'])
+              if settings.bulk_data_jwks['rs384_public'].present?
+                keys.push(settings.bulk_data_jwks['rs384_public'])
               end
             end
 
