@@ -81,6 +81,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Device', ['patient'])
         @device_ary = {}
         patient_ids.each do |patient|
           search_params = {
@@ -133,6 +134,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('Device', ['patient', 'type'])
         skip_if_not_found(resource_type: 'Device', delayed: false)
 
         could_not_resolve_all = []

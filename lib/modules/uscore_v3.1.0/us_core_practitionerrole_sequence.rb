@@ -109,6 +109,8 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('PractitionerRole', ['specialty'])
+
         search_params = {
           'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
         }
@@ -144,6 +146,7 @@ module Inferno
           versions :r4
         end
 
+        skip_if_known_search_not_supported('PractitionerRole', ['practitioner'])
         skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
 
         search_params = {
