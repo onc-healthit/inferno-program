@@ -473,6 +473,29 @@ module Inferno
 
         skip_if_not_found(resource_type: 'MedicationRequest', delayed: false)
         test_resources_against_profile('MedicationRequest')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/medicationrequest-status',
+            path: 'status'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/medicationrequest-intent',
+            path: 'intent'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/request-priority|4.0.1',
+            path: 'priority'
+          }
+        ]
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @medication_request_ary&.values&.flatten)
+        end
       end
 
       test :validate_medication_resources do

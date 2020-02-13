@@ -443,6 +443,29 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Observation', delayed: false)
         test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:heart_rate])
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/observation-status|4.0.1',
+            path: 'status'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/quantity-comparator|4.0.1',
+            path: 'value.comparator'
+          },
+          {
+            type: 'Quantity',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/ucum-vitals-common|4.0.1',
+            path: 'component.value'
+          }
+        ]
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @observation_ary&.values&.flatten)
+        end
       end
 
       test 'All must support elements are provided in the Observation resources returned.' do

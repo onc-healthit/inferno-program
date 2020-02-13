@@ -401,6 +401,41 @@ module Inferno
 
         skip_if_not_found(resource_type: 'CarePlan', delayed: false)
         test_resources_against_profile('CarePlan')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-narrative-status',
+            path: 'text.status'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/request-status',
+            path: 'status'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/care-plan-intent',
+            path: 'intent'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/care-plan-activity-kind|4.0.1',
+            path: 'activity.detail.kind'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/care-plan-activity-status|4.0.1',
+            path: 'activity.detail.status'
+          }
+        ]
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @care_plan_ary&.values&.flatten)
+        end
       end
 
       test 'All must support elements are provided in the CarePlan resources returned.' do

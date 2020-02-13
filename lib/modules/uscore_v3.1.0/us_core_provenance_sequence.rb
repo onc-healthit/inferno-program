@@ -106,6 +106,17 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Provenance', delayed: true)
         test_resources_against_profile('Provenance')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/provenance-entity-role|4.0.1',
+            path: 'entity.role'
+          }
+        ]
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @provenance_ary)
+        end
       end
 
       test 'All must support elements are provided in the Provenance resources returned.' do

@@ -506,6 +506,35 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Encounter', delayed: false)
         test_resources_against_profile('Encounter')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/identifier-use|4.0.1',
+            path: 'identifier.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/encounter-status|4.0.1',
+            path: 'status'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/encounter-status|4.0.1',
+            path: 'statusHistory.status'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/encounter-location-status|4.0.1',
+            path: 'location.status'
+          }
+        ]
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @encounter_ary&.values&.flatten)
+        end
       end
 
       test 'All must support elements are provided in the Encounter resources returned.' do

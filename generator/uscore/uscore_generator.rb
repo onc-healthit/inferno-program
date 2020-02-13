@@ -775,6 +775,18 @@ module Inferno
           )
         end
 
+        bindings = sequence[:bindings]
+          .select { |binding_def| binding_def[:strength] == 'required' }
+
+        if bindings.present?
+          test[:test_code] += %(
+            bindings = #{structure_to_string(bindings)}
+            bindings.each do |binding_def|
+              validate_terminology(binding_def, #{sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"})
+            end
+          )
+        end
+
         sequence[:tests] << test
 
         if sequence[:resource] == 'MedicationRequest'

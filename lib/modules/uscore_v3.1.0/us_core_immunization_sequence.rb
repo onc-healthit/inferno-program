@@ -338,6 +338,17 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Immunization', delayed: false)
         test_resources_against_profile('Immunization')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/immunization-status',
+            path: 'status'
+          }
+        ]
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @immunization_ary&.values&.flatten)
+        end
       end
 
       test 'All must support elements are provided in the Immunization resources returned.' do

@@ -259,6 +259,29 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Device', delayed: false)
         test_resources_against_profile('Device')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/udi-entry-type|4.0.1',
+            path: 'udiCarrier.entryType'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/device-status|4.0.1',
+            path: 'status'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/device-nametype|4.0.1',
+            path: 'deviceName.type'
+          }
+        ]
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @device_ary&.values&.flatten)
+        end
       end
 
       test 'All must support elements are provided in the Device resources returned.' do

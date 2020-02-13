@@ -254,6 +254,29 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Organization', delayed: true)
         test_resources_against_profile('Organization')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/identifier-use|4.0.1',
+            path: 'identifier.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/address-use|4.0.1',
+            path: 'address.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/address-type|4.0.1',
+            path: 'address.type'
+          }
+        ]
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @organization_ary)
+        end
       end
 
       test 'All must support elements are provided in the Organization resources returned.' do

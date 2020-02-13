@@ -255,6 +255,29 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Practitioner', delayed: true)
         test_resources_against_profile('Practitioner')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/identifier-use|4.0.1',
+            path: 'identifier.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/name-use|4.0.1',
+            path: 'name.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/administrative-gender|4.0.1',
+            path: 'gender'
+          }
+        ]
+        bindings.each do |binding_def|
+          validate_terminology(binding_def, @practitioner_ary)
+        end
       end
 
       test 'All must support elements are provided in the Practitioner resources returned.' do
