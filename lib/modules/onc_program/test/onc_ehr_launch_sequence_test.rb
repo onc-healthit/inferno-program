@@ -151,7 +151,7 @@ describe Inferno::Sequence::OncEHRLaunchSequence do
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'Invalid JSON', exception.message
+      assert_equal 'Invalid JSON. ', exception.message
     end
 
     it 'succeeds if the smart styles are valid json' do

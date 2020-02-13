@@ -368,7 +368,7 @@ module Inferno
 
 
             warning do
-              assert @instance.server_capabilities.search_documented?('#{sequence[:resource]}'),
+              assert @instance.server_capabilities&.search_documented?('#{sequence[:resource]}'),
                 %(Server returned a status of 400 with an OperationOutcome, but the
                 search interaction for this resource is not documented in the
                 CapabilityStatement. If this response was due to the server
@@ -450,7 +450,9 @@ module Inferno
                 end
               )
             end
+
             %(
+              #{skip_if_search_not_supported_code(sequence, search_param[:names])}
               #{skip_if_not_found_code(sequence)}
               #{resolved_one_str if resolve_param_from_resource && !sequence[:delayed_sequence]}
               #{reply_code}
@@ -477,6 +479,11 @@ module Inferno
           delayed_sequence: sequence[:delayed_sequence],
           status_param: sequence_has_status_search?(sequence) ? status_param_strings(sequence) : {}
         )
+      end
+
+      def skip_if_search_not_supported_code(sequence, search_params)
+        search_param_string = search_params.map { |param| "'#{param}'" }.join(', ')
+        "skip_if_known_search_not_supported('#{sequence[:resource]}', [#{search_param_string}])"
       end
 
       def create_chained_search_test(sequence, search_param)
@@ -799,6 +806,9 @@ module Inferno
           resolve_el_str = "#{resolve_element_path(sequence[:search_param_descriptions][param.to_sym], sequence[:delayed_sequence])} { |el| get_value_for_search_param(el) != #{param_value_name(param)} }" # rubocop:disable Metrics/LineLength
           search_params = get_search_params(multiple_or_search[:names], sequence)
           resolve_param_from_resource = search_params.include? 'get_value_for_search_param'
+          test[:test_code] += %(
+            #{skip_if_search_not_supported_code(sequence, multiple_or_search[:names])}
+          )
           if resolve_param_from_resource
             test[:test_code] += %(
               could_not_resolve_all = []
@@ -912,6 +922,7 @@ module Inferno
       def get_first_search_by_patient(sequence, search_parameters, save_resource_references_arguments)
         if sequence[:delayed_sequence]
           %(
+            #{skip_if_search_not_supported_code(sequence, search_parameters)}
             #{get_search_params(search_parameters, sequence)}
             reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
             #{status_search_code(sequence, search_parameters)}
@@ -930,6 +941,7 @@ module Inferno
           )
         else
           first_search = %(
+            #{skip_if_search_not_supported_code(sequence, search_parameters)}
             @#{sequence[:resource].underscore}_ary = {}
             patient_ids.each do |patient|
               #{get_search_params(search_parameters, sequence)}
@@ -998,6 +1010,7 @@ module Inferno
         find_two_values = get_multiple_or_params(sequence).include? search_param[:name]
         values_variable_name = "#{search_param[:name].tr('-', '_')}_val"
         %(
+          #{skip_if_search_not_supported_code(sequence, search_parameters)}
           @#{sequence[:resource].underscore}_ary = {}
           @resources_found = false
           #{'values_found = 0' if find_two_values}
