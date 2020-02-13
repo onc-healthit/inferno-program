@@ -83,6 +83,7 @@ namespace :onc_program do |_argv|
       group.test_cases.each do |test_case|
         test_case.sequence.tests.each do |test|
           next if test_case.sequence.optional? || test.optional?
+
           this_row = columns.map do |col|
             col[2].call(group, test_case, test)
           end
