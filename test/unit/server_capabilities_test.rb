@@ -27,6 +27,10 @@ class ServerCapabilitiesTest < MiniTest::Test
                   name: 'birthdate',
                   type: 'date'
                 }
+              ],
+              searchRevInclude: [
+                'Provenance:target',
+                'Condition:subject'
               ]
             },
             {
@@ -36,7 +40,8 @@ class ServerCapabilitiesTest < MiniTest::Test
                 { code: 'delete' },
                 { code: 'update' },
                 { code: 'search-type' }
-              ]
+              ],
+              searchRevInclude: ['*']
             },
             {
               type: 'Observation',
@@ -160,5 +165,20 @@ class ServerCapabilitiesTest < MiniTest::Test
     assert_equal ['_id', 'birthdate'], @capabilities.supported_search_params('Patient')
     assert_equal [], @capabilities.supported_search_params('Condition')
     assert_equal [], @capabilities.supported_search_params('Location')
+  end
+
+  def test_supported_revincludes
+    assert_equal ['Provenance:target', 'Condition:subject'], @capabilities.supported_revincludes('Patient')
+    assert_equal ['*'], @capabilities.supported_revincludes('Condition')
+    assert_equal [], @capabilities.supported_revincludes('Observation')
+    assert_equal [], @capabilities.supported_revincludes('Location')
+  end
+
+  def test_revinclude_supported
+    assert @capabilities.revinclude_supported?('Patient', 'Provenance:target')
+    assert @capabilities.revinclude_supported?('Patient', 'Condition:subject')
+    assert @capabilities.revinclude_supported?('Condition', 'Provenance:target')
+    refute @capabilities.revinclude_supported?('Observation', 'Provenance:target')
+    refute @capabilities.revinclude_supported?('Location', 'Provenance:target')
   end
 end
