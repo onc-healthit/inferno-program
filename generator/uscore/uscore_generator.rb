@@ -278,13 +278,15 @@ module Inferno
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/search.html#revinclude',
           description: "A Server SHALL be capable of supporting the following _revincludes: #{sequence[:revincludes].join(', ')}",
-          test_code: skip_if_not_found_code(sequence)
+          test_code: %(
+            skip_if_known_revinclude_not_supported('#{sequence[:resource]}', 'Provenance:target')
+            #{skip_if_not_found_code(sequence)}
+          )
         }
         search_params = get_search_params(first_search[:names], sequence)
         resolve_param_from_resource = search_params.include? 'get_value_for_search_param'
         if resolve_param_from_resource && !sequence[:delayed_sequence]
           revinclude_test[:test_code] += %(
-
             could_not_resolve_all = []
             resolved_one = false
           )
