@@ -93,6 +93,8 @@ module Inferno
             If the request failed verification or is invalid, the authorization server returns an error response.          )
         end
 
+        omit 'This test is only applicable to confidential clients.' unless instance_confidential_client
+
         skip_if_no_refresh_token
 
         token_response = perform_refresh_request(INVALID_CLIENT_ID, @instance.refresh_token)
@@ -178,11 +180,7 @@ module Inferno
         }
         oauth2_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
 
-        if instance_confidential_client
-          oauth2_headers['Authorization'] = encoded_secret(client_id, instance_client_secret)
-        else
-          oauth2_params['client_id'] = client_id
-        end
+        oauth2_headers['Authorization'] = encoded_secret(client_id, instance_client_secret) if instance_confidential_client
 
         oauth2_params['scope'] = instance_scopes if provide_scope
 

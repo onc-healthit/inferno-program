@@ -96,6 +96,13 @@ test_sets:
           - USCore310ObservationLabSequence
           - USCore310PediatricBmiForAgeSequence
           - USCore310PulseOximetrySequence
+          - USCore310BodyheightSequence
+          - USCore310BodytempSequence
+          - USCore310BpSequence
+          - USCore310BodyweightSequence
+          - USCore310HeadcircumSequence
+          - USCore310HeartrateSequence
+          - USCore310ResprateSequence
           - USCore310ProcedureSequence
           - USCoreR4ClinicalNotesSequence
           - USCore310LocationSequence
@@ -104,6 +111,7 @@ test_sets:
           - USCore310PractitionerSequence
           - USCore310PractitionerroleSequence
           - USCore310ProvenanceSequence
+          - USCoreR4DataAbsentReasonSequence
       - name: Population Data Access
         run_all: true
         run_skipped: false

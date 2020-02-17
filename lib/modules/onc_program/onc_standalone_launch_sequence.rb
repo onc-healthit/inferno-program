@@ -24,6 +24,8 @@ module Inferno
 
       defines :token, :id_token, :refresh_token, :patient_id
 
+      show_uris
+
       def valid_resource_types
         [
           '*',

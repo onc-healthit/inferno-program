@@ -141,7 +141,7 @@ describe Inferno::Sequence::OncOpenIDConnectSequence do
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'Invalid JSON', exception.message
+      assert_equal 'Invalid JSON. ', exception.message
     end
 
     it 'succeeds if the configuration is valid json' do
@@ -276,7 +276,7 @@ describe Inferno::Sequence::OncOpenIDConnectSequence do
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'Invalid JSON', exception.message
+      assert_equal 'Invalid JSON. ', exception.message
     end
 
     it 'fails if the jwks keys field is not an array' do
@@ -593,7 +593,7 @@ describe Inferno::Sequence::OncOpenIDConnectSequence do
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_match 'Invalid JSON', exception.message
+      assert_match 'Invalid JSON. ', exception.message
     end
 
     it 'fails if fetching the user does not return an allowed FHIR resource type' do

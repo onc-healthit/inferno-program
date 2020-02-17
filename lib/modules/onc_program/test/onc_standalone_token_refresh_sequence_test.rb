@@ -38,6 +38,9 @@ describe Inferno::Sequence::OncStandaloneTokenRefreshSequence do
         .to_return(status: 200)
 
       assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 400 or 401, but found 200', exception.message
     end
 
     it 'succeeds when the token refresh response has an error status' do
@@ -52,19 +55,35 @@ describe Inferno::Sequence::OncStandaloneTokenRefreshSequence do
   describe 'invalid client id test' do
     before do
       @test = @sequence_class[:invalid_client_id]
+      @client_secret = 'SECRET'
+      @instance.onc_sl_client_secret = @client_secret
+      @instance.onc_sl_confidential_client = true
+      @auth_header = {
+        'Authorization': @sequence.encoded_secret(@sequence_class::INVALID_CLIENT_ID, @client_secret)
+      }
+    end
+
+    it 'omits when the using a public client' do
+      @instance.onc_sl_confidential_client = false
+
+      exception = assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
+
+      assert_equal 'This test is only applicable to confidential clients.', exception.message
     end
 
     it 'fails when the token refresh response has a success status' do
       stub_request(:post, @token_endpoint)
-        .with(body: hash_including(client_id: @sequence_class::INVALID_CLIENT_ID))
+        .with(headers: @auth_header)
         .to_return(status: 200)
 
-      assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 400 or 401, but found 200', exception.message
     end
 
     it 'succeeds when the token refresh has an error status' do
       stub_request(:post, @token_endpoint)
-        .with(body: hash_including(client_id: @sequence_class::INVALID_CLIENT_ID))
+        .with(headers: @auth_header)
         .to_return(status: 400)
 
       @sequence.run_test(@test)
@@ -96,7 +115,9 @@ describe Inferno::Sequence::OncStandaloneTokenRefreshSequence do
         .with(body: hash_including(scope: 'jkl'))
         .to_return(status: 400)
 
-      assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 400. ', exception.message
     end
   end
 
@@ -125,7 +146,9 @@ describe Inferno::Sequence::OncStandaloneTokenRefreshSequence do
         .with { |request| !request.body.include? 'scope' }
         .to_return(status: 400)
 
-      assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 400. ', exception.message
     end
   end
 
@@ -147,7 +170,7 @@ describe Inferno::Sequence::OncStandaloneTokenRefreshSequence do
     it 'fails when the token response body is invalid json' do
       response = OpenStruct.new(code: 200, body: '{')
       exception = assert_raises(Inferno::AssertionException) { @sequence.validate_and_save_refresh_response(response) }
-      assert_equal('Invalid JSON', exception.message)
+      assert_equal('Invalid JSON. ', exception.message)
     end
 
     it 'fails when the token response does not contain an access token' do
@@ -225,25 +248,24 @@ class OncStandaloneTokenRefreshSequenceTest < MiniTest::Test
   def setup
     refresh_token = 'REFRESH_TOKEN'
     @instance = Inferno::Models::TestingInstance.create(
-      url: 'bad',
+      url: 'http://www.example.com',
       onc_sl_url: 'http://www.example.com',
       client_name: 'Inferno',
       base_url: 'http://localhost:4567',
       client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
       client_id: SecureRandom.uuid,
       onc_sl_client_id: SecureRandom.uuid,
-      selected_module: 'onc_program',
       oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
       oauth_token_endpoint: 'http://oauth_reg.example.com/token',
       initiate_login_uri: 'http://localhost:4567/launch',
       redirect_uris: 'http://localhost:4567/redirect',
-      scopes: 'bad',
+      scopes: 'launch/patient online_access openid profile launch user/*.* patient/*.*',
       onc_sl_scopes: 'launch/patient online_access openid profile launch user/*.* patient/*.*',
       refresh_token: refresh_token
     )
+    @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'r4'))
 
     client = FHIR::Client.new(@instance.url)
-    client.use_dstu2
     client.default_json
     @sequence = Inferno::Sequence::OncStandaloneTokenRefreshSequence.new(@instance, client, true)
     @sequence.instance_variable_set(:@params, 'abc' => 'def')
@@ -298,19 +320,17 @@ class OncStandaloneTokenRefreshSequenceTest < MiniTest::Test
     exchange_response_json = exchange_response.to_json
     exchange_response_json = '<bad>' if failure_mode == :bad_json_response
 
-    if @instance.onc_sl_client_secret.present?
-      headers['Authorization'] = "Basic #{Base64.strict_encode64(@instance.onc_sl_client_id + ':' + @instance.onc_sl_client_secret)}"
-    else
-      body['client_id'] = body_with_scope['client_id'] = @instance.onc_sl_client_id
-    end
+    headers['Authorization'] = "Basic #{Base64.strict_encode64(@instance.onc_sl_client_id + ':' + @instance.onc_sl_client_secret)}" if @instance.onc_sl_client_secret.present?
+
+    patient_id = @standalone_token_exchange['patient']
 
     stub_request(:get, "#{@instance.onc_sl_url}/Patient/#{exchange_response['patient']}")
       .to_return(status: 200,
-                 body: FHIR::Patient.new.to_json)
+                 body: FHIR::Patient.new(id: patient_id).to_json)
 
     stub_request(:get, "#{@instance.onc_sl_url}/Encounter/#{exchange_response['encounter']}")
       .to_return(status: 200,
-                 body: FHIR::Encounter.new.to_json)
+                 body: FHIR::Encounter.new(subject: { reference: "Patient/#{patient_id}" }).to_json)
 
     stub_request(:post, @instance.oauth_token_endpoint)
       .with(headers: headers,
