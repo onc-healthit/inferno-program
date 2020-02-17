@@ -31,7 +31,8 @@ class ServerCapabilitiesTest < MiniTest::Test
               searchRevInclude: [
                 'Provenance:target',
                 'Condition:subject'
-              ]
+              ],
+              searchInclude: ['*']
             },
             {
               type: 'Condition',
@@ -41,7 +42,11 @@ class ServerCapabilitiesTest < MiniTest::Test
                 { code: 'update' },
                 { code: 'search-type' }
               ],
-              searchRevInclude: ['*']
+              searchRevInclude: ['*'],
+              searchInclude: [
+                'Practitioner:asserter',
+                'Patient:subject'
+              ]
             },
             {
               type: 'Observation',
@@ -180,5 +185,20 @@ class ServerCapabilitiesTest < MiniTest::Test
     assert @capabilities.revinclude_supported?('Condition', 'Provenance:target')
     refute @capabilities.revinclude_supported?('Observation', 'Provenance:target')
     refute @capabilities.revinclude_supported?('Location', 'Provenance:target')
+  end
+
+  def test_supported_includes
+    assert_equal ['*'], @capabilities.supported_includes('Patient')
+    assert_equal ['Practitioner:asserter', 'Patient:subject'], @capabilities.supported_includes('Condition')
+    assert_equal [], @capabilities.supported_includes('Observation')
+    assert_equal [], @capabilities.supported_includes('Location')
+  end
+
+  def test_include_supported
+    assert @capabilities.include_supported?('Condition', 'Practitioner:asserter')
+    assert @capabilities.include_supported?('Condition', 'Patient:subject')
+    assert @capabilities.include_supported?('Patient', 'Practitioner:asserter')
+    refute @capabilities.include_supported?('Observation', 'Provenance:target')
+    refute @capabilities.include_supported?('Location', 'Provenance:target')
   end
 end

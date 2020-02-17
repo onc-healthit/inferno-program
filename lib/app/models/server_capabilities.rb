@@ -63,6 +63,15 @@ module Inferno
         rest_resource(resource_type)&.searchParam&.map(&:name) || []
       end
 
+      def supported_includes(resource_type)
+        rest_resource(resource_type)&.searchInclude || []
+      end
+
+      def include_supported?(resource_type, include)
+        supported_includes(resource_type).include?('*') ||
+          supported_includes(resource_type).include?(include)
+      end
+
       def supported_revincludes(resource_type)
         rest_resource(resource_type)&.searchRevInclude || []
       end
