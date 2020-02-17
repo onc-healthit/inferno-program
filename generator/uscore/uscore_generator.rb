@@ -251,6 +251,7 @@ module Inferno
           resource_variable = "#{resource_name.underscore}_results" # kind of a hack, but works for now - would have to otherwise figure out resource type of target profile
           operator = sequence[:delayed_sequence] ? '=' : '||='
           include_test[:test_code] += %(
+            skip_if_known_include_not_supported('#{sequence[:resource]}', '#{include}')
             search_params['_include'] = '#{include}'
             reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
             assert_response_ok(reply)
