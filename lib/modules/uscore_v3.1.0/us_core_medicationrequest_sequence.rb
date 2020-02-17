@@ -404,6 +404,7 @@ module Inferno
           end
           resolved_one = true
 
+          skip_if_known_include_not_supported('MedicationRequest', 'MedicationRequest:medication')
           search_params['_include'] = 'MedicationRequest:medication'
           reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
           assert_response_ok(reply)
@@ -423,6 +424,8 @@ module Inferno
           )
           versions :r4
         end
+
+        skip_if_known_revinclude_not_supported('MedicationRequest', 'Provenance:target')
         skip_if_not_found(resource_type: 'MedicationRequest', delayed: false)
 
         could_not_resolve_all = []

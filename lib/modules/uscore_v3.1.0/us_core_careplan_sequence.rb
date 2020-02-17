@@ -361,6 +361,8 @@ module Inferno
           )
           versions :r4
         end
+
+        skip_if_known_revinclude_not_supported('CarePlan', 'Provenance:target')
         skip_if_not_found(resource_type: 'CarePlan', delayed: false)
 
         could_not_resolve_all = []

@@ -356,7 +356,10 @@ module Inferno
           )
           versions :r4
         end
+
+        skip_if_known_revinclude_not_supported('Procedure', 'Provenance:target')
         skip_if_not_found(resource_type: 'Procedure', delayed: false)
+
         provenance_results = []
         patient_ids.each do |patient|
           search_params = {
