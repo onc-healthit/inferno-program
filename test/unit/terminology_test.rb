@@ -22,4 +22,14 @@ class TerminologyTest < Minitest::Test
 
     refute_nil FHIR::DSTU2::StructureDefinition.vs_validators[BIRTH_SEX_VS], "No validator function set on StructureDefinition for the #{BIRTH_SEX_VS} valueset"
   end
+
+  def test_validate_code
+    # Valid code, optional codesystem
+    assert Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'M', nil), "Validate code helper should return true for a valid code with a nil codesystem"
+    assert Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'M', 'http://terminology.hl7.org/CodeSystem/v3-AdministrativeGender'), "Validate code helper should return true for a valid code with a provided codesystem"
+
+    # Invalid code, optional codesystem
+    refute Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'R', nil), "Validate code helper should return false for an invalid code with a nil codesystem"
+    refute Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'R', 'http://terminology.hl7.org/CodeSystem/v3-AdministrativeGender'), "Validate code helper should return false for an invalid code with a provided codesystem"
+  end
 end
