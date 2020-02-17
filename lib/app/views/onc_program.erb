@@ -300,6 +300,19 @@
       </div>
       <div class="prerequisites-forms" style="display:none">
 
+        <%= erb(:prerequisite_field,{},{prerequisite: :url,
+              label: 'FHIR Endpoint',
+              description: 'URL of the FHIR endpoint used by EHR-launched applications',
+              instance: instance,
+              value: instance.url,
+              })%> 
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_url,
+              label: 'FHIR Endpoint',
+              description: 'URL of the FHIR endpoint used by standalone applications',
+              instance: instance,
+              value: instance.onc_sl_url,
+              })%> 
 
         <%= erb(:prerequisite_field,{},{prerequisite: :oauth_register_endpoint,
               instance: instance,
@@ -319,7 +332,15 @@
         <%= erb(:prerequisite_field,{},{prerequisite: :client_id,
               instance: instance,
               label: 'Client ID',
+              description: 'Client ID provided during registration of Inferno as a EHR-launched application',
               value: instance.client_id}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_client_id,
+              label: 'Client ID',
+              description: 'Client ID provided during registration of Inferno as a standalone application',
+              instance: instance,
+              value: instance.onc_sl_client_id,
+              })%> 
 
         <%= erb(:prerequisite_field,{},{prerequisite: :dynamic_registration_token,
               instance: instance,
@@ -334,19 +355,43 @@
           >
           <div class="form-check form-check-inline">
             <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_off" value="false" <%=!instance.confidential_client ? "checked" : "" %>>
-            <label class="form-check-label" for="confidential_client_off">Public Client</label>
+            <label class="form-check-label" for="confidential_client_off_active">Public Client</label>
           </div>
           <div class="form-check form-check-inline" data-requiredby>
             <input class="form-check-input" type="radio" name="confidential_client" id="confidential_client_on" value="true" <%=instance.confidential_client ? "checked" : "" %>>
-            <label class="form-check-label" for="confidential_client_on">Confidential Client</label>
+            <label class="form-check-label" for="confidential_client_on_active">Confidential Client</label>
+          </div>
+
+        </div>
+
+        <%# SPECIAL CASE: CLIENT SECRET %>
+        <div class="form-group"
+          data-requiredby="<%= test_set.variable_required_by(:onc_sl_confidential_client).map {|seq| seq.sequence_name}.join(',')%>"
+          data-prerequisite="onc_sl_confidential_client"
+          id="onc_sl_is_confidential"
+          >
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="onc_sl_confidential_client" id="onc_sl_confidential_client_off" value="false" <%=!instance.onc_sl_confidential_client ? "checked" : "" %>>
+            <label class="form-check-label" for="onc_sl_confidential_client_off_active">Public Client</label>
+          </div>
+          <div class="form-check form-check-inline" data-requiredby>
+            <input class="form-check-input" type="radio" name="onc_sl_confidential_client" id="onc_sl_confidential_client_on" value="true" <%=instance.onc_sl_confidential_client ? "checked" : "" %>>
+            <label class="form-check-label" for="onc_sl_confidential_client_on_active">Confidential Client</label>
           </div>
 
         </div>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :client_secret,
               label: 'Client Secret',
+              description: 'Client Secret provided during registration of Inferno as a EHR-launched application',
               instance: instance,
               value: instance.client_secret}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_client_secret,
+              label: 'Client Secret',
+              description: 'Client Secret provided during registration of Inferno as a standalone application',
+              instance: instance,
+              value: instance.onc_sl_client_secret}); %>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :client_name,
               label: 'OAuth Client Name',
@@ -354,9 +399,18 @@
               value: instance.client_name}); %>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :scopes,
-              label: 'Scopes',
+              label: 'EHR-launched Scope',
+              description: 'OAuth 2.0 scope provided by system to enable all required functionality',
               instance: instance,
               value: instance.scopes || default_scopes,
+              required: true,
+              })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_scopes,
+              label: 'Standalone Patient Scope',
+              description: 'OAuth 2.0 scope provided by system to enable all required functionality',
+              instance: instance,
+              value: instance.onc_sl_scopes || default_scopes,
               required: true,
               })%>
 
@@ -385,6 +439,13 @@
               instance: instance,
               value: instance.patient_id,
               })%>
+        
+        <%= erb(:prerequisite_field,{},{prerequisite: :patient_ids,
+              label: 'Patient IDs',
+              description: 'Comma separated list of patient IDs that in sum contain all MUST SUPPORT elements.',
+              instance: instance,
+              value: instance.patient_ids,
+              })%>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :id_token,
               label: 'OAuth 2.0 ID Token',
@@ -397,6 +458,13 @@
               instance: instance,
               value: instance.refresh_token,
               })%>
+        
+        <%= erb(:prerequisite_field,{},{prerequisite: :device_codes,
+              label: 'Implantable Device Type Code',
+              description: 'Enter the code for an Implantable Device type, or multiple codes separated by commas. If blank, Inferno will validate all Device resources against the Implantable Device profile',
+              instance: instance,
+              value: instance.device_codes,
+        })%>
                 
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_url,
               label: 'Bulk Data Base URL',

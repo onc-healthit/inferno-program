@@ -39,6 +39,10 @@ module Inferno
 
           @instance.client_endpoint_key = params['client_endpoint_key'] unless params['client_endpoint_key'].nil?
 
+          # onc specific info
+          @instance.onc_sl_url = url if @instance.respond_to?(:onc_sl_url)
+          @instance.bulk_url = url if @instance.respond_to?(:bulk_url)
+
           unless params['preset'].blank?
 
             JSON.parse(params['preset']).each do |key, value|

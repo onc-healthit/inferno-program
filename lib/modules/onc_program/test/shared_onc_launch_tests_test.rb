@@ -4,7 +4,6 @@ require_relative '../../../../test/test_helper'
 
 describe Inferno::Sequence::SharedONCLaunchTests do
   class SharedONCLaunchTestSequence < Inferno::Sequence::SequenceBase
-    include Inferno::Sequence::SharedLaunchTests
     include Inferno::Sequence::SharedONCLaunchTests
 
     patient_context_test(index: '01')

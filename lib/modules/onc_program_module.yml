@@ -23,18 +23,18 @@ test_sets:
         lock_variables: 
           - redirect_uris
         sequences:
-          - sequence: ONCSMARTDiscoverySequence
+          - sequence: OncStandaloneSMARTDiscoverySequence
             prefix: SPA
           - sequence: OncStandaloneLaunchSequence
             prefix: SPB
             title: Standalone Launch with Patient Scope
             description: Perform Standalone SMART launch sequence and test OpenID Connect and token refresh functionality.
             variable_defaults:
-              scopes: launch/patient launch/encounter patient/*.read openid fhirUser offline_access
-          - sequence: OpenIDConnectSequence
+              onc_sl_scopes: launch/patient launch/encounter patient/*.read openid fhirUser offline_access
+          - sequence: OncStandaloneOpenIDConnectSequence
             prefix: SPC
             description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
-          - sequence: ONCTokenRefreshSequence
+          - sequence: OncStandaloneTokenRefreshSequence
             prefix: SPD
             description: Use refresh token to get new access token and verify it can access resources.
       - name: EHR Practitioner App
@@ -46,7 +46,7 @@ test_sets:
         lock_variables: 
           - redirect_uris
         sequences:
-          - sequence: ONCSMARTDiscoverySequence
+          - sequence: OncSMARTDiscoverySequence
             prefix: EHA
           - sequence: OncEHRLaunchSequence
             prefix: EHB
@@ -54,10 +54,10 @@ test_sets:
             description: Perform EHR SMART launch sequence and test OpenID Connect and token refresh functionality.
             variable_defaults:
               scopes: launch user/*.read openid fhirUser offline_access
-          - sequence: OpenIDConnectSequence
+          - sequence: OncOpenIDConnectSequence
             prefix: EHC
             description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
-          - sequence: ONCTokenRefreshSequence
+          - sequence: OncTokenRefreshSequence
             prefix: EHD
             description: Use refresh token to retrieve new access token and verify it can access resources.
         input_instructions: |
@@ -96,6 +96,13 @@ test_sets:
           - USCore310ObservationLabSequence
           - USCore310PediatricBmiForAgeSequence
           - USCore310PulseOximetrySequence
+          - USCore310BodyheightSequence
+          - USCore310BodytempSequence
+          - USCore310BpSequence
+          - USCore310BodyweightSequence
+          - USCore310HeadcircumSequence
+          - USCore310HeartrateSequence
+          - USCore310ResprateSequence
           - USCore310ProcedureSequence
           - USCoreR4ClinicalNotesSequence
           - USCore310LocationSequence
@@ -104,6 +111,7 @@ test_sets:
           - USCore310PractitionerSequence
           - USCore310PractitionerroleSequence
           - USCore310ProvenanceSequence
+          - USCoreR4DataAbsentReasonSequence
       - name: Population Data Access
         run_all: true
         run_skipped: false

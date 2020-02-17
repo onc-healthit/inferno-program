@@ -55,6 +55,10 @@ presets:
     client_id: SAMPLE_CONFIDENTIAL_CLIENT_ID
     confidential_client: true
     client_secret: SAMPLE_CONFIDENTIAL_CLIENT_SECRET
+    onc_sl_url: http://localhost:8080/r4
+    onc_sl_client_id: SAMPLE_CONFIDENTIAL_CLIENT_ID
+    onc_sl_confidential_client: true
+    onc_sl_client_secret: SAMPLE_CONFIDENTIAL_CLIENT_SECRET
   cerner:
     name: Cerner
     uri: https://fhir-ehr.sandboxcerner.com/r4/0b8a0111-e8e6-4c26-a91c-5069cbc6b1ca

@@ -127,6 +127,10 @@ $(function(){
         $('div[data-prerequisite="client_secret"]').show();
       } else if (e.target.id === 'confidential_client_off_active'){
         $('div[data-prerequisite="client_secret"]').hide();
+      } else if (e.target.id === 'onc_sl_confidential_client_on_active'){
+        $('div[data-prerequisite="onc_sl_client_secret"]').show();
+      } else if (e.target.id === 'onc_sl_confidential_client_off_active'){
+        $('div[data-prerequisite="onc_sl_client_secret"]').hide();
       }
     });
 
@@ -211,6 +215,12 @@ $(function(){
        $('div[data-prerequisite="client_secret"]').show();
     } else {
        $('div[data-prerequisite="client_secret"]').hide();
+    }
+
+    if($('#onc_sl_confidential_client_on')[0].checked){
+       $('div[data-prerequisite="onc_sl_client_secret"]').show();
+    } else {
+       $('div[data-prerequisite="onc_sl_client_secret"]').hide();
     }
     
 
