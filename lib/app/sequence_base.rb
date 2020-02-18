@@ -840,7 +840,18 @@ module Inferno
             end
             find_slice_by_values(array_el, values_clone)
           when 'type'
-            array_el.is_a? FHIR.const_get(discriminator[:code])
+            case discriminator[:code]
+            when 'Date'
+              begin
+                Date.parse(array_el)
+              rescue ArgumentError
+                false
+              end
+            when 'String'
+              array_el.is_a? String
+            else
+              array_el.is_a? FHIR.const_get(discriminator[:code])
+            end
           end
         end
       end
