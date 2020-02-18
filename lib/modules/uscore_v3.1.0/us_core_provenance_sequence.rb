@@ -108,6 +108,36 @@ module Inferno
         test_resources_against_profile('Provenance')
         bindings = [
           {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://terminology.hl7.org/ValueSet/v3-PurposeOfUse',
+            path: 'reason'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/provenance-activity-type',
+            path: 'activity'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-provenance-participant-type',
+            path: 'agent.type'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/provenance-agent-type',
+            path: 'agent.type'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/provenance-agent-type',
+            path: 'agent.type'
+          },
+          {
             type: 'code',
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/provenance-entity-role|4.0.1',

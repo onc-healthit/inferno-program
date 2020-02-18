@@ -263,6 +263,12 @@ module Inferno
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/care-team-status',
             path: 'status'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-careteam-provider-roles',
+            path: 'participant.role'
           }
         ]
         bindings.each do |binding_def|

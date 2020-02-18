@@ -364,6 +364,12 @@ module Inferno
             path: 'mode'
           },
           {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://terminology.hl7.org/ValueSet/v3-ServiceDeliveryLocationRoleType',
+            path: 'type'
+          },
+          {
             type: 'code',
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/address-use|4.0.1',
@@ -374,6 +380,12 @@ module Inferno
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/address-type|4.0.1',
             path: 'address.type'
+          },
+          {
+            type: 'string',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-usps-state',
+            path: 'address.state'
           },
           {
             type: 'code',

@@ -263,6 +263,12 @@ module Inferno
             path: 'identifier.use'
           },
           {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/identifier-type',
+            path: 'identifier.type'
+          },
+          {
             type: 'code',
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/name-use|4.0.1',

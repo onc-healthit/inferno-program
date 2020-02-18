@@ -464,6 +464,12 @@ module Inferno
             path: 'identifier.use'
           },
           {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/identifier-type',
+            path: 'identifier.type'
+          },
+          {
             type: 'code',
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/name-use|4.0.1',
@@ -500,10 +506,34 @@ module Inferno
             path: 'address.type'
           },
           {
+            type: 'string',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-usps-state',
+            path: 'address.state'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/marital-status',
+            path: 'maritalStatus'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/patient-contactrelationship',
+            path: 'contact.relationship'
+          },
+          {
             type: 'code',
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/administrative-gender|4.0.1',
             path: 'contact.gender'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/simple-language',
+            path: 'communication.language'
           },
           {
             type: 'code',

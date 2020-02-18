@@ -560,16 +560,34 @@ module Inferno
             path: 'type'
           },
           {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-documentreference-category',
+            path: 'category'
+          },
+          {
             type: 'code',
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/document-relationship-type|4.0.1',
             path: 'relatesTo.code'
           },
           {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/security-labels',
+            path: 'securityLabel'
+          },
+          {
             type: 'code',
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/mimetypes|4.0.1',
             path: 'content.attachment.contentType'
+          },
+          {
+            type: 'Coding',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/formatcodes',
+            path: 'content.format'
           }
         ]
         bindings.each do |binding_def|

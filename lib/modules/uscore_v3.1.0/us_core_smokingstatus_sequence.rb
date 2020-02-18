@@ -449,6 +449,42 @@ module Inferno
             strength: 'required',
             system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-observation-smoking-status-status',
             path: 'status'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-smoking-status-observation-codes',
+            path: 'code'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-observation-smokingstatus',
+            path: 'value'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/data-absent-reason',
+            path: 'dataAbsentReason'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/observation-interpretation',
+            path: 'interpretation'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/data-absent-reason',
+            path: 'component.dataAbsentReason'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/observation-interpretation',
+            path: 'component.interpretation'
           }
         ]
         bindings.each do |binding_def|

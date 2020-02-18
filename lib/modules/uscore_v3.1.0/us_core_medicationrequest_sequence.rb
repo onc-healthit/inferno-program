@@ -491,6 +491,12 @@ module Inferno
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/request-priority|4.0.1',
             path: 'priority'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-medication-codes',
+            path: 'medication'
           }
         ]
         bindings.each do |binding_def|

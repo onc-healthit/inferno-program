@@ -451,10 +451,52 @@ module Inferno
             path: 'status'
           },
           {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/observation-vitalsignresult',
+            path: 'code'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/data-absent-reason',
+            path: 'dataAbsentReason'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/observation-interpretation',
+            path: 'interpretation'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/observation-vitalsignresult',
+            path: 'component.code'
+          },
+          {
             type: 'Quantity',
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/ucum-vitals-common|4.0.1',
             path: 'component.value'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/data-absent-reason',
+            path: 'component.dataAbsentReason'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/observation-interpretation',
+            path: 'component.interpretation'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/observation-vitalsignresult',
+            path: 'component.code'
           },
           {
             type: 'Quantity',
@@ -469,6 +511,24 @@ module Inferno
             path: 'component.value.comparator'
           },
           {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/data-absent-reason',
+            path: 'component.dataAbsentReason'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/observation-interpretation',
+            path: 'component.interpretation'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/observation-vitalsignresult',
+            path: 'component.code'
+          },
+          {
             type: 'Quantity',
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/ucum-vitals-common|4.0.1',
@@ -479,6 +539,18 @@ module Inferno
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/quantity-comparator|4.0.1',
             path: 'component.value.comparator'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/data-absent-reason',
+            path: 'component.dataAbsentReason'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/observation-interpretation',
+            path: 'component.interpretation'
           }
         ]
         bindings.each do |binding_def|

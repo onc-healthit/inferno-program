@@ -776,7 +776,7 @@ module Inferno
         end
 
         bindings = sequence[:bindings]
-          .select { |binding_def| binding_def[:strength] == 'required' }
+          .select { |binding_def| ['required', 'extensible'].include? binding_def[:strength] }
 
         if bindings.present?
           test[:test_code] += %(

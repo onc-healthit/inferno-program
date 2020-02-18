@@ -199,7 +199,8 @@ module Inferno
         sequence[:bindings] = profile_definition['snapshot']['element']
           .select { |e| e['binding'].present? }
           .map do |e|
-            { type: e['type'].first['code'],
+            {
+              type: e['type'].first['code'],
               strength: e.dig('binding', 'strength'),
               system: e.dig('binding', 'valueSet'),
               path: e['path'].gsub('[x]', '').gsub("#{sequence[:resource]}.", '')

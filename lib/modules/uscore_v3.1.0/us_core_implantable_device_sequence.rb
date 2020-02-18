@@ -273,10 +273,22 @@ module Inferno
             path: 'status'
           },
           {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/device-status-reason',
+            path: 'statusReason'
+          },
+          {
             type: 'code',
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/device-nametype|4.0.1',
             path: 'deviceName.type'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/device-kind',
+            path: 'type'
           }
         ]
         bindings.each do |binding_def|

@@ -335,6 +335,12 @@ module Inferno
             path: 'criticality'
           },
           {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-allergy-substance',
+            path: 'code'
+          },
+          {
             type: 'code',
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/reaction-event-severity|4.0.1',

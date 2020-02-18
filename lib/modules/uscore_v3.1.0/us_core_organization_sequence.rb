@@ -262,6 +262,12 @@ module Inferno
             path: 'identifier.use'
           },
           {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/identifier-type',
+            path: 'identifier.type'
+          },
+          {
             type: 'code',
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/address-use|4.0.1',
@@ -272,6 +278,18 @@ module Inferno
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/address-type|4.0.1',
             path: 'address.type'
+          },
+          {
+            type: 'string',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-usps-state',
+            path: 'address.state'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/contactentity-type',
+            path: 'contact.purpose'
           }
         ]
         bindings.each do |binding_def|

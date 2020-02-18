@@ -452,6 +452,18 @@ module Inferno
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/condition-ver-status',
             path: 'verificationStatus'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-condition-category',
+            path: 'category'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-condition-code',
+            path: 'code'
           }
         ]
         bindings.each do |binding_def|

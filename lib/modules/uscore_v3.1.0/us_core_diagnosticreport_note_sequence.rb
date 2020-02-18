@@ -477,6 +477,18 @@ module Inferno
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/diagnostic-report-status',
             path: 'status'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-diagnosticreport-category',
+            path: 'category'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-diagnosticreport-report-and-note-codes',
+            path: 'code'
           }
         ]
         bindings.each do |binding_def|
