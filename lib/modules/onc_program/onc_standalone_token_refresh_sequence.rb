@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative './shared_onc_launch_tests'
+require_relative './onc_token_refresh_sequence'
 
 module Inferno
   module Sequence
