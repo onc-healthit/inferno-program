@@ -185,11 +185,13 @@ module Inferno
     # @param String system an optional codesystem to validate against. Defaults to nil
     # @return Boolean whether the code or code/system is in the valueset
     def self.validate_code(valueset_url, code, system=nil)
-      validation_fn = FHIR::StructureDefinition.vs_validators[valueset_url]
+      # Get the valueset from the url. Redundant if the 'system' is not nil,
+      # but allows us to throw a better error if the valueset isn't known by Inferno
+      valueset = get_valueset(valueset_url)
+      validation_fn = FHIR::StructureDefinition.vs_validators[valueset.url]
       if system
         validation_fn.call('code' => code, 'system' => system)
       else
-        valueset = get_valueset(valueset_url)
         valueset.included_code_systems.any? do |possible_system|
           validation_fn.call('code' => code, 'system' => possible_system)
         end

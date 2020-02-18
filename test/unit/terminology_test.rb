@@ -31,5 +31,17 @@ class TerminologyTest < Minitest::Test
     # Invalid code, optional codesystem
     refute Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'R', nil), "Validate code helper should return false for an invalid code with a nil codesystem"
     refute Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'R', 'http://terminology.hl7.org/CodeSystem/v3-AdministrativeGender'), "Validate code helper should return false for an invalid code with a provided codesystem"
+
+    refute Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'M', 'http://terminology.hl7.org/CodeSystem/v3-NullFlavor'), "Validate code helper should return false for a valid code, but the wrong codesystem"
+    refute Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'M', 'http://fake-codesystem'), "Validate code helper should return false for a valid code, but a nonexistent codesystem"
+    refute Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'R', 'http://fake-codesystem'), "Validate code helper should return false for an invalid code with an invalid codesystem"
+
+    # An invalid valueset should raise an error
+    assert_raises Inferno::Terminology::UnknownValueSetException do
+      Inferno::Terminology.validate_code('http://a-fake-valueset', 'M', 'http://terminology.hl7.org/CodeSystem/v3-AdministrativeGender')
+    end
+    assert_raises Inferno::Terminology::UnknownValueSetException do
+      Inferno::Terminology.validate_code('http://a-fake-valueset', 'M', nil)
+    end
   end
 end
