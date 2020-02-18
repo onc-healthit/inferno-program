@@ -85,7 +85,7 @@ body {
   padding-left: 15px;
 }
 .inferno-branding img {
-  height: 70px;
+  height: 60px;
 }
 .row-no-padding > [class*="col-"] {
   padding-left: 0 !important;
@@ -462,6 +462,7 @@ body {
 }
 
 .group-nav-score {
+  font-size: 12px;
   /* font-size: 1rem; */
     color: white;
     /* width: 20px;
@@ -998,6 +999,7 @@ body {
 }
 
 .guided .group-nav-label {
+  font-size: 12px;
   position: relative;
   left: 4px;
   z-index: 10; /* must be above the psuedoelement */
@@ -1283,4 +1285,28 @@ body {
     left: 0;
     width: 11in;
   }
+}
+
+.onc-index-page .nav-pills .nav-link, .nav-pills {
+  margin: 0 30px 0 0;
+  font-size: 22px;
+  text-align: center;
+}
+
+.onc-index-page .nav-pills .nav-link.active, .nav-pills {
+  border-radius: 0;
+}
+.onc-index-page .nav-pills .nav-link.active, .nav-pills a{
+  padding: 14px 0;
+}
+.onc-index-page .nav-pills .nav-link.active, .nav-pills .show>.nav-link{
+  background-color: inherit;
+  border-bottom: 4px solid #f76200;  
+  color: black;
+
+}
+
+.onc-index-page .btn-secondary {
+  background-color: #f88b30;
+  border-color: #f87e30;
 }

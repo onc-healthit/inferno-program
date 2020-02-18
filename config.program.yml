@@ -35,7 +35,7 @@ autorun_capability: false
 # Include extra tests: true or false
 include_extras: true
 
-badge_text: Program Edition
+badge_text: PROGRAM EDITION
 
 # Resource validator options: must be one of "internal" or "external". external_resource_validator_url is only used if resource_validator is set to external.
 resource_validator: internal

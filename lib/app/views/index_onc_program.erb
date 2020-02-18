@@ -1,0 +1,155 @@
+
+<!--<div class="container-fluid onc-index-page" role="main" style="background-color: #ffc62f;padding: 3px;"></div>-->
+<div class="container-fluid onc-index-page" role="main" style="background-color: #fff; padding: 50px 0">
+  <div class="row">
+    <div class="col">
+      <div class="container row row-no-padding align-items-center" style="margin:auto;" >
+
+        <div class="col-12" style="color: #063d75; text-align: center;">
+        <img src="/images/icon_logo.png" style='width: 125px; display:block; margin-left: auto; margin-right: auto;'>
+        <div style="    font-weight: bolder;
+        margin: 12px;
+        display: inline-block;
+        font-size: 36px;
+        /* font-style: normal; */
+        font-family: 'Roboto Condensed';">
+        INFERNO PROGRAM EDITION
+        </div>
+        <div style="display: inline-block; font-size: 26px;">
+        Test API conformance to the standardized API criteria in the 21st Century Cures Act: Interoperability, Information Blocking, and the
+        ONC Health IT Certification Program Proposed Rule.
+        </div>
+        <!--<div style="display: inline-block; font-size: 26px; margin-top: 50px;">
+        <button class="btn btn-dark" type="button">Start Testing</button>
+        </div>-->
+        <form method="POST" action="<%=base_path%>/" style="margin:  0 auto;margin-top: 40px;width: 800px;" class="form-inline">
+        <input type="hidden" name="client_endpoint_key" value="static" />
+        <%= erb(:module_options,{},modules: modules) %>
+
+  <div class="form-group mx-sm-3 mb-2">
+    <label for="fhir_server" class="sr-only">FHIR Server</label>
+    <input type="url" class="form-control form-control-lg"  style="width: 600px" id="fhir_server" name="fhir_server" placeholder="Enter a FHIR Endpoint" aria-label="Start Testing">
+  </div>
+  <button type="submit" class="btn btn-lg btn-secondary mb-2">START TESTING</button>
+
+
+        <% if presets.present? %>
+          <% module_names = Array.new(modules.length).map!.with_index{ |mod, i| modules[i].name } %>
+          <div class="form-group" style="margin-left: 250px;">
+            <label for="preset-select" class="preset-label">
+              Or test Inferno against
+            </label>
+            <select class="custom-select custom-select-lg" name="preset" style="padding-left: 5px;margin: 0 0;border: 0;text-decoration: underline;" id="preset-select">
+              <option value="" data-module_names=<%=module_names.join(',')%> data-all=<%=presets.to_json.tr(' ', '_')%> data-selected="">a public sandbox</option>
+              <% presets.each do |preset| %>
+                <option value="" data-module_names=<%=module_names.join(',')%> data-all=<%=presets.to_json.tr(' ', '_')%> data-selected=<%=preset.at(0)%>><%=preset.at(1)["name"]%></option>
+              <% end %>
+              <input type="hidden" name="preset" id="preset" value="" />
+            </select>
+            
+            <a id="instructions-link" class="instructions-link" href="" target="_blank" style="display:none">Instructions</a>
+          </div>
+
+        </div>
+
+        <% end %>
+      </fieldset>
+    </form>
+
+    </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container-fluid onc-index-page" role="main" style="margin-top: 20px; background-image: url(/images/gradient.png);background-color: #f2f2f2;padding: 3px;background-size:cover;"></div>
+<div class="container-fluid onc-index-page" role="main" style="background-color: #efefef; border-bottom: 1px solid #dedede;">
+<div class="row">
+<div class="col">
+  <div class="container row row-no-padding align-items-center" style="margin:auto;" >
+<ul class="nav nav-pills mb-3" id="pills-tab" style="margin-right: 0px; font-size: 20px;margin-bottom: 0px !important;" role="tablist">
+<li class="nav-item">
+  <a class="nav-link active" id="pills-overview-tab" data-toggle="pill" href="#pills-overview" role="tab" aria-controls="pills-overview" aria-selected="true">OVERVIEW</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" id="pills-data-tab" data-toggle="pill" href="#pills-data" role="tab" aria-controls="pills-data" aria-selected="false">TEST SETUP</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" id="pills-data-tab" data-toggle="pill" href="#pills-data" role="tab" aria-controls="pills-data" aria-selected="false">SAMPLE DATA</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" id="pills-install-tab" data-toggle="pill" href="#pills-install" role="tab" aria-controls="pills-install" aria-selected="false">INSTALL</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" id="pills-data-tab" data-toggle="pill" href="#pills-data" role="tab" aria-controls="pills-data" aria-selected="false">CONTACT US</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" id="pills-data-tab" data-toggle="pill" href="#pills-data" role="tab" aria-controls="pills-data" aria-selected="false">INFERNO COMMUNITY</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+
+
+<div class="container" style="background-color: white">
+  <div class="main index-page onc-index">
+
+    <div class="onc-index-banner">
+
+    </div>
+
+    <div class="onc-index-below">
+ 
+<div class="tab-content" id="pills-tabContent">
+  <div class="tab-pane show active" style="font-size: 20px;" id="pills-overview" role="tabpanel" aria-labelledby="pills-overview-tab">
+    <div style="padding: 20px 0; font-size: 30px;">What is Inferno Program Edition</div>
+
+
+    <p>
+    Inferno Program Edition is a streamlined testing tool of the standard open API endpionts of Electronic Health Record (EHR)
+    built using the FHIR standard. Inferno is open source and freely available for use or adoption by the health IT community
+    including EHR vendors, health app developers, and testing labs. It can be used as a testing tool
+    for the EHR Certification program supported by the Office of the National Coordinator for Health IT (ONC).
+    </p>
+
+    <p>
+    Inferno Program Edition contains tests for the exact requirements of the 134.343(g)(10) within the ONC Certification Rule.
+    It behaves like an API consumer, making a series of HTTP requests that mimic a real world client to ensure that the API
+    supports all required standards, including:
+    </p>
+
+    <ul>
+    <li>FHIR</li>
+    <li>US Core v3.1</li>
+    <li>SMART App Launch Framework</li>
+    <li>SMART Bulk Data</li>
+    </ul>
+
+    <p>
+    To get started, enter the FHIR endpoint of the patient accessible endpoint.  Inferno Program Edition is only intended to be
+    used on test systems that do not contain PHI.
+    </p>
+  
+  </div>
+  <div class="tab-pane" id="pills-data" role="tabpanel" aria-labelledby="pills-data-tab">
+    <h2>Test Data</h2>
+
+    PUT CONTENT IN HERE
+  
+  
+  </div>
+  <div class="tab-pane" id="pills-install" role="tabpanel" aria-labelledby="pills-install-tab">
+    <h2>Install Locally</h2>
+
+    PUT CONTENT IN HERE
+  
+  
+  
+  </div>
+</div>
+
+
+    </div>
+  </div>
+</div>
