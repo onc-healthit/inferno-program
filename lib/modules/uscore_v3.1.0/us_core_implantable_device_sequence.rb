@@ -263,13 +263,13 @@ module Inferno
           {
             type: 'code',
             strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/udi-entry-type|4.0.1',
+            system: 'http://hl7.org/fhir/ValueSet/udi-entry-type',
             path: 'udiCarrier.entryType'
           },
           {
             type: 'code',
             strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/device-status|4.0.1',
+            system: 'http://hl7.org/fhir/ValueSet/device-status',
             path: 'status'
           },
           {
@@ -281,7 +281,7 @@ module Inferno
           {
             type: 'code',
             strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/device-nametype|4.0.1',
+            system: 'http://hl7.org/fhir/ValueSet/device-nametype',
             path: 'deviceName.type'
           },
           {
@@ -291,8 +291,19 @@ module Inferno
             path: 'type'
           }
         ]
-        bindings.each do |binding_def|
-          validate_terminology(binding_def, @device_ary&.values&.flatten)
+        invalid_bindings = []
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @device_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        assert invalid_bindings.blank?, "invalid required code found: #{invalid_bindings.join(',')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @device_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        warning do
+          assert invalid_bindings.blank?, "invalid extensible code found: #{invalid_bindings.join(',')}"
         end
       end
 

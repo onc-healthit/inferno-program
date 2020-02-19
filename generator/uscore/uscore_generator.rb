@@ -778,11 +778,23 @@ module Inferno
         bindings = sequence[:bindings]
           .select { |binding_def| ['required', 'extensible'].include? binding_def[:strength] }
 
+        resources_ary_str = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
         if bindings.present?
           test[:test_code] += %(
             bindings = #{structure_to_string(bindings)}
-            bindings.each do |binding_def|
-              validate_terminology(binding_def, #{sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"})
+            invalid_bindings = []
+            bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+              invalid_binding_found = find_invalid_binding(binding_def, #{resources_ary_str})
+              invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+            end
+            assert invalid_bindings.blank?, "invalid required code found: \#{invalid_bindings.join(',')}"
+
+            bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+              invalid_binding_found = find_invalid_binding(binding_def, #{resources_ary_str})
+              invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+            end
+            warning do
+              assert invalid_bindings.blank?, "invalid extensible code found: \#{invalid_bindings.join(',')}"
             end
           )
         end

@@ -354,13 +354,13 @@ module Inferno
           {
             type: 'code',
             strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/location-status|4.0.1',
+            system: 'http://hl7.org/fhir/ValueSet/location-status',
             path: 'status'
           },
           {
             type: 'code',
             strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/location-mode|4.0.1',
+            system: 'http://hl7.org/fhir/ValueSet/location-mode',
             path: 'mode'
           },
           {
@@ -372,13 +372,13 @@ module Inferno
           {
             type: 'code',
             strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/address-use|4.0.1',
+            system: 'http://hl7.org/fhir/ValueSet/address-use',
             path: 'address.use'
           },
           {
             type: 'code',
             strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/address-type|4.0.1',
+            system: 'http://hl7.org/fhir/ValueSet/address-type',
             path: 'address.type'
           },
           {
@@ -390,12 +390,23 @@ module Inferno
           {
             type: 'code',
             strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/days-of-week|4.0.1',
+            system: 'http://hl7.org/fhir/ValueSet/days-of-week',
             path: 'hoursOfOperation.daysOfWeek'
           }
         ]
-        bindings.each do |binding_def|
-          validate_terminology(binding_def, @location_ary)
+        invalid_bindings = []
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @location_ary)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        assert invalid_bindings.blank?, "invalid required code found: #{invalid_bindings.join(',')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @location_ary)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        warning do
+          assert invalid_bindings.blank?, "invalid extensible code found: #{invalid_bindings.join(',')}"
         end
       end
 

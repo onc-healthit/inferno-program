@@ -423,18 +423,29 @@ module Inferno
           {
             type: 'code',
             strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/care-plan-activity-kind|4.0.1',
+            system: 'http://hl7.org/fhir/ValueSet/care-plan-activity-kind',
             path: 'activity.detail.kind'
           },
           {
             type: 'code',
             strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/care-plan-activity-status|4.0.1',
+            system: 'http://hl7.org/fhir/ValueSet/care-plan-activity-status',
             path: 'activity.detail.status'
           }
         ]
-        bindings.each do |binding_def|
-          validate_terminology(binding_def, @care_plan_ary&.values&.flatten)
+        invalid_bindings = []
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @care_plan_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        assert invalid_bindings.blank?, "invalid required code found: #{invalid_bindings.join(',')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @care_plan_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        warning do
+          assert invalid_bindings.blank?, "invalid extensible code found: #{invalid_bindings.join(',')}"
         end
       end
 

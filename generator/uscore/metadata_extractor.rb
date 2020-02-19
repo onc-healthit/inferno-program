@@ -202,7 +202,7 @@ module Inferno
             {
               type: e['type'].first['code'],
               strength: e.dig('binding', 'strength'),
-              system: e.dig('binding', 'valueSet'),
+              system: e.dig('binding', 'valueSet')&.split('|')&.first,
               path: e['path'].gsub('[x]', '').gsub("#{sequence[:resource]}.", '')
             }
           end
