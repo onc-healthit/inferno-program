@@ -35,7 +35,7 @@ module Inferno
 
     def skip_if_include_not_supported(resource, include)
       skip_unless @instance.server_capabilities.include_supported?(resource, include),
-      "The server doesn't support the include '#{include}' for the #{resource} resource"
+                  "The server doesn't support the include '#{include}' for the #{resource} resource"
     end
 
     def skip_if_search_not_supported(resource, params)
