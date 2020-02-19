@@ -214,7 +214,6 @@ module Inferno
         skip_if_known_revinclude_not_supported('CareTeam', 'Provenance:target')
         skip_if_not_found(resource_type: 'CareTeam', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         provenance_results = []
@@ -224,10 +223,8 @@ module Inferno
             'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           search_params['_revinclude'] = 'Provenance:target'
@@ -240,7 +237,7 @@ module Inferno
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
         save_delayed_sequence_references(provenance_results)
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, status) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
@@ -321,7 +318,6 @@ module Inferno
 
         skip_if_known_search_not_supported('CareTeam', ['patient', 'status'])
 
-        could_not_resolve_all = []
         resolved_one = false
 
         found_second_val = false
@@ -331,10 +327,8 @@ module Inferno
             'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           second_status_val = resolve_element_from_path(@care_team_ary[patient], 'status') { |el| get_value_for_search_param(el) != search_params[:status] }

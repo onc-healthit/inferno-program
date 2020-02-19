@@ -137,7 +137,6 @@ module Inferno
         skip_if_known_search_not_supported('Device', ['patient', 'type'])
         skip_if_not_found(resource_type: 'Device', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
@@ -146,10 +145,8 @@ module Inferno
             'type': get_value_for_search_param(resolve_element_from_path(@device_ary[patient], 'type'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
@@ -157,7 +154,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('Device'), reply, search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, type) in any resource.' unless resolved_one
       end
 
       test :read_interaction do
