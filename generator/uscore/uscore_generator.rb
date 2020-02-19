@@ -775,6 +775,12 @@ module Inferno
           )
         end
 
+        if sequence[:resource] == 'MedicationRequest'
+          test[:test_code] += %(
+            test_resource_collection('Medication', @medications)
+            test_resource_collection('Medication', @contained_medications)
+          )
+        end
         sequence[:tests] << test
 
         if sequence[:required_concepts].present? # rubocop:disable Style/GuardClause
@@ -1216,10 +1222,19 @@ module Inferno
       def test_medication_inclusion_code
         %(
           def test_medication_inclusion(medication_requests, search_params)
+            @medications ||= []
+            @contained_medications ||= []
+
             requests_with_external_references =
               medication_requests
                 .select { |request| request&.medicationReference&.present? }
                 .reject { |request| request&.medicationReference&.reference&.start_with? '#' }
+
+            @contained_medications +=
+              medication_requests
+                .select { |request| request&.medicationReference&.reference&.start_with? '#' }
+                .flat_map(&:contained)
+                .select { |resource| resource.resourceType == 'Medication' }
 
             return if requests_with_external_references.blank?
 
@@ -1231,6 +1246,9 @@ module Inferno
 
             medications = requests_with_medications.select { |resource| resource.resourceType == 'Medication' }
             assert medications.present?, 'No Medications were included in the search results'
+
+            @medications += medications
+            @medications.uniq!(&:id)
           end
         )
       end
