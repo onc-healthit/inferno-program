@@ -388,8 +388,9 @@ module Inferno
           assert_bundle_response(reply)
           provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             .select { |resource| resource.resourceType == 'Provenance' }
-          provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
         end
+        provenance_results.each { |reference| @instance.save_resource_reference('Provenance', reference.id) }
+        save_delayed_sequence_references(provenance_results)
         skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
