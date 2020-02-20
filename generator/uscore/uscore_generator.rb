@@ -23,6 +23,7 @@ module Inferno
 
       def generate
         metadata = extract_metadata
+        metadata[:sequences].reject! { |sequence| sequence[:resource] == 'Medication' }
         generate_tests(metadata)
         generate_search_validators(metadata)
         metadata[:sequences].each do |sequence|
