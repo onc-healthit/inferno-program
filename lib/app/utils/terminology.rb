@@ -154,7 +154,7 @@ module Inferno
     # Parse the expansions that are in FHIR Models into valueset validators
     # @param [Boolean] process tells the loader whether to actually run the expansions, or
     # whether to just load the expansions into @known_valuesets
-    def self.load_fhir_models_expansions(process = false)
+    def self.load_fhir_models_expansions
       Inferno.logger.debug 'Loading FHIR Models Expansions'
       FHIR::Definitions.expansions.each do |expansion|
         url = expansion['url']
@@ -166,7 +166,7 @@ module Inferno
         valueset = Inferno::Terminology::Valueset.new(@db)
         valueset.valueset_model = FHIR::ValueSet.new(expansion)
         valueset.vsa = self
-        valueset.process_with_expansions if process
+        valueset.use_expansions = true
 
         @known_valuesets[valueset.url] = valueset
       end

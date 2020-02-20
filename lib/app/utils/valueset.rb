@@ -17,6 +17,9 @@ module Inferno
       # The ValueSet Authority
       attr_accessor :vsa
 
+      # Flag to say "use the provided expansion" when processing the valueset
+      attr_accessor :use_expansions
+
       # UMLS Vocabulary: https://www.nlm.nih.gov/research/umls/sourcereleasedocs/index.html
       SAB = {
         'http://www.nlm.nih.gov/research/umls/rxnorm' => 'RXNORM',
@@ -65,7 +68,13 @@ module Inferno
 
       # The ValueSet [Set]
       def valueset
-        @valueset || process_valueset
+        return @valueset if @valueset
+
+        if @use_expansions
+          process_with_expansions
+        else
+          process_valueset
+        end
       end
 
       # Read the desired valueset from a JSON file
