@@ -177,14 +177,14 @@ module Inferno
     end
 
     # This function accepts a valueset URL, code, and optional system, and returns true
-    # if the code or code/system combination is valid for the valueset 
+    # if the code or code/system combination is valid for the valueset
     # represented by that URL
-    # 
+    #
     # @param String valueset_url the URL for the valueset to validate against
     # @param String code the code to validate against the valueset
     # @param String system an optional codesystem to validate against. Defaults to nil
     # @return Boolean whether the code or code/system is in the valueset
-    def self.validate_code(valueset_url, code, system=nil)
+    def self.validate_code(valueset_url, code, system = nil)
       # Get the valueset from the url. Redundant if the 'system' is not nil,
       # but allows us to throw a better error if the valueset isn't known by Inferno
       valueset = get_valueset(valueset_url)

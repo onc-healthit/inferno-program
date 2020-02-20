@@ -9,7 +9,6 @@ module Inferno
     class Terminology < Endpoint
       set :prefix, '/fhir'
       Inferno::Terminology.register_umls_db('umls.db')
-      Inferno::Terminology.load_valuesets_from_directory('resources', true)
       set :logger, Logger.new('terminology_misses.log')
 
       CS_NOT_SUPPORTED_TEXT = 'The specified code system is not known by the terminology server'
