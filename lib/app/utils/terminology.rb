@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 require_relative 'valueset'
+require 'bloomer'
+require 'bloomer/msgpackable'
+
 module Inferno
   class Terminology
     CODE_SYSTEMS = {
@@ -23,7 +26,11 @@ module Inferno
       'http://fhir.org/guides/argonaut/ValueSet/languages',
       'http://hl7.org/fhir/us/core/ValueSet/simple-language',
       'http://fhir.org/guides/argonaut/ValueSet/substance-ndfrt',
-      'http://fhir.org/guides/argonaut/ValueSet/substance'
+      'http://fhir.org/guides/argonaut/ValueSet/substance',
+      'http://hl7.org/fhir/ValueSet/message-events',
+      'http://hl7.org/fhir/ValueSet/mimetypes',
+      'http://hl7.org/fhir/ValueSet/care-team-category',
+      'http://hl7.org/fhir/ValueSet/action-participant-role'
     ].freeze
 
     @known_valuesets = {}
@@ -95,7 +102,6 @@ module Inferno
     #
     # @param [String] filename the name of the file
     def self.save_bloom_to_file(codeset, filename)
-      require 'bloomer'
       bf = Bloomer::Scalable.new
       codeset.each do |cc|
         bf.add("#{cc[:system]}|#{cc[:code]}")
@@ -142,6 +148,27 @@ module Inferno
         FHIR::DSTU2::StructureDefinition.validates_vs(validator[:url], &validate_fn)
         FHIR::StructureDefinition.validates_vs(validator[:url], &validate_fn)
         @loaded_validators[validator[:url]] = validator[:count]
+      end
+    end
+
+    # Parse the expansions that are in FHIR Models into valueset validators
+    # @param [Boolean] process tells the loader whether to actually run the expansions, or
+    # whether to just load the expansions into @known_valuesets
+    def self.load_fhir_models_expansions(process = false)
+      Inferno.logger.debug 'Loading FHIR Models Expansions'
+      FHIR::Definitions.expansions.each do |expansion|
+        url = expansion['url']
+        next if @known_valuesets[url]
+        next if SKIP_SYS.include? url
+
+        Inferno.logger.debug "Loading expansion #{url}"
+
+        valueset = Inferno::Terminology::Valueset.new(@db)
+        valueset.valueset_model = FHIR::ValueSet.new(expansion)
+        valueset.vsa = self
+        valueset.process_with_expansions if process
+
+        @known_valuesets[valueset.url] = valueset
       end
     end
 

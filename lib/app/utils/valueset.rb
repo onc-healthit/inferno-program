@@ -22,7 +22,7 @@ module Inferno
         'http://www.nlm.nih.gov/research/umls/rxnorm' => 'RXNORM',
         'http://loinc.org' => 'LNC',
         'http://snomed.info/sct' => 'SNOMEDCT_US',
-        'http://www.icd10data.com/icd10pcs' => 'ICD10CM',
+        'http://www.icd10data.com/icd10pcs' => 'ICD10PCS',
         'http://hl7.org/fhir/sid/icd-10-cm' => 'ICD10CM',
         'http://hl7.org/fhir/sid/icd-9-cm' => 'ICD9CM',
         'http://unitsofmeasure.org' => 'NCI_UCUM',
@@ -46,7 +46,10 @@ module Inferno
         'http://hl7.org/fhir/condition-ver-status' => 'resources/misc_valuesets/codesystem-condition-ver-status.json',
         'http://hl7.org/fhir/observation-category' => 'resources/misc_valuesets/codesystem-observation-category.json',
         'http://hl7.org/fhir/referencerange-meaning' => 'resources/misc_valuesets/codesystem-referencerange-meaning.json',
-        'http://hl7.org/fhir/v2/0203' => 'resources/misc_valuesets/codesystem-v2-0203.cs.json'
+        'http://hl7.org/fhir/v2/0203' => 'resources/misc_valuesets/codesystem-v2-0203.cs.json',
+        'http://terminology.hl7.org/CodeSystem/practitioner-role' => 'resources/misc_valuesets/codesystem-practitioner-role.json',
+        'http://terminology.hl7.org/CodeSystem/v3-RoleCode' => 'resources/misc_valuesets/v3-RoleCode.cs.json',
+        'http://terminology.hl7.org/CodeSystem/v2-0131' => 'resources/misc_valuesets/v2-0131.cs.json'
       }.freeze
 
       # https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/attribute_names.html
@@ -90,11 +93,31 @@ module Inferno
         @valueset_model.compose.include.map(&:system).compact.uniq
       end
 
+      # Delegates to process_expanded_valueset if there's already an expansion
+      # Otherwise it delegates to process_valueset to do the expansion
+      def process_with_expansions
+        valueset_toocostly = @valueset_model&.expansion&.extension&.find { |vs| vs.url == 'http://hl7.org/fhir/StructureDefinition/valueset-toocostly' }&.value
+        valueset_unclosed = @valueset_model&.expansion&.extension&.find { |vs| vs.url == 'http://hl7.org/fhir/StructureDefinition/valueset-unclosed' }&.value
+        if @valueset_model&.expansion&.contains
+          # This is moved into a nested clause so we can tell in the debug statements which path we're taking
+          if valueset_toocostly || valueset_unclosed
+            Inferno.logger.debug("Valueset too costly or unclosed: #{url}")
+            process_valueset
+          else
+            Inferno.logger.debug("Processing expanded valueset: #{url}")
+            process_expanded_valueset
+          end
+        else
+          Inferno.logger.debug("Processing composed valueset: #{url}")
+          process_valueset
+        end
+      end
+
       # Creates the whole valueset
       #
       # Creates a [Set] representing the valueset
       def process_valueset
-        puts "Processing #{@valueset_model.url}"
+        Inferno.logger.debug "Processing #{@valueset_model.url}"
         include_set = Set.new
         @valueset_model.compose.include.each do |include|
           # Cumulative of each include
@@ -103,6 +126,14 @@ module Inferno
         @valueset_model.compose.exclude.each do |exclude|
           # Remove excluded codes
           include_set.subtract(get_code_sets(exclude))
+        end
+        @valueset = include_set
+      end
+
+      def process_expanded_valueset
+        include_set = Set.new
+        @valueset_model.expansion.contains.each do |contain|
+          include_set.add(system: contain.system, code: contain.code)
         end
         @valueset = include_set
       end
@@ -215,14 +246,14 @@ module Inferno
             col = filter.property
             where << "#{col} = '#{filter.value}'"
           else
-            puts "Cannot handle filter operation: #{filter.op}"
+            Inferno.logger.debug "Cannot handle filter operation: #{filter.op}"
           end
           where
         end
 
         filtered_set = Set.new
         if CODE_SYS.include? system
-          puts "  loading #{system} codes..."
+          Inferno.logger.debug "  loading #{system} codes..."
           return load_code_system(system)
         end
         raise "Can't handle #{filter&.op} on #{system}" unless ['=', 'in', 'is-a', nil].include? filter&.op
@@ -234,7 +265,7 @@ module Inferno
           end
         elsif ['=', 'in', nil].include? filter&.op
           if FILTER_PROP[filter.property]
-            @db.execute("SELECT code FROM mrsat WHERE ATN = '#{filter_prop_or_self(filter.property)}' AND ATV = '#{filter_prop_or_self(filter.value)}'") do |row|
+            @db.execute("SELECT code FROM mrsat WHERE SAB = '#{SAB[system]}' AND ATN = '#{fp_self(filter.property)}' AND ATV = '#{fp_self(filter.value)}'") do |row|
               filtered_set.add(system: system, code: row[0])
             end
           else
@@ -308,7 +339,10 @@ module Inferno
         desired_children
       end
 
-      def filter_prop_or_self(prop)
+      # fp_self is short for filter_prop_or_self
+      # @param [String] prop The property name
+      # @return [String] either the value from FILTER_PROP for that key, or prop if that key isn't in FILTER_PROP
+      def fp_self(prop)
         FILTER_PROP[prop] || prop
       end
 
