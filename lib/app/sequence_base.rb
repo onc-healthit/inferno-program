@@ -521,7 +521,7 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        entries = fetch_all_bundled_resources(reply.resource).select { |entry| entry.class == klass }
+        entries = fetch_all_bundled_resources(reply).select { |entry| entry.class == klass }
         validate_reply_entries(entries, search_params)
         assert entries.present?, 'No resources of this type were returned'
       end

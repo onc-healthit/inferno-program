@@ -137,7 +137,7 @@ module Inferno
 
         save_resource_references(versioned_resource_class('Practitioner'), @practitioner_ary)
         save_delayed_sequence_references(@practitioner_ary)
-        validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
+        validate_reply_entries(@practitioner_ary, search_params)
       end
 
       test :search_by_identifier do
@@ -164,7 +164,8 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
 
-        validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
+        resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Practitioner' }
+        validate_reply_entries(resources_found, search_params)
       end
 
       test :vread_interaction do

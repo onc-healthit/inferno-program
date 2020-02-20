@@ -130,7 +130,7 @@ module Inferno
 
         save_resource_references(versioned_resource_class('PractitionerRole'), @practitioner_role_ary)
         save_delayed_sequence_references(@practitioner_role_ary)
-        validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
+        validate_reply_entries(@practitioner_role_ary, search_params)
       end
 
       test :search_by_practitioner do
@@ -157,7 +157,8 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
 
-        validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
+        resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'PractitionerRole' }
+        validate_reply_entries(resources_found, search_params)
       end
 
       test :chained_search_by_practitioner do

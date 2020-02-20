@@ -440,7 +440,8 @@ module Inferno
               #{search_params}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               #{status_search_code(sequence, search_param[:names])}
-              validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+              resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == '#{sequence[:resource]}' }
+              validate_reply_entries(resources_found, search_params)
               #{'test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)' if sequence[:resource] == 'MedicationRequest'}
               #{comparator_search_code}
             )
@@ -936,7 +937,7 @@ module Inferno
 
             save_resource_references(#{save_resource_references_arguments})
             save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
-            validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+            validate_reply_entries(@#{sequence[:resource].underscore}_ary, search_params)
           )
         else
           first_search = %(
@@ -976,7 +977,7 @@ module Inferno
 
               save_resource_references(#{save_resource_references_arguments})
               save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient])
-              validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+              validate_reply_entries(@#{sequence[:resource].underscore}_ary[patient], search_params)
             end
 
             #{skip_if_not_found_code(sequence)}

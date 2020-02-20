@@ -186,7 +186,8 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
+          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'DiagnosticReport' }
+          validate_reply_entries(resources_found, search_params)
         end
       end
 
@@ -222,7 +223,8 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
+          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'DiagnosticReport' }
+          validate_reply_entries(resources_found, search_params)
         end
 
         skip 'Could not resolve all parameters (patient, code) in any resource.' unless resolved_one
@@ -262,7 +264,8 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
+          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'DiagnosticReport' }
+          validate_reply_entries(resources_found, search_params)
 
           ['gt', 'lt', 'le', 'ge'].each do |comparator|
             comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -306,7 +309,8 @@ module Inferno
 
           reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
 
-          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
+          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'DiagnosticReport' }
+          validate_reply_entries(resources_found, search_params)
         end
 
         skip 'Could not resolve all parameters (patient, status) in any resource.' unless resolved_one
@@ -347,7 +351,8 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
+          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'DiagnosticReport' }
+          validate_reply_entries(resources_found, search_params)
 
           ['gt', 'lt', 'le', 'ge'].each do |comparator|
             comparator_val = date_comparator_value(comparator, search_params[:date])

@@ -160,7 +160,7 @@ module Inferno
 
           save_resource_references(versioned_resource_class('Encounter'), @encounter_ary[patient])
           save_delayed_sequence_references(@encounter_ary[patient])
-          validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+          validate_reply_entries(@encounter_ary[patient], search_params)
         end
 
         skip_if_not_found(resource_type: 'Encounter', delayed: false)
@@ -197,7 +197,8 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Encounter' }
+          validate_reply_entries(resources_found, search_params)
         end
 
         skip 'Could not resolve all parameters (_id) in any resource.' unless resolved_one
@@ -236,7 +237,8 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Encounter' }
+          validate_reply_entries(resources_found, search_params)
 
           ['gt', 'lt', 'le', 'ge'].each do |comparator|
             comparator_val = date_comparator_value(comparator, search_params[:date])
@@ -281,7 +283,8 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Encounter' }
+          validate_reply_entries(resources_found, search_params)
         end
 
         skip 'Could not resolve all parameters (identifier) in any resource.' unless resolved_one
@@ -318,7 +321,8 @@ module Inferno
 
           reply = get_resource_by_params(versioned_resource_class('Encounter'), search_params)
 
-          validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Encounter' }
+          validate_reply_entries(resources_found, search_params)
         end
 
         skip 'Could not resolve all parameters (patient, status) in any resource.' unless resolved_one
@@ -357,7 +361,8 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Encounter' }
+          validate_reply_entries(resources_found, search_params)
         end
 
         skip 'Could not resolve all parameters (class, patient) in any resource.' unless resolved_one
@@ -396,7 +401,8 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          validate_search_reply(versioned_resource_class('Encounter'), reply, search_params)
+          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Encounter' }
+          validate_reply_entries(resources_found, search_params)
         end
 
         skip 'Could not resolve all parameters (patient, type) in any resource.' unless resolved_one

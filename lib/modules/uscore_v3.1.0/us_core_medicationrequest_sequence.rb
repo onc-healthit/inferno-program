@@ -218,7 +218,8 @@ module Inferno
 
           reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
 
-          validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'MedicationRequest' }
+          validate_reply_entries(resources_found, search_params)
           test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)
         end
 
@@ -263,7 +264,8 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'MedicationRequest' }
+          validate_reply_entries(resources_found, search_params)
           test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)
         end
 
@@ -309,7 +311,8 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'MedicationRequest' }
+          validate_reply_entries(resources_found, search_params)
           test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)
         end
 
