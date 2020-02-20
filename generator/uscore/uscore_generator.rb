@@ -1034,7 +1034,7 @@ module Inferno
 
               save_resource_references(#{save_resource_references_arguments})
               save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient])
-              validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+              validate_reply_entries(@#{sequence[:resource].underscore}_ary[patient], search_params)
               #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
               break#{' if values_found == 2' if find_two_values}
             end

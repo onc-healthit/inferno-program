@@ -153,7 +153,7 @@ module Inferno
 
             save_resource_references(versioned_resource_class('Observation'), @observation_ary[patient], Inferno::ValidationUtil::US_CORE_R4_URIS[:heart_rate])
             save_delayed_sequence_references(@observation_ary[patient])
-            validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+            validate_reply_entries(@observation_ary[patient], search_params)
 
             break
           end

@@ -175,7 +175,7 @@ module Inferno
 
             save_resource_references(versioned_resource_class('MedicationRequest'), @medication_request_ary[patient])
             save_delayed_sequence_references(@medication_request_ary[patient])
-            validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+            validate_reply_entries(@medication_request_ary[patient], search_params)
             test_medication_inclusion(@medication_request_ary[patient], search_params)
             break
           end

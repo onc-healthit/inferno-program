@@ -140,7 +140,7 @@ module Inferno
 
             save_resource_references(versioned_resource_class('CareTeam'), @care_team_ary[patient])
             save_delayed_sequence_references(@care_team_ary[patient])
-            validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
+            validate_reply_entries(@care_team_ary[patient], search_params)
 
             break if values_found == 2
           end

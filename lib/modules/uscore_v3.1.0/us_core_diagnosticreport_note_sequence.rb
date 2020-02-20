@@ -153,7 +153,7 @@ module Inferno
 
             save_resource_references(versioned_resource_class('DiagnosticReport'), @diagnostic_report_ary[patient], Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_note])
             save_delayed_sequence_references(@diagnostic_report_ary[patient])
-            validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
+            validate_reply_entries(@diagnostic_report_ary[patient], search_params)
 
             break
           end
