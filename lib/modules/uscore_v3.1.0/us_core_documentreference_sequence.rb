@@ -197,8 +197,7 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'DocumentReference' }
-          validate_reply_entries(resources_found, search_params)
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         end
 
         skip 'Could not resolve all parameters (_id) in any resource.' unless resolved_one
@@ -236,8 +235,7 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'DocumentReference' }
-          validate_reply_entries(resources_found, search_params)
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         end
 
         skip 'Could not resolve all parameters (patient, type) in any resource.' unless resolved_one
@@ -277,8 +275,7 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'DocumentReference' }
-          validate_reply_entries(resources_found, search_params)
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         end
 
         skip 'Could not resolve all parameters (patient, category, date) in any resource.' unless resolved_one
@@ -316,8 +313,7 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'DocumentReference' }
-          validate_reply_entries(resources_found, search_params)
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         end
 
         skip 'Could not resolve all parameters (patient, category) in any resource.' unless resolved_one
@@ -358,8 +354,7 @@ module Inferno
 
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'DocumentReference' }
-          validate_reply_entries(resources_found, search_params)
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
 
           ['gt', 'lt', 'le', 'ge'].each do |comparator|
             comparator_val = date_comparator_value(comparator, search_params[:period])
@@ -403,8 +398,7 @@ module Inferno
 
           reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
 
-          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'DocumentReference' }
-          validate_reply_entries(resources_found, search_params)
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
         end
 
         skip 'Could not resolve all parameters (patient, status) in any resource.' unless resolved_one

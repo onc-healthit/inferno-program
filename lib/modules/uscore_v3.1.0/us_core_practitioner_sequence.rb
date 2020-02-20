@@ -164,8 +164,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
 
-        resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Practitioner' }
-        validate_reply_entries(resources_found, search_params)
+        validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
       end
 
       test :vread_interaction do

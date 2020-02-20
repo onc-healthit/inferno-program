@@ -175,8 +175,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
 
-        resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Location' }
-        validate_reply_entries(resources_found, search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 
       test :search_by_address_city do
@@ -204,8 +203,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
 
-        resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Location' }
-        validate_reply_entries(resources_found, search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 
       test :search_by_address_state do
@@ -233,8 +231,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
 
-        resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Location' }
-        validate_reply_entries(resources_found, search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 
       test :search_by_address_postalcode do
@@ -262,8 +259,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Location'), search_params)
 
-        resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Location' }
-        validate_reply_entries(resources_found, search_params)
+        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
       end
 
       test :vread_interaction do

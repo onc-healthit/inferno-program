@@ -151,8 +151,7 @@ module Inferno
 
           reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
 
-          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Device' }
-          validate_reply_entries(resources_found, search_params)
+          validate_search_reply(versioned_resource_class('Device'), reply, search_params)
         end
 
         skip 'Could not resolve all parameters (patient, type) in any resource.' unless resolved_one

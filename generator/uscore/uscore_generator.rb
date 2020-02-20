@@ -440,8 +440,7 @@ module Inferno
               #{search_params}
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               #{status_search_code(sequence, search_param[:names])}
-              resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == '#{sequence[:resource]}' }
-              validate_reply_entries(resources_found, search_params)
+              validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
               #{'test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)' if sequence[:resource] == 'MedicationRequest'}
               #{comparator_search_code}
             )

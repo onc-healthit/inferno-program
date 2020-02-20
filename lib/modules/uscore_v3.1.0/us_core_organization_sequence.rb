@@ -163,8 +163,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('Organization'), search_params)
 
-        resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Organization' }
-        validate_reply_entries(resources_found, search_params)
+        validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
       end
 
       test :vread_interaction do

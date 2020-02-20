@@ -157,8 +157,7 @@ module Inferno
 
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
 
-        resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'PractitionerRole' }
-        validate_reply_entries(resources_found, search_params)
+        validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
       end
 
       test :chained_search_by_practitioner do

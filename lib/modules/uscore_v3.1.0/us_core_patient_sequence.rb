@@ -167,8 +167,7 @@ module Inferno
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
 
-          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Patient' }
-          validate_reply_entries(resources_found, search_params)
+          validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
         skip 'Could not resolve all parameters (identifier) in any resource.' unless resolved_one
@@ -203,8 +202,7 @@ module Inferno
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
 
-          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Patient' }
-          validate_reply_entries(resources_found, search_params)
+          validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
         skip 'Could not resolve all parameters (name) in any resource.' unless resolved_one
@@ -240,8 +238,7 @@ module Inferno
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
 
-          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Patient' }
-          validate_reply_entries(resources_found, search_params)
+          validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
         skip 'Could not resolve all parameters (gender, name) in any resource.' unless resolved_one
@@ -277,8 +274,7 @@ module Inferno
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
 
-          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Patient' }
-          validate_reply_entries(resources_found, search_params)
+          validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
         skip 'Could not resolve all parameters (birthdate, name) in any resource.' unless resolved_one
@@ -315,8 +311,7 @@ module Inferno
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
 
-          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Patient' }
-          validate_reply_entries(resources_found, search_params)
+          validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
         skip 'Could not resolve all parameters (birthdate, family) in any resource.' unless resolved_one
@@ -353,8 +348,7 @@ module Inferno
 
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
 
-          resources_found = fetch_all_bundled_resources(reply).select { |resource| resource.resourceType == 'Patient' }
-          validate_reply_entries(resources_found, search_params)
+          validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
         end
 
         skip 'Could not resolve all parameters (family, gender) in any resource.' unless resolved_one
