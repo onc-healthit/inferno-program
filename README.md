@@ -53,6 +53,15 @@ If you would like to use a different port it can be specified when calling `rack
 rackup -p 3000
 ```
 
+### Using a different configuration file
+
+A configuration file other than the default `config.yml` can be selected when starting the application.
+
+From the command line:
+```sh
+INFERNO_CONFIG_FILE=myconfig.yml bundle exec rackup
+```
+
 ### Remote Deployment
 
 Inferno can also be deployed onto a server to test many different instances of the FHIR Servers by multiple users.  Test results are kept private at a unique, unguessable URI that can be saved for future reference or shared.
