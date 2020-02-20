@@ -9,10 +9,11 @@ module Inferno
     class Terminology < Endpoint
       set :prefix, '/fhir'
       Inferno::Terminology.register_umls_db('umls.db')
+
       set :logger, Logger.new('terminology_misses.log')
 
       CS_NOT_SUPPORTED_TEXT = 'The specified code system is not known by the terminology server'
-      VS_NOT_SUPPORTED_TEXT = 'The specified valueset is not known byt he terminology server'
+      VS_NOT_SUPPORTED_TEXT = 'The specified valueset is not known by the terminology server'
 
       get '/metadata', provides: ['application/fhir+json', 'application/fhir+xml'] do
         capability = if params[:mode] == 'terminology'
