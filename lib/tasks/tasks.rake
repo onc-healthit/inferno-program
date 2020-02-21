@@ -571,7 +571,7 @@ namespace :terminology do |_argv|
   task :run_umls, [:my_config] do |_t, args|
     # More information on batch running UMLS
     # https://www.nlm.nih.gov/research/umls/implementation_resources/community/mmsys/BatchMetaMorphoSys.html
-    args.with_defaults(my_config: 'all-active-exportconfig.prop')
+    args.with_defaults(my_config: 'inferno.prop')
     jre_version = if !(/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM).nil?
                     'windows64'
                   elsif !(/darwin/ =~ RUBY_PLATFORM).nil?
