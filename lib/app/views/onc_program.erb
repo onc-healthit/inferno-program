@@ -491,16 +491,6 @@
           <label class="form-check-label" for="bulk_use_jwks_url">Use JWKS URL</label>
         </div>
 
-        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_jwks_url_auth,
-              label: 'JWKS Url Auth',
-              instance: instance,
-              description: %(
-                This URL is our dedicated endpoint, created to host JWK sets. You can use it while registering a client
-                and then your server is supposed query it and obtain the JWK from it.  Leave blank if you do not support JWK url authentication.
-              ),
-              value: instance.bulk_jwks_url_auth,
-              })%>
-
         <div class="form-group"
           data-requiredby="<%= test_set.variable_required_by(:bulk_encryption_method).map {|seq| seq.sequence_name}.join(',')%>"
           data-prerequisite="bulk_encryption_method"
@@ -525,7 +515,7 @@
 
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_lines_to_validate,
               instance: instance,
-              label: 'Lines to validate',
+              label: 'Maximum resources to validate',
               description: %(
                 While testing we need to validate resources in downloaded NDJSON file.
                 Please enter the number of lines/resources that would be validated for each NDJSON file. 
@@ -553,18 +543,58 @@
                  data-lock-variables="<%=group.lock_variables.join(',') %>"></div>
             <%end %>
           <% end %>
+          <div class="show-bulk-registration-info" style="display:none">
+             <div class="prerequisite-group-title">Backend Authorization Registration</div>
+             <div class="prerequisite-group-box">
+
+             <%= erb(:prerequisite_field,{},{prerequisite: :bulk_jwks_url_auth,
+                    label: 'JWKS Url Auth',
+                    instance: instance,
+                    description: %(
+                      This URL is our dedicated endpoint, created to host JWK sets. You can use it while registering a client
+                      and then your server is supposed query it and obtain the JWK from it.  Leave blank if you do not support JWK url authentication.
+                    ),
+                    value: instance.bulk_jwks_url_auth || "#{instance.base_url}#{base_path}/.well-known/jwks.json",
+                    readonly: true
+                    })%>
+
+              <div class="form-group">
+                    
+              <label for="bulk_jwks_es384_auth">ES 384 Public Key
+                <small>If the server does not support retrieving JWKS from URLs, you may register Inferno as a client using the following ES 384 Public Key</small>
+              </label>
+
+             <textarea readonly="readonly" class="form-control" id="bulk_jwks_es384_auth" rows=3 style="overflow: hidden"><%=JSON.parse(instance.bulk_data_jwks)['es384_public'].to_json%></textarea>
+             </div>
+             
+
+             <div class="form-group">
+              <label for="bulk_jwks_rs384_auth">RS 384 Public Key
+                <small>Alternatively, you may register Inferno as a client using the following RS 384 Public Key</small>
+              </label>
+
+             <textarea readonly="readonly" class="form-control" id="bulk_jwks_rs384_auth" rows=3 style="overflow: hidden">
+              <%=JSON.parse(instance.bulk_data_jwks)['rs384_public'].to_json%>
+             </textarea>
+             </div>
+
+             </div>
+          </div>
           <div class="show-uris" style="display:none">
+          <div class="prerequisite-group-title">SMART App Authorization Registration</div>
+             <div class="prerequisite-group-box">
+                <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
+                      instance: instance,
+                      label: 'Redirect URI',
+                      value: instance.redirect_uris,
+                      readonly: true })%>
             <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
                     instance: instance,
                     label: 'Launch URI',
                     value: instance.initiate_login_uri,
                     readonly: true })%>
           
-                <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
-                      instance: instance,
-                      label: 'Redirect URI',
-                      value: instance.redirect_uris,
-                      readonly: true })%>
+            </div>
           </div>
           <div class="prerequisites-group-additional" id="prerequisites-group-additonal-DiscoveryAndRegistration">
             

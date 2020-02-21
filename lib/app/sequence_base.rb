@@ -45,6 +45,7 @@ module Inferno
 
       @@optional = []
       @@show_uris = []
+      @@show_bulk_registration_info = []
       @@delayed_sequences = []
 
       @@test_id_prefixes = {}
@@ -349,6 +350,14 @@ module Inferno
 
       def self.show_uris?
         @@show_uris.include?(sequence_name)
+      end
+
+      def self.show_bulk_registration_info
+        @@show_bulk_registration_info << sequence_name
+      end
+
+      def self.show_bulk_registration_info?
+        @@show_bulk_registration_info.include?(sequence_name)
       end
 
       def self.preconditions(description, &block)

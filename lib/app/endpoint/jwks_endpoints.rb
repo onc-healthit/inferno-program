@@ -6,23 +6,16 @@ module Inferno
       def self.included(klass)
         klass.class_eval do
           get '/.well-known/jwks.json' do
-            binding.pry
+            keys = []
             if settings.respond_to? :bulk_data_jwks
-              keys = []
-              if settings.bulk_data_jwks['es384_public'].present?
-                keys.push(settings.bulk_data_jwks['es384_public'])
-              end
-              if settings.bulk_data_jwks['rs384_public'].present?
-                keys.push(settings.bulk_data_jwks['rs384_public'])
-              end
+              keys.push(settings.bulk_data_jwks['es384_public']) if settings.bulk_data_jwks['es384_public'].present?
+              keys.push(settings.bulk_data_jwks['rs384_public']) if settings.bulk_data_jwks['rs384_public'].present?
             end
 
-            jwks_urls = Hash.new()
-            jwks_urls["keys"] = keys
+            jwks_urls = { 'keys': keys }
 
             content_type :json
-            binding.pry
-            an_instance.bulk_public_key
+            jwks_urls.to_json
           end
         end
       end

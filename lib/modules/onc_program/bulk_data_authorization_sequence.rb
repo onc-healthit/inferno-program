@@ -8,8 +8,10 @@ module Inferno
 
       test_id_prefix 'BDA'
 
-      requires :bulk_client_id, :bulk_use_jwks_url, :bulk_jwks_url_auth, :bulk_encryption_method, :bulk_token_endpoint
+      requires :bulk_client_id, :bulk_jwks_url_auth, :bulk_encryption_method, :bulk_token_endpoint
       defines :bulk_access_token
+
+      show_bulk_registration_info
 
       details %(
         Bulk Data servers are required to authorize clients using the
@@ -28,14 +30,14 @@ module Inferno
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
         super(instance, client, disable_tls_tests, sequence_result)
 
-        if instance.bulk_data_jwks.present?
-          if (instance.bulk_encryption_method == 'ES384')
-            instance.bulk_public_key = JSON.parse(instance.bulk_data_jwks)['es384_public'].to_json
-            instance.bulk_private_key = JSON.parse(instance.bulk_data_jwks)['es384_private'].to_json
-          elsif (instance.bulk_encryption_method == 'RS384')
-            instance.bulk_public_key = JSON.parse(instance.bulk_data_jwks)['rs384_public'].to_json
-            instance.bulk_private_key = JSON.parse(instance.bulk_data_jwks)['rs384_private'].to_json
-          end
+        return unless instance.bulk_data_jwks.present?
+
+        if instance.bulk_encryption_method == 'ES384'
+          instance.bulk_public_key = JSON.parse(instance.bulk_data_jwks)['es384_public'].to_json
+          instance.bulk_private_key = JSON.parse(instance.bulk_data_jwks)['es384_private'].to_json
+        else
+          instance.bulk_public_key = JSON.parse(instance.bulk_data_jwks)['rs384_public'].to_json
+          instance.bulk_private_key = JSON.parse(instance.bulk_data_jwks)['rs384_private'].to_json
         end
       end
 
@@ -65,6 +67,7 @@ module Inferno
                                        aud,
                                        exp,
                                        jti)
+        assert_valid_http_uri(@instance.bulk_token_endpoint, "Invalid token endpoint: #{@instance.bulk_token_endpoint}")
 
         LoggedRestClient.post(@instance.bulk_token_endpoint, payload, header)
       end

@@ -67,9 +67,10 @@ $(function(){
         variable_defaults = {},
         requirements = [],
         popupTitle = "",
-        lockedVariables = [];
-        skippedOnly = false;
-        show_uris = false;
+        lockedVariables = [],
+        skippedOnly = false,
+        show_uris = false,
+        show_bulk_registration_info = false;
 
     popupTitle = $(this).closest('.sequence-action-boundary').data('group');
 
@@ -109,6 +110,9 @@ $(function(){
           if(!show_uris){
             show_uris = $(this).data('showUris');
           }
+          if(!show_bulk_registration_info){
+            show_bulk_registration_info = $(this).data('showBulkRegistrationInfo');
+          }
       }
 
     });
@@ -116,6 +120,7 @@ $(function(){
     // clear out the existing contents
     $('.prerequisite-group').empty();
     $('.show-uris').hide();
+    $('.show-bulk-registration-info').hide();
     $('.enabled-prerequisite-group-title').hide();
     $('.disabled-prerequisite-group-title').hide();
     $('.disabled-prerequisites').hide();
@@ -243,6 +248,10 @@ $(function(){
     if(show_uris){
       $('.show-uris').show();
     }
+
+    if(show_bulk_registration_info){
+      $('.show-bulk-registration-info').show();
+    }
   })
 
 
@@ -307,6 +316,10 @@ $(function(){
   })
 
   $(":input[type=text][readonly='readonly']").on('click', function(){
+    this.select();
+  })
+
+  $("textarea[readonly='readonly']").on('click', function(){
     this.select();
   })
 
