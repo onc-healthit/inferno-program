@@ -310,7 +310,7 @@ module Inferno
 
         revinclude_test[:test_code] += %(
           #{'end' unless sequence[:delayed_sequence]}
-          #{resource_variable}.each { |reference| @instance.save_resource_reference('#{resource_name}', reference.id) }
+          save_resource_references(versioned_resource_class('#{resource_name}'), #{resource_variable})
           save_delayed_sequence_references(#{resource_variable})
           #{skip_if_could_not_resolve if resolve_param_from_resource && !sequence[:delayed_sequence]}
           skip 'No Provenance resources were returned from this search' unless #{resource_variable}.present?
