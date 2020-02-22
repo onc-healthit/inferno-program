@@ -467,23 +467,25 @@
         })%>
                 
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_url,
-              label: 'Bulk Data Base URL',
-              description: 'The full URL of the server to which we can append "/$export".',
+              label: 'Bulk Data FHIR URL',
+              description: 'The URL of the Bulk FHIR server.',
               instance: instance,
               value: instance.bulk_url,
               })%> 
 
-        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_client_id,
-              label: 'Bulk Data Client ID',
-              instance: instance,
-              value: instance.bulk_client_id,
-              })%>    
-
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_token_endpoint,
-              label: 'Bulk Data Server Token Endpoint',
+              label: 'Backend Services Token Endpoint',
+              description: 'The OAuth 2.0 Token Endpoint used by the Backend Services specification to provide bearer tokens.',
               instance: instance,
               value: instance.bulk_token_endpoint,
               })%>       
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_client_id,
+              label: 'Bulk Data Client ID',
+              description: 'Client ID provided during registration time to the Inferno application.',
+              instance: instance,
+              value: instance.bulk_client_id,
+              })%>    
 
         <div class="form-group"
           data-requiredby="<%= test_set.variable_required_by(:bulk_encryption_method).map {|seq| seq.sequence_name}.join(',')%>"
@@ -504,6 +506,7 @@
         <%= erb(:prerequisite_field,{},{prerequisite: :group_id,
               label: 'Group ID',
               instance: instance,
+              description: 'The Group ID associated with the group of patients to be exported.',
               value: instance.group_id,
               })%>    
 
@@ -542,11 +545,12 @@
              <div class="prerequisite-group-box">
 
              <%= erb(:prerequisite_field,{},{prerequisite: :bulk_jwks_url_auth,
-                    label: 'JWKS Url Auth',
+                    label: 'JWK Set URL (recommended)',
                     instance: instance,
                     description: %(
-                      This URL is our dedicated endpoint, created to host JWK sets. You can use it while registering a client
-                      and then your server is supposed query it and obtain the JWK from it.  Leave blank if you do not support JWK url authentication.
+                      Register Inferno using this JWK Set URL to communicate keys if supported by the server.  Note that the
+                      server must be able to resolve the URL in order for this to function properly.  If the server does not
+                      support this method you may register Inferno using the JWK Set directly instead.
                     ),
                     value: instance.bulk_jwks_url_auth || "#{instance.base_url}#{base_path}/.well-known/jwks.json",
                     readonly: true
@@ -555,7 +559,7 @@
               <div class="form-group">
                     
               <label for="bulk_jwks_manual_keys">Manual Key Registration
-                <small>If the server does not support retrieving JWKS from URLs, you may register Inferno as a client using the following RS384 and ES384 Public Key</small>
+                <small>If the server does not support registering URLs to provide JWK Sets, you may register Inferno as a client using the following RS384 and ES384 Public Key</small>
               </label>
 
              <textarea readonly="readonly" class="form-control" id="bulk_jwks_manual_keys" rows=4 style="overflow: hidden">
