@@ -47,8 +47,6 @@ module Inferno
 
           @instance.bulk_data_jwks = settings.bulk_data_jwks.to_json if settings.respond_to? :bulk_data_jwks
 
-          @instance.bulk_use_jwks_url = true
-
           unless params['preset'].blank?
             JSON.parse(params['preset']).each do |key, value|
               value = value.tr('\'', '"') if ['bulk_private_key', 'bulk_public_key'].include? key

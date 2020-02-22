@@ -27,21 +27,7 @@ module Inferno
 
       )
 
-      def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
-        super(instance, client, disable_tls_tests, sequence_result)
-
-        return unless instance.bulk_data_jwks.present?
-
-        if instance.bulk_encryption_method == 'ES384'
-          instance.bulk_public_key = JSON.parse(instance.bulk_data_jwks)['es384_public'].to_json
-          instance.bulk_private_key = JSON.parse(instance.bulk_data_jwks)['es384_private'].to_json
-        else
-          instance.bulk_public_key = JSON.parse(instance.bulk_data_jwks)['rs384_public'].to_json
-          instance.bulk_private_key = JSON.parse(instance.bulk_data_jwks)['rs384_private'].to_json
-        end
-      end
-
-      def authorize(bulk_private_key: @instance.bulk_private_key,
+      def authorize(bulk_private_key: @instance.bulk_selected_private_key,
                     content_type: 'application/x-www-form-urlencoded',
                     scope: 'system/*.read',
                     grant_type: 'client_credentials',
@@ -58,7 +44,7 @@ module Inferno
             accept: 'application/json'
           }.compact
 
-        payload = create_post_palyload(bulk_private_key,
+        payload = create_post_payload(bulk_private_key,
                                        scope,
                                        grant_type,
                                        client_assertion_type,
@@ -72,7 +58,7 @@ module Inferno
         LoggedRestClient.post(@instance.bulk_token_endpoint, payload, header)
       end
 
-      def create_post_palyload(bulk_private_key,
+      def create_post_payload(bulk_private_key,
                                scope,
                                grant_type,
                                client_assertion_type,
@@ -90,7 +76,7 @@ module Inferno
           jti: jti
         ).compact
 
-        jwk = JSON::JWK.new(JSON.parse(bulk_private_key))
+        jwk = JSON::JWK.new(bulk_private_key)
 
         jwt_token.header[:kid] = jwk['kid']
         jwk_private_key = jwk.to_key
