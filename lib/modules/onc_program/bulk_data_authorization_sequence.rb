@@ -45,28 +45,28 @@ module Inferno
           }.compact
 
         payload = create_post_payload(bulk_private_key,
-                                       scope,
-                                       grant_type,
-                                       client_assertion_type,
-                                       iss,
-                                       sub,
-                                       aud,
-                                       exp,
-                                       jti)
+                                      scope,
+                                      grant_type,
+                                      client_assertion_type,
+                                      iss,
+                                      sub,
+                                      aud,
+                                      exp,
+                                      jti)
         assert_valid_http_uri(@instance.bulk_token_endpoint, "Invalid token endpoint: #{@instance.bulk_token_endpoint}")
 
         LoggedRestClient.post(@instance.bulk_token_endpoint, payload, header)
       end
 
       def create_post_payload(bulk_private_key,
-                               scope,
-                               grant_type,
-                               client_assertion_type,
-                               iss,
-                               sub,
-                               aud,
-                               exp,
-                               jti)
+                              scope,
+                              grant_type,
+                              client_assertion_type,
+                              iss,
+                              sub,
+                              aud,
+                              exp,
+                              jti)
 
         jwt_token = JSON::JWT.new(
           iss: iss,

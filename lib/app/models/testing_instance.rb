@@ -287,26 +287,29 @@ module Inferno
 
       def bulk_private_key_set
         return unless bulk_data_jwks.present?
-        { keys: JSON.parse(bulk_data_jwks)['keys'].select{ |key|  key['key_ops']&.include?('sign') } }.to_json
+
+        { keys: JSON.parse(bulk_data_jwks)['keys'].select { |key| key['key_ops']&.include?('sign') } }.to_json
       end
 
       def bulk_public_key_set
         return unless bulk_data_jwks.present?
-        { keys: JSON.parse(bulk_data_jwks)['keys'].select { |key|  key['key_ops']&.include?('verify') } }.to_json
+
+        { keys: JSON.parse(bulk_data_jwks)['keys'].select { |key| key['key_ops']&.include?('verify') } }.to_json
       end
 
       def bulk_selected_public_key
         return unless bulk_data_jwks.present?
-        JSON.parse(bulk_public_key_set)['keys'].find do |key| 
-         key['alg'] == bulk_encryption_method
+
+        JSON.parse(bulk_public_key_set)['keys'].find do |key|
+          key['alg'] == bulk_encryption_method
         end
       end
 
       def bulk_selected_private_key
         return unless bulk_data_jwks.present?
 
-        JSON.parse(bulk_private_key_set)['keys'].find do |key| 
-         key['alg'] == bulk_encryption_method
+        JSON.parse(bulk_private_key_set)['keys'].find do |key|
+          key['alg'] == bulk_encryption_method
         end
       end
 
