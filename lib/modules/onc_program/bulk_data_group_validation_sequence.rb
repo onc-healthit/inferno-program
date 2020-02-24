@@ -15,7 +15,7 @@ module Inferno
 
       requires :bulk_status_output, :bulk_lines_to_validate, :bulk_patient_ids_in_group, :bulk_stop_after_must_support
 
-      attr_accessor :requires_access_token, :output
+      attr_accessor :requires_access_token, :output, :patient_ids_seen
 
       MAX_RECENT_LINE_SIZE = 100
 
@@ -63,6 +63,8 @@ module Inferno
         headers = { accept: 'application/fhir+ndjson' }
         headers['Authorization'] = "Bearer #{@instance.bulk_access_token}" if @requires_access_token && @instance.bulk_access_token.present?
 
+        @patient_ids_seen = Set.new if klass == 'Patient'
+
         line_count = 0
         streamed_ndjson_get(file['url'], headers) do |response, resource|
           assert response.headers['Content-Type'] == 'application/fhir+ndjson', "Content type must be 'application/fhir+ndjson' but is '#{response.headers['Content-type']}"
@@ -74,6 +76,8 @@ module Inferno
           resource = versioned_resource_class.from_contents(resource)
           resource_type = resource.class.name.demodulize
           assert resource_type == klass, "Resource type \"#{resource_type}\" at line \"#{line_count}\" does not match type defined in output \"#{klass}\")"
+
+          @patient_ids_seen << resource.id if klass == 'Patient'
 
           p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
           if p && @instance.fhir_version == 'r4'
@@ -88,7 +92,7 @@ module Inferno
 
         if file.key?('count')
           warning do
-            assert file['count'] == line_count.to_s, "Count in status output (#{file['count']}) did not match actual number of resources returned #{line_count}"
+            assert file['count'].to_s == line_count.to_s, "Count in status output (#{file['count']}) did not match actual number of resources returned (#{line_count})"
           end
         end
 
@@ -251,9 +255,29 @@ module Inferno
         test_output_against_profile('Patient')
       end
 
-      test :validate_allergyintolerance do
+      test :validate_patient_ids_in_group do
         metadata do
           id '04'
+          name 'Patient IDs match those expected in Group'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
+          description %(
+            This test checks that the list of patient IDs that are expected match those that are returned.
+            If no patient ids are provided to the test, then the test will be omitted.
+          )
+        end
+
+        omit 'No patient ids were given' unless @instance.bulk_patient_ids_in_group.present?
+
+        expected_patients = Set.new(@instance.bulk_patient_ids_in_group.split(',').map(&:strip))
+
+        patient_diff = expected_patients ^ @patient_ids_seen
+
+        assert patient_diff.empty?, "Mismatch between patient ids seen (#{@patient_ids_seen.to_a.join(', ')}) and patient ids expected (#{@instance.bulk_patient_ids_in_group})"
+      end
+
+      test :validate_allergyintolerance do
+        metadata do
+          id '05'
           name 'AllergyIntolerance resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance'
           description %(
@@ -266,7 +290,7 @@ module Inferno
 
       test :validate_careplan do
         metadata do
-          id '05'
+          id '06'
           name 'CarePlan resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan'
           description %(
@@ -279,7 +303,7 @@ module Inferno
 
       test :validate_careteam do
         metadata do
-          id '06'
+          id '07'
           name 'CareTeam resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
@@ -292,7 +316,7 @@ module Inferno
 
       test :validate_condition do
         metadata do
-          id '07'
+          id '08'
           name 'Condition resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
           description %(
@@ -305,7 +329,7 @@ module Inferno
 
       test :validate_device do
         metadata do
-          id '08'
+          id '09'
           name 'Device resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
           description %(
@@ -318,7 +342,7 @@ module Inferno
 
       test :validate_diagnosticreport do
         metadata do
-          id '09'
+          id '10'
           name 'DiagnosticReport resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab'
           description %(
@@ -334,7 +358,7 @@ module Inferno
 
       test :validate_documentreference do
         metadata do
-          id '10'
+          id '11'
           name 'DocumentReference resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
           description %(
@@ -347,7 +371,7 @@ module Inferno
 
       test :validate_encounter do
         metadata do
-          id '11'
+          id '12'
           name 'Encounter resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter'
           description %(
@@ -360,7 +384,7 @@ module Inferno
 
       test :validate_goal do
         metadata do
-          id '12'
+          id '13'
           name 'Goal resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal'
           description %(
@@ -373,7 +397,7 @@ module Inferno
 
       test :validate_immunization do
         metadata do
-          id '13'
+          id '14'
           name 'Immunization resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization'
           description %(
@@ -386,7 +410,7 @@ module Inferno
 
       test :validate_medicationrequest do
         metadata do
-          id '14'
+          id '15'
           name 'MedicationRequest resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
@@ -399,7 +423,7 @@ module Inferno
 
       test :validate_observation do
         metadata do
-          id '15'
+          id '16'
           name 'Observation resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab'
           description %(
@@ -417,7 +441,7 @@ module Inferno
 
       test :validate_procedure do
         metadata do
-          id '16'
+          id '17'
           name 'Procedure resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure'
           description %(
@@ -430,7 +454,7 @@ module Inferno
 
       test :validate_location do
         metadata do
-          id '17'
+          id '18'
           name 'Location resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'
           description %(
@@ -443,7 +467,7 @@ module Inferno
 
       test :validate_medication do
         metadata do
-          id '18'
+          id '19'
           name 'Medication resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
           description %(
@@ -456,7 +480,7 @@ module Inferno
 
       test :validate_organization do
         metadata do
-          id '19'
+          id '20'
           name 'Organization resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
           description %(
@@ -469,7 +493,7 @@ module Inferno
 
       test :validate_practitioner do
         metadata do
-          id '20'
+          id '21'
           name 'Practitioner resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
           description %(
@@ -482,7 +506,7 @@ module Inferno
 
       test :validate_practitionerrole do
         metadata do
-          id '21'
+          id '22'
           name 'PractitionerRole resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'
           description %(

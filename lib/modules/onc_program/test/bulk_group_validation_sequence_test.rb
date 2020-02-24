@@ -80,6 +80,79 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
     end
   end
 
+  describe 'validate patient ids in group' do
+    it 'omits when no patient ids in group passed' do
+      @sequence = @sequence_class.new(@instance, @client)
+      @test = @sequence_class[:validate_patient_ids_in_group]
+
+      error = assert_raises(Inferno::OmitException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/^No patient/, error.message)
+    end
+
+    it 'succeeds when patients found equals patients provided' do
+      instance_copy = @instance.clone
+      @sequence = @sequence_class.new(instance_copy, @client)
+      @test = @sequence_class[:validate_patient_ids_in_group]
+
+      instance_copy.bulk_patient_ids_in_group = 'a,b'
+
+      @sequence.patient_ids_seen = Set.new(['b', 'a'])
+
+      @sequence.run_test(@test)
+    end
+
+    it 'fails when patients found subset of patients provided' do
+      instance_copy = @instance.clone
+      @sequence = @sequence_class.new(instance_copy, @client)
+      @test = @sequence_class[:validate_patient_ids_in_group]
+
+      instance_copy.bulk_patient_ids_in_group = 'a,b,c'
+
+      @sequence.patient_ids_seen = Set.new(['b', 'a'])
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/^Mismatch/, error.message)
+    end
+
+    it 'fails when patients found superset of patients provided' do
+      instance_copy = @instance.clone
+      @sequence = @sequence_class.new(instance_copy, @client)
+      @test = @sequence_class[:validate_patient_ids_in_group]
+
+      instance_copy.bulk_patient_ids_in_group = 'a,b'
+
+      @sequence.patient_ids_seen = Set.new(['b', 'a', 'c'])
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/^Mismatch/, error.message)
+    end
+
+    it 'fails when patients found different than patients provided' do
+      instance_copy = @instance.clone
+      @sequence = @sequence_class.new(instance_copy, @client)
+      @test = @sequence_class[:validate_patient_ids_in_group]
+
+      instance_copy.bulk_patient_ids_in_group = 'a,b'
+
+      @sequence.patient_ids_seen = Set.new(['a', 'c'])
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/^Mismatch/, error.message)
+    end
+  end
+
   describe 'require access token test' do
     before do
       @sequence = @sequence_class.new(@instance, @client)
@@ -244,9 +317,14 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
         )
     end
 
-    it 'succeeds when NDJSON is valid' do
+    it 'succeeds when NDJSON is valid and saves patient ids as seen' do
       file = @output.find { |line| line['type'] == 'Patient' }
       @sequence.check_file_request(file, 'Patient', true, 1)
+      diff = @sequence.patient_ids_seen ^ Set.new(['ac1bdb14-fea1-4912-8d7c-e3ecec74b0d7',
+                                                   '8a7c11ff-25f0-433e-882a-4f43b8fb7dc4',
+                                                   '9f83799e-76db-41fa-8c1f-e1a532c30a52',
+                                                   '1f4b3e0c-3137-4fdd-a94f-0aaeb883074e'])
+      assert diff.empty?
     end
 
     it 'succeeds when lines_to_validate is greater than lines of output file' do
