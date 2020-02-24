@@ -43,10 +43,19 @@ module Inferno
       end
 
       def test_medication_inclusion(medication_requests, search_params)
+        @medications ||= []
+        @contained_medications ||= []
+
         requests_with_external_references =
           medication_requests
             .select { |request| request&.medicationReference&.present? }
             .reject { |request| request&.medicationReference&.reference&.start_with? '#' }
+
+        @contained_medications +=
+          medication_requests
+            .select { |request| request&.medicationReference&.reference&.start_with? '#' }
+            .flat_map(&:contained)
+            .select { |resource| resource.resourceType == 'Medication' }
 
         return if requests_with_external_references.blank?
 
@@ -58,6 +67,9 @@ module Inferno
 
         medications = requests_with_medications.select { |resource| resource.resourceType == 'Medication' }
         assert medications.present?, 'No Medications were included in the search results'
+
+        @medications += medications
+        @medications.uniq!(&:id)
       end
 
       def perform_search_with_status(reply, search_param)
@@ -475,9 +487,30 @@ module Inferno
         test_resources_against_profile('MedicationRequest')
       end
 
-      test 'All must support elements are provided in the MedicationRequest resources returned.' do
+      test :validate_medication_resources do
         metadata do
           id '12'
+          name 'Medication resources returned conform to US Core R4 profiles'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
+          description %(
+
+              This test checks if the resources returned from prior searches conform to the US Core profiles.
+              This includes checking for missing data elements and valueset verification.
+
+          )
+          versions :r4
+        end
+
+        medications_found = @medications + @contained_medications
+
+        omit 'MedicationRequests did not reference any Medication resources.' if medications_found.blank?
+
+        test_resource_collection('Medication', medications_found)
+      end
+
+      test 'All must support elements are provided in the MedicationRequest resources returned.' do
+        metadata do
+          id '13'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -539,7 +572,7 @@ module Inferno
 
       test 'The server returns expected results when parameters use composite-or' do
         metadata do
-          id '13'
+          id '14'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
 
@@ -585,7 +618,7 @@ module Inferno
 
       test 'Every reference within MedicationRequest resource is valid and can be read.' do
         metadata do
-          id '14'
+          id '15'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.
