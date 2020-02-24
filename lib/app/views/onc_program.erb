@@ -515,11 +515,11 @@
 
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_patient_ids_in_group,
               instance: instance,
-              label: 'Group must contain the following Patient IDs',
+              label: 'Patient IDs in exported Group',
               description: %(
-                Comma separated list of Patient IDs to expect in the goup.  The test will fail if not all
-                patients are found, or if resources reference patient IDs outside of the group.  Leave blank
-                to allow any patient IDs.
+                Comma separated list of every Patient ID that is in the specified Group.  This information
+                is provided by the system under test to verify that data returned matches expectations.  Leave blank
+                to not verify Group inclusion.
               ),              
               value: instance.bulk_patient_ids_in_group}); %>
 
