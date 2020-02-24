@@ -478,8 +478,6 @@ module Inferno
 
             Observation.value[x].code
 
-            Observation.dataAbsentReason
-
             Observation.category:VSCat
 
           )
@@ -527,8 +525,7 @@ module Inferno
           { path: 'Observation.value.value' },
           { path: 'Observation.value.unit' },
           { path: 'Observation.value.system', fixed_value: 'http://unitsofmeasure.org' },
-          { path: 'Observation.value.code', fixed_value: '%' },
-          { path: 'Observation.dataAbsentReason' }
+          { path: 'Observation.value.code', fixed_value: '%' }
         ]
 
         missing_must_support_elements = must_support_elements.reject do |element|
