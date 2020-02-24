@@ -130,7 +130,7 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Organization' }
         skip_if_not_found(resource_type: 'Organization', delayed: true)
-        @organization_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+        @organization_ary += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
         @organization = @organization_ary
           .find { |resource| resource.resourceType == 'Organization' }
 

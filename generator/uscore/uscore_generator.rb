@@ -954,7 +954,7 @@ module Inferno
 
             @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
             #{skip_if_not_found_code(sequence)}
-            @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            @#{sequence[:resource].underscore}_ary += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary
               .find { |resource| resource.resourceType == '#{sequence[:resource]}' }
 
