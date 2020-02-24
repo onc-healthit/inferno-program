@@ -112,14 +112,14 @@ test_sets:
           - USCore310PractitionerroleSequence
           - USCore310ProvenanceSequence
           - USCoreR4DataAbsentReasonSequence
-      - name: Population Data Access
+      - name: Multi-Patient Data Access
         run_all: true
         run_skipped: false
         overview: >
           Demonstrate the ability to export clinical data for multiple patients in a group using [FHIR Bulk Data Access IG](https://hl7.org/fhir/uv/bulkdata/). This test uses 
           [Backend Services Authorization](https://hl7.org/fhir/uv/bulkdata/authorization/index.html) to obtain an access token from the server. After authorization, a group level bulk data export 
           request is initialized. Finally, this test reads exported NDJSON files from the server and validates the resources in each file. To run the test successfully, the selected group export is required
-          to have every type of resource mapped to [USCDI data elements] (https://www.healthit.gov/isa/us-core-data-interoperability-uscdi).
+          to have every type of resource mapped to [USCDI data elements](https://www.healthit.gov/isa/us-core-data-interoperability-uscdi).
         input_instructions: |
           Register Inferno as a bulk data client with the following information, and enter the client id and client registration in the appropriate fields.
           This set of tests only checks the Group export.  Enter the group export information in the appropriate box.
