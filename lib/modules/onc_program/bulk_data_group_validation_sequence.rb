@@ -13,7 +13,7 @@ module Inferno
 
       test_id_prefix 'BDGV'
 
-      requires :bulk_status_output, :bulk_lines_to_validate, :bulk_patient_ids_in_group, :bulk_stop_after_must_support
+      requires :bulk_status_output, :bulk_lines_to_validate, :bulk_patient_ids_in_group
 
       attr_accessor :requires_access_token, :output, :patient_ids_seen
 
