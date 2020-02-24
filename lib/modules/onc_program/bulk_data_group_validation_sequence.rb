@@ -175,34 +175,6 @@ module Inferno
         LoggedRestClient.get(url, headers)
       end
 
-      def check_ndjson(ndjson, klass, validate_all, lines_to_validate)
-        return if !validate_all && lines_to_validate < 1
-
-        line_count = 0
-
-        ndjson.each_line do |line|
-          break if !validate_all && line_count >= lines_to_validate
-
-          line_count += 1
-
-          resource = versioned_resource_class.from_contents(line)
-          resource_type = resource.class.name.demodulize
-          assert resource_type == klass, "Resource type \"#{resource_type}\" at line \"#{line_count}\" does not match type defined in output \"#{klass}\")"
-
-          p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
-          if p && @instance.fhir_version == 'r4'
-            errors = p.validate_resource(resource)
-          else
-            warn { assert false, 'No profiles found for this Resource' }
-            errors = resource.validate
-          end
-
-          # puts "line count: #{line_count}" unless errors.empty?
-          assert errors.empty?, "Failed Profile validation for resource #{line_count}: #{errors}"
-        end
-        # puts "line count: #{line_count}"
-      end
-
       test :require_tls do
         metadata do
           id '01'
