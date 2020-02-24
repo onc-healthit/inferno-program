@@ -168,10 +168,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
       medication_request = FHIR.from_contents(load_fixture(:med_request_contained))
       medication = medication_request.contained.first
       ['proposal', 'plan', 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order', 'option'].each do |value|
-        query_params = {
-          'patient': @sequence.patient_ids.first,
-                        'intent': value
-        }
+        query_params = @query.merge('intent': value)
         body =
           if @sequence.resolve_element_from_path(medication_request, 'intent') == value
             wrap_resources_in_bundle([medication_request]).to_json

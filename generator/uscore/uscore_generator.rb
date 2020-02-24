@@ -776,13 +776,30 @@ module Inferno
           )
         end
 
-        if sequence[:resource] == 'MedicationRequest'
-          test[:test_code] += %(
-            test_resource_collection('Medication', @medications)
-            test_resource_collection('Medication', @contained_medications)
-          )
-        end
         sequence[:tests] << test
+
+        if sequence[:resource] == 'MedicationRequest'
+          medication_test = {
+            tests_that: 'Medication resources returned conform to US Core R4 profiles',
+            key: :validate_medication_resources,
+            index: sequence[:tests].length + 1,
+            link: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest',
+            description: %(
+              This test checks if the resources returned from prior searches conform to the US Core profiles.
+              This includes checking for missing data elements and valueset verification.
+            )
+          }
+
+          medication_test[:test_code] = %(
+            medications_found = @medications + @contained_medications
+
+            omit 'MedicationRequests did not reference any Medication resources.' if medications_found.blank?
+
+            test_resource_collection('Medication', medications_found)
+          )
+
+          sequence[:tests] << medication_test
+        end
 
         if sequence[:required_concepts].present? # rubocop:disable Style/GuardClause
           unit_test_generator.generate_resource_validation_test(
