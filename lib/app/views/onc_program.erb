@@ -491,7 +491,7 @@
           data-requiredby="<%= test_set.variable_required_by(:bulk_encryption_method).map {|seq| seq.sequence_name}.join(',')%>"
           data-prerequisite="bulk_encryption_method"
           id="bulk_encryption_method"
-          style="margin-bottom: 0;" 
+          style="margin-bottom: 0;"
           >
           <label style="display:block">Encryption Method
           <small>The server is required to suport either ES384 or RS384 encryption methods for JWT signature verification.  Select
@@ -511,7 +511,7 @@
               label: 'Group ID',
               instance: instance,
               description: 'The Group ID associated with the group of patients to be exported.',
-              value: instance.group_id })%>    
+              value: instance.group_id })%>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_patient_ids_in_group,
               instance: instance,
@@ -521,7 +521,7 @@
                 patients are found, or if resources reference patient IDs outside of the group.  Leave blank
                 to allow any patient IDs.
               ),              
-              value: instance.bulk_patient_ids_in_group}); %>        
+              value: instance.bulk_patient_ids_in_group}); %>
 
        <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_stop_after_must_support).map {|seq| seq.sequence_name}.join(',')%>" 
               data-prerequisite="bulk_stop_after_must_support">
