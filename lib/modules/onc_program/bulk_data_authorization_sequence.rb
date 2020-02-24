@@ -113,10 +113,7 @@ module Inferno
         omit_if_tls_disabled
 
         assert_tls_1_2 @instance.bulk_token_endpoint
-
-        warning do
-          assert_deny_previous_tls @instance.bulk_token_endpoint
-        end
+        assert_deny_previous_tls @instance.bulk_token_endpoint
       end
 
       test :require_content_type do

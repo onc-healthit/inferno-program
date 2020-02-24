@@ -190,10 +190,7 @@ module Inferno
         omit_if_tls_disabled
 
         assert_tls_1_2 @output[0]['url']
-
-        warning do
-          assert_deny_previous_tls @output[0]['url']
-        end
+        assert_deny_previous_tls @output[0]['url']
       end
 
       test :require_access_token do
