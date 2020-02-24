@@ -78,11 +78,15 @@ module Inferno
       property :bulk_since_param, String
       property :bulk_jwks_url_auth, String
       property :bulk_jwks_auth, String
-      property :bulk_public_key, String
-      property :bulk_private_key, String
+      property :bulk_encryption_method, String, default: 'ES384'
+      property :bulk_data_jwks, String
       property :bulk_access_token, String
       property :bulk_lines_to_validate, String
       property :bulk_status_output, String
+
+      # These are used by BDT
+      property :bulk_public_key, String
+      property :bulk_private_key, String
 
       has n, :sequence_results
       has n, :resource_references
@@ -279,6 +283,34 @@ module Inferno
 
       def token_expiration_time
         token_retrieved_at + token_expires_in.seconds
+      end
+
+      def bulk_private_key_set
+        return unless bulk_data_jwks.present?
+
+        { keys: JSON.parse(bulk_data_jwks)['keys'].select { |key| key['key_ops']&.include?('sign') } }.to_json
+      end
+
+      def bulk_public_key_set
+        return unless bulk_data_jwks.present?
+
+        { keys: JSON.parse(bulk_data_jwks)['keys'].select { |key| key['key_ops']&.include?('verify') } }.to_json
+      end
+
+      def bulk_selected_public_key
+        return unless bulk_data_jwks.present?
+
+        JSON.parse(bulk_public_key_set)['keys'].find do |key|
+          key['alg'] == bulk_encryption_method
+        end
+      end
+
+      def bulk_selected_private_key
+        return unless bulk_data_jwks.present?
+
+        JSON.parse(bulk_private_key_set)['keys'].find do |key|
+          key['alg'] == bulk_encryption_method
+        end
       end
 
       private

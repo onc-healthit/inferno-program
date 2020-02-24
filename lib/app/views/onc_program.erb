@@ -467,45 +467,52 @@
         })%>
                 
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_url,
-              label: 'Bulk Data Base URL',
-              description: 'The full URL of the server to which we can append "/$export".',
+              label: 'Bulk Data FHIR URL',
+              description: 'The URL of the Bulk FHIR server.',
               instance: instance,
               value: instance.bulk_url,
               })%> 
 
-        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_client_id,
-              label: 'Bulk Data Client ID',
-              instance: instance,
-              value: instance.bulk_client_id,
-              })%>    
-
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_token_endpoint,
-              label: 'Bulk Data Server Token Endpoint',
+              label: 'Backend Services Token Endpoint',
+              description: 'The OAuth 2.0 Token Endpoint used by the Backend Services specification to provide bearer tokens.',
               instance: instance,
               value: instance.bulk_token_endpoint,
               })%>       
 
-        <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_private_key).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="bulk_private_key">
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_client_id,
+              label: 'Bulk Data Client ID',
+              description: 'Client ID provided during registration time to the Inferno application.',
+              instance: instance,
+              value: instance.bulk_client_id,
+              })%>    
 
-              <label for="bulk_private_key">Bulk Private Key
-                  <small>
-                          If you have provided your JWKS at registration time, please enter the private key here. Leave it blank if the keys have not
-                          been exchanged ahead of time.
-                        </small>
-                
-              </label>
-              <textarea type="text" class="form-control" name="bulk_private_key" id="bulk_private_key" placeholder="" rows="5"><%=instance.bulk_private_key %></textarea>
+        <div class="form-group"
+          data-requiredby="<%= test_set.variable_required_by(:bulk_encryption_method).map {|seq| seq.sequence_name}.join(',')%>"
+          data-prerequisite="bulk_encryption_method"
+          id="bulk_encryption_method"
+          >
+          <label>Encryption Method:</label>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="bulk_encryption_method" id="bulk_encryption_es384" value="ES384" <%=instance.bulk_encryption_method == "ES384" ? "checked" : "" %>>
+            <label class="form-check-label" for="bulk_encryption_es384">ES384</label>
           </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="bulk_encryption_method" id="bulk_encryption_rs384" value="RS384" <%=instance.bulk_encryption_method == "RS384" ? "checked" : "" %>>
+            <label class="form-check-label" for="bulk_encryption_es384">RS384</label>
+          </div>
+        </div>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :group_id,
               label: 'Group ID',
               instance: instance,
+              description: 'The Group ID associated with the group of patients to be exported.',
               value: instance.group_id,
               })%>    
 
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_lines_to_validate,
               instance: instance,
-              label: 'Lines to validate',
+              label: 'Maximum resources to validate',
               description: %(
                 While testing we need to validate resources in downloaded NDJSON file.
                 Please enter the number of lines/resources that would be validated for each NDJSON file. 
@@ -533,18 +540,49 @@
                  data-lock-variables="<%=group.lock_variables.join(',') %>"></div>
             <%end %>
           <% end %>
+          <div class="show-bulk-registration-info" style="display:none">
+             <div class="prerequisite-group-title">Backend Authorization Registration</div>
+             <div class="prerequisite-group-box">
+
+             <%= erb(:prerequisite_field,{},{prerequisite: :bulk_jwks_url_auth,
+                    label: 'JWK Set URL (recommended)',
+                    instance: instance,
+                    description: %(
+                      Register Inferno using this JWK Set URL to communicate keys if supported by the server.  Note that the
+                      server must be able to resolve the URL in order for this to function properly.  If the server does not
+                      support this method you may register Inferno using the JWK Set directly instead.
+                    ),
+                    value: instance.bulk_jwks_url_auth || "#{instance.base_url}#{base_path}/.well-known/jwks.json",
+                    readonly: true
+                    })%>
+
+              <div class="form-group">
+                    
+              <label for="bulk_jwks_manual_keys">Manual Key Registration
+                <small>If the server does not support registering URLs to provide JWK Sets, you may register Inferno as a client using the following RS384 and ES384 Public Key</small>
+              </label>
+
+             <textarea readonly="readonly" class="form-control" id="bulk_jwks_manual_keys" rows=4 style="overflow: hidden">
+                <%= instance.bulk_public_key_set %></textarea>
+             </div>
+             
+             </div>
+          </div>
           <div class="show-uris" style="display:none">
+          <div class="prerequisite-group-title">SMART App Authorization Registration</div>
+             <div class="prerequisite-group-box">
+                <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
+                      instance: instance,
+                      label: 'Redirect URI',
+                      value: instance.redirect_uris,
+                      readonly: true })%>
             <%= erb(:prerequisite_field,{},{prerequisite: :initiate_login_uri,
                     instance: instance,
                     label: 'Launch URI',
                     value: instance.initiate_login_uri,
                     readonly: true })%>
           
-                <%= erb(:prerequisite_field,{},{prerequisite: :redirect_uris,
-                      instance: instance,
-                      label: 'Redirect URI',
-                      value: instance.redirect_uris,
-                      readonly: true })%>
+            </div>
           </div>
           <div class="prerequisites-group-additional" id="prerequisites-group-additonal-DiscoveryAndRegistration">
             

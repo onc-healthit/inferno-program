@@ -8,8 +8,10 @@ module Inferno
 
       test_id_prefix 'BDA'
 
-      requires :bulk_client_id, :bulk_private_key, :bulk_token_endpoint
+      requires :bulk_client_id, :bulk_jwks_url_auth, :bulk_encryption_method, :bulk_token_endpoint
       defines :bulk_access_token
+
+      show_bulk_registration_info
 
       details %(
         Bulk Data servers are required to authorize clients using the
@@ -25,7 +27,7 @@ module Inferno
 
       )
 
-      def authorize(bulk_private_key: @instance.bulk_private_key,
+      def authorize(bulk_private_key: @instance.bulk_selected_private_key,
                     content_type: 'application/x-www-form-urlencoded',
                     scope: 'system/*.read',
                     grant_type: 'client_credentials',
@@ -42,28 +44,29 @@ module Inferno
             accept: 'application/json'
           }.compact
 
-        payload = create_post_palyload(bulk_private_key,
-                                       scope,
-                                       grant_type,
-                                       client_assertion_type,
-                                       iss,
-                                       sub,
-                                       aud,
-                                       exp,
-                                       jti)
+        payload = create_post_payload(bulk_private_key,
+                                      scope,
+                                      grant_type,
+                                      client_assertion_type,
+                                      iss,
+                                      sub,
+                                      aud,
+                                      exp,
+                                      jti)
+        assert_valid_http_uri(@instance.bulk_token_endpoint, "Invalid token endpoint: #{@instance.bulk_token_endpoint}")
 
         LoggedRestClient.post(@instance.bulk_token_endpoint, payload, header)
       end
 
-      def create_post_palyload(bulk_private_key,
-                               scope,
-                               grant_type,
-                               client_assertion_type,
-                               iss,
-                               sub,
-                               aud,
-                               exp,
-                               jti)
+      def create_post_payload(bulk_private_key,
+                              scope,
+                              grant_type,
+                              client_assertion_type,
+                              iss,
+                              sub,
+                              aud,
+                              exp,
+                              jti)
 
         jwt_token = JSON::JWT.new(
           iss: iss,
@@ -73,7 +76,7 @@ module Inferno
           jti: jti
         ).compact
 
-        jwk = JSON::JWK.new(JSON.parse(bulk_private_key))
+        jwk = JSON::JWK.new(bulk_private_key)
 
         jwt_token.header[:kid] = jwk['kid']
         jwk_private_key = jwk.to_key

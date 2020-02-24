@@ -10,8 +10,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     @instance = Inferno::Models::TestingInstance.create(
       url: 'http://www.example.com',
       bulk_client_id: config['client_id'],
-      bulk_public_key: config['public_key'].to_json,
-      bulk_private_key: config['private_key'].to_json,
+      bulk_data_jwks: config['bulk_data_jwks'].to_json,
       bulk_token_endpoint: config['token_url']
     )
 
@@ -44,7 +43,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     uri = Addressable::URI.new
     uri.query = request_payload
     client_assertion = uri.query_values['client_assertion']
-    jwk = JSON::JWK.new(JSON.parse(@instance.bulk_public_key))
+    jwk = JSON::JWK.new(@instance.bulk_selected_private_key)
 
     return it_tests_invalid_private_key(client_assertion, jwk) if parameter[:name] == 'bulk_private_key'
 

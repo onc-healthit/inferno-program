@@ -287,6 +287,13 @@ body {
   color: #666;
 }
 
+.prerequisite-group-box {
+  margin: -12px 0 30px 0;
+  padding: 20px;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+}
+
 .prerequisite-group {
   margin: -12px 0 30px 0;
   padding: 20px;
@@ -1001,7 +1008,7 @@ body {
 .guided .group-nav-label {
   font-size: 12px;
   position: relative;
-  left: 4px;
+  left: 8px;
   z-index: 10; /* must be above the psuedoelement */
   display: inline-block;
 }
@@ -1009,6 +1016,7 @@ body {
 .guided .group-nav li a {
   border-radius: 0;
   color: #53585e;
+  padding-top: 10px;
 }
 
 .guided .group-nav li a::after{
