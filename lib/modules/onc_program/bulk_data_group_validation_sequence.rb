@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'http' # for streaming http client
+
 module Inferno
   module Sequence
     class BulkDataGroupExportValidationSequence < SequenceBase
@@ -11,9 +13,11 @@ module Inferno
 
       test_id_prefix 'BDGV'
 
-      requires :bulk_status_output, :bulk_lines_to_validate
+      requires :bulk_status_output, :bulk_lines_to_validate, :bulk_patient_ids_in_group
 
-      attr_accessor :requires_access_token, :output
+      attr_accessor :requires_access_token, :output, :patient_ids_seen
+
+      MAX_RECENT_LINE_SIZE = 100
 
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
         super(instance, client, disable_tls_tests, sequence_result)
@@ -37,7 +41,9 @@ module Inferno
 
         skip "Bulk Data Server export does not have #{klass} data" if file.nil?
 
-        check_file_request(file, klass, lines_to_validate[:validate_all], lines_to_validate[:lines_to_validate])
+        success_count = check_file_request(file, klass, lines_to_validate[:validate_all], lines_to_validate[:lines_to_validate])
+
+        pass "Successfully validated #{success_count} resource(s)."
       end
 
       def get_lines_to_validate(input)
@@ -54,33 +60,24 @@ module Inferno
       end
 
       def check_file_request(file, klass, validate_all, lines_to_validate)
-        reply = get_file(file)
-        assert_response_content_type(reply, 'application/fhir+ndjson')
-
-        check_ndjson(reply.body, klass, validate_all, lines_to_validate) if validate_all || lines_to_validate.positive?
-      end
-
-      def get_file(file, use_token: true)
         headers = { accept: 'application/fhir+ndjson' }
-        headers['Authorization'] = 'Bearer ' + @instance.bulk_access_token if use_token && @requires_access_token && @instance.bulk_access_token.present?
+        headers['Authorization'] = "Bearer #{@instance.bulk_access_token}" if @requires_access_token && @instance.bulk_access_token.present?
 
-        url = file['url']
-        LoggedRestClient.get(url, headers)
-      end
-
-      def check_ndjson(ndjson, klass, validate_all, lines_to_validate)
-        return if !validate_all && lines_to_validate < 1
+        @patient_ids_seen = Set.new if klass == 'Patient'
 
         line_count = 0
+        streamed_ndjson_get(file['url'], headers) do |response, resource|
+          assert response.headers['Content-Type'] == 'application/fhir+ndjson', "Content type must be 'application/fhir+ndjson' but is '#{response.headers['Content-type']}"
 
-        ndjson.each_line do |line|
           break if !validate_all && line_count >= lines_to_validate
 
           line_count += 1
 
-          resource = versioned_resource_class.from_contents(line)
+          resource = versioned_resource_class.from_contents(resource)
           resource_type = resource.class.name.demodulize
           assert resource_type == klass, "Resource type \"#{resource_type}\" at line \"#{line_count}\" does not match type defined in output \"#{klass}\")"
+
+          @patient_ids_seen << resource.id if klass == 'Patient'
 
           p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
           if p && @instance.fhir_version == 'r4'
@@ -90,10 +87,92 @@ module Inferno
             errors = resource.validate
           end
 
-          # puts "line count: #{line_count}" unless errors.empty?
-          assert errors.empty?, errors.to_s
+          assert errors.empty?, "Failed Profile validation for resource #{line_count}: #{errors}"
         end
-        # puts "line count: #{line_count}"
+
+        if file.key?('count')
+          warning do
+            assert file['count'].to_s == line_count.to_s, "Count in status output (#{file['count']}) did not match actual number of resources returned (#{line_count})"
+          end
+        end
+
+        line_count
+      end
+
+      def log_and_reraise_if_error(request, response, truncated)
+        yield
+      rescue StandardError
+        response[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS MOST RECENT #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response[:body]}" if truncated
+        LoggedRestClient.record_response(request, response)
+        raise
+      end
+
+      def streamed_ndjson_get(url, headers)
+        response = HTTP.headers(headers).get(url)
+
+        # We need to log the request, but don't know what will be in the body
+        # until later.  These serve as simple summaries to get turned into
+        # logged requests.
+
+        request_for_log = {
+          method: 'GET',
+          url: url,
+          headers: headers
+        }
+
+        response_for_log = {
+          code: response.status,
+          headers: response.headers,
+          body: String.new,
+          truncated: false
+        }
+
+        # We don't want to keep a huge log of everything that came through,
+        # but we also want to show up to a reasonable number.
+        recent_lines = []
+        line_count = 0
+
+        body = response.body
+
+        next_block = String.new
+
+        until (chunk = body.readpartial).nil?
+          next_block << chunk
+          resource_list = next_block.lines
+          next_block = String.new resource_list.pop
+          resource_list.each do |resource|
+            recent_lines << resource
+            line_count += 1
+            recent_lines.shift if line_count > MAX_RECENT_LINE_SIZE
+
+            response_for_log[:body] = recent_lines.join
+            log_and_reraise_if_error(request_for_log, response_for_log, line_count > MAX_RECENT_LINE_SIZE) do
+              yield(response, resource)
+            end
+          end
+        end
+
+        recent_lines << next_block
+        line_count += 1
+        recent_lines.shift if line_count > MAX_RECENT_LINE_SIZE
+        response_for_log[:body] = recent_lines.join
+
+        log_and_reraise_if_error(request_for_log, response_for_log, line_count > MAX_RECENT_LINE_SIZE) do
+          yield(response, next_block)
+        end
+
+        response_for_log[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS MOST RECENT #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response_for_log[:body]}" if line_count > MAX_RECENT_LINE_SIZE
+        LoggedRestClient.record_response(request_for_log, response_for_log)
+
+        line_count
+      end
+
+      def get_file(file, use_token: true)
+        headers = { accept: 'application/fhir+ndjson' }
+        headers['Authorization'] = 'Bearer ' + @instance.bulk_access_token if use_token && @requires_access_token && @instance.bulk_access_token.present?
+
+        url = file['url']
+        LoggedRestClient.get(url, headers)
       end
 
       test :require_tls do
@@ -135,7 +214,7 @@ module Inferno
         assert_response_unauthorized reply
       end
 
-      test :valiate_patient do
+      test :validate_patient do
         metadata do
           id '03'
           name 'Patient resources on the FHIR server follow the US Core Implementation Guide'
@@ -148,9 +227,29 @@ module Inferno
         test_output_against_profile('Patient')
       end
 
-      test :valiate_allergyintolerance do
+      test :validate_patient_ids_in_group do
         metadata do
           id '04'
+          name 'Patient IDs match those expected in Group'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
+          description %(
+            This test checks that the list of patient IDs that are expected match those that are returned.
+            If no patient ids are provided to the test, then the test will be omitted.
+          )
+        end
+
+        omit 'No patient ids were given' unless @instance.bulk_patient_ids_in_group.present?
+
+        expected_patients = Set.new(@instance.bulk_patient_ids_in_group.split(',').map(&:strip))
+
+        patient_diff = expected_patients ^ @patient_ids_seen
+
+        assert patient_diff.empty?, "Mismatch between patient ids seen (#{@patient_ids_seen.to_a.join(', ')}) and patient ids expected (#{@instance.bulk_patient_ids_in_group})"
+      end
+
+      test :validate_allergyintolerance do
+        metadata do
+          id '05'
           name 'AllergyIntolerance resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance'
           description %(
@@ -161,9 +260,9 @@ module Inferno
         test_output_against_profile('AllergyIntolerance')
       end
 
-      test :valiate_careplan do
+      test :validate_careplan do
         metadata do
-          id '05'
+          id '06'
           name 'CarePlan resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan'
           description %(
@@ -174,9 +273,9 @@ module Inferno
         test_output_against_profile('CarePlan')
       end
 
-      test :valiate_careteam do
+      test :validate_careteam do
         metadata do
-          id '06'
+          id '07'
           name 'CareTeam resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
@@ -187,9 +286,9 @@ module Inferno
         test_output_against_profile('CareTeam')
       end
 
-      test :valiate_condition do
+      test :validate_condition do
         metadata do
-          id '07'
+          id '08'
           name 'Condition resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
           description %(
@@ -200,9 +299,9 @@ module Inferno
         test_output_against_profile('Condition')
       end
 
-      test :valiate_device do
+      test :validate_device do
         metadata do
-          id '08'
+          id '09'
           name 'Device resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
           description %(
@@ -213,9 +312,9 @@ module Inferno
         test_output_against_profile('Device')
       end
 
-      test :valiate_diagnosticreport do
+      test :validate_diagnosticreport do
         metadata do
-          id '09'
+          id '10'
           name 'DiagnosticReport resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab'
           description %(
@@ -229,9 +328,9 @@ module Inferno
         test_output_against_profile('DiagnosticReport')
       end
 
-      test :valiate_documentreference do
+      test :validate_documentreference do
         metadata do
-          id '10'
+          id '11'
           name 'DocumentReference resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
           description %(
@@ -242,9 +341,9 @@ module Inferno
         test_output_against_profile('DocumentReference')
       end
 
-      test :valiate_encounter do
+      test :validate_encounter do
         metadata do
-          id '11'
+          id '12'
           name 'Encounter resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter'
           description %(
@@ -255,9 +354,9 @@ module Inferno
         test_output_against_profile('Encounter')
       end
 
-      test :valiate_goal do
+      test :validate_goal do
         metadata do
-          id '12'
+          id '13'
           name 'Goal resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal'
           description %(
@@ -268,9 +367,9 @@ module Inferno
         test_output_against_profile('Goal')
       end
 
-      test :valiate_immunization do
+      test :validate_immunization do
         metadata do
-          id '13'
+          id '14'
           name 'Immunization resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization'
           description %(
@@ -281,9 +380,9 @@ module Inferno
         test_output_against_profile('Immunization')
       end
 
-      test :valiate_medicationrequest do
+      test :validate_medicationrequest do
         metadata do
-          id '14'
+          id '15'
           name 'MedicationRequest resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
@@ -294,9 +393,9 @@ module Inferno
         test_output_against_profile('MedicationRequest')
       end
 
-      test :valiate_observation do
+      test :validate_observation do
         metadata do
-          id '15'
+          id '16'
           name 'Observation resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab'
           description %(
@@ -312,9 +411,9 @@ module Inferno
         test_output_against_profile('Observation')
       end
 
-      test :valiate_procedure do
+      test :validate_procedure do
         metadata do
-          id '16'
+          id '17'
           name 'Procedure resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure'
           description %(
@@ -325,9 +424,9 @@ module Inferno
         test_output_against_profile('Procedure')
       end
 
-      test :valiate_location do
+      test :validate_location do
         metadata do
-          id '17'
+          id '18'
           name 'Location resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'
           description %(
@@ -338,9 +437,9 @@ module Inferno
         test_output_against_profile('Location')
       end
 
-      test :valiate_medication do
+      test :validate_medication do
         metadata do
-          id '18'
+          id '19'
           name 'Medication resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
           description %(
@@ -351,9 +450,9 @@ module Inferno
         test_output_against_profile('Medication')
       end
 
-      test :valiate_organization do
+      test :validate_organization do
         metadata do
-          id '19'
+          id '20'
           name 'Organization resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
           description %(
@@ -364,9 +463,9 @@ module Inferno
         test_output_against_profile('Organization')
       end
 
-      test :valiate_practitioner do
+      test :validate_practitioner do
         metadata do
-          id '20'
+          id '21'
           name 'Practitioner resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
           description %(
@@ -377,9 +476,9 @@ module Inferno
         test_output_against_profile('Practitioner')
       end
 
-      test :valiate_practitionerrole do
+      test :validate_practitionerrole do
         metadata do
-          id '21'
+          id '22'
           name 'PractitionerRole resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'
           description %(

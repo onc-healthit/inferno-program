@@ -25,7 +25,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       bulk_access_token: 99_897_979
     )
 
-    @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'stu3'))
+    @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'r4'))
 
     @client = FHIR::Client.new(@instance.url)
 
@@ -77,6 +77,79 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       stub_request(:get, @patient_file_location)
 
       @sequence.run_test(@test)
+    end
+  end
+
+  describe 'validate patient ids in group' do
+    it 'omits when no patient ids in group passed' do
+      @sequence = @sequence_class.new(@instance, @client)
+      @test = @sequence_class[:validate_patient_ids_in_group]
+
+      error = assert_raises(Inferno::OmitException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/^No patient/, error.message)
+    end
+
+    it 'succeeds when patients found equals patients provided' do
+      instance_copy = @instance.clone
+      @sequence = @sequence_class.new(instance_copy, @client)
+      @test = @sequence_class[:validate_patient_ids_in_group]
+
+      instance_copy.bulk_patient_ids_in_group = 'a,b'
+
+      @sequence.patient_ids_seen = Set.new(['b', 'a'])
+
+      @sequence.run_test(@test)
+    end
+
+    it 'fails when patients found subset of patients provided' do
+      instance_copy = @instance.clone
+      @sequence = @sequence_class.new(instance_copy, @client)
+      @test = @sequence_class[:validate_patient_ids_in_group]
+
+      instance_copy.bulk_patient_ids_in_group = 'a,b,c'
+
+      @sequence.patient_ids_seen = Set.new(['b', 'a'])
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/^Mismatch/, error.message)
+    end
+
+    it 'fails when patients found superset of patients provided' do
+      instance_copy = @instance.clone
+      @sequence = @sequence_class.new(instance_copy, @client)
+      @test = @sequence_class[:validate_patient_ids_in_group]
+
+      instance_copy.bulk_patient_ids_in_group = 'a,b'
+
+      @sequence.patient_ids_seen = Set.new(['b', 'a', 'c'])
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/^Mismatch/, error.message)
+    end
+
+    it 'fails when patients found different than patients provided' do
+      instance_copy = @instance.clone
+      @sequence = @sequence_class.new(instance_copy, @client)
+      @test = @sequence_class[:validate_patient_ids_in_group]
+
+      instance_copy.bulk_patient_ids_in_group = 'a,b'
+
+      @sequence.patient_ids_seen = Set.new(['a', 'c'])
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/^Mismatch/, error.message)
     end
   end
 
@@ -210,7 +283,8 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
           body: @patient_export
         )
 
-      @sequence.test_output_against_profile('Patient', @output, '1')
+      pass_exception = assert_raises(Inferno::PassException) { @sequence.test_output_against_profile('Patient', @output, '1') }
+      assert_match(/^Successfully validated [\d]+ resource/, pass_exception.message)
     end
 
     it 'fails when content-type is invalid' do
@@ -226,30 +300,48 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
         @sequence.test_output_against_profile('Patient', @output, '1')
       end
 
-      assert_match(/Expected content-type/, error.message)
+      assert_match(/Content type/, error.message)
     end
   end
 
   describe 'read NDJSON file tests' do
     before do
       @sequence = @sequence_class.new(@instance, @client)
+      @headers = { accept: 'application/fhir+ndjson' }
+      @headers['Authorization'] = "Bearer #{@instance.bulk_access_token}"
+      stub_request(:get, @patient_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: @patient_export
+        )
     end
 
-    it 'succeeds when NDJSON is valid' do
-      @sequence.check_ndjson(@patient_export, 'Patient', true, 1)
+    it 'succeeds when NDJSON is valid and saves patient ids as seen' do
+      file = @output.find { |line| line['type'] == 'Patient' }
+      @sequence.check_file_request(file, 'Patient', true, 1)
+      diff = @sequence.patient_ids_seen ^ Set.new(['ac1bdb14-fea1-4912-8d7c-e3ecec74b0d7',
+                                                   '8a7c11ff-25f0-433e-882a-4f43b8fb7dc4',
+                                                   '9f83799e-76db-41fa-8c1f-e1a532c30a52',
+                                                   '1f4b3e0c-3137-4fdd-a94f-0aaeb883074e'])
+      assert diff.empty?
     end
 
     it 'succeeds when lines_to_validate is greater than lines of output file' do
-      @sequence.check_ndjson(@patient_export, 'Patient', false, 100)
+      file = @output.find { |line| line['type'] == 'Patient' }
+      @sequence.check_file_request(file, 'Patient', false, 100)
     end
 
     it 'skip validation when lines_to_validate is less than 1' do
-      @sequence.check_ndjson(@patient_export, 'Condition', false, 0)
+      file = @output.find { |line| line['type'] == 'Patient' }
+      @sequence.check_file_request(file, 'Condition', false, 0)
     end
 
     it 'fails when output file type is different from resource type' do
+      file = @output.find { |line| line['type'] == 'Patient' }
       error = assert_raises(Inferno::AssertionException) do
-        @sequence.check_ndjson(@patient_export, 'Condition', true, 1)
+        @sequence.check_file_request(file, 'Condition', true, 1)
       end
 
       assert_match(/^Resource type/, error.message)
@@ -257,17 +349,36 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
 
     it 'fails when output file has invalid resource' do
       invalid_patient_export = @patient_export.sub('"male"', '"001"')
+      stub_request(:get, 'https://www.example.com/wrong_patient_export.json')
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: invalid_patient_export
+        )
 
       error = assert_raises(Inferno::AssertionException) do
-        @sequence.check_ndjson(invalid_patient_export, 'Patient', true, 1)
+        file = @output.find { |line| line['type'] == 'Patient' }
+        file['url'] = 'https://www.example.com/wrong_patient_export.json'
+        @sequence.check_file_request(file, 'Patient', true, 1)
       end
 
-      assert_match(/invalid codes \[\\"001\\"\]/, error.message)
+      assert_match(/invalid code '001'/, error.message)
     end
 
     it 'succeeds when validate first line in output file having invalid resource' do
       invalid_patient_export = @patient_export.sub('"male"', '"001"')
-      @sequence.check_ndjson(invalid_patient_export, 'Patient', false, 1)
+      stub_request(:get, 'https://www.example.com/wrong_patient_export.json')
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: invalid_patient_export
+        )
+
+      file = @output.find { |line| line['type'] == 'Patient' }
+      file['url'] = 'https://www.example.com/wrong_patient_export.json'
+      @sequence.check_file_request(file, 'Patient', false, 1)
     end
   end
 end

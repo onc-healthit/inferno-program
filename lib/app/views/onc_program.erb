@@ -491,15 +491,19 @@
           data-requiredby="<%= test_set.variable_required_by(:bulk_encryption_method).map {|seq| seq.sequence_name}.join(',')%>"
           data-prerequisite="bulk_encryption_method"
           id="bulk_encryption_method"
+          style="margin-bottom: 0;"
           >
-          <label>Encryption Method:</label>
+          <label style="display:block">Encryption Method
+          <small>The server is required to suport either ES384 or RS384 encryption methods for JWT signature verification.  Select
+          which method to use.</small>
+          </label>
           <div class="form-check form-check-inline">
             <input class="form-check-input" type="radio" name="bulk_encryption_method" id="bulk_encryption_es384" value="ES384" <%=instance.bulk_encryption_method == "ES384" ? "checked" : "" %>>
-            <label class="form-check-label" for="bulk_encryption_es384">ES384</label>
+            <label style="margin-bottom: 0;" class="form-check-label" for="bulk_encryption_es384_active">ES384</label>
           </div>
           <div class="form-check form-check-inline">
             <input class="form-check-input" type="radio" name="bulk_encryption_method" id="bulk_encryption_rs384" value="RS384" <%=instance.bulk_encryption_method == "RS384" ? "checked" : "" %>>
-            <label class="form-check-label" for="bulk_encryption_es384">RS384</label>
+            <label style="margin-bottom: 0;" class="form-check-label" for="bulk_encryption_rs384_active">RS384</label>
           </div>
         </div>
 
@@ -507,19 +511,37 @@
               label: 'Group ID',
               instance: instance,
               description: 'The Group ID associated with the group of patients to be exported.',
-              value: instance.group_id,
-              })%>    
+              value: instance.group_id })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_patient_ids_in_group,
+              instance: instance,
+              label: 'Patient IDs in exported Group',
+              description: %(
+                Comma separated list of every Patient ID that is in the specified Group.  This information
+                is provided by the system under test to verify that data returned matches expectations.  Leave blank
+                to not verify Group inclusion.
+              ),              
+              value: instance.bulk_patient_ids_in_group}); %>
+
+       <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_stop_after_must_support).map {|seq| seq.sequence_name}.join(',')%>" 
+              data-prerequisite="bulk_stop_after_must_support">
+            <input class="form-check-input" type="checkbox" name="bulk_stop_after_must_support" id="bulk_stop_after_must_support" value=true <%=!instance.bulk_stop_after_must_support.nil? ? "checked" : "" %>>
+            <label class="form-check-label" for="bulk_stop_after_must_support">Limit validation once all must support elements seen
+            <small>Stop validating resources once every must support element seen for each US Core profile for a resource.  Useful if
+            data set returned is very large.</small></label>
+        </div>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_lines_to_validate,
               instance: instance,
-              label: 'Maximum resources to validate',
+              label: 'Limit validation to a maximum resource count',
               description: %(
                 While testing we need to validate resources in downloaded NDJSON file.
                 Please enter the number of lines/resources that would be validated for each NDJSON file. 
                 To skip resource validation, enter 0.
                 To validate all resources, enter *.
               ),              
-              value: instance.bulk_lines_to_validate}); %>        
+              value: instance.bulk_lines_to_validate}); %>
+
      
       </div>
       <form method="POST" action="sequence_result">
@@ -559,7 +581,7 @@
               <div class="form-group">
                     
               <label for="bulk_jwks_manual_keys">Manual Key Registration
-                <small>If the server does not support registering URLs to provide JWK Sets, you may register Inferno as a client using the following RS384 and ES384 Public Key</small>
+                <small>If the server does not support registering URLs to provide JWK Sets, you may register Inferno as a client using the following RS384 and ES384 keys.</small>
               </label>
 
              <textarea readonly="readonly" class="form-control" id="bulk_jwks_manual_keys" rows=4 style="overflow: hidden">
