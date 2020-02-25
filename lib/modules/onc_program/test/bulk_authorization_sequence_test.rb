@@ -105,6 +105,8 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
       @instance.bulk_token_endpoint = 'https://www.example.com/bulk'
 
       stub_request(:get, @instance.bulk_token_endpoint)
+        .to_return(status: 200).then
+        .to_raise(StandardError)
 
       @sequence.run_test(@test)
     end

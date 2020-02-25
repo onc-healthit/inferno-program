@@ -75,6 +75,8 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
 
     it 'succeeds when TLS 1.2 is supported' do
       stub_request(:get, @patient_file_location)
+        .to_return(status: 200).then
+        .to_raise(StandardError)
 
       @sequence.run_test(@test)
     end
