@@ -106,7 +106,6 @@ test_sets:
           - USCore310ProcedureSequence
           - USCoreR4ClinicalNotesSequence
           - USCore310LocationSequence
-          - USCore310MedicationSequence
           - USCore310OrganizationSequence
           - USCore310PractitionerSequence
           - USCore310PractitionerroleSequence

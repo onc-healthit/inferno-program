@@ -23,6 +23,7 @@ module Inferno
 
       def generate
         metadata = extract_metadata
+        metadata[:sequences].reject! { |sequence| sequence[:resource] == 'Medication' }
         generate_tests(metadata)
         generate_search_validators(metadata)
         metadata[:sequences].each do |sequence|
@@ -776,6 +777,29 @@ module Inferno
 
         sequence[:tests] << test
 
+        if sequence[:resource] == 'MedicationRequest'
+          medication_test = {
+            tests_that: 'Medication resources returned conform to US Core R4 profiles',
+            key: :validate_medication_resources,
+            index: sequence[:tests].length + 1,
+            link: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest',
+            description: %(
+              This test checks if the resources returned from prior searches conform to the US Core profiles.
+              This includes checking for missing data elements and valueset verification.
+            )
+          }
+
+          medication_test[:test_code] = %(
+            medications_found = @medications + @contained_medications
+
+            omit 'MedicationRequests did not reference any Medication resources.' if medications_found.blank?
+
+            test_resource_collection('Medication', medications_found)
+          )
+
+          sequence[:tests] << medication_test
+        end
+
         if sequence[:required_concepts].present? # rubocop:disable Style/GuardClause
           unit_test_generator.generate_resource_validation_test(
             test_key: test_key,
@@ -1212,10 +1236,19 @@ module Inferno
       def test_medication_inclusion_code
         %(
           def test_medication_inclusion(medication_requests, search_params)
+            @medications ||= []
+            @contained_medications ||= []
+
             requests_with_external_references =
               medication_requests
                 .select { |request| request&.medicationReference&.present? }
                 .reject { |request| request&.medicationReference&.reference&.start_with? '#' }
+
+            @contained_medications +=
+              medication_requests
+                .select { |request| request&.medicationReference&.reference&.start_with? '#' }
+                .flat_map(&:contained)
+                .select { |resource| resource.resourceType == 'Medication' }
 
             return if requests_with_external_references.blank?
 
@@ -1227,6 +1260,9 @@ module Inferno
 
             medications = requests_with_medications.select { |resource| resource.resourceType == 'Medication' }
             assert medications.present?, 'No Medications were included in the search results'
+
+            @medications += medications
+            @medications.uniq!(&:id)
           end
         )
       end

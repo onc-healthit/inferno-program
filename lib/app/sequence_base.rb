@@ -630,6 +630,22 @@ module Inferno
         assert(errors.empty?, errors.join("<br/>\n"))
       end
 
+      def test_resource_collection(resource_type, resources)
+        errors = resources.flat_map do |resource|
+          p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
+          if p
+            @profiles_encountered << p.url
+            validate_resource(resource_type, resource, p)
+          else
+            warn { assert false, 'No profiles found for this Resource' }
+            issues = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
+            issues[:errors]
+          end
+        end
+
+        assert(errors.empty?, errors.join("<br/>\n"))
+      end
+
       def test_resources_against_profile(resource_type, specified_profile = nil, &block)
         @profiles_encountered ||= Set.new
         @profiles_failed ||= Hash.new { |hash, key| hash[key] = [] }

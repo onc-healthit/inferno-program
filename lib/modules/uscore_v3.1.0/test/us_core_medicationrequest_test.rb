@@ -178,6 +178,29 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
       @sequence.run_test(@test)
     end
 
+    it 'stores contained Medication resources for validation in a later test' do
+      medication_request = FHIR.from_contents(load_fixture(:med_request_contained))
+      medication = medication_request.contained.first
+      ['proposal', 'plan', 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order', 'option'].each do |value|
+        query_params = @query.merge('intent': value)
+        body =
+          if @sequence.resolve_element_from_path(medication_request, 'intent') == value
+            wrap_resources_in_bundle([medication_request]).to_json
+          else
+            FHIR::Bundle.new.to_json
+          end
+        stub_request(:get, "#{@base_url}/MedicationRequest")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
+      end
+
+      @sequence.run_test(@test)
+      contained_medications = @sequence.instance_variable_get(:@contained_medications)
+
+      assert_equal 1, contained_medications.length
+      assert_equal medication.id, contained_medications.first.id
+    end
+
     describe 'with servers that require status' do
       it 'fails if a 400 is received without an OperationOutcome' do
         ['proposal', 'plan', 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order', 'option'].each do |value|
@@ -355,6 +378,29 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
 
       @sequence.run_test(@test)
     end
+
+    it 'stores contained Medication resources for validation in a later test' do
+      medication_request = FHIR.from_contents(load_fixture(:med_request_contained))
+      medication = medication_request.contained.first
+      ['proposal', 'plan', 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order', 'option'].each do |value|
+        query_params = @query.merge('intent': value)
+        body =
+          if @sequence.resolve_element_from_path(medication_request, 'intent') == value
+            wrap_resources_in_bundle([medication_request]).to_json
+          else
+            FHIR::Bundle.new.to_json
+          end
+        stub_request(:get, "#{@base_url}/MedicationRequest")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
+      end
+
+      @sequence.run_test(@test)
+      contained_medications = @sequence.instance_variable_get(:@contained_medications)
+
+      assert_equal 1, contained_medications.length
+      assert_equal medication.id, contained_medications.first.id
+    end
   end
 
   describe 'MedicationRequest search by patient+intent+encounter test' do
@@ -439,6 +485,29 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
         .to_return(status: 200, body: wrap_resources_in_bundle(@medication_request_ary.values.flatten).to_json)
 
       @sequence.run_test(@test)
+    end
+
+    it 'stores contained Medication resources for validation in a later test' do
+      medication_request = FHIR.from_contents(load_fixture(:med_request_contained))
+      medication = medication_request.contained.first
+      ['proposal', 'plan', 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order', 'option'].each do |value|
+        query_params = @query.merge('intent': value)
+        body =
+          if @sequence.resolve_element_from_path(medication_request, 'intent') == value
+            wrap_resources_in_bundle([medication_request]).to_json
+          else
+            FHIR::Bundle.new.to_json
+          end
+        stub_request(:get, "#{@base_url}/MedicationRequest")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
+      end
+
+      @sequence.run_test(@test)
+      contained_medications = @sequence.instance_variable_get(:@contained_medications)
+
+      assert_equal 1, contained_medications.length
+      assert_equal medication.id, contained_medications.first.id
     end
 
     describe 'with servers that require status' do
@@ -587,6 +656,29 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
         .to_return(status: 200, body: wrap_resources_in_bundle(@medication_request_ary.values.flatten).to_json)
 
       @sequence.run_test(@test)
+    end
+
+    it 'stores contained Medication resources for validation in a later test' do
+      medication_request = FHIR.from_contents(load_fixture(:med_request_contained))
+      medication = medication_request.contained.first
+      ['proposal', 'plan', 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order', 'option'].each do |value|
+        query_params = @query.merge('intent': value)
+        body =
+          if @sequence.resolve_element_from_path(medication_request, 'intent') == value
+            wrap_resources_in_bundle([medication_request]).to_json
+          else
+            FHIR::Bundle.new.to_json
+          end
+        stub_request(:get, "#{@base_url}/MedicationRequest")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
+      end
+
+      @sequence.run_test(@test)
+      contained_medications = @sequence.instance_variable_get(:@contained_medications)
+
+      assert_equal 1, contained_medications.length
+      assert_equal medication.id, contained_medications.first.id
     end
 
     describe 'with servers that require status' do

@@ -28,7 +28,7 @@ class SequenceBaseTest < MiniTest::Test
   end
 
   def test_save_delayed_resource_references
-    delayed_resources = ['Location', 'Medication', 'Organization', 'Practitioner', 'PractitionerRole']
+    delayed_resources = ['Location', 'Organization', 'Practitioner', 'PractitionerRole']
     some_non_delayed_resources = ['AllergyIntolerance', 'CarePlan', 'Careteam', 'Condition', 'Device', 'Observation', 'Encounter', 'Goal']
 
     delayed_resources.each do |res|
