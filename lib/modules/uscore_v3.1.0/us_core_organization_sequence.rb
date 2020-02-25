@@ -130,13 +130,14 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Organization' }
         skip_if_not_found(resource_type: 'Organization', delayed: true)
-        @organization_ary += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+        search_result_resources = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+        @organization_ary += search_result_resources
         @organization = @organization_ary
           .find { |resource| resource.resourceType == 'Organization' }
 
         save_resource_references(versioned_resource_class('Organization'), @organization_ary)
         save_delayed_sequence_references(@organization_ary)
-        validate_reply_entries(@organization_ary, search_params)
+        validate_reply_entries(search_result_resources, search_params)
       end
 
       test :search_by_address do
