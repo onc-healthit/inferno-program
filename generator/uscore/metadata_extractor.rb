@@ -200,6 +200,7 @@ module Inferno
           # not including components in vital-sign profiles because they don't make sense outside of BP
           next if profile_definition['baseDefinition'] == 'http://hl7.org/fhir/StructureDefinition/vitalsigns' && element['path'].include?('component')
           next if profile_definition['name'] == 'observation-bp' && element['path'].include?('Observation.value[x]')
+          next if profile_definition['name'].include?('Pediatric') && element['path'] == 'Observation.dataAbsentReason'
 
           if element['path'].end_with? 'extension'
             sequence[:must_supports] <<
