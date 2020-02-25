@@ -152,7 +152,7 @@ module Inferno
 
           save_resource_references(versioned_resource_class('Condition'), @condition_ary[patient])
           save_delayed_sequence_references(@condition_ary[patient])
-          validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
+          validate_reply_entries(@condition_ary[patient], search_params)
         end
 
         skip_if_not_found(resource_type: 'Condition', delayed: false)
@@ -175,7 +175,6 @@ module Inferno
         skip_if_known_search_not_supported('Condition', ['patient', 'category'])
         skip_if_not_found(resource_type: 'Condition', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
@@ -184,10 +183,8 @@ module Inferno
             'category': get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'category'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
@@ -197,7 +194,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, category) in any resource.' unless resolved_one
       end
 
       test :search_by_patient_onset_date do
@@ -218,7 +215,6 @@ module Inferno
         skip_if_known_search_not_supported('Condition', ['patient', 'onset-date'])
         skip_if_not_found(resource_type: 'Condition', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
@@ -227,10 +223,8 @@ module Inferno
             'onset-date': get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'onsetDateTime'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
@@ -247,7 +241,7 @@ module Inferno
           end
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, onset-date) in any resource.' unless resolved_one
       end
 
       test :search_by_patient_clinical_status do
@@ -267,7 +261,6 @@ module Inferno
         skip_if_known_search_not_supported('Condition', ['patient', 'clinical-status'])
         skip_if_not_found(resource_type: 'Condition', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
@@ -276,10 +269,8 @@ module Inferno
             'clinical-status': get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'clinicalStatus'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
@@ -287,7 +278,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, clinical-status) in any resource.' unless resolved_one
       end
 
       test :search_by_patient_code do
@@ -307,7 +298,6 @@ module Inferno
         skip_if_known_search_not_supported('Condition', ['patient', 'code'])
         skip_if_not_found(resource_type: 'Condition', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
@@ -316,10 +306,8 @@ module Inferno
             'code': get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'code'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
@@ -329,7 +317,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, code) in any resource.' unless resolved_one
       end
 
       test :read_interaction do

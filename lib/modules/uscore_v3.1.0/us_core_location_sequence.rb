@@ -148,7 +148,7 @@ module Inferno
 
         save_resource_references(versioned_resource_class('Location'), @location_ary)
         save_delayed_sequence_references(@location_ary)
-        validate_search_reply(versioned_resource_class('Location'), reply, search_params)
+        validate_reply_entries(@location_ary, search_params)
       end
 
       test :search_by_address do

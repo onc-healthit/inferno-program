@@ -130,7 +130,7 @@ module Inferno
 
         save_resource_references(versioned_resource_class('PractitionerRole'), @practitioner_role_ary)
         save_delayed_sequence_references(@practitioner_role_ary)
-        validate_search_reply(versioned_resource_class('PractitionerRole'), reply, search_params)
+        validate_reply_entries(@practitioner_role_ary, search_params)
       end
 
       test :search_by_practitioner do

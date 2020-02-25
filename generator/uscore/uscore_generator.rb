@@ -239,7 +239,6 @@ module Inferno
         resolve_param_from_resource = search_params.include? 'get_value_for_search_param'
         if resolve_param_from_resource && !sequence[:delayed_sequence]
           include_test[:test_code] += %(
-            could_not_resolve_all = []
             resolved_one = false
             medication_results = false
             patient_ids.each do |patient|
@@ -263,7 +262,7 @@ module Inferno
         if resolve_param_from_resource && !sequence[:delayed_sequence]
           include_test[:test_code] += %(
             end
-            #{skip_if_could_not_resolve}
+            #{skip_if_could_not_resolve(first_search[:names])}
             assert medication_results, 'No Medication resources were returned from this search'
           )
         end
@@ -288,7 +287,6 @@ module Inferno
         resolve_param_from_resource = search_params.include? 'get_value_for_search_param'
         if resolve_param_from_resource && !sequence[:delayed_sequence]
           revinclude_test[:test_code] += %(
-            could_not_resolve_all = []
             resolved_one = false
           )
         end
@@ -315,7 +313,7 @@ module Inferno
           #{'end' unless sequence[:delayed_sequence]}
           save_resource_references(versioned_resource_class('#{resource_name}'), #{resource_variable})
           save_delayed_sequence_references(#{resource_variable})
-          #{skip_if_could_not_resolve if resolve_param_from_resource && !sequence[:delayed_sequence]}
+          #{skip_if_could_not_resolve(first_search[:names]) if resolve_param_from_resource && !sequence[:delayed_sequence]}
           skip 'No Provenance resources were returned from this search' unless #{resource_variable}.present?
         )
         sequence[:tests] << revinclude_test
@@ -436,7 +434,6 @@ module Inferno
             search_params = get_search_params(search_param[:names], sequence)
             resolve_param_from_resource = search_params.include? 'get_value_for_search_param'
             resolved_one_str = %(
-              could_not_resolve_all = []
               resolved_one = false
             )
             reply_code = %(
@@ -454,13 +451,12 @@ module Inferno
                 end
               )
             end
-
             %(
               #{skip_if_search_not_supported_code(sequence, search_param[:names])}
               #{skip_if_not_found_code(sequence)}
               #{resolved_one_str if resolve_param_from_resource && !sequence[:delayed_sequence]}
               #{reply_code}
-              #{skip_if_could_not_resolve if resolve_param_from_resource && !sequence[:delayed_sequence]}
+              #{skip_if_could_not_resolve(search_param[:names]) if resolve_param_from_resource && !sequence[:delayed_sequence]}
             )
           end
         sequence[:tests] << search_test
@@ -815,7 +811,6 @@ module Inferno
           )
           if resolve_param_from_resource
             test[:test_code] += %(
-              could_not_resolve_all = []
               resolved_one = false
             )
           end
@@ -941,7 +936,7 @@ module Inferno
 
             save_resource_references(#{save_resource_references_arguments})
             save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
-            validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+            validate_reply_entries(@#{sequence[:resource].underscore}_ary, search_params)
           )
         else
           first_search = %(
@@ -981,7 +976,7 @@ module Inferno
 
               save_resource_references(#{save_resource_references_arguments})
               save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient])
-              validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+              validate_reply_entries(@#{sequence[:resource].underscore}_ary[patient], search_params)
             end
 
             #{skip_if_not_found_code(sequence)}
@@ -1039,7 +1034,7 @@ module Inferno
 
               save_resource_references(#{save_resource_references_arguments})
               save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient])
-              validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+              validate_reply_entries(@#{sequence[:resource].underscore}_ary[patient], search_params)
               #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
               break#{' if values_found == 2' if find_two_values}
             end
@@ -1059,10 +1054,8 @@ module Inferno
           search_param_value_check = if sequence[:delayed_sequence]
                                        "search_params.each { |param, value| skip \"Could not resolve \#{param} in any resource.\" if value.nil? }"
                                      else %(
-                                        if search_params.any? { |_param, value| value.nil? }
-                                          could_not_resolve_all = search_params.keys
-                                          next
-                                        end
+                                        next if search_params.any? { |_param, value| value.nil? }
+
                                         resolved_one = true
                                       )
                                      end
@@ -1129,8 +1122,8 @@ module Inferno
         "skip_if_not_found(resource_type: '#{sequence[:resource]}', delayed: #{sequence[:delayed_sequence]})"
       end
 
-      def skip_if_could_not_resolve
-        %(skip "Could not resolve all parameters (\#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one)
+      def skip_if_could_not_resolve(params)
+        "skip 'Could not resolve all parameters (#{params.join(', ')}) in any resource.' unless resolved_one"
       end
 
       def search_param_constants(search_parameters, sequence)

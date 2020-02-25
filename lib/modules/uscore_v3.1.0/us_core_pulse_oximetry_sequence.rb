@@ -153,7 +153,7 @@ module Inferno
 
             save_resource_references(versioned_resource_class('Observation'), @observation_ary[patient], Inferno::ValidationUtil::US_CORE_R4_URIS[:pulse_oximetry])
             save_delayed_sequence_references(@observation_ary[patient])
-            validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+            validate_reply_entries(@observation_ary[patient], search_params)
 
             break
           end
@@ -178,7 +178,6 @@ module Inferno
         skip_if_known_search_not_supported('Observation', ['patient', 'category', 'date'])
         skip_if_not_found(resource_type: 'Observation', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
@@ -188,10 +187,8 @@ module Inferno
             'date': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'effective'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
@@ -208,7 +205,7 @@ module Inferno
           end
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, category, date) in any resource.' unless resolved_one
       end
 
       test :search_by_patient_category do
@@ -227,7 +224,6 @@ module Inferno
         skip_if_known_search_not_supported('Observation', ['patient', 'category'])
         skip_if_not_found(resource_type: 'Observation', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
@@ -236,10 +232,8 @@ module Inferno
             'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
@@ -249,7 +243,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, category) in any resource.' unless resolved_one
       end
 
       test :search_by_patient_code_date do
@@ -270,7 +264,6 @@ module Inferno
         skip_if_known_search_not_supported('Observation', ['patient', 'code', 'date'])
         skip_if_not_found(resource_type: 'Observation', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
@@ -280,10 +273,8 @@ module Inferno
             'date': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'effective'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
@@ -300,7 +291,7 @@ module Inferno
           end
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, code, date) in any resource.' unless resolved_one
       end
 
       test :search_by_patient_category_status do
@@ -320,7 +311,6 @@ module Inferno
         skip_if_known_search_not_supported('Observation', ['patient', 'category', 'status'])
         skip_if_not_found(resource_type: 'Observation', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
@@ -330,10 +320,8 @@ module Inferno
             'status': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'status'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
@@ -341,7 +329,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, category, status) in any resource.' unless resolved_one
       end
 
       test :read_interaction do
@@ -410,7 +398,6 @@ module Inferno
         skip_if_known_revinclude_not_supported('Observation', 'Provenance:target')
         skip_if_not_found(resource_type: 'Observation', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         provenance_results = []
@@ -420,10 +407,8 @@ module Inferno
             'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           search_params['_revinclude'] = 'Provenance:target'
@@ -438,7 +423,7 @@ module Inferno
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
         save_delayed_sequence_references(provenance_results)
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, code) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 

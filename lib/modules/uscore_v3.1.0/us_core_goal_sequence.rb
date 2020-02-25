@@ -144,7 +144,7 @@ module Inferno
 
           save_resource_references(versioned_resource_class('Goal'), @goal_ary[patient])
           save_delayed_sequence_references(@goal_ary[patient])
-          validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
+          validate_reply_entries(@goal_ary[patient], search_params)
         end
 
         skip_if_not_found(resource_type: 'Goal', delayed: false)
@@ -168,7 +168,6 @@ module Inferno
         skip_if_known_search_not_supported('Goal', ['patient', 'target-date'])
         skip_if_not_found(resource_type: 'Goal', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
@@ -177,10 +176,8 @@ module Inferno
             'target-date': get_value_for_search_param(resolve_element_from_path(@goal_ary[patient], 'target.dueDate'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
@@ -197,7 +194,7 @@ module Inferno
           end
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, target-date) in any resource.' unless resolved_one
       end
 
       test :search_by_patient_lifecycle_status do
@@ -217,7 +214,6 @@ module Inferno
         skip_if_known_search_not_supported('Goal', ['patient', 'lifecycle-status'])
         skip_if_not_found(resource_type: 'Goal', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
@@ -226,10 +222,8 @@ module Inferno
             'lifecycle-status': get_value_for_search_param(resolve_element_from_path(@goal_ary[patient], 'lifecycleStatus'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
@@ -237,7 +231,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, lifecycle-status) in any resource.' unless resolved_one
       end
 
       test :read_interaction do

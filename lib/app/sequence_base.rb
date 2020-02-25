@@ -521,17 +521,20 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        entries = reply.resource.entry.select { |entry| entry.resource.class == klass }
+        entries = fetch_all_bundled_resources(reply).select { |entry| entry.class == klass }
+        validate_reply_entries(entries, search_params)
         assert entries.present?, 'No resources of this type were returned'
+      end
 
-        entries.each do |entry|
+      def validate_reply_entries(resources, search_params)
+        resources.each do |resource|
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.
-          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class)
-          assert resource_validation_errors[:errors].empty?, "Invalid #{entry.resource.resourceType}: #{resource_validation_errors[:errors].join("<br/>\n")}"
+          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
+          assert resource_validation_errors[:errors].empty?, "Invalid #{resource.resourceType}: #{resource_validation_errors[:errors].join("<br/>\n")}"
 
           search_params.each do |key, value|
-            validate_resource_item(entry.resource, key.to_s, value)
+            validate_resource_item(resource, key.to_s, value)
           end
         end
       end

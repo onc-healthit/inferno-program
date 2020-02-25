@@ -175,7 +175,7 @@ module Inferno
 
             save_resource_references(versioned_resource_class('MedicationRequest'), @medication_request_ary[patient])
             save_delayed_sequence_references(@medication_request_ary[patient])
-            validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+            validate_reply_entries(@medication_request_ary[patient], search_params)
             test_medication_inclusion(@medication_request_ary[patient], search_params)
             break
           end
@@ -203,7 +203,6 @@ module Inferno
         skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent', 'status'])
         skip_if_not_found(resource_type: 'MedicationRequest', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
@@ -213,10 +212,8 @@ module Inferno
             'status': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'status'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
@@ -225,7 +222,7 @@ module Inferno
           test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, intent, status) in any resource.' unless resolved_one
       end
 
       test :search_by_patient_intent_encounter do
@@ -249,7 +246,6 @@ module Inferno
         skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent', 'encounter'])
         skip_if_not_found(resource_type: 'MedicationRequest', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
@@ -259,10 +255,8 @@ module Inferno
             'encounter': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'encounter'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
@@ -273,7 +267,7 @@ module Inferno
           test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, intent, encounter) in any resource.' unless resolved_one
       end
 
       test :search_by_patient_intent_authoredon do
@@ -298,7 +292,6 @@ module Inferno
         skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent', 'authoredon'])
         skip_if_not_found(resource_type: 'MedicationRequest', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         patient_ids.each do |patient|
@@ -308,10 +301,8 @@ module Inferno
             'authoredon': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'authoredOn'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
@@ -322,7 +313,7 @@ module Inferno
           test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)
         end
 
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, intent, authoredon) in any resource.' unless resolved_one
       end
 
       test :read_interaction do
@@ -389,7 +380,6 @@ module Inferno
           versions :r4
         end
 
-        could_not_resolve_all = []
         resolved_one = false
         medication_results = false
         patient_ids.each do |patient|
@@ -398,10 +388,8 @@ module Inferno
             'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           skip_if_known_include_not_supported('MedicationRequest', 'MedicationRequest:medication')
@@ -411,7 +399,7 @@ module Inferno
           assert_bundle_response(reply)
           medication_results ||= reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Medication' }
         end
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, intent) in any resource.' unless resolved_one
         assert medication_results, 'No Medication resources were returned from this search'
       end
 
@@ -428,7 +416,6 @@ module Inferno
         skip_if_known_revinclude_not_supported('MedicationRequest', 'Provenance:target')
         skip_if_not_found(resource_type: 'MedicationRequest', delayed: false)
 
-        could_not_resolve_all = []
         resolved_one = false
 
         provenance_results = []
@@ -438,10 +425,8 @@ module Inferno
             'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           search_params['_revinclude'] = 'Provenance:target'
@@ -456,7 +441,7 @@ module Inferno
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
         save_delayed_sequence_references(provenance_results)
-        skip "Could not resolve all parameters (#{could_not_resolve_all.join(', ')}) in any resource." unless resolved_one
+        skip 'Could not resolve all parameters (patient, intent) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
@@ -552,7 +537,6 @@ module Inferno
 
         skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent', 'status'])
 
-        could_not_resolve_all = []
         resolved_one = false
 
         found_second_val = false
@@ -563,10 +547,8 @@ module Inferno
             'status': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'status'))
           }
 
-          if search_params.any? { |_param, value| value.nil? }
-            could_not_resolve_all = search_params.keys
-            next
-          end
+          next if search_params.any? { |_param, value| value.nil? }
+
           resolved_one = true
 
           second_status_val = resolve_element_from_path(@medication_request_ary[patient], 'status') { |el| get_value_for_search_param(el) != search_params[:status] }

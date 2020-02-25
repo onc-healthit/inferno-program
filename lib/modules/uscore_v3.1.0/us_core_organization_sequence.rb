@@ -136,7 +136,7 @@ module Inferno
 
         save_resource_references(versioned_resource_class('Organization'), @organization_ary)
         save_delayed_sequence_references(@organization_ary)
-        validate_search_reply(versioned_resource_class('Organization'), reply, search_params)
+        validate_reply_entries(@organization_ary, search_params)
       end
 
       test :search_by_address do
