@@ -269,6 +269,7 @@ module Inferno
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
 
+        skip_if_known_include_not_supported('PractitionerRole', 'PractitionerRole:endpoint')
         search_params['_include'] = 'PractitionerRole:endpoint'
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         assert_response_ok(reply)
@@ -276,6 +277,7 @@ module Inferno
         endpoint_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Endpoint' }
         assert endpoint_results, 'No Endpoint resources were returned from this search'
 
+        skip_if_known_include_not_supported('PractitionerRole', 'PractitionerRole:practitioner')
         search_params['_include'] = 'PractitionerRole:practitioner'
         reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
         assert_response_ok(reply)
@@ -293,7 +295,10 @@ module Inferno
           )
           versions :r4
         end
+
+        skip_if_known_revinclude_not_supported('PractitionerRole', 'Provenance:target')
         skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
+
         provenance_results = []
 
         search_params = {

@@ -406,6 +406,8 @@ module Inferno
           )
           versions :r4
         end
+
+        skip_if_known_revinclude_not_supported('Observation', 'Provenance:target')
         skip_if_not_found(resource_type: 'Observation', delayed: false)
 
         could_not_resolve_all = []

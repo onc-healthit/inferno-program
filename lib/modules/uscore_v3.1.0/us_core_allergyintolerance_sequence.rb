@@ -248,7 +248,10 @@ module Inferno
           )
           versions :r4
         end
+
+        skip_if_known_revinclude_not_supported('AllergyIntolerance', 'Provenance:target')
         skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
+
         provenance_results = []
         patient_ids.each do |patient|
           search_params = {

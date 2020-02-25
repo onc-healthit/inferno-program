@@ -434,6 +434,8 @@ module Inferno
           )
           versions :r4
         end
+
+        skip_if_known_revinclude_not_supported('DiagnosticReport', 'Provenance:target')
         skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
 
         could_not_resolve_all = []

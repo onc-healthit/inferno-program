@@ -212,7 +212,10 @@ module Inferno
           )
           versions :r4
         end
+
+        skip_if_known_revinclude_not_supported('Practitioner', 'Provenance:target')
         skip_if_not_found(resource_type: 'Practitioner', delayed: true)
+
         provenance_results = []
 
         search_params = {
