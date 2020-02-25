@@ -283,7 +283,8 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
           body: @patient_export
         )
 
-      assert_raises(Inferno::PassException) { @sequence.test_output_against_profile('Patient', @output, '1') }
+      pass_exception = assert_raises(Inferno::PassException) { @sequence.test_output_against_profile('Patient', @output, '1') }
+      assert_match(/^Successfully validated [\d]+ resource/, pass_exception.message)
     end
 
     it 'fails when content-type is invalid' do
