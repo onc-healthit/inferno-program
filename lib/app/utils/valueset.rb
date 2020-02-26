@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'sqlite3'
+require_relative 'bcp_13'
+
 module Inferno
   class Terminology
     class Valueset
@@ -35,24 +37,25 @@ module Inferno
       }.freeze
 
       CODE_SYS = {
-        'http://hl7.org/fhir/v3/Ethnicity' => 'resources/misc_valuesets/CodeSystem-v3-Ethnicity.json',
-        'http://hl7.org/fhir/v3/Race' => 'resources/misc_valuesets/CodeSystem-v3-Race.json',
-        'http://hl7.org/fhir/condition-category' => 'resources/misc_valuesets/CodeSystem-condition-category.json',
-        'http://hl7.org/fhir/us/core/CodeSystem/careplan-category' => 'resources/us_core_r4/CodeSystem-careplan-category.json',
-        'urn:oid:2.16.840.1.113883.6.238' => 'resources/us_core_r4/CodeSystem-cdcrec.json',
-        'http://hl7.org/fhir/us/core/CodeSystem/condition-category' => 'resources/us_core_r4/CodeSystem-condition-category.json',
-        'http://hl7.org/fhir/us/core/CodeSystem/us-core-documentreference-category' => 'resources/us_core_r4/CodeSystem-us-core-documentreference-category.json',
-        'http://hl7.org/fhir/us/core/CodeSystem/us-core-provenance-participant-type' => 'resources/us_core_r4/CodeSystem-us-core-provenance-participant-type.json',
-        'http://terminology.hl7.org/CodeSystem/provenance-participant-type' => 'resources/misc_valuesets/CodeSystem-provenance-participant-type.json',
-        'http://terminology.hl7.org/CodeSystem/condition-category' => 'resources/misc_valuesets/CodeSystem-terminology-condition-category.json',
-        'http://hl7.org/fhir/condition-clinical' => 'resources/misc_valuesets/codesystem-condition-clinical.json',
-        'http://hl7.org/fhir/condition-ver-status' => 'resources/misc_valuesets/codesystem-condition-ver-status.json',
-        'http://hl7.org/fhir/observation-category' => 'resources/misc_valuesets/codesystem-observation-category.json',
-        'http://hl7.org/fhir/referencerange-meaning' => 'resources/misc_valuesets/codesystem-referencerange-meaning.json',
+        'http://hl7.org/fhir/v3/Ethnicity' => -> { load_system('resources/misc_valuesets/CodeSystem-v3-Ethnicity.json') },
+        'http://hl7.org/fhir/v3/Race' => -> { load_system('resources/misc_valuesets/CodeSystem-v3-Race.json') },
+        'http://hl7.org/fhir/condition-category' => -> { load_system('resources/misc_valuesets/CodeSystem-condition-category.json') },
+        'http://hl7.org/fhir/us/core/CodeSystem/careplan-category' => -> { load_system('resources/us_core_r4/CodeSystem-careplan-category.json') },
+        'urn:oid:2.16.840.1.113883.6.238' => -> { load_system('resources/us_core_r4/CodeSystem-cdcrec.json') },
+        'http://hl7.org/fhir/us/core/CodeSystem/condition-category' => -> { load_system('resources/us_core_r4/CodeSystem-condition-category.json') },
+        'http://hl7.org/fhir/us/core/CodeSystem/us-core-documentreference-category' => -> { load_system('resources/us_core_r4/cs-us-core-documentreference-category.json') },
+        'http://hl7.org/fhir/us/core/CodeSystem/us-core-provenance-participant-type' => -> { load_system('resources/us_core_r4/cs-us-core-provenance-participant-type.json') },
+        'http://terminology.hl7.org/CodeSystem/provenance-participant-type' => -> { load_system('resources/misc_valuesets/CodeSystem-provenance-participant-type.json') },
+        'http://terminology.hl7.org/CodeSystem/condition-category' => -> { load_system('resources/misc_valuesets/CodeSystem-terminology-condition-category.json') },
+        'http://hl7.org/fhir/condition-clinical' => -> { load_system('resources/misc_valuesets/codesystem-condition-clinical.json') },
+        'http://hl7.org/fhir/condition-ver-status' => -> { load_system('resources/misc_valuesets/codesystem-condition-ver-status.json') },
+        'http://hl7.org/fhir/observation-category' => -> { load_system('resources/misc_valuesets/codesystem-observation-category.json') },
+        'http://hl7.org/fhir/referencerange-meaning' => -> { load_system('resources/misc_valuesets/codesystem-referencerange-meaning.json') },
         'http://hl7.org/fhir/v2/0203' => 'resources/misc_valuesets/codesystem-v2-0203.cs.json',
-        'http://terminology.hl7.org/CodeSystem/practitioner-role' => 'resources/misc_valuesets/codesystem-practitioner-role.json',
-        'http://terminology.hl7.org/CodeSystem/v3-RoleCode' => 'resources/misc_valuesets/v3-RoleCode.cs.json',
-        'http://terminology.hl7.org/CodeSystem/v2-0131' => 'resources/misc_valuesets/v2-0131.cs.json'
+        'http://terminology.hl7.org/CodeSystem/practitioner-role' => -> { load_system('resources/misc_valuesets/codesystem-practitioner-role.json') },
+        'http://terminology.hl7.org/CodeSystem/v3-RoleCode' => -> { load_system('resources/misc_valuesets/v3-RoleCode.cs.json') },
+        'http://terminology.hl7.org/CodeSystem/v2-0131' => -> { load_system('resources/misc_valuesets/v2-0131.cs.json') },
+        'urn:ietf:bcp:13' => -> { BCP13.code_set }
       }.freeze
 
       # https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/attribute_names.html
@@ -196,6 +199,23 @@ module Inferno
         end
       end
 
+      # Load a code system from a file
+      #
+      # @param [String] system the name of the code system
+      def self.load_system(system)
+        # TODO: Generalize this
+        cs = FHIR::Json.from_json(File.read(system))
+        cs_set = Set.new
+        load_codes = lambda do |concept|
+          concept.each do |concept_code|
+            cs_set.add(system: system, code: concept_code.code)
+            load_codes.call(concept_code.concept) unless concept_code.concept.empty?
+          end
+        end
+        load_codes.call(cs.concept)
+        cs_set
+      end
+
       private
 
       # Get all the code systems from within an include/exclude and return the set representing the intersection
@@ -263,7 +283,7 @@ module Inferno
         filtered_set = Set.new
         if CODE_SYS.include? system
           Inferno.logger.debug "  loading #{system} codes..."
-          return load_code_system(system)
+          return CODE_SYS[system].call
         end
         raise "Can't handle #{filter&.op} on #{system}" unless ['=', 'in', 'is-a', nil].include? filter&.op
         raise UnknownCodeSystemException, system if SAB[system].nil?
@@ -286,23 +306,6 @@ module Inferno
           filtered_set = filter_is_a(system, filter)
         end
         filtered_set
-      end
-
-      # Load a code system from a file
-      #
-      # @param [String] system the name of the code system
-      def load_code_system(system)
-        # TODO: Generalize this
-        cs = FHIR::Json.from_json(File.read(CODE_SYS[system]))
-        cs_set = Set.new
-        load_codes = lambda do |concept|
-          concept.each do |concept_code|
-            cs_set.add(system: system, code: concept_code.code)
-            load_codes.call(concept_code.concept) unless concept_code.concept.empty?
-          end
-        end
-        load_codes.call(cs.concept)
-        cs_set
       end
 
       # Imports the ValueSet with the provided URL from the known local ValueSet Authority
