@@ -124,13 +124,14 @@ module Inferno
 
         @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'PractitionerRole' }
         skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
-        @practitioner_role_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+        search_result_resources = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+        @practitioner_role_ary += search_result_resources
         @practitioner_role = @practitioner_role_ary
           .find { |resource| resource.resourceType == 'PractitionerRole' }
 
         save_resource_references(versioned_resource_class('PractitionerRole'), @practitioner_role_ary)
         save_delayed_sequence_references(@practitioner_role_ary)
-        validate_reply_entries(@practitioner_role_ary, search_params)
+        validate_reply_entries(search_result_resources, search_params)
       end
 
       test :search_by_practitioner do

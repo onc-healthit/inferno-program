@@ -954,13 +954,14 @@ module Inferno
 
             @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
             #{skip_if_not_found_code(sequence)}
-            @#{sequence[:resource].underscore}_ary = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            search_result_resources = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            @#{sequence[:resource].underscore}_ary += search_result_resources
             @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary
               .find { |resource| resource.resourceType == '#{sequence[:resource]}' }
 
             save_resource_references(#{save_resource_references_arguments})
             save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
-            validate_reply_entries(@#{sequence[:resource].underscore}_ary, search_params)
+            validate_reply_entries(search_result_resources, search_params)
           )
         else
           first_search = %(
