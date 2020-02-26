@@ -37,6 +37,8 @@ describe Inferno::Sequence::BulkDataExportSequence do
       @instance.bulk_url = 'https://www.example.com/bulk'
 
       stub_request(:get, @instance.bulk_url)
+        .to_return(status: 200).then
+        .to_raise(StandardError)
 
       @sequence.run_test(@test)
     end

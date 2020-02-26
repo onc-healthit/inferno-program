@@ -109,10 +109,7 @@ module Inferno
         omit_if_tls_disabled
 
         assert_tls_1_2 @instance.bulk_url
-
-        warning do
-          assert_deny_previous_tls @instance.bulk_url
-        end
+        assert_deny_previous_tls @instance.bulk_url
       end
 
       test 'Bulk Data Server rejects $export request without authorization' do

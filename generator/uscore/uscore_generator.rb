@@ -827,7 +827,7 @@ module Inferno
           next if multiple_or_search.blank?
 
           second_val_var = "second_#{param}_val"
-          resolve_el_str = "#{resolve_element_path(sequence[:search_param_descriptions][param.to_sym], sequence[:delayed_sequence])} { |el| get_value_for_search_param(el) != #{param_value_name(param)} }" # rubocop:disable Metrics/LineLength
+          resolve_el_str = "#{resolve_element_path(sequence[:search_param_descriptions][param.to_sym], sequence[:delayed_sequence])} { |el| get_value_for_search_param(el) != #{param_value_name(param)} }" # rubocop:disable Layout/LineLength
           search_params = get_search_params(multiple_or_search[:names], sequence)
           resolve_param_from_resource = search_params.include? 'get_value_for_search_param'
           test[:test_code] += %(

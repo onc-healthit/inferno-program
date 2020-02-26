@@ -161,7 +161,9 @@ module Inferno
           yield(response, next_block)
         end
 
-        response_for_log[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS MOST RECENT #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response_for_log[:body]}" if line_count > MAX_RECENT_LINE_SIZE
+        if line_count > MAX_RECENT_LINE_SIZE
+          response_for_log[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS MOST RECENT #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response_for_log[:body]}"
+        end
         LoggedRestClient.record_response(request_for_log, response_for_log)
 
         line_count
@@ -190,10 +192,7 @@ module Inferno
         omit_if_tls_disabled
 
         assert_tls_1_2 @output[0]['url']
-
-        warning do
-          assert_deny_previous_tls @output[0]['url']
-        end
+        assert_deny_previous_tls @output[0]['url']
       end
 
       test :require_access_token do
