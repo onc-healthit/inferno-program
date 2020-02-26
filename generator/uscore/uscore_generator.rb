@@ -59,9 +59,6 @@ module Inferno
           # read reference if sequence contains no search sequences
           create_read_test(sequence) if sequence[:delayed_sequence]
 
-          # authorization test
-          create_authorization_test(sequence)
-
           # make tests for each SHALL and SHOULD search param, SHALL's first
           sequence[:searches]
             .select { |search_param| search_param[:expectation] == 'SHALL' }
@@ -156,55 +153,6 @@ module Inferno
           test_key: test_key,
           resource_type: sequence[:resource],
           class_name: sequence[:class_name]
-        )
-      end
-
-      def create_authorization_test(sequence)
-        test_key = :unauthorized_search
-        authorization_test = {
-          tests_that: "Server rejects #{sequence[:resource]} search without authorization",
-          key: test_key,
-          index: sequence[:tests].length + 1,
-          link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior',
-          description: 'A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.'
-        }
-
-        first_search = find_first_search(sequence)
-        return if first_search.nil?
-
-        search_parameters = first_search[:names]
-        search_params = get_search_params(search_parameters, sequence, true)
-        unit_test_params = get_search_param_hash(search_parameters, sequence, true)
-        reply_code = %(
-          #{search_params}
-          reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
-          assert_response_unauthorized reply
-        )
-        unless sequence[:delayed_sequence]
-          reply_code = %(
-            patient_ids.each do |patient|
-              #{reply_code}
-            end
-          )
-        end
-
-        authorization_test[:test_code] = %(
-          skip_if_known_not_supported(:#{sequence[:resource]}, [:search])
-
-          @client.set_no_auth
-          omit 'Do not test if no bearer token set' if @instance.token.blank?
-          #{reply_code}
-          @client.set_bearer_token(@instance.token)
-        )
-
-        sequence[:tests] << authorization_test
-
-        unit_test_generator.generate_authorization_test(
-          test_key: test_key,
-          resource_type: sequence[:resource],
-          search_params: unit_test_params,
-          class_name: sequence[:class_name],
-          sequence_name: sequence[:name]
         )
       end
 
