@@ -338,6 +338,28 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Goal', delayed: false)
         test_resources_against_profile('Goal')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/goal-status',
+            path: 'lifecycleStatus'
+          }
+        ]
+        invalid_bindings = []
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @goal_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        assert invalid_bindings.blank?, "invalid required code found: #{invalid_bindings.join(',')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @goal_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        warning do
+          assert invalid_bindings.blank?, "invalid extensible code found: #{invalid_bindings.join(',')}"
+        end
       end
 
       test 'All must support elements are provided in the Goal resources returned.' do

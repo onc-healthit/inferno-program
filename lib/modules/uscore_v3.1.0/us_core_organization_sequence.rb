@@ -254,6 +254,58 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Organization', delayed: true)
         test_resources_against_profile('Organization')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/identifier-use',
+            path: 'identifier.use'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/identifier-type',
+            path: 'identifier.type'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/address-use',
+            path: 'address.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/address-type',
+            path: 'address.type'
+          },
+          {
+            type: 'string',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-usps-state',
+            path: 'address.state'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/contactentity-type',
+            path: 'contact.purpose'
+          }
+        ]
+        invalid_bindings = []
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @organization_ary)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        assert invalid_bindings.blank?, "invalid required code found: #{invalid_bindings.join(',')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @organization_ary)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        warning do
+          assert invalid_bindings.blank?, "invalid extensible code found: #{invalid_bindings.join(',')}"
+        end
       end
 
       test 'All must support elements are provided in the Organization resources returned.' do

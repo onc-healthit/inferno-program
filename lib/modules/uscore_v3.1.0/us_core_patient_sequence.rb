@@ -456,6 +456,106 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Patient', delayed: false)
         test_resources_against_profile('Patient')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/identifier-use',
+            path: 'identifier.use'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/identifier-type',
+            path: 'identifier.type'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/name-use',
+            path: 'name.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/contact-point-system',
+            path: 'telecom.system'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/contact-point-use',
+            path: 'telecom.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/administrative-gender',
+            path: 'gender'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/address-use',
+            path: 'address.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/address-type',
+            path: 'address.type'
+          },
+          {
+            type: 'string',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-usps-state',
+            path: 'address.state'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/marital-status',
+            path: 'maritalStatus'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/patient-contactrelationship',
+            path: 'contact.relationship'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/administrative-gender',
+            path: 'contact.gender'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/simple-language',
+            path: 'communication.language'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/link-type',
+            path: 'link.type'
+          }
+        ]
+        invalid_bindings = []
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @patient_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        assert invalid_bindings.blank?, "invalid required code found: #{invalid_bindings.join(',')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @patient_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        warning do
+          assert invalid_bindings.blank?, "invalid extensible code found: #{invalid_bindings.join(',')}"
+        end
       end
 
       test 'All must support elements are provided in the Patient resources returned.' do

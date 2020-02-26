@@ -338,6 +338,52 @@ module Inferno
 
         skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
         test_resources_against_profile('PractitionerRole')
+        bindings = [
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-provider-role',
+            path: 'code'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-provider-specialty',
+            path: 'specialty'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/contact-point-system',
+            path: 'telecom.system'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/contact-point-use',
+            path: 'telecom.use'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/days-of-week',
+            path: 'availableTime.daysOfWeek'
+          }
+        ]
+        invalid_bindings = []
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @practitioner_role_ary)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        assert invalid_bindings.blank?, "invalid required code found: #{invalid_bindings.join(',')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @practitioner_role_ary)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        warning do
+          assert invalid_bindings.blank?, "invalid extensible code found: #{invalid_bindings.join(',')}"
+        end
       end
 
       test 'All must support elements are provided in the PractitionerRole resources returned.' do

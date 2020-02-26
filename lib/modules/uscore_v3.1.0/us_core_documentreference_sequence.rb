@@ -539,6 +539,71 @@ module Inferno
             end
           end.compact
         end
+
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/document-reference-status',
+            path: 'status'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/composition-status',
+            path: 'docStatus'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-documentreference-type',
+            path: 'type'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-documentreference-category',
+            path: 'category'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/document-relationship-type',
+            path: 'relatesTo.code'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/security-labels',
+            path: 'securityLabel'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/mimetypes',
+            path: 'content.attachment.contentType'
+          },
+          {
+            type: 'Coding',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/formatcodes',
+            path: 'content.format'
+          }
+        ]
+        invalid_bindings = []
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @document_reference_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        assert invalid_bindings.blank?, "invalid required code found: #{invalid_bindings.join(',')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @document_reference_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        warning do
+          assert invalid_bindings.blank?, "invalid extensible code found: #{invalid_bindings.join(',')}"
+        end
       end
 
       test 'All must support elements are provided in the DocumentReference resources returned.' do

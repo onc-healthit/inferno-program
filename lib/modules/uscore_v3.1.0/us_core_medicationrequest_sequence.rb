@@ -473,6 +473,46 @@ module Inferno
 
         skip_if_not_found(resource_type: 'MedicationRequest', delayed: false)
         test_resources_against_profile('MedicationRequest')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/medicationrequest-status',
+            path: 'status'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/medicationrequest-intent',
+            path: 'intent'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/request-priority',
+            path: 'priority'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-medication-codes',
+            path: 'medication'
+          }
+        ]
+        invalid_bindings = []
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @medication_request_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        assert invalid_bindings.blank?, "invalid required code found: #{invalid_bindings.join(',')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @medication_request_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        warning do
+          assert invalid_bindings.blank?, "invalid extensible code found: #{invalid_bindings.join(',')}"
+        end
       end
 
       test :validate_medication_resources do

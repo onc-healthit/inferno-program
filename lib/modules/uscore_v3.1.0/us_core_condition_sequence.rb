@@ -439,6 +439,47 @@ module Inferno
             end
           end.compact
         end
+
+        bindings = [
+          {
+            type: 'CodeableConcept',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/condition-clinical',
+            path: 'clinicalStatus'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/condition-ver-status',
+            path: 'verificationStatus'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-condition-category',
+            path: 'category'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-condition-code',
+            path: 'code'
+          }
+        ]
+        invalid_bindings = []
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @condition_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        assert invalid_bindings.blank?, "invalid required code found: #{invalid_bindings.join(',')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @condition_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        warning do
+          assert invalid_bindings.blank?, "invalid extensible code found: #{invalid_bindings.join(',')}"
+        end
       end
 
       test 'All must support elements are provided in the Condition resources returned.' do

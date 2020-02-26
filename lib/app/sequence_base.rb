@@ -903,6 +903,24 @@ module Inferno
           end
         end
       end
+
+      def find_invalid_binding(binding_def, resources)
+        invalid_code_found = resolve_element_from_path(resources, binding_def[:path]) do |el|
+          case binding_def[:type]
+          when 'CodeableConcept'
+            el.coding.none? do |coding|
+              Terminology.validate_code(binding_def[:system], coding.code, coding.system)
+            end
+          when 'Quantity'
+            !Terminology.validate_code(binding_def[:system], el.code, el.system)
+          when 'code'
+            !Terminology.validate_code(binding_def[:system], el)
+          else
+            false
+          end
+        end
+        invalid_code_found
+      end
     end
 
     Dir.glob(File.join(__dir__, '..', 'modules', '**', '*_sequence.rb')).sort.each { |file| require file }

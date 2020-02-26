@@ -302,6 +302,65 @@ module Inferno
             end
           end.compact
         end
+
+        bindings = [
+          {
+            type: 'CodeableConcept',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/allergyintolerance-clinical',
+            path: 'clinicalStatus'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/allergyintolerance-verification',
+            path: 'verificationStatus'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/allergy-intolerance-type',
+            path: 'type'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/allergy-intolerance-category',
+            path: 'category'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/allergy-intolerance-criticality',
+            path: 'criticality'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-allergy-substance',
+            path: 'code'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/reaction-event-severity',
+            path: 'reaction.severity'
+          }
+        ]
+        invalid_bindings = []
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @allergy_intolerance_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        assert invalid_bindings.blank?, "invalid required code found: #{invalid_bindings.join(',')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          invalid_binding_found = find_invalid_binding(binding_def, @allergy_intolerance_ary&.values&.flatten)
+          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+        end
+        warning do
+          assert invalid_bindings.blank?, "invalid extensible code found: #{invalid_bindings.join(',')}"
+        end
       end
 
       test 'All must support elements are provided in the AllergyIntolerance resources returned.' do
