@@ -136,6 +136,8 @@ module Inferno
             @client&.monitor_requests
 
             omit_if_tls_disabled
+            skip_if @instance.oauth_token_endpoint.blank?, %( No OAuth 2.0 token endpoint retrieved.
+                                                              This is typically discovered by the client in the CapabilityStatement or Well-known endpoint. )
             assert_tls_1_2 @instance.oauth_authorize_endpoint
             assert_deny_previous_tls @instance.oauth_authorize_endpoint
           end
@@ -155,6 +157,8 @@ module Inferno
             end
 
             omit_if_tls_disabled
+            skip_if @instance.oauth_token_endpoint.blank?, %( No OAuth 2.0 token endpoint retrieved.
+                                                              This is typically discovered by the client in the CapabilityStatement or Well-known endpoint. )
             assert_tls_1_2 @instance.oauth_token_endpoint
             assert_deny_previous_tls @instance.oauth_token_endpoint
           end

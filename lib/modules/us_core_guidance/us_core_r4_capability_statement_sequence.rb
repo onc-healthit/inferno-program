@@ -105,9 +105,10 @@ module Inferno
         end
       end
 
-      test 'FHIR server supports the conformance interaction' do
+      test :conformance_support do
         metadata do
           id '02'
+          name 'FHIR server supports the conformance interaction'
           link 'http://hl7.org/fhir/DSTU2/http.html#conformance'
           description %(
             The conformance 'whole system' interaction provides a method to get
