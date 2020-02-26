@@ -215,6 +215,8 @@ module Inferno
       # but allows us to throw a better error if the valueset isn't known by Inferno
       valueset = get_valueset(valueset_url)
       validation_fn = FHIR::StructureDefinition.vs_validators[valueset.url]
+      raise(UnknownValueSetException, valueset.url) unless validation_fn
+
       if system
         validation_fn.call('code' => code, 'system' => system)
       else
