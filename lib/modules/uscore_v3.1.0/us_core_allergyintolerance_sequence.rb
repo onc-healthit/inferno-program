@@ -41,10 +41,10 @@ module Inferno
         warning do
           assert @instance.server_capabilities&.search_documented?('AllergyIntolerance'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
-                 search interaction for this resource is not documented in the
-                 CapabilityStatement. If this response was due to the server
-                 requiring a status parameter, the server must document this
-                 requirement in its CapabilityStatement.)
+                search interaction for this resource is not documented in the
+                CapabilityStatement. If this response was due to the server
+                requiring a status parameter, the server must document this
+                requirement in its CapabilityStatement.)
         end
 
         ['active', 'inactive', 'resolved'].each do |status_value|
@@ -73,37 +73,9 @@ module Inferno
 
       @resources_found = false
 
-      test :unauthorized_search do
-        metadata do
-          id '01'
-          name 'Server rejects AllergyIntolerance search without authorization'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
-          description %(
-            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
-          )
-          versions :r4
-        end
-
-        skip_if_known_not_supported(:AllergyIntolerance, [:search])
-
-        @client.set_no_auth
-        omit 'Do not test if no bearer token set' if @instance.token.blank?
-
-        patient_ids.each do |patient|
-          search_params = {
-            'patient': patient
-          }
-
-          reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
-          assert_response_unauthorized reply
-        end
-
-        @client.set_bearer_token(@instance.token)
-      end
-
       test :search_by_patient do
         metadata do
-          id '02'
+          id '01'
           name 'Server returns expected results from AllergyIntolerance search by patient'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -148,7 +120,7 @@ module Inferno
 
       test :search_by_patient_clinical_status do
         metadata do
-          id '03'
+          id '02'
           name 'Server returns expected results from AllergyIntolerance search by patient+clinical-status'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -185,7 +157,7 @@ module Inferno
 
       test :read_interaction do
         metadata do
-          id '04'
+          id '03'
           name 'Server returns correct AllergyIntolerance resource from AllergyIntolerance read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -202,7 +174,7 @@ module Inferno
 
       test :vread_interaction do
         metadata do
-          id '05'
+          id '04'
           name 'Server returns correct AllergyIntolerance resource from AllergyIntolerance vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -220,7 +192,7 @@ module Inferno
 
       test :history_interaction do
         metadata do
-          id '06'
+          id '05'
           name 'Server returns correct AllergyIntolerance resource from AllergyIntolerance history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -238,7 +210,7 @@ module Inferno
 
       test 'Server returns Provenance resources from AllergyIntolerance search by patient + _revIncludes: Provenance:target' do
         metadata do
-          id '07'
+          id '06'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -273,7 +245,7 @@ module Inferno
 
       test :validate_resources do
         metadata do
-          id '08'
+          id '07'
           name 'AllergyIntolerance resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance'
           description %(
@@ -365,7 +337,7 @@ module Inferno
 
       test 'All must support elements are provided in the AllergyIntolerance resources returned.' do
         metadata do
-          id '09'
+          id '08'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -409,7 +381,7 @@ module Inferno
 
       test 'Every reference within AllergyIntolerance resource is valid and can be read.' do
         metadata do
-          id '10'
+          id '09'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.
