@@ -28,7 +28,6 @@ module Inferno
       'http://fhir.org/guides/argonaut/ValueSet/substance-ndfrt',
       'http://fhir.org/guides/argonaut/ValueSet/substance',
       'http://hl7.org/fhir/ValueSet/message-events',
-      'http://hl7.org/fhir/ValueSet/mimetypes',
       'http://hl7.org/fhir/ValueSet/care-team-category',
       'http://hl7.org/fhir/ValueSet/action-participant-role'
     ].freeze

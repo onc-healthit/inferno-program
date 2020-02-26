@@ -256,6 +256,7 @@ DEPENDENCIES
   json-jwt
   jwt
   kramdown
+  mime-types
   minitest
   parser
   pry
