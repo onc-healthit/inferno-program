@@ -202,13 +202,13 @@ module Inferno
       # Load a code system from a file
       #
       # @param [String] system the name of the code system
-      def self.load_system(system)
+      def self.load_system(filename)
         # TODO: Generalize this
-        cs = FHIR::Json.from_json(File.read(system))
+        cs = FHIR::Json.from_json(File.read(filename))
         cs_set = Set.new
         load_codes = lambda do |concept|
           concept.each do |concept_code|
-            cs_set.add(system: system, code: concept_code.code)
+            cs_set.add(system: cs.url, code: concept_code.code)
             load_codes.call(concept_code.concept) unless concept_code.concept.empty?
           end
         end
