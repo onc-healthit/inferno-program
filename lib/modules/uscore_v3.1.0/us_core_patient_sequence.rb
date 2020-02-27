@@ -67,37 +67,9 @@ module Inferno
 
       @resources_found = false
 
-      test :unauthorized_search do
-        metadata do
-          id '01'
-          name 'Server rejects Patient search without authorization'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
-          description %(
-            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
-          )
-          versions :r4
-        end
-
-        skip_if_known_not_supported(:Patient, [:search])
-
-        @client.set_no_auth
-        omit 'Do not test if no bearer token set' if @instance.token.blank?
-
-        patient_ids.each do |patient|
-          search_params = {
-            '_id': patient
-          }
-
-          reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
-          assert_response_unauthorized reply
-        end
-
-        @client.set_bearer_token(@instance.token)
-      end
-
       test :search_by__id do
         metadata do
-          id '02'
+          id '01'
           name 'Server returns expected results from Patient search by _id'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -140,7 +112,7 @@ module Inferno
 
       test :search_by_identifier do
         metadata do
-          id '03'
+          id '02'
           name 'Server returns expected results from Patient search by identifier'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -175,7 +147,7 @@ module Inferno
 
       test :search_by_name do
         metadata do
-          id '04'
+          id '03'
           name 'Server returns expected results from Patient search by name'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -210,7 +182,7 @@ module Inferno
 
       test :search_by_gender_name do
         metadata do
-          id '05'
+          id '04'
           name 'Server returns expected results from Patient search by gender+name'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -246,7 +218,7 @@ module Inferno
 
       test :search_by_birthdate_name do
         metadata do
-          id '06'
+          id '05'
           name 'Server returns expected results from Patient search by birthdate+name'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -282,7 +254,7 @@ module Inferno
 
       test :search_by_birthdate_family do
         metadata do
-          id '07'
+          id '06'
           name 'Server returns expected results from Patient search by birthdate+family'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -319,7 +291,7 @@ module Inferno
 
       test :search_by_family_gender do
         metadata do
-          id '08'
+          id '07'
           name 'Server returns expected results from Patient search by family+gender'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -356,7 +328,7 @@ module Inferno
 
       test :read_interaction do
         metadata do
-          id '09'
+          id '08'
           name 'Server returns correct Patient resource from Patient read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -373,7 +345,7 @@ module Inferno
 
       test :vread_interaction do
         metadata do
-          id '10'
+          id '09'
           name 'Server returns correct Patient resource from Patient vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -391,7 +363,7 @@ module Inferno
 
       test :history_interaction do
         metadata do
-          id '11'
+          id '10'
           name 'Server returns correct Patient resource from Patient history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -409,7 +381,7 @@ module Inferno
 
       test 'Server returns Provenance resources from Patient search by _id + _revIncludes: Provenance:target' do
         metadata do
-          id '12'
+          id '11'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -442,7 +414,7 @@ module Inferno
 
       test :validate_resources do
         metadata do
-          id '13'
+          id '12'
           name 'Patient resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
           description %(
@@ -560,7 +532,7 @@ module Inferno
 
       test 'All must support elements are provided in the Patient resources returned.' do
         metadata do
-          id '14'
+          id '13'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -671,7 +643,7 @@ module Inferno
 
       test 'Every reference within Patient resource is valid and can be read.' do
         metadata do
-          id '15'
+          id '14'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

@@ -68,37 +68,9 @@ module Inferno
         @resources_found = @practitioner_role.present?
       end
 
-      test :unauthorized_search do
-        metadata do
-          id '02'
-          name 'Server rejects PractitionerRole search without authorization'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
-          description %(
-            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
-          )
-          versions :r4
-        end
-
-        skip_if_known_not_supported(:PractitionerRole, [:search])
-
-        @client.set_no_auth
-        omit 'Do not test if no bearer token set' if @instance.token.blank?
-
-        search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
-        }
-
-        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('PractitionerRole'), search_params)
-        assert_response_unauthorized reply
-
-        @client.set_bearer_token(@instance.token)
-      end
-
       test :search_by_specialty do
         metadata do
-          id '03'
+          id '02'
           name 'Server returns expected results from PractitionerRole search by specialty'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -136,7 +108,7 @@ module Inferno
 
       test :search_by_practitioner do
         metadata do
-          id '04'
+          id '03'
           name 'Server returns expected results from PractitionerRole search by practitioner'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -163,7 +135,7 @@ module Inferno
 
       test :chained_search_by_practitioner do
         metadata do
-          id '05'
+          id '04'
           name 'Server returns expected results from PractitionerRole chained search by practitioner.identifier and practitioner.name'
           link 'https://www.hl7.org/fhir/us/core/StructureDefinition-us-core-practitionerrole.html#mandatory-search-parameters'
           description %(
@@ -219,7 +191,7 @@ module Inferno
 
       test :vread_interaction do
         metadata do
-          id '06'
+          id '05'
           name 'Server returns correct PractitionerRole resource from PractitionerRole vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -237,7 +209,7 @@ module Inferno
 
       test :history_interaction do
         metadata do
-          id '07'
+          id '06'
           name 'Server returns correct PractitionerRole resource from PractitionerRole history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -255,7 +227,7 @@ module Inferno
 
       test 'Server returns the appropriate resource from the following _includes: PractitionerRole:endpoint, PractitionerRole:practitioner' do
         metadata do
-          id '08'
+          id '07'
           link 'https://www.hl7.org/fhir/search.html#include'
           optional
           description %(
@@ -289,7 +261,7 @@ module Inferno
 
       test 'Server returns Provenance resources from PractitionerRole search by specialty + _revIncludes: Provenance:target' do
         metadata do
-          id '09'
+          id '08'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -324,7 +296,7 @@ module Inferno
 
       test :validate_resources do
         metadata do
-          id '10'
+          id '09'
           name 'PractitionerRole resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'
           description %(
@@ -388,7 +360,7 @@ module Inferno
 
       test 'All must support elements are provided in the PractitionerRole resources returned.' do
         metadata do
-          id '11'
+          id '10'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -447,7 +419,7 @@ module Inferno
 
       test 'Every reference within PractitionerRole resource is valid and can be read.' do
         metadata do
-          id '12'
+          id '11'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

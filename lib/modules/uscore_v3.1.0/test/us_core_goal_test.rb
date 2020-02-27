@@ -17,55 +17,6 @@ describe Inferno::Sequence::USCore310GoalSequence do
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
 
-  describe 'unauthorized search test' do
-    before do
-      @test = @sequence_class[:unauthorized_search]
-      @sequence = @sequence_class.new(@instance, @client)
-
-      @query = {
-        'patient': @sequence.patient_ids.first
-      }
-    end
-
-    it 'skips if the Goal search interaction is not supported' do
-      Inferno::Models::ServerCapabilities.create(
-        testing_instance_id: @instance.id,
-        capabilities: FHIR::CapabilityStatement.new.to_json
-      )
-      @instance.reload
-      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
-
-      skip_message = 'This server does not support Goal search operation(s) according to conformance statement.'
-      assert_equal skip_message, exception.message
-    end
-
-    it 'fails when the token refresh response has a success status' do
-      stub_request(:get, "#{@base_url}/Goal")
-        .with(query: @query)
-        .to_return(status: 200)
-
-      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
-
-      assert_equal 'Bad response code: expected 401, but found 200', exception.message
-    end
-
-    it 'succeeds when the token refresh response has an error status' do
-      stub_request(:get, "#{@base_url}/Goal")
-        .with(query: @query)
-        .to_return(status: 401)
-
-      @sequence.run_test(@test)
-    end
-
-    it 'is omitted when no token is set' do
-      @instance.token = ''
-
-      exception = assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
-
-      assert_equal 'Do not test if no bearer token set', exception.message
-    end
-  end
-
   describe 'Goal search by patient test' do
     before do
       @test = @sequence_class[:search_by_patient]

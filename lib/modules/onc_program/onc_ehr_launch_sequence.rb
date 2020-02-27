@@ -194,13 +194,34 @@ module Inferno
 
       required_scope_test(index: '12', patient_or_user: 'user')
 
-      patient_context_test(index: '13')
+      test :unauthorized_read do
+        metadata do
+          id '13'
+          name 'Server rejects unauthorized access'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
+          description %(
+            A server SHALL reject any unauthorized requests by returning an HTTP
+            401 unauthorized response code.
+          )
+          versions :r4
+        end
 
-      encounter_context_test(index: '14')
+        @client.set_no_auth
+        skip_if_auth_failed
+
+        reply = @client.read(FHIR::Patient, @instance.patient_id)
+        @client.set_bearer_token(@instance.token)
+
+        assert_response_unauthorized reply
+      end
+
+      patient_context_test(index: '14')
+
+      encounter_context_test(index: '15')
 
       test :smart_style_url do
         metadata do
-          id '15'
+          id '16'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#styling'
           name 'Launch context contains smart_style_url which links to valid JSON'
           description %(
@@ -223,7 +244,7 @@ module Inferno
 
       test :need_patient_banner do
         metadata do
-          id '16'
+          id '17'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#launch-context-arrives-with-your-access_token'
           name 'Launch context contains need_patient_banner'
           description %(
