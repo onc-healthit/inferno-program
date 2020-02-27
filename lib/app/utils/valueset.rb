@@ -201,7 +201,7 @@ module Inferno
 
       # Load a code system from a file
       #
-      # @param [String] system the name of the code system
+      # @param [String] filename the file containing the code system JSON
       def self.load_system(filename)
         # TODO: Generalize this
         cs = FHIR::Json.from_json(File.read(filename))
