@@ -90,7 +90,7 @@ module Inferno
         skip_if_known_search_not_supported('Organization', ['name'])
 
         search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
+          'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
@@ -129,7 +129,7 @@ module Inferno
         skip_if_not_found(resource_type: 'Organization', delayed: true)
 
         search_params = {
-          'address': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'address'))
+          'address': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'address') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
@@ -191,7 +191,7 @@ module Inferno
         provenance_results = []
 
         search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name'))
+          'name': get_value_for_search_param(resolve_element_from_path(@organization_ary, 'name') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }

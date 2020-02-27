@@ -908,6 +908,8 @@ module Inferno
         invalid_code_found = resolve_element_from_path(resources, binding_def[:path]) do |el|
           case binding_def[:type]
           when 'CodeableConcept'
+            return false unless el.is_a? FHIR::CodeableConcept
+
             el.coding.none? do |coding|
               Terminology.validate_code(binding_def[:system], coding.code, coding.system)
             end

@@ -130,7 +130,7 @@ module Inferno
 
         patient_ids.each do |patient|
           search_params = {
-            'identifier': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'identifier'))
+            'identifier': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'identifier') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -165,7 +165,7 @@ module Inferno
 
         patient_ids.each do |patient|
           search_params = {
-            'name': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name'))
+            'name': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -200,8 +200,8 @@ module Inferno
 
         patient_ids.each do |patient|
           search_params = {
-            'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'gender')),
-            'name': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name'))
+            'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'gender') { |el| get_value_for_search_param(el).present? }),
+            'name': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -236,8 +236,8 @@ module Inferno
 
         patient_ids.each do |patient|
           search_params = {
-            'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'birthDate')),
-            'name': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name'))
+            'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'birthDate') { |el| get_value_for_search_param(el).present? }),
+            'name': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -273,8 +273,8 @@ module Inferno
 
         patient_ids.each do |patient|
           search_params = {
-            'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'birthDate')),
-            'family': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name.family'))
+            'birthdate': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'birthDate') { |el| get_value_for_search_param(el).present? }),
+            'family': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name.family') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -310,8 +310,8 @@ module Inferno
 
         patient_ids.each do |patient|
           search_params = {
-            'family': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name.family')),
-            'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'gender'))
+            'family': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'name.family') { |el| get_value_for_search_param(el).present? }),
+            'gender': get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'gender') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }

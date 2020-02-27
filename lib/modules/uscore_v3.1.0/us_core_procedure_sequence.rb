@@ -148,7 +148,7 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'date': get_value_for_search_param(resolve_element_from_path(@procedure_ary[patient], 'performed'))
+            'date': get_value_for_search_param(resolve_element_from_path(@procedure_ary[patient], 'performed') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -195,8 +195,8 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'code': get_value_for_search_param(resolve_element_from_path(@procedure_ary[patient], 'code')),
-            'date': get_value_for_search_param(resolve_element_from_path(@procedure_ary[patient], 'performed'))
+            'code': get_value_for_search_param(resolve_element_from_path(@procedure_ary[patient], 'code') { |el| get_value_for_search_param(el).present? }),
+            'date': get_value_for_search_param(resolve_element_from_path(@procedure_ary[patient], 'performed') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -242,7 +242,7 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'status': get_value_for_search_param(resolve_element_from_path(@procedure_ary[patient], 'status'))
+            'status': get_value_for_search_param(resolve_element_from_path(@procedure_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }

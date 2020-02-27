@@ -114,7 +114,7 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'type': get_value_for_search_param(resolve_element_from_path(@device_ary[patient], 'type'))
+            'type': get_value_for_search_param(resolve_element_from_path(@device_ary[patient], 'type') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }

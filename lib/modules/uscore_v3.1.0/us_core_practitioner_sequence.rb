@@ -91,7 +91,7 @@ module Inferno
         skip_if_known_search_not_supported('Practitioner', ['name'])
 
         search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
+          'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
@@ -130,7 +130,7 @@ module Inferno
         skip_if_not_found(resource_type: 'Practitioner', delayed: true)
 
         search_params = {
-          'identifier': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'identifier'))
+          'identifier': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'identifier') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
@@ -192,7 +192,7 @@ module Inferno
         provenance_results = []
 
         search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name'))
+          'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }

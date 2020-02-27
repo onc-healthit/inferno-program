@@ -102,7 +102,7 @@ module Inferno
         skip_if_known_search_not_supported('Location', ['name'])
 
         search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
+          'name': get_value_for_search_param(resolve_element_from_path(@location_ary, 'name') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
@@ -141,7 +141,7 @@ module Inferno
         skip_if_not_found(resource_type: 'Location', delayed: true)
 
         search_params = {
-          'address': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address'))
+          'address': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
@@ -169,7 +169,7 @@ module Inferno
         skip_if_not_found(resource_type: 'Location', delayed: true)
 
         search_params = {
-          'address-city': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.city'))
+          'address-city': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.city') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
@@ -197,7 +197,7 @@ module Inferno
         skip_if_not_found(resource_type: 'Location', delayed: true)
 
         search_params = {
-          'address-state': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.state'))
+          'address-state': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.state') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
@@ -225,7 +225,7 @@ module Inferno
         skip_if_not_found(resource_type: 'Location', delayed: true)
 
         search_params = {
-          'address-postalcode': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.postalCode'))
+          'address-postalcode': get_value_for_search_param(resolve_element_from_path(@location_ary, 'address.postalCode') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
@@ -287,7 +287,7 @@ module Inferno
         provenance_results = []
 
         search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@location_ary, 'name'))
+          'name': get_value_for_search_param(resolve_element_from_path(@location_ary, 'name') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }

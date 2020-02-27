@@ -151,14 +151,13 @@ module Inferno
             next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'MedicationRequest' }
 
             @resources_found = true
-            @medication_request = reply.resource.entry
-              .find { |entry| entry&.resource&.resourceType == 'MedicationRequest' }
-              .resource
-            @medication_request_ary[patient] += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            @medication_request = resources_returned.first
+            @medication_request_ary[patient] += resources_returned
 
             save_resource_references(versioned_resource_class('MedicationRequest'), @medication_request_ary[patient])
-            save_delayed_sequence_references(@medication_request_ary[patient])
-            validate_reply_entries(@medication_request_ary[patient], search_params)
+            save_delayed_sequence_references(resources_returned)
+            validate_reply_entries(resources_returned, search_params)
             test_medication_inclusion(@medication_request_ary[patient], search_params)
             break
           end
@@ -191,8 +190,8 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent')),
-            'status': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'status'))
+            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? }),
+            'status': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -234,8 +233,8 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent')),
-            'encounter': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'encounter'))
+            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? }),
+            'encounter': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'encounter') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -280,8 +279,8 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent')),
-            'authoredon': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'authoredOn'))
+            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? }),
+            'authoredon': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'authoredOn') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -368,7 +367,7 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent'))
+            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -405,7 +404,7 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent'))
+            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -587,8 +586,8 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent')),
-            'status': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'status'))
+            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? }),
+            'status': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }

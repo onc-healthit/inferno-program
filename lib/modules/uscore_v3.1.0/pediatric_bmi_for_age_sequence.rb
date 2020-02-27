@@ -117,14 +117,13 @@ module Inferno
             next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Observation' }
 
             @resources_found = true
-            @observation = reply.resource.entry
-              .find { |entry| entry&.resource&.resourceType == 'Observation' }
-              .resource
-            @observation_ary[patient] += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            @observation = resources_returned.first
+            @observation_ary[patient] += resources_returned
 
             save_resource_references(versioned_resource_class('Observation'), @observation_ary[patient], Inferno::ValidationUtil::US_CORE_R4_URIS[:pediatric_bmi_age])
-            save_delayed_sequence_references(@observation_ary[patient])
-            validate_reply_entries(@observation_ary[patient], search_params)
+            save_delayed_sequence_references(resources_returned)
+            validate_reply_entries(resources_returned, search_params)
 
             break
           end
@@ -154,8 +153,8 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category')),
-            'date': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'effective'))
+            'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }),
+            'date': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'effective') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -200,7 +199,7 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category'))
+            'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -240,8 +239,8 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code')),
-            'date': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'effective'))
+            'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code') { |el| get_value_for_search_param(el).present? }),
+            'date': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'effective') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -287,8 +286,8 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category')),
-            'status': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'status'))
+            'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }),
+            'status': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -375,7 +374,7 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code'))
+            'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }

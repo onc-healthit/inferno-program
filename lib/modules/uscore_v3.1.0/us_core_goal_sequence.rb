@@ -145,7 +145,7 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'target-date': get_value_for_search_param(resolve_element_from_path(@goal_ary[patient], 'target.dueDate'))
+            'target-date': get_value_for_search_param(resolve_element_from_path(@goal_ary[patient], 'target.dueDate') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -191,7 +191,7 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'lifecycle-status': get_value_for_search_param(resolve_element_from_path(@goal_ary[patient], 'lifecycleStatus'))
+            'lifecycle-status': get_value_for_search_param(resolve_element_from_path(@goal_ary[patient], 'lifecycleStatus') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
