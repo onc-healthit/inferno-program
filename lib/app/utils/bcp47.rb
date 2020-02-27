@@ -3,6 +3,11 @@ module Inferno
     extend self
     SEPARATOR = '%%'.freeze
 
+    @code_set = nil
+    def code_set(filter: nil)
+      @code_set ||= filter_codes(filter: nil)
+    end
+
 
     def load_bcp47
       bcp47_file_location = 'resources/terminology/bcp47.txt'
@@ -13,8 +18,9 @@ module Inferno
 
     def filter_codes(filter = nil)
       bcp47_file = bcp
+      cs_set = Set.new
       bcp47_file.each(SEPARATOR) do |language|
-        puts parse_language(language)
+        cs_set.add(system: 'urn:ietf:bcp:47', code: language['Subtag']) if meets_filter_criteria?(language, filter)
       end
     end
 
@@ -38,16 +44,41 @@ module Inferno
       /^(?<key>\S+): (?<value>.*)$/
     end
 
+    def string_to_boolean(boolean_string)
+      if boolean_string == 'true'
+        true
+      elsif boolean_string == 'false'
+        false
+      end
+    end
+
     def meets_filter_criteria?(language, filters)
       return true unless filters&.present?
 
+      meets_criteria = true
       filters.each do |filter|
         if filter.op == 'exists'
+          filter_value = string_to_boolean(filter.value)
+          throw Terminology::Valueset::FilterOperationException(filter.to_s) if string_to_boolean.nil?
           if filter.property == 'ext-lang'
-            language['Type'] == filter.property
+            meets_criteria = (language['Type'] == 'extlang') == filter_value
+          elsif filter.property == 'script'
+            meets_criteria = (language['Type'] == 'script') == filter_value
+          elsif filter.property =='variant'
+            meets_criteria = (language['Type'] == 'variant') == filter_value
+          elsif filter.property == 'extension'
+            meets_criteria = language['Subtag'].match?(/-\w{1}-/) == filter_value
+          elsif filter.property == 'private-use'
+            meets_criteria = (language['Scope'] == 'private-use') == filter_value
+          else
+            throw Terminology::Valueset::FilterOperationException(filter.to_s)
           end
+          break unless meets_criteria
+        else
+          throw Terminology::Valueset::FilterOperationException(filter.op)
         end
       end
+      meets_criteria
     end
   end
 end
