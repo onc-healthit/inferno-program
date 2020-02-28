@@ -36,6 +36,7 @@ module Inferno
     @loaded_code_systems = nil
 
     @loaded_validators = {}
+    @missing_validators = nil
     class << self; attr_reader :loaded_validators, :known_valuesets; end
 
     def self.load_valuesets_from_directory(directory, include_subdirectories = false)
@@ -199,6 +200,13 @@ module Inferno
       @loaded_code_systems ||= @known_valuesets.flat_map do |_, vs|
         vs.included_code_systems.uniq
       end.uniq.compact
+    end
+
+    def self.missing_validators
+      return @missing_validators if @missing_validators
+
+      required_valuesets = Inferno::Module.get('uscore_v3.1.0').value_sets.reject { |vs| vs[:strength] == 'example' }.collect { |vs| vs[:value_set_url] }
+      @missing_validators = required_valuesets.compact - Inferno::Terminology.loaded_validators.keys.compact
     end
 
     # This function accepts a valueset URL, code, and optional system, and returns true

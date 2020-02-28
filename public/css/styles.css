@@ -108,6 +108,10 @@ body {
   background-color: #999;
 }
 
+.banner-warning {
+  margin-top: 10px;
+}
+
 .server-actions {
   text-align: right;
 }
