@@ -24,5 +24,5 @@ test_sets:
         - <%=sequence[:class_name]%><% end %>
         - USCoreR4DataAbsentReasonSequence
 value_sets:
-<%= sequences.map{ |seq| seq[:bindings] }.flatten.uniq.map { |binding| "  - #{binding[:system]}" }.join("\n")%>
+<%= sequences.map{ |seq| seq[:bindings] }.flatten.map { |binding| "  - #{binding[:system]}" }.uniq.join("\n")%>
 
