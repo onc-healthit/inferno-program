@@ -2,6 +2,7 @@
 
 require 'sqlite3'
 require_relative 'bcp_13'
+require_relative 'bcp47'
 
 module Inferno
   class Terminology
@@ -56,7 +57,7 @@ module Inferno
         'http://terminology.hl7.org/CodeSystem/v3-RoleCode' => -> { load_system('resources/misc_valuesets/v3-RoleCode.cs.json') },
         'http://terminology.hl7.org/CodeSystem/v2-0131' => -> { load_system('resources/misc_valuesets/v2-0131.cs.json') },
         'urn:ietf:bcp:13' => -> { BCP13.code_set },
-        'urn:ietf:bcp47' => ->(filter: nil) { BCP47.code_set(filter) }
+        'urn:ietf:bcp:47' => ->(filter = nil) { Inferno::BCP47.code_set(filter) }
       }.freeze
 
       # https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/attribute_names.html
@@ -262,7 +263,12 @@ module Inferno
       def filter_code_set(system, filter = nil, _version = nil)
         if CODE_SYS.include? system
           Inferno.logger.debug "  loading #{system} codes..."
-          return filter.nil? ? CODE_SYS[system].call : CODE_SYS[system].call(filter)
+          begin
+            return filter.nil? ? CODE_SYS[system].call : CODE_SYS[system].call(filter)
+          rescue ArgumentError
+            puts "UNHANLDED FILTERS in #{url}"
+            return CODE_SYS[system].call
+          end
         end
 
         filter_clause = lambda do |filter|
