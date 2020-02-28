@@ -23,3 +23,6 @@ test_sets:
         - USCoreR4ClinicalNotesSequence<% delayed_sequences.each do |sequence| %>
         - <%=sequence[:class_name]%><% end %>
         - USCoreR4DataAbsentReasonSequence
+value_sets:
+<%= sequences.map{ |seq| seq[:bindings] }.flatten.uniq.map { |binding| "  - #{binding[:system]}" }.join("\n")%>
+
