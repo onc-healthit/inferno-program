@@ -18,6 +18,7 @@ module Inferno
     attr_accessor :tags
     attr_accessor :test_sets
     attr_accessor :title
+    attr_accessor :value_sets
 
     def initialize(params)
       @name = params[:name]
@@ -35,6 +36,7 @@ module Inferno
           test_sets[test_set_key] = TestSet.new(test_set_key, test_set)
         end
       end
+      @value_sets = params[:value_sets]
 
       Module.add(name, self)
     end
