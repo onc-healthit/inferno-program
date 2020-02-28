@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Inferno
   module BCP47
     # https://tools.ietf.org/html/bcp47
@@ -5,7 +7,7 @@ module Inferno
     # https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
     #
     class << self
-      SEPARATOR = '%%'.freeze
+      SEPARATOR = '%%'
 
       def code_set(filter = nil)
         filter_codes(filter)
