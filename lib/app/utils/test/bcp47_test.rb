@@ -18,8 +18,8 @@ Added: 2020-12-16
 
 describe Inferno::BCP47 do
   before do
-    stub_request(:get, "https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry")
-        .to_return(status: 200, body: languages, headers: {})
+    stub_request(:get, 'https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry')
+      .to_return(status: 200, body: languages, headers: {})
     @bcp47 = Inferno::BCP47
   end
   it 'can load all languages' do
