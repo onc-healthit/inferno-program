@@ -24,7 +24,6 @@ module Inferno
     SKIP_SYS = [
       'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem',
       'http://fhir.org/guides/argonaut/ValueSet/languages',
-      'http://hl7.org/fhir/us/core/ValueSet/simple-language',
       'http://fhir.org/guides/argonaut/ValueSet/substance-ndfrt',
       'http://fhir.org/guides/argonaut/ValueSet/substance',
       'http://hl7.org/fhir/ValueSet/message-events',

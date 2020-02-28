@@ -792,6 +792,15 @@ namespace :terminology do |_argv|
     Inferno::Terminology.load_fhir_models_expansions
     Inferno::Terminology.create_validators(validator_type)
   end
+
+  desc 'Number of codes in ValueSet'
+  task :codes_in_valueset, [:vs] do |_t, args|
+    Inferno::Terminology.register_umls_db 'umls.db'
+    Inferno::Terminology.load_valuesets_from_directory('resources', true)
+    Inferno::Terminology.load_fhir_models_expansions
+    vs = Inferno::Terminology.known_valuesets[args.vs]
+    puts vs.valueset.count
+  end
 end
 
 RuboCop::RakeTask.new(:rubocop) do |t|

@@ -2,6 +2,7 @@
 
 require 'sqlite3'
 require_relative 'bcp_13'
+require_relative 'bcp47'
 
 module Inferno
   class Terminology
@@ -55,7 +56,8 @@ module Inferno
         'http://terminology.hl7.org/CodeSystem/practitioner-role' => -> { load_system('resources/misc_valuesets/codesystem-practitioner-role.json') },
         'http://terminology.hl7.org/CodeSystem/v3-RoleCode' => -> { load_system('resources/misc_valuesets/v3-RoleCode.cs.json') },
         'http://terminology.hl7.org/CodeSystem/v2-0131' => -> { load_system('resources/misc_valuesets/v2-0131.cs.json') },
-        'urn:ietf:bcp:13' => -> { BCP13.code_set }
+        'urn:ietf:bcp:13' => -> { BCP13.code_set },
+        'urn:ietf:bcp:47' => ->(filter = nil) { Inferno::BCP47.code_set(filter) }
       }.freeze
 
       # https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/attribute_names.html
@@ -259,6 +261,16 @@ module Inferno
       # @param [FHIR::ValueSet::Compose::Include::Filter] filter the filter object
       # @return [Set] the filtered set of codes
       def filter_code_set(system, filter = nil, _version = nil)
+        if CODE_SYS.include? system
+          Inferno.logger.debug "  loading #{system} codes..."
+          begin
+            return filter.nil? ? CODE_SYS[system].call : CODE_SYS[system].call(filter)
+          rescue ArgumentError
+            Inferno.logger.error "UNHANLDED FILTERS in #{url}"
+            return CODE_SYS[system].call
+          end
+        end
+
         filter_clause = lambda do |filter|
           where = +''
           if filter.op == 'in'
@@ -281,10 +293,6 @@ module Inferno
         end
 
         filtered_set = Set.new
-        if CODE_SYS.include? system
-          Inferno.logger.debug "  loading #{system} codes..."
-          return CODE_SYS[system].call
-        end
         raise "Can't handle #{filter&.op} on #{system}" unless ['=', 'in', 'is-a', nil].include? filter&.op
         raise UnknownCodeSystemException, system if SAB[system].nil?
 
@@ -304,6 +312,8 @@ module Inferno
           end
         elsif filter&.op == 'is-a'
           filtered_set = filter_is_a(system, filter)
+        else
+          throw FilterOperationException(filter&.op)
         end
         filtered_set
       end
