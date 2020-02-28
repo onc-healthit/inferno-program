@@ -8,22 +8,21 @@ module Inferno
     #
     class << self
       SEPARATOR = '%%'
+      REGISTRY_URL = 'https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry'
 
       def code_set(filter = nil)
         filter_codes(filter)
       end
 
       def load_bcp47
-        bcp47_file_location = 'resources/terminology/bcp47.txt'
-        bcp47_file = File.new(bcp47_file_location)
-        bcp47_file.gets(SEPARATOR) # remove the first line which has the date
-        bcp47_file
+        response = RestClient.get REGISTRY_URL
+        response.body.split(SEPARATOR).drop(1)
       end
 
       def filter_codes(filter = nil)
-        bcp47_file = bcp
+        bcp47 = bcp
         cs_set = Set.new
-        bcp47_file.each(SEPARATOR) do |raw_language|
+        bcp47.each do |raw_language|
           language = parse_language(raw_language)
           next if language['Subtag'].nil?
           next if language['Type'] == 'region'
@@ -35,8 +34,9 @@ module Inferno
 
       private
 
+      @bcp = nil
       def bcp
-        load_bcp47
+        @bcp ||= load_bcp47
       end
 
       # Parse the language attributes chunk from the text file

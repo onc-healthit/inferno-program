@@ -793,7 +793,7 @@ namespace :terminology do |_argv|
     Inferno::Terminology.create_validators(validator_type)
   end
 
-  desc 'Create ValueSet'
+  desc 'Number of codes in ValueSet'
   task :codes_in_valueset, [:vs] do |_t, args|
     Inferno::Terminology.register_umls_db 'umls.db'
     Inferno::Terminology.load_valuesets_from_directory('resources', true)

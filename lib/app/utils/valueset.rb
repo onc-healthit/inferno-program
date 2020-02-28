@@ -266,7 +266,7 @@ module Inferno
           begin
             return filter.nil? ? CODE_SYS[system].call : CODE_SYS[system].call(filter)
           rescue ArgumentError
-            puts "UNHANLDED FILTERS in #{url}"
+            Inferno.logger.error "UNHANLDED FILTERS in #{url}"
             return CODE_SYS[system].call
           end
         end
