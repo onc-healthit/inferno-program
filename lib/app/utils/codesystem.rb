@@ -12,23 +12,6 @@ module Inferno
         @codesystem_model = cs_model
       end
 
-      # Load a code system from a file
-      #
-      # @param [String] filename the file containing the code system JSON
-      def load_system(filename)
-        # TODO: Generalize this
-        cs = FHIR::Json.from_json(File.read(filename))
-        cs_set = Set.new
-        load_codes = lambda do |concept|
-          concept.each do |concept_code|
-            cs_set.add(system: cs.url, code: concept_code.code)
-            load_codes.call(concept_code.concept) unless concept_code.concept.empty?
-          end
-        end
-        load_codes.call(cs.concept)
-        cs_set
-      end
-
       def all_codes_in_concept(concepts)
         cs_set = Set.new
         load_codes = lambda do |concept|
