@@ -4,7 +4,7 @@ require_relative 'bcp_13'
 require_relative 'bcp47'
 
 module Inferno
-  module Terminology
+  class Terminology
     class Codesystem
       attr_accessor :codesystem_model
 
@@ -37,7 +37,7 @@ module Inferno
             load_codes.call(concept_code.concept) unless concept_code.concept.empty?
           end
         end
-        load_codes.call(concepts)
+        load_codes.call(concepts.flatten)
         cs_set
       end
 
@@ -57,7 +57,7 @@ module Inferno
           cs_set = all_codes_in_concept(codesystem_model.concept)
         elsif (filter.op == 'is-a') && (codesystem_model.hierarchyMeaning == 'is-a') && (filter.property == 'concept')
           parent_concept = find_concept(filter.value)
-          cs_set = all_codes_in_concept(parent_concept)
+          cs_set = all_codes_in_concept([parent_concept])
         else
           throw Terminology::FilterOperationException(filter.to_s)
         end

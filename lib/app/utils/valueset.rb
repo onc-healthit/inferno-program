@@ -3,6 +3,7 @@
 require 'sqlite3'
 require_relative 'bcp_13'
 require_relative 'bcp47'
+require_relative 'codesystem'
 
 module Inferno
   class Terminology
@@ -57,7 +58,11 @@ module Inferno
         'http://terminology.hl7.org/CodeSystem/v2-0131' => -> { load_system('resources/misc_valuesets/v2-0131.cs.json') },
         'urn:ietf:bcp:13' => -> { BCP13.code_set },
         'urn:ietf:bcp:47' => ->(filter = nil) { Inferno::BCP47.code_set(filter) },
-        'urn:oid:2.16.840.1.113883.6.238' => ->(filter = nil) { Inferno::Terminology::Codesystem.new(FHIR::Json.from_json(File.read(resources/us_core_r4/CodeSystem-cdcrec.json))).filter_codes(filter)}
+        'urn:oid:2.16.840.1.113883.6.238' => ->(filter = nil) do
+          Inferno::Terminology::Codesystem
+            .new(FHIR::Json.from_json(File.read('resources/us_core_r4/CodeSystem-cdcrec.json')))
+            .filter_codes(filter)
+        end
       }.freeze
 
       # https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/attribute_names.html
