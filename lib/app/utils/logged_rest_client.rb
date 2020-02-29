@@ -13,6 +13,7 @@ module Inferno
     end
 
     def self.record_response(request, response)
+      binding.pry
       # You can call this directly with a hash
       # If intercepted from RestClient it will use a class
       reply = if response.instance_of? Hash
@@ -58,7 +59,7 @@ module Inferno
       begin
         reply = RestClient.get(url, headers, &block)
       rescue StandardError => e
-        unless e.respond_to? :response
+        if !e.respond_to?(:response) || e.response.nil?
           # Re-raise the client error if there's no response.
           raise # Re-raise the same error we caught.
         end
@@ -79,7 +80,7 @@ module Inferno
       begin
         reply = RestClient.post(url, payload, headers, &block)
       rescue StandardError => e
-        unless e.respond_to? :response
+        if !e.respond_to?(:response) || e.response.nil?
           # Re-raise the client error if there's no response.
           raise # Re-raise the same error we caught.
         end

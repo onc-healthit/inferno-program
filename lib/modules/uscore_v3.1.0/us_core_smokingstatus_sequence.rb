@@ -7,7 +7,7 @@ module Inferno
     class USCore310SmokingstatusSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Smoking Status Observation Tests'
+      title 'Smoking Status Observation'
 
       description 'Verify that Observation resources on the FHIR server follow the US Core Implementation Guide'
 

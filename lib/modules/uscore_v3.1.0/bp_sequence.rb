@@ -7,7 +7,7 @@ module Inferno
     class USCore310BpSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Observation Blood Pressure Tests'
+      title 'Observation Blood Pressure'
 
       description 'Verify that Observation resources on the FHIR server follow the US Core Implementation Guide'
 

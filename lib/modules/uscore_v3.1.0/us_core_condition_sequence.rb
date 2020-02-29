@@ -7,7 +7,7 @@ module Inferno
     class USCore310ConditionSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Condition Tests'
+      title 'Condition'
 
       description 'Verify that Condition resources on the FHIR server follow the US Core Implementation Guide'
 

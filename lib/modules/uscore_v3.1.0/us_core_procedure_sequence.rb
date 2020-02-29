@@ -7,7 +7,7 @@ module Inferno
     class USCore310ProcedureSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Procedure Tests'
+      title 'Procedure'
 
       description 'Verify that Procedure resources on the FHIR server follow the US Core Implementation Guide'
 

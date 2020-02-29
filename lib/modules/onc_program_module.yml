@@ -13,7 +13,7 @@ test_sets:
     tests:
       - name: Standalone Patient App
         overview: |
-          Demonstrate the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
+          This scenario demonstrates the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
           refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
           on the patient in context.  The access token is then refreshed, and the Patient resource is read using the new
           access token to ensure that the refresh was successful.  Finally, the authentication information provided by OpenID Connect is decoded and validated.
@@ -31,12 +31,41 @@ test_sets:
             description: Perform Standalone SMART launch sequence and test OpenID Connect and token refresh functionality.
             variable_defaults:
               onc_sl_scopes: launch/patient launch/encounter patient/*.read openid fhirUser offline_access
+              onc_sl_confidential_client: true
           - sequence: OncStandaloneOpenIDConnectSequence
             prefix: SPC
             description: Use OpenID Connect ID token provided during launch sequence to authenticate user.
           - sequence: OncStandaloneTokenRefreshSequence
             prefix: SPD
             description: Use refresh token to get new access token and verify it can access resources.
+          - ONCAccessVerifyUnrestrictedSequence
+      - name: Limited Scope App
+        overview: |
+          This scenario demonstrates the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
+          refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
+          on the patient in context.  The access token is then refreshed, and the Patient resource is read using the new
+          access token to ensure that the refresh was successful.  Finally, the authentication information provided by OpenID Connect is decoded and validated.
+        input_instructions: |
+          The purpose of this test is to demonstrate that an app can be restricted to a subset of scopes.  This can either be done by having the app
+          request a subset of resource type scopes to be read, or by having the user select a subset of resources to grant an app access to during launch.
+          This uses the same app that was registered and used in the standalone patient app launch.  This test requires a patient context to be granted.
+        lock_variables: 
+          - redirect_uris
+          - onc_sl_url
+          - oauth_authorize_endpoint
+          - oauth_token_endpoint
+          - onc_sl_confidential_client
+          - onc_sl_client_id
+          - onc_sl_client_secret
+        sequences:
+          - sequence: OncStandaloneRestrictedLaunchSequence
+            prefix: RPA
+            title: Standalone Launch with Limited Scope
+            description: Perform Standalone SMART launch expecting limited scope access.
+            variable_defaults:
+              onc_sl_restricted_scopes: launch/patient patient/Patient.read patient/Encounter.read patient/Observation.read
+              onc_sl_confidential_client: true
+          - ONCAccessVerifyRestrictedSequence
       - name: EHR Practitioner App
         overview: |
           Demonstrate the ability to perform an EHR launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
@@ -45,6 +74,7 @@ test_sets:
           access token to ensure that the refresh was successful.  Finally, the authentication information provided by OpenID Connect is decoded and validated.
         lock_variables: 
           - redirect_uris
+          - confidential_client
         sequences:
           - sequence: OncSMARTDiscoverySequence
             prefix: EHA
@@ -54,6 +84,7 @@ test_sets:
             description: Perform EHR SMART launch sequence and test OpenID Connect and token refresh functionality.
             variable_defaults:
               scopes: launch user/*.read openid fhirUser offline_access
+              confidential_client: 'true'
           - sequence: OncOpenIDConnectSequence
             prefix: EHC
             description: Use OpenID Connect ID token provided during launch sequence to authenticate user.

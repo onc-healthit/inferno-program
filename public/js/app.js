@@ -186,7 +186,17 @@ $(function(){
         let formInput = $(this).clone();
         formInput.find('[data-toggle="tooltip"]').tooltip()
         if(variable_defaults[prerequisite] !== undefined){
-          formInput.find('input').val(variable_defaults[prerequisite]);
+
+          if(formInput.find('input[type=radio]').length) {
+            formInput.find('input[type=radio]').each(function(_index, checkBox) {
+              $(checkBox)[0].checked =  $(checkBox).val() == variable_defaults[prerequisite].toString()
+            });
+
+          } else {
+            if(formInput.find('input').val() == ''){
+              formInput.find('input').val(variable_defaults[prerequisite]);
+            }
+          }
         }
         if(lockedVariables.includes(prerequisite)){
           formInput.find('input').attr('readonly', 'readonly');
@@ -195,6 +205,9 @@ $(function(){
           $('.disabled-prerequisites').append(formInput);
           $('.disabled-prerequisite-group-title').show();
           $('.disabled-prerequisites').show();
+          formInput.find(':radio').each(function(){
+            $(this).attr('id', $(this)[0].id + '_active');
+          });
         } else {
           formInput.find(':radio').each(function(){
             $(this).attr('id', $(this)[0].id + '_active');
@@ -222,13 +235,13 @@ $(function(){
 
     // Confidential client special case
     
-    if($('#confidential_client_on')[0].checked){
+    if($('#confidential_client_on_active').is(':checked')){
        $('div[data-prerequisite="client_secret"]').show();
     } else {
        $('div[data-prerequisite="client_secret"]').hide();
     }
 
-    if($('#onc_sl_confidential_client_on')[0].checked){
+    if($('#onc_sl_confidential_client_on_active').is(':checked')){
        $('div[data-prerequisite="onc_sl_client_secret"]').show();
     } else {
        $('div[data-prerequisite="onc_sl_client_secret"]').hide();

@@ -125,7 +125,7 @@ module Inferno
             group: group,
             result_details: result_details,
             result: group_result(result_details),
-            missing_variables: group.lock_variables.select { |var| send(var.to_sym).nil? }
+            missing_variables: group.lock_variables_without_defaults.select { |var| send(var.to_sym).nil? }
           }
         end
 

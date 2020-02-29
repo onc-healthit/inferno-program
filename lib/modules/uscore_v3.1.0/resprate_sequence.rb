@@ -7,7 +7,7 @@ module Inferno
     class USCore310ResprateSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Observation Respiratory Rate Tests'
+      title 'Observation Respiratory Rate'
 
       description 'Verify that Observation resources on the FHIR server follow the US Core Implementation Guide'
 

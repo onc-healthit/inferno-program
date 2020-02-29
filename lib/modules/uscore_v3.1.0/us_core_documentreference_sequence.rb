@@ -7,7 +7,7 @@ module Inferno
     class USCore310DocumentreferenceSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'DocumentReference Tests'
+      title 'DocumentReference'
 
       description 'Verify that DocumentReference resources on the FHIR server follow the US Core Implementation Guide'
 

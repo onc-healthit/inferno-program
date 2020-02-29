@@ -7,7 +7,7 @@ module Inferno
     class USCore310OrganizationSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Organization Tests'
+      title 'Organization'
 
       description 'Verify that Organization resources on the FHIR server follow the US Core Implementation Guide'
 

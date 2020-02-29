@@ -7,7 +7,7 @@ module Inferno
     class USCore310DiagnosticreportNoteSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'DiagnosticReport for Report and Note exchange Tests'
+      title 'DiagnosticReport for Report and Note exchange'
 
       description 'Verify that DiagnosticReport resources on the FHIR server follow the US Core Implementation Guide'
 

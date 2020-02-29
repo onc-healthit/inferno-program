@@ -7,7 +7,7 @@ module Inferno
     class USCore310BodyweightSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Observation Body Weight Tests'
+      title 'Observation Body Weight'
 
       description 'Verify that Observation resources on the FHIR server follow the US Core Implementation Guide'
 

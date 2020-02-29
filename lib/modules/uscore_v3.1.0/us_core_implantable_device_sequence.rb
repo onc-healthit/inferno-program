@@ -7,7 +7,7 @@ module Inferno
     class USCore310ImplantableDeviceSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Implantable Device Tests'
+      title 'Implantable Device'
 
       description 'Verify that Device resources on the FHIR server follow the US Core Implementation Guide'
 
