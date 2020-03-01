@@ -3,6 +3,7 @@
 require 'sqlite3'
 require_relative 'bcp_13'
 require_relative 'bcp47'
+require_relative 'codesystem'
 
 module Inferno
   class Terminology
@@ -42,7 +43,6 @@ module Inferno
         'http://hl7.org/fhir/v3/Race' => -> { load_system('resources/misc_valuesets/CodeSystem-v3-Race.json') },
         'http://hl7.org/fhir/condition-category' => -> { load_system('resources/misc_valuesets/CodeSystem-condition-category.json') },
         'http://hl7.org/fhir/us/core/CodeSystem/careplan-category' => -> { load_system('resources/us_core_r4/CodeSystem-careplan-category.json') },
-        'urn:oid:2.16.840.1.113883.6.238' => -> { load_system('resources/us_core_r4/CodeSystem-cdcrec.json') },
         'http://hl7.org/fhir/us/core/CodeSystem/condition-category' => -> { load_system('resources/us_core_r4/CodeSystem-condition-category.json') },
         'http://hl7.org/fhir/us/core/CodeSystem/us-core-documentreference-category' => -> { load_system('resources/us_core_r4/cs-us-core-documentreference-category.json') },
         'http://hl7.org/fhir/us/core/CodeSystem/us-core-provenance-participant-type' => -> { load_system('resources/us_core_r4/cs-us-core-provenance-participant-type.json') },
@@ -57,7 +57,12 @@ module Inferno
         'http://terminology.hl7.org/CodeSystem/v3-RoleCode' => -> { load_system('resources/misc_valuesets/v3-RoleCode.cs.json') },
         'http://terminology.hl7.org/CodeSystem/v2-0131' => -> { load_system('resources/misc_valuesets/v2-0131.cs.json') },
         'urn:ietf:bcp:13' => -> { BCP13.code_set },
-        'urn:ietf:bcp:47' => ->(filter = nil) { Inferno::BCP47.code_set(filter) }
+        'urn:ietf:bcp:47' => ->(filter = nil) { Inferno::BCP47.code_set(filter) },
+        'urn:oid:2.16.840.1.113883.6.238' => lambda do |filter = nil|
+          Inferno::Terminology::Codesystem
+            .new(FHIR::Json.from_json(File.read('resources/us_core_r4/CodeSystem-cdcrec.json')))
+            .filter_codes(filter)
+        end
       }.freeze
 
       # https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/attribute_names.html
@@ -263,12 +268,7 @@ module Inferno
       def filter_code_set(system, filter = nil, _version = nil)
         if CODE_SYS.include? system
           Inferno.logger.debug "  loading #{system} codes..."
-          begin
-            return filter.nil? ? CODE_SYS[system].call : CODE_SYS[system].call(filter)
-          rescue ArgumentError
-            Inferno.logger.error "UNHANLDED FILTERS in #{url}"
-            return CODE_SYS[system].call
-          end
+          return filter.nil? ? CODE_SYS[system].call : CODE_SYS[system].call(filter)
         end
 
         filter_clause = lambda do |filter|
