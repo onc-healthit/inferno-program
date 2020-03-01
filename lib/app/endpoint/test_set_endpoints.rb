@@ -5,6 +5,10 @@ module Inferno
     module TestSetEndpoints
       def self.included(klass)
         klass.class_eval do
+          before do
+            @missing_validators = Inferno::Terminology.missing_validators
+          end
+
           # Returns a specific testing instance test page
           get '/:id/test_sets/:test_set_id/?' do
             instance = Inferno::Models::TestingInstance.get(params[:id])
