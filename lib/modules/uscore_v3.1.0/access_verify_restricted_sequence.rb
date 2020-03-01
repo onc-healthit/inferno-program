@@ -115,7 +115,7 @@ module Inferno
 
       test :validate_allergyintolerance_authorization do
         metadata do
-          id '02'
+          id '03'
           name 'Access to AllergyIntolerance resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -164,7 +164,7 @@ module Inferno
 
       test :validate_careplan_authorization do
         metadata do
-          id '03'
+          id '04'
           name 'Access to CarePlan resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -214,7 +214,7 @@ module Inferno
 
       test :validate_careteam_authorization do
         metadata do
-          id '04'
+          id '05'
           name 'Access to CareTeam resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -264,7 +264,7 @@ module Inferno
 
       test :validate_condition_authorization do
         metadata do
-          id '05'
+          id '06'
           name 'Access to Condition resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -313,7 +313,7 @@ module Inferno
 
       test :validate_device_authorization do
         metadata do
-          id '06'
+          id '07'
           name 'Access to Device resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -349,7 +349,7 @@ module Inferno
 
       test :validate_diagnosticreport_authorization do
         metadata do
-          id '07'
+          id '08'
           name 'Access to DiagnosticReport resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -399,7 +399,7 @@ module Inferno
 
       test :validate_documentreference_authorization do
         metadata do
-          id '08'
+          id '09'
           name 'Access to DocumentReference resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -448,7 +448,7 @@ module Inferno
 
       test :validate_encounter_authorization do
         metadata do
-          id '09'
+          id '10'
           name 'Access to Encounter resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -497,7 +497,7 @@ module Inferno
 
       test :validate_goal_authorization do
         metadata do
-          id '10'
+          id '11'
           name 'Access to Goal resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -546,7 +546,7 @@ module Inferno
 
       test :validate_immunization_authorization do
         metadata do
-          id '11'
+          id '12'
           name 'Access to Immunization resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -595,7 +595,7 @@ module Inferno
 
       test :validate_medicationrequest_authorization do
         metadata do
-          id '12'
+          id '13'
           name 'Access to MedicationRequest resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -645,7 +645,7 @@ module Inferno
 
       test :validate_observation_authorization do
         metadata do
-          id '13'
+          id '14'
           name 'Access to Observation resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
@@ -695,7 +695,7 @@ module Inferno
 
       test :validate_procedure_authorization do
         metadata do
-          id '14'
+          id '15'
           name 'Access to Procedure resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
