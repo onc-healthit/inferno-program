@@ -13,7 +13,6 @@ module Inferno
     end
 
     def self.record_response(request, response)
-      binding.pry
       # You can call this directly with a hash
       # If intercepted from RestClient it will use a class
       reply = if response.instance_of? Hash
