@@ -103,15 +103,14 @@ module Inferno
             next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'CareTeam' }
 
             @resources_found = true
-            @care_team = reply.resource.entry
-              .find { |entry| entry&.resource&.resourceType == 'CareTeam' }
-              .resource
-            @care_team_ary[patient] += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            @care_team = resources_returned.first
+            @care_team_ary[patient] += resources_returned
             values_found += 1
 
             save_resource_references(versioned_resource_class('CareTeam'), @care_team_ary[patient])
-            save_delayed_sequence_references(@care_team_ary[patient])
-            validate_reply_entries(@care_team_ary[patient], search_params)
+            save_delayed_sequence_references(resources_returned)
+            validate_reply_entries(resources_returned, search_params)
 
             break if values_found == 2
           end
@@ -191,7 +190,7 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status'))
+            'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }
@@ -323,7 +322,7 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status'))
+            'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }

@@ -140,7 +140,7 @@ module Inferno
         patient_ids.each do |patient|
           search_params = {
             'patient': patient,
-            'clinical-status': get_value_for_search_param(resolve_element_from_path(@allergy_intolerance_ary[patient], 'clinicalStatus'))
+            'clinical-status': get_value_for_search_param(resolve_element_from_path(@allergy_intolerance_ary[patient], 'clinicalStatus') { |el| get_value_for_search_param(el).present? })
           }
 
           next if search_params.any? { |_param, value| value.nil? }

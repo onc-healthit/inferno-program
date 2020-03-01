@@ -1024,15 +1024,14 @@ module Inferno
               next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
 
               @resources_found = true
-              @#{sequence[:resource].underscore} = reply.resource.entry
-                .find { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
-                .resource
-              @#{sequence[:resource].underscore}_ary[patient] += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              @#{sequence[:resource].underscore} = resources_returned.first
+              @#{sequence[:resource].underscore}_ary[patient] += resources_returned
               #{'values_found += 1' if find_two_values}
 
               save_resource_references(#{save_resource_references_arguments})
-              save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient])
-              validate_reply_entries(@#{sequence[:resource].underscore}_ary[patient], search_params)
+              save_delayed_sequence_references(resources_returned)
+              validate_reply_entries(resources_returned, search_params)
               #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
               break#{' if values_found == 2' if find_two_values}
             end
@@ -1076,13 +1075,14 @@ module Inferno
         return search_params if search_params.present?
 
         search_parameters.each_with_object({}) do |param, params|
+          search_param_description = sequence[:search_param_descriptions][param.to_sym]
           params[param] =
             if param == 'patient'
               'patient'
             elsif grab_first_value && !sequence[:delayed_sequence]
-              sequence[:search_param_descriptions][param.to_sym][:values].first
+              search_param_description[:values].first
             else
-              "get_value_for_search_param(#{resolve_element_path(sequence[:search_param_descriptions][param.to_sym], sequence[:delayed_sequence])})"
+              "get_value_for_search_param(#{resolve_element_path(search_param_description, sequence[:delayed_sequence])} { |el| get_value_for_search_param(el).present? })"
             end
         end
       end

@@ -50,7 +50,7 @@ module Inferno
         skip_if @instance.received_scopes.nil?, 'No SMART scopes were provided to the test.'
 
         all_resources = [
-        <%= non_delayed_sequences.group_by{|sequence| sequence[:resource]}.values.map(&:first).map{|resource| resource[:resource]}.join(",\n") %>
+        <%= non_delayed_sequences.group_by{|sequence| sequence[:resource]}.values.map(&:first).map{|resource| "'#{resource[:resource]}'"}.join(",\n") %>
         ]
 
 
@@ -58,10 +58,10 @@ module Inferno
        denied_resources = all_resources - allowed_resources
 
        <% if access_verify_restriction == 'restricted' %>
-       assert denied_resources.present?, "This test requires at least one resource to be denied, but the provided scope #{@instance.received_scopes} appears to grant access to all resource types."
+       assert denied_resources.present?, "This test requires at least one resource to be denied, but the provided scope '#{@instance.received_scopes}' grants access to all resource types."
        pass "Resources to be denied: #{denied_resources.join(',')}"
        <% else %>
-       assert denied_resources.empty?, "This test requires access to all US Core resources with patient information, but the provided scope #{@instance.received_scopes} appears to grant access to all resource types."
+       assert denied_resources.empty?, "This test requires access to all US Core resources with patient information, but the provided scope '#{@instance.received_scopes}' grants access to all resource types."
        pass 'Scopes received indicate access to all necessary resources.'
        <% end %>
       end

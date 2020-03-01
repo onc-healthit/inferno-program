@@ -67,25 +67,25 @@ module Inferno
         skip_if @instance.received_scopes.nil?, 'No SMART scopes were provided to the test.'
 
         all_resources = [
-          AllergyIntolerance,
-          CarePlan,
-          CareTeam,
-          Condition,
-          Device,
-          DiagnosticReport,
-          DocumentReference,
-          Encounter,
-          Goal,
-          Immunization,
-          MedicationRequest,
-          Observation,
-          Procedure
+          'AllergyIntolerance',
+          'CarePlan',
+          'CareTeam',
+          'Condition',
+          'Device',
+          'DiagnosticReport',
+          'DocumentReference',
+          'Encounter',
+          'Goal',
+          'Immunization',
+          'MedicationRequest',
+          'Observation',
+          'Procedure'
         ]
 
         allowed_resources = all_resources.select { |resource| scope_granting_access(resource, scopes).present? }
         denied_resources = all_resources - allowed_resources
 
-        assert denied_resources.present?, "This test requires at least one resource to be denied, but the provided scope #{@instance.received_scopes} appears to grant access to all resource types."
+        assert denied_resources.present?, "This test requires at least one resource to be denied, but the provided scope '#{@instance.received_scopes}' grants access to all resource types."
         pass "Resources to be denied: #{denied_resources.join(',')}"
       end
 

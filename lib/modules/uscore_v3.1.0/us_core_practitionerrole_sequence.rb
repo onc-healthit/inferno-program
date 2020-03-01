@@ -84,7 +84,7 @@ module Inferno
         skip_if_known_search_not_supported('PractitionerRole', ['specialty'])
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
@@ -123,7 +123,7 @@ module Inferno
         skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
 
         search_params = {
-          'practitioner': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'practitioner'))
+          'practitioner': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'practitioner') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
@@ -237,7 +237,7 @@ module Inferno
         end
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
@@ -275,7 +275,7 @@ module Inferno
         provenance_results = []
 
         search_params = {
-          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty'))
+          'specialty': get_value_for_search_param(resolve_element_from_path(@practitioner_role_ary, 'specialty') { |el| get_value_for_search_param(el).present? })
         }
 
         search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
