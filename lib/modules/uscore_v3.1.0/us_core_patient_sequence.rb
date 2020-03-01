@@ -7,7 +7,7 @@ module Inferno
     class USCore310PatientSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Patient Tests'
+      title 'Patient'
 
       description 'Verify that Patient resources on the FHIR server follow the US Core Implementation Guide'
 

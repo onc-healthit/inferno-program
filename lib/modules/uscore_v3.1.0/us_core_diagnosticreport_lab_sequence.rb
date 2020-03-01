@@ -7,7 +7,7 @@ module Inferno
     class USCore310DiagnosticreportLabSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'DiagnosticReport for Laboratory Results Reporting Tests'
+      title 'DiagnosticReport for Laboratory Results Reporting'
 
       description 'Verify that DiagnosticReport resources on the FHIR server follow the US Core Implementation Guide'
 

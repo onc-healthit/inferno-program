@@ -7,7 +7,7 @@ module Inferno
     class USCore310CareplanSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'CarePlan Tests'
+      title 'CarePlan'
 
       description 'Verify that CarePlan resources on the FHIR server follow the US Core Implementation Guide'
 

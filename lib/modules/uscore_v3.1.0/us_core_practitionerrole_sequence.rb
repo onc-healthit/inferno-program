@@ -7,7 +7,7 @@ module Inferno
     class USCore310PractitionerroleSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'PractitionerRole Tests'
+      title 'PractitionerRole'
 
       description 'Verify that PractitionerRole resources on the FHIR server follow the US Core Implementation Guide'
 

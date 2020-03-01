@@ -353,11 +353,11 @@ module Inferno
 
             [
               {
-                scopes: instance_scopes,
+                scopes: instance_scopes || '',
                 received_or_requested: 'requested'
               },
               {
-                scopes: @instance.received_scopes,
+                scopes: @instance.received_scopes || '',
                 received_or_requested: 'received'
               }
             ].each do |metadata|

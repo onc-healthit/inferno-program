@@ -7,7 +7,7 @@ module Inferno
     class USCore310MedicationrequestSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'MedicationRequest Tests'
+      title 'MedicationRequest'
 
       description 'Verify that MedicationRequest resources on the FHIR server follow the US Core Implementation Guide'
 

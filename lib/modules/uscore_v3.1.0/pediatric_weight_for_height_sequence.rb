@@ -7,7 +7,7 @@ module Inferno
     class USCore310PediatricWeightForHeightSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Pediatric Weight for Height Observation Tests'
+      title 'Pediatric Weight for Height Observation'
 
       description 'Verify that Observation resources on the FHIR server follow the US Core Implementation Guide'
 

@@ -7,7 +7,7 @@ module Inferno
     class USCore310PediatricBmiForAgeSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Pediatric BMI for Age Observation Tests'
+      title 'Pediatric BMI for Age Observation'
 
       description 'Verify that Observation resources on the FHIR server follow the US Core Implementation Guide'
 

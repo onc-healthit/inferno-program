@@ -7,7 +7,7 @@ module Inferno
     class USCore310LocationSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Location Tests'
+      title 'Location'
 
       description 'Verify that Location resources on the FHIR server follow the US Core Implementation Guide'
 

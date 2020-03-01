@@ -7,7 +7,7 @@ module Inferno
     class USCore310ObservationLabSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Laboratory Result Observation Tests'
+      title 'Laboratory Result Observation'
 
       description 'Verify that Observation resources on the FHIR server follow the US Core Implementation Guide'
 

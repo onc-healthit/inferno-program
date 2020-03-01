@@ -7,7 +7,7 @@ module Inferno
     class USCore310EncounterSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Encounter Tests'
+      title 'Encounter'
 
       description 'Verify that Encounter resources on the FHIR server follow the US Core Implementation Guide'
 

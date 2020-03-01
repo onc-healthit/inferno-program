@@ -7,7 +7,7 @@ module Inferno
     class USCore310GoalSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Goal Tests'
+      title 'Goal'
 
       description 'Verify that Goal resources on the FHIR server follow the US Core Implementation Guide'
 

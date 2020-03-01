@@ -7,7 +7,7 @@ module Inferno
     class USCore310PractitionerSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Practitioner Tests'
+      title 'Practitioner'
 
       description 'Verify that Practitioner resources on the FHIR server follow the US Core Implementation Guide'
 

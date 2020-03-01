@@ -7,7 +7,7 @@ module Inferno
     class USCore310CareteamSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'CareTeam Tests'
+      title 'CareTeam'
 
       description 'Verify that CareTeam resources on the FHIR server follow the US Core Implementation Guide'
 

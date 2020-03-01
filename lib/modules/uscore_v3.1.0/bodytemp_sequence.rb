@@ -7,7 +7,7 @@ module Inferno
     class USCore310BodytempSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Observation Body Temperature Tests'
+      title 'Observation Body Temperature'
 
       description 'Verify that Observation resources on the FHIR server follow the US Core Implementation Guide'
 

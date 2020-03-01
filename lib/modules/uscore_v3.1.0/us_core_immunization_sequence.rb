@@ -7,7 +7,7 @@ module Inferno
     class USCore310ImmunizationSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Immunization Tests'
+      title 'Immunization'
 
       description 'Verify that Immunization resources on the FHIR server follow the US Core Implementation Guide'
 

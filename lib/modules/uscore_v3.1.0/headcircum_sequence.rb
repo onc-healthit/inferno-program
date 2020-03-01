@@ -7,7 +7,7 @@ module Inferno
     class USCore310HeadcircumSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Observation Head Circumference Tests'
+      title 'Observation Head Circumference'
 
       description 'Verify that Observation resources on the FHIR server follow the US Core Implementation Guide'
 

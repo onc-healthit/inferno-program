@@ -7,7 +7,7 @@ module Inferno
     class USCore310ProvenanceSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Provenance Tests'
+      title 'Provenance'
 
       description 'Verify that Provenance resources on the FHIR server follow the US Core Implementation Guide'
 

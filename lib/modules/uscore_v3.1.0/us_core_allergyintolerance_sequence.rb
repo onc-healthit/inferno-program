@@ -7,7 +7,7 @@ module Inferno
     class USCore310AllergyintoleranceSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'AllergyIntolerance Tests'
+      title 'AllergyIntolerance'
 
       description 'Verify that AllergyIntolerance resources on the FHIR server follow the US Core Implementation Guide'
 

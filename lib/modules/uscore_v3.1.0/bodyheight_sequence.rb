@@ -7,7 +7,7 @@ module Inferno
     class USCore310BodyheightSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Observation Body Height Tests'
+      title 'Observation Body Height'
 
       description 'Verify that Observation resources on the FHIR server follow the US Core Implementation Guide'
 

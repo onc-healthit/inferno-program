@@ -7,7 +7,7 @@ module Inferno
     class USCore310PulseOximetrySequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
 
-      title 'Pulse Oximetry Tests'
+      title 'Pulse Oximetry'
 
       description 'Verify that Observation resources on the FHIR server follow the US Core Implementation Guide'
 
