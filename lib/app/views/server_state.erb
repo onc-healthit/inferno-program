@@ -1,32 +1,91 @@
 <div id="server-state">
-  <h4>Additional ValueSets and CodeSystems</h4>
-  <p>
-     Inferno is capable of validating ValueSet bindings even if they are not expanded within the core FHIR specification.
-     This typically occurs when Implementation Guides provide additional ValueSets, or if the ValueSet is too large to
-     be expanded and provided in the Core FHIR specification. Additionally, Inferno can check codes belong to a CodeSystem that they state membership to.
-     Below is a list of ValueSets and CodeSystems loaded into this runniing instance of Inferno.  Visit
-    <a href="https://github.com/onc-healthit/inferno/wiki/Installing-Terminology-Validators" target="_blank">our wiki</a> to see how to load additional
-    ValueSets and CodeSystems for validation.
-  <p>
-
-  <% if Inferno::Terminology.loaded_validators.count.zero? %>
-    <p>No additional ValueSets or CodeSystems beyond those provided within the Core FHIR specification are loaded.</p>
-  <% else %>
+  <div>
+    <h4>Code Systems and Versions used in Inferno</h4>
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>Valueset URL</th>
-          <th>Concept Count</th>
+          <th>Code System Name</th>
+          <th>Code System Version</th>
         </tr>
       </thead>
       <tbody>
-        <% Inferno::Terminology.loaded_validators.sort.each do |url, count| %>
-          <tr>
-            <td><%= url %></td>
-            <td><%= count %></td>
-          </tr>
-        <% end %>
+        <tr>
+          <td>Current Procedural Terminology</td>
+          <td>2019</td>
+        </tr>
+        <tr>
+          <td>Fast Healthcare Interoperability Resources (FHIR)</td>
+          <td>4.0.1</td>
+        </tr>
+        <tr>
+          <td>Healthcare Common Procedure Coding System</td>
+          <td>2019</td>
+        </tr>
+        <tr>
+          <td>International Classification of Diseases, Tenth Revision, Clinical Modification</td>
+          <td>2020</td>
+        </tr>
+        <tr>
+          <td>ICD-10-PCS</td>
+          <td>2020</td>
+        </tr>
+        <tr>
+          <td>International Classification of Diseases, Ninth Revision, Clinical Modification</td>
+          <td>2014</td>
+        </tr>
+        <tr>
+          <td>LOINC</td>
+          <td>266</td>
+        </tr>
+        <tr>
+          <td>Unified Code for Units of Measure (UCUM)</td>
+          <td>1903D</td>
+        </tr>
+        <tr>
+          <td>National Uniform Claim Committee - Health Care Provider Taxonomy</td>
+          <td>18.1</td>
+        </tr>
+        <tr>
+          <td>RxNorm Vocabulary</td>
+          <td>19AA_190903F</td>
+        </tr>
+        <tr>
+          <td>US Edition of SNOMED CT</td>
+          <td>2019_09_01</td>
+        </tr>
       </tbody>
     </table>
-    <% end #if %>
+  </div>
+  <div>
+    <h4>Additional ValueSets and CodeSystems</h4>
+    <p>
+      Inferno is capable of validating ValueSet bindings even if they are not expanded within the core FHIR specification.
+      This typically occurs when Implementation Guides provide additional ValueSets, or if the ValueSet is too large to
+      be expanded and provided in the Core FHIR specification. Additionally, Inferno can check codes belong to a CodeSystem that they state membership to.
+      Below is a list of ValueSets and CodeSystems loaded into this runniing instance of Inferno.  Visit
+      <a href="https://github.com/onc-healthit/inferno/wiki/Installing-Terminology-Validators" target="_blank">our wiki</a> to see how to load additional
+      ValueSets and CodeSystems for validation.
+    <p>
+
+    <% if Inferno::Terminology.loaded_validators.count.zero? %>
+      <p>No additional ValueSets or CodeSystems beyond those provided within the Core FHIR specification are loaded.</p>
+    <% else %>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Valueset URL</th>
+            <th>Concept Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% Inferno::Terminology.loaded_validators.sort.each do |url, count| %>
+            <tr>
+              <td><%= url %></td>
+              <td><%= count %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      <% end #if %>
+    </div>
 </div>
