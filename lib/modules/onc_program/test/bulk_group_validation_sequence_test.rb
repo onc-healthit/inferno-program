@@ -200,7 +200,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
         @sequence.run_test(@test)
       end
 
-      assert_match(/^Bad response code: expected 401/, error.message)
+      assert_match(/^Bad response code: expected 400 or 401/, error.message)
     end
 
     it 'catches 401 error' do

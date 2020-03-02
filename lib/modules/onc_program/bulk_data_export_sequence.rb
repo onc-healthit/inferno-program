@@ -118,13 +118,17 @@ module Inferno
           link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#bulk-data-kick-off-request'
           description %(
             The FHIR server SHALL limit the data returned to only those FHIR resources for which the client is authorized.
+
+            [FHIR R4 Security](http://build.fhir.org/security.html#AccessDenied) and 
+            [The OAuth 2.0 Authorization Framework: Bearer Token Usage](https://tools.ietf.org/html/rfc6750#section-3.1) 
+            recommend using HTTP status code 401 for invalid token but also allow the actual result be controlled by policy and context.
           )
         end
 
         skip 'Could not verify this functionality when bearer token is not set' if @instance.bulk_access_token.blank?
 
         reply = export_kick_off(endpoint, resource_id, use_token: false)
-        assert_response_unauthorized reply
+        assert_response_bad_or_unauthorized(reply)
       end
 
       test 'Bulk Data Server rejects $export operation with invalid Accept header' do
