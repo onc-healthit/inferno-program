@@ -504,7 +504,7 @@ module Inferno
           versions :r4
         end
 
-        medications_found = @medications + @contained_medications
+        medications_found = (@medications || []) + (@contained_medications || [])
 
         omit 'MedicationRequests did not reference any Medication resources.' if medications_found.blank?
 
