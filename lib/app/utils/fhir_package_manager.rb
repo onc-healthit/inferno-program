@@ -20,7 +20,9 @@ module Inferno
           .prepend(REGISTRY_SERVER_URL)
           .join('/')
 
-        File.open("tmp/#{package.split('#').join('-')}.tgz", 'w') do |output_file|
+        tar_file_name = "tmp/#{package.split('#').join('-')}.tgz"
+
+        File.open(tar_file_name, 'w') do |output_file|
           block = proc do |response|
             response.read_body do |chunk|
               output_file.write chunk
@@ -42,9 +44,9 @@ module Inferno
           file_name = entry.full_name.split('/').last
           next if desired_types.present? && !file_name.start_with?(*desired_types)
 
-          puts 'writing'
           File.open(File.join(path, file_name), 'w') { |file| file.write(entry.read)}
         end
+        File.delete(tar_file_name)
       end
     end
   end
