@@ -4,7 +4,16 @@ In order to validate terminologies Inferno can be loaded with files generated fr
 Unified Medical Language System (UMLS).  The UMLS is distributed by the National Library of Medicine (NLM)
 and requires an account to access.
 
-Inferno provides some rake tasks which may make this process easier.
+Some material in the UMLS Metathesaurus is from copyrighted sources of the respective copyright holders.
+Users of the UMLS Metathesaurus are solely responsible for compliance with any copyright, patent or trademark
+restrictions and are referred to the copyright, patent or trademark notices appearing in the original sources,
+all of which are hereby incorporated by reference.
+
+      Bodenreider O. The Unified Medical Language System (UMLS): integrating biomedical terminology.
+      Nucleic Acids Res. 2004 Jan 1;32(Database issue):D267-70. doi: 10.1093/nar/gkh061.
+      PubMed PMID: 14681409; PubMed Central PMCID: PMC308795.
+
+Inferno provides some rake tasks to make this process easier.
 
 ### Downloading the UMLS
 
