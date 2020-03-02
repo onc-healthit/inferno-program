@@ -819,6 +819,11 @@ namespace :terminology do |_argv|
     vs = Inferno::Terminology.known_valuesets[args.vs]
     puts vs.valueset.count
   end
+
+  desc 'Download FHIR Package'
+  task :download_package, [:package] do |_t, args|
+    Inferno::FHIRPackageManager.get_package('hl7.fhir.us.core#3.1.0')
+  end
 end
 
 RuboCop::RakeTask.new(:rubocop) do |t|

@@ -4,6 +4,7 @@ require 'sqlite3'
 require_relative 'bcp_13'
 require_relative 'bcp47'
 require_relative 'codesystem'
+require_relative 'fhir_package_manager'
 
 module Inferno
   class Terminology
