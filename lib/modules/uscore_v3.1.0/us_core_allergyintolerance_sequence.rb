@@ -319,19 +319,24 @@ module Inferno
             path: 'reaction.severity'
           }
         ]
-        invalid_bindings = []
+        invalid_binding_messages = []
+        invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
-          invalid_binding_found = find_invalid_binding(binding_def, @allergy_intolerance_ary&.values&.flatten)
-          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+          invalid_bindings = resources_with_invalid_binding(binding_def, @allergy_intolerance_ary&.values&.flatten)
+          invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
+          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
         end
-        assert invalid_bindings.blank?, "invalid required code found: #{invalid_bindings.join(',')}"
+        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required binding(s) found in #{invalid_binding_resources.count} resources:" \
+                                                "#{invalid_binding_messages.join('. ')}"
 
         bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
-          invalid_binding_found = find_invalid_binding(binding_def, @allergy_intolerance_ary&.values&.flatten)
-          invalid_bindings << binding_def[:path] if invalid_binding_found.present?
+          invalid_bindings = resources_with_invalid_binding(binding_def, @allergy_intolerance_ary&.values&.flatten)
+          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
         end
         warning do
-          assert invalid_bindings.blank?, "invalid extensible code found: #{invalid_bindings.join(',')}"
+          invalid_binding_messages.each do |error_message|
+            assert false, error_message
+          end
         end
       end
 

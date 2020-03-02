@@ -904,24 +904,44 @@ module Inferno
         end
       end
 
-      def find_invalid_binding(binding_def, resources)
-        invalid_code_found = resolve_element_from_path(resources, binding_def[:path]) do |el|
-          case binding_def[:type]
-          when 'CodeableConcept'
-            return false unless el.is_a? FHIR::CodeableConcept
-
-            el.coding.none? do |coding|
-              Terminology.validate_code(binding_def[:system], coding.code, coding.system)
+      def resources_with_invalid_binding(binding_def, resources)
+        resources.map do |resource|
+          invalid_code_found = resolve_element_from_path(resources, binding_def[:path]) do |el|
+            case binding_def[:type]
+            when 'CodeableConcept'
+              if el.is_a? FHIR::CodeableConcept
+                el.coding.none? do |coding|
+                  Terminology.validate_code(binding_def[:system], coding.code, coding.system)
+                end
+              else
+                false
+              end
+            when 'Quantity'
+              !Terminology.validate_code(binding_def[:system], el.code, el.system)
+            when 'code'
+              !Terminology.validate_code(binding_def[:system], el)
+            else
+              false
             end
-          when 'Quantity'
-            !Terminology.validate_code(binding_def[:system], el.code, el.system)
-          when 'code'
-            !Terminology.validate_code(binding_def[:system], el)
-          else
-            false
           end
+
+          { resource: resource, element: invalid_code_found } if invalid_code_found.present?
+        end.reject(&:nil?)
+      end
+
+      def invalid_binding_message(invalid_binding, binding_def)
+        code_as_string = invalid_binding[:element]
+        if invalid_binding[:element].is_a? FHIR::CodeableConcept
+          code_as_string = invalid_binding[:element]&.coding&.map do |coding|
+            "#{coding.system}|#{coding.code}"
+          end&.join(' or ')
+        elsif invalid_binding[:element].is_a?(FHIR::Coding) || invalid_binding[:element].is_a?(FHIR::Quantity)
+          code_as_string = "#{invalid_binding[:element].system}|#{invalid_binding[:element].code}"
         end
-        invalid_code_found
+
+        "#{invalid_binding[:resource].resourceType}/#{invalid_binding[:resource].id} " \
+        "at #{invalid_binding[:resource].resourceType}.#{binding_def[:path]} with code '#{code_as_string}' " \
+        "is not in #{binding_def[:system]}"
       end
     end
 
