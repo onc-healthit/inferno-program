@@ -822,7 +822,7 @@ namespace :terminology do |_argv|
 
   desc 'Download FHIR Package'
   task :download_package, [:package] do |_t, args|
-    Inferno::FHIRPackageManager.get_package('hl7.fhir.us.core#3.1.0')
+    Inferno::FHIRPackageManager.get_package('hl7.fhir.us.core#3.1.0', 'tmp/us_core', ['ValueSet', 'CodeSystem'])
   end
 end
 
