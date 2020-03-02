@@ -217,7 +217,7 @@ namespace :inferno do |_argv|
     File.write(filename, csv_out)
     Inferno.logger.info "Writing to #{filename}"
   end
-  
+
   desc 'Generate a rich excel file'
   task :tests_to_xls, [:module, :test_set, :filename] do |_task, args|
     require 'rubyXL'
