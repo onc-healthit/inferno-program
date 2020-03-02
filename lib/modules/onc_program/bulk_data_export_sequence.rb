@@ -119,8 +119,8 @@ module Inferno
           description %(
             The FHIR server SHALL limit the data returned to only those FHIR resources for which the client is authorized.
 
-            [FHIR R4 Security](http://build.fhir.org/security.html#AccessDenied) and 
-            [The OAuth 2.0 Authorization Framework: Bearer Token Usage](https://tools.ietf.org/html/rfc6750#section-3.1) 
+            [FHIR R4 Security](http://build.fhir.org/security.html#AccessDenied) and
+            [The OAuth 2.0 Authorization Framework: Bearer Token Usage](https://tools.ietf.org/html/rfc6750#section-3.1)
             recommend using HTTP status code 401 for invalid token but also allow the actual result be controlled by policy and context.
           )
         end
