@@ -109,39 +109,7 @@ test_sets:
           - token
         sequences:
           - UsCoreR4CapabilityStatementSequence
-          - USCore310PatientSequence
-          - USCore310AllergyintoleranceSequence
-          - USCore310CareplanSequence
-          - USCore310CareteamSequence
-          - USCore310ConditionSequence
-          - USCore310ImplantableDeviceSequence
-          - USCore310DiagnosticreportNoteSequence
-          - USCore310DiagnosticreportLabSequence
-          - USCore310DocumentreferenceSequence
-          - USCore310EncounterSequence
-          - USCore310GoalSequence
-          - USCore310ImmunizationSequence
           - USCore310MedicationrequestSequence
-          - USCore310SmokingstatusSequence
-          - USCore310PediatricWeightForHeightSequence
-          - USCore310ObservationLabSequence
-          - USCore310PediatricBmiForAgeSequence
-          - USCore310PulseOximetrySequence
-          - USCore310BodyheightSequence
-          - USCore310BodytempSequence
-          - USCore310BpSequence
-          - USCore310BodyweightSequence
-          - USCore310HeadcircumSequence
-          - USCore310HeartrateSequence
-          - USCore310ResprateSequence
-          - USCore310ProcedureSequence
-          - USCoreR4ClinicalNotesSequence
-          - USCore310LocationSequence
-          - USCore310OrganizationSequence
-          - USCore310PractitionerSequence
-          - USCore310PractitionerroleSequence
-          - USCore310ProvenanceSequence
-          - USCoreR4DataAbsentReasonSequence
       - name: Multi-Patient Data Access
         run_all: true
         run_skipped: false
