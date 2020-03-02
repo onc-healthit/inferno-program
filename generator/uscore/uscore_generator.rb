@@ -769,7 +769,7 @@ module Inferno
           }
 
           medication_test[:test_code] = %(
-            medications_found = @medications + @contained_medications
+            medications_found = (@medications || []) + (@contained_medications || [])
 
             omit 'MedicationRequests did not reference any Medication resources.' if medications_found.blank?
 
