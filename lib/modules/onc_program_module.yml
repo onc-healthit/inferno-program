@@ -22,6 +22,7 @@ test_sets:
           OpenID Connect (`openid fhirUser`), refresh tokens (`offline_access`), and patient context (`launch/patient`) are required.
         lock_variables: 
           - redirect_uris
+          - onc_sl_confidential_client
         sequences:
           - sequence: OncStandaloneSMARTDiscoverySequence
             prefix: SPA
@@ -62,9 +63,6 @@ test_sets:
             prefix: RPA
             title: Standalone Launch with Limited Scope
             description: Perform Standalone SMART launch expecting limited scope access.
-            variable_defaults:
-              onc_sl_restricted_scopes: launch/patient patient/Patient.read patient/Encounter.read patient/Observation.read
-              onc_sl_confidential_client: true
           - ONCAccessVerifyRestrictedSequence
       - name: EHR Practitioner App
         overview: |
