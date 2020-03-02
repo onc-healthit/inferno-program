@@ -256,7 +256,14 @@ module Inferno
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
-          invalid_bindings = resources_with_invalid_binding(binding_def, @practitioner_ary)
+          begin
+            invalid_bindings = resources_with_invalid_binding(binding_def, @practitioner_ary)
+          rescue Inferno::Terminology::UnknownValueSetException => e
+            warning do
+              assert false, e.message
+            end
+            invalid_bindings = []
+          end
           invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
           invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
         end
@@ -264,7 +271,14 @@ module Inferno
                                                 "#{invalid_binding_messages.join('. ')}"
 
         bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
-          invalid_bindings = resources_with_invalid_binding(binding_def, @practitioner_ary)
+          begin
+            invalid_bindings = resources_with_invalid_binding(binding_def, @practitioner_ary)
+          rescue Inferno::Terminology::UnknownValueSetException => e
+            warning do
+              assert false, e.message
+            end
+            invalid_bindings = []
+          end
           invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
         end
         warning do
