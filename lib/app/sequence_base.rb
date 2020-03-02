@@ -422,6 +422,7 @@ module Inferno
                 e.update_result(result)
               else
                 Inferno.logger.error "Fatal Error: #{e.message}"
+                Inferno.logger.error e.class.name
                 Inferno.logger.error e.backtrace
                 result.error!
                 result.message = "Fatal Error: #{e.message}"

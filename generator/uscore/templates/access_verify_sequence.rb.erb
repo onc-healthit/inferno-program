@@ -22,11 +22,14 @@ module Inferno
       
       )
 
-
-      requires :token, :patient_id, :received_scopes
+      requires :onc_sl_url, :token, :patient_id, :received_scopes
 
       def scopes
         @instance.received_scopes || <% if access_verify_restriction == 'restricted' %>@instance.onc_sl_restricted_scopes<% else %> @instance.onc_sl_scopes<% end %>
+      end
+
+      def url_property
+        'onc_sl_url'
       end
 
       def scope_granting_access(resource, scopes)
@@ -77,6 +80,10 @@ module Inferno
         end
         skip_if @instance.patient_id.nil?, 'Patient ID not provided to test. The patient ID is typically provided during in a SMART launch context.'
         skip_if @instance.received_scopes.nil?, 'No scopes were received.'
+
+        @client = FHIR::Client.for_testing_instance(@instance, url_property: url_property)
+        @client.set_bearer_token(@instance.token) unless @client.nil? || @instance.nil? || @instance.token.nil?
+        @client&.monitor_requests
 
         reply = @client.read(FHIR::Patient, @instance.patient_id)
 
