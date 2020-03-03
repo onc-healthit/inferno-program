@@ -21,11 +21,13 @@ module Inferno
         case property
 
         when 'specialty'
-          value_found = resolve_element_from_path(resource, 'specialty.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'specialty.coding.code') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'specialty on resource does not match specialty requested'
 
         when 'practitioner'
-          value_found = resolve_element_from_path(resource, 'practitioner.reference') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'practitioner.reference') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'practitioner on resource does not match practitioner requested'
 
         end

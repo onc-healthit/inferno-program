@@ -1187,9 +1187,10 @@ module Inferno
       )
               else
                 %(
-                value_found = resolve_element_from_path(resource, '#{path}') { |value_in_resource| value.split(',').include? value_in_resource }
-                assert value_found.present?, '#{element} on resource does not match #{element} requested'
-      )
+                  values = value.split(/(?<!\\\\),/).each { |str| str.gsub!('\\,', ',') }
+                  value_found = resolve_element_from_path(resource, '#{path}') { |value_in_resource| values.include? value_in_resource }
+                  assert value_found.present?, '#{element} on resource does not match #{element} requested'
+                )
               end
           end
         end

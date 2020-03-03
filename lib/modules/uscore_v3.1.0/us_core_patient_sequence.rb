@@ -20,7 +20,8 @@ module Inferno
         case property
 
         when '_id'
-          value_found = resolve_element_from_path(resource, 'id') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'id') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, '_id on resource does not match _id requested'
 
         when 'birthdate'
@@ -28,19 +29,23 @@ module Inferno
           assert value_found.present?, 'birthdate on resource does not match birthdate requested'
 
         when 'family'
-          value_found = resolve_element_from_path(resource, 'name.family') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'name.family') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'family on resource does not match family requested'
 
         when 'gender'
-          value_found = resolve_element_from_path(resource, 'gender') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'gender') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'gender on resource does not match gender requested'
 
         when 'given'
-          value_found = resolve_element_from_path(resource, 'name.given') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'name.given') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'given on resource does not match given requested'
 
         when 'identifier'
-          value_found = resolve_element_from_path(resource, 'identifier.value') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'identifier.value') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'identifier on resource does not match identifier requested'
 
         when 'name'

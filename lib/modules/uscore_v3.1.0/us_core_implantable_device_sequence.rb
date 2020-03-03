@@ -24,7 +24,8 @@ module Inferno
           assert value_found.present?, 'patient on resource does not match patient requested'
 
         when 'type'
-          value_found = resolve_element_from_path(resource, 'type.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'type.coding.code') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'type on resource does not match type requested'
 
         end

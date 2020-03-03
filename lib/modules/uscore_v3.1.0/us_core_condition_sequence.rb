@@ -20,11 +20,13 @@ module Inferno
         case property
 
         when 'category'
-          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'category on resource does not match category requested'
 
         when 'clinical-status'
-          value_found = resolve_element_from_path(resource, 'clinicalStatus.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'clinicalStatus.coding.code') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'clinical-status on resource does not match clinical-status requested'
 
         when 'patient'
@@ -36,7 +38,8 @@ module Inferno
           assert value_found.present?, 'onset-date on resource does not match onset-date requested'
 
         when 'code'
-          value_found = resolve_element_from_path(resource, 'code.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'code.coding.code') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'code on resource does not match code requested'
 
         end

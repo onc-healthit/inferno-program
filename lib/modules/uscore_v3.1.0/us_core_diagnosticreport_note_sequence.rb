@@ -20,7 +20,8 @@ module Inferno
         case property
 
         when 'status'
-          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'status on resource does not match status requested'
 
         when 'patient'
@@ -28,11 +29,13 @@ module Inferno
           assert value_found.present?, 'patient on resource does not match patient requested'
 
         when 'category'
-          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'category on resource does not match category requested'
 
         when 'code'
-          value_found = resolve_element_from_path(resource, 'code.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'code.coding.code') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'code on resource does not match code requested'
 
         when 'date'
