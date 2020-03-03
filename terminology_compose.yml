@@ -14,5 +14,5 @@ services:
         target: "/var/www/inferno/tmp"
         consistency: delegated
     environment:
-      UMLS_USERNAME: mokeefe
+      UMLS_USERNAME:
       UMLS_PASSWORD:

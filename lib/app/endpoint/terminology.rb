@@ -8,7 +8,6 @@ module Inferno
   class App
     class Terminology < Endpoint
       set :prefix, '/fhir'
-      Inferno::Terminology.register_umls_db('tmp/terminology/umls.db')
 
       set :logger, Logger.new('terminology_misses.log')
 
