@@ -817,8 +817,8 @@ module Inferno
                        else
                          element
                        end
-        search_value.gsub!(',', '\\,') if search_value.present?
-        search_value
+        escaped_value = search_value&.gsub(',', '\\,')
+        escaped_value
       end
 
       def date_comparator_value(comparator, date)
