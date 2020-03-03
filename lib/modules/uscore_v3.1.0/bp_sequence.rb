@@ -445,12 +445,6 @@ module Inferno
             path: 'component.code'
           },
           {
-            type: 'Quantity',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/ucum-vitals-common',
-            path: 'component.value'
-          },
-          {
             type: 'CodeableConcept',
             strength: 'extensible',
             system: 'http://hl7.org/fhir/ValueSet/data-absent-reason',
@@ -467,12 +461,6 @@ module Inferno
             strength: 'extensible',
             system: 'http://hl7.org/fhir/ValueSet/observation-vitalsignresult',
             path: 'component.code'
-          },
-          {
-            type: 'Quantity',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/ucum-vitals-common',
-            path: 'component.value'
           },
           {
             type: 'code',
@@ -497,12 +485,6 @@ module Inferno
             strength: 'extensible',
             system: 'http://hl7.org/fhir/ValueSet/observation-vitalsignresult',
             path: 'component.code'
-          },
-          {
-            type: 'Quantity',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/ucum-vitals-common',
-            path: 'component.value'
           },
           {
             type: 'code',

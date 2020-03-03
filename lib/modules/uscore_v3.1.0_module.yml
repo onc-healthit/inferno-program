@@ -691,9 +691,6 @@ value_sets:
 - value_set_url: http://hl7.org/fhir/ValueSet/observation-vitalsignresult
   strength: extensible
   profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry
-- value_set_url: http://hl7.org/fhir/ValueSet/ucum-vitals-common
-  strength: required
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry
 - value_set_url: http://hl7.org/fhir/ValueSet/data-absent-reason
   strength: extensible
   profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry
@@ -702,9 +699,6 @@ value_sets:
   profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry
 - value_set_url: http://hl7.org/fhir/ValueSet/observation-vitalsignresult
   strength: extensible
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry
-- value_set_url: http://hl7.org/fhir/ValueSet/ucum-vitals-common
-  strength: required
   profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry
 - value_set_url: http://hl7.org/fhir/ValueSet/quantity-comparator
   strength: required
@@ -717,9 +711,6 @@ value_sets:
   profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry
 - value_set_url: http://hl7.org/fhir/ValueSet/observation-vitalsignresult
   strength: extensible
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry
-- value_set_url: http://hl7.org/fhir/ValueSet/ucum-vitals-common
-  strength: required
   profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry
 - value_set_url: http://hl7.org/fhir/ValueSet/quantity-comparator
   strength: required
@@ -868,9 +859,6 @@ value_sets:
 - value_set_url: http://hl7.org/fhir/ValueSet/observation-vitalsignresult
   strength: extensible
   profile: http://hl7.org/fhir/StructureDefinition/bp
-- value_set_url: http://hl7.org/fhir/ValueSet/ucum-vitals-common
-  strength: required
-  profile: http://hl7.org/fhir/StructureDefinition/bp
 - value_set_url: http://hl7.org/fhir/ValueSet/data-absent-reason
   strength: extensible
   profile: http://hl7.org/fhir/StructureDefinition/bp
@@ -879,9 +867,6 @@ value_sets:
   profile: http://hl7.org/fhir/StructureDefinition/bp
 - value_set_url: http://hl7.org/fhir/ValueSet/observation-vitalsignresult
   strength: extensible
-  profile: http://hl7.org/fhir/StructureDefinition/bp
-- value_set_url: http://hl7.org/fhir/ValueSet/ucum-vitals-common
-  strength: required
   profile: http://hl7.org/fhir/StructureDefinition/bp
 - value_set_url: http://hl7.org/fhir/ValueSet/quantity-comparator
   strength: required
@@ -894,9 +879,6 @@ value_sets:
   profile: http://hl7.org/fhir/StructureDefinition/bp
 - value_set_url: http://hl7.org/fhir/ValueSet/observation-vitalsignresult
   strength: extensible
-  profile: http://hl7.org/fhir/StructureDefinition/bp
-- value_set_url: http://hl7.org/fhir/ValueSet/ucum-vitals-common
-  strength: required
   profile: http://hl7.org/fhir/StructureDefinition/bp
 - value_set_url: http://hl7.org/fhir/ValueSet/quantity-comparator
   strength: required
