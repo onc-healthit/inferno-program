@@ -796,28 +796,30 @@ module Inferno
       end
 
       def get_value_for_search_param(element)
-        case element
-        when FHIR::Period
-          if element.start.present?
-            'gt' + element.start
-          else
-            'lt' + element.end
-          end
-        when FHIR::Reference
-          element.reference
-        when FHIR::CodeableConcept
-          resolve_element_from_path(element, 'coding.code')
-        when FHIR::Identifier
-          element.value
-        when FHIR::Coding
-          element.code
-        when FHIR::HumanName
-          element.family || element.given&.first || element.text
-        when FHIR::Address
-          element.text || element.city || element.state || element.postalCode || element.country
-        else
-          element
-        end
+        search_value = case element
+                       when FHIR::Period
+                         if element.start.present?
+                           'gt' + element.start
+                         else
+                           'lt' + element.end
+                         end
+                       when FHIR::Reference
+                         element.reference
+                       when FHIR::CodeableConcept
+                         resolve_element_from_path(element, 'coding.code')
+                       when FHIR::Identifier
+                         element.value
+                       when FHIR::Coding
+                         element.code
+                       when FHIR::HumanName
+                         element.family || element.given&.first || element.text
+                       when FHIR::Address
+                         element.text || element.city || element.state || element.postalCode || element.country
+                       else
+                         element
+                       end
+        escaped_value = search_value&.gsub(',', '\\,')
+        escaped_value
       end
 
       def date_comparator_value(comparator, date)

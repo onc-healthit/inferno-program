@@ -21,7 +21,8 @@ module Inferno
         case property
 
         when 'name'
-          value_found = resolve_element_from_path(resource, 'name') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'name') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'name on resource does not match name requested'
 
         when 'address'

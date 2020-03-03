@@ -20,11 +20,13 @@ module Inferno
         case property
 
         when 'status'
-          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'status on resource does not match status requested'
 
         when 'intent'
-          value_found = resolve_element_from_path(resource, 'intent') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'intent') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'intent on resource does not match intent requested'
 
         when 'patient'
@@ -32,11 +34,13 @@ module Inferno
           assert value_found.present?, 'patient on resource does not match patient requested'
 
         when 'encounter'
-          value_found = resolve_element_from_path(resource, 'encounter.reference') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'encounter.reference') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'encounter on resource does not match encounter requested'
 
         when 'authoredon'
-          value_found = resolve_element_from_path(resource, 'authoredOn') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'authoredOn') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'authoredon on resource does not match authoredon requested'
 
         end

@@ -32,7 +32,8 @@ module Inferno
           assert value_found.present?, 'name on resource does not match name requested'
 
         when 'identifier'
-          value_found = resolve_element_from_path(resource, 'identifier.value') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'identifier.value') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'identifier on resource does not match identifier requested'
 
         end

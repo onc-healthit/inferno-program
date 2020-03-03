@@ -21,7 +21,8 @@ module Inferno
         case property
 
         when 'name'
-          value_found = resolve_element_from_path(resource, 'name') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'name') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'name on resource does not match name requested'
 
         when 'address'
@@ -35,15 +36,18 @@ module Inferno
           assert value_found.present?, 'address on resource does not match address requested'
 
         when 'address-city'
-          value_found = resolve_element_from_path(resource, 'address.city') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'address.city') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'address-city on resource does not match address-city requested'
 
         when 'address-state'
-          value_found = resolve_element_from_path(resource, 'address.state') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'address.state') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'address-state on resource does not match address-state requested'
 
         when 'address-postalcode'
-          value_found = resolve_element_from_path(resource, 'address.postalCode') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'address.postalCode') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'address-postalcode on resource does not match address-postalcode requested'
 
         end

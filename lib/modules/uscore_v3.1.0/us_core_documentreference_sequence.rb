@@ -20,11 +20,13 @@ module Inferno
         case property
 
         when '_id'
-          value_found = resolve_element_from_path(resource, 'id') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'id') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, '_id on resource does not match _id requested'
 
         when 'status'
-          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'status on resource does not match status requested'
 
         when 'patient'
@@ -32,15 +34,18 @@ module Inferno
           assert value_found.present?, 'patient on resource does not match patient requested'
 
         when 'category'
-          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'category on resource does not match category requested'
 
         when 'type'
-          value_found = resolve_element_from_path(resource, 'type.coding.code') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'type.coding.code') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'type on resource does not match type requested'
 
         when 'date'
-          value_found = resolve_element_from_path(resource, 'date') { |value_in_resource| value.split(',').include? value_in_resource }
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'date') { |value_in_resource| values.include? value_in_resource }
           assert value_found.present?, 'date on resource does not match date requested'
 
         when 'period'
