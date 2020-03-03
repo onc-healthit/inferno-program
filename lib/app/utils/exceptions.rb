@@ -108,7 +108,7 @@ end
 
 # Monkey patch common exceptions so that we don't get hard errors.
 # These are runtime issues on servers, not unhandled exceptions with Inferno
-[ClientException, SocketError, RestClient::Exceptions::OpenTimeout, RestClient::RequestTimeout].each do |exception_type|
+[ClientException, SocketError, RestClient::Exceptions::OpenTimeout, RestClient::RequestTimeout, Errno::EADDRNOTAVAIL].each do |exception_type|
   exception_type.class_eval do
     def update_result(result)
       result.fail!
