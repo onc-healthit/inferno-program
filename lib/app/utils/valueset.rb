@@ -251,9 +251,15 @@ module Inferno
           Inferno.logger.debug "  loading #{system} codes..."
           return filter.nil? ? CODE_SYS[system].call : CODE_SYS[system].call(filter)
         elsif File.exist?(fhir_codesystem)
-          return Inferno::Terminology::Codesystem
-              .new(FHIR::Json.from_json(File.read(fhir_codesystem)))
-              .filter_codes(filter)
+          if SAB[system].nil?
+            fhir_cs = Inferno::Terminology::Codesystem
+                .new(FHIR::Json.from_json(File.read(fhir_codesystem)))
+            if fhir_cs.codesystem_model.concept.empty?
+              raise UnknownCodeSystemException, system
+            else
+              return fhir_cs.filter_codes(filter)
+            end
+          end
         end
 
         filter_clause = lambda do |filter|
