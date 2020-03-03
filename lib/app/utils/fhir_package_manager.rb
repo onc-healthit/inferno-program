@@ -3,6 +3,7 @@
 require 'rubygems/package'
 require 'tempfile'
 require 'zlib'
+require 'json'
 
 module Inferno
   module FHIRPackageManager
@@ -44,9 +45,28 @@ module Inferno
           file_name = entry.full_name.split('/').last
           next if desired_types.present? && !file_name.start_with?(*desired_types)
 
-          File.open(File.join(path, file_name), 'w') { |file| file.write(entry.read)}
+          resource = JSON.parse(entry.read) if file_name.end_with? '.json'
+          next unless resource&.[]('url')
+
+          encoded_name = "#{encode_name(resource['url'])}.json"
+          encoded_file_name = File.join(path, encoded_name)
+          if File.exist?(encoded_file_name)
+            throw FileExistsException.new("#{encoded_name} already exists for #{resource['url']}") unless resource['url'] == JSON.parse(File.read(encoded_file_name))['url']
+          end
+
+          File.open(encoded_file_name, 'w') { |file| file.write(resource.to_json) }
         end
         File.delete(tar_file_name)
+      end
+
+      def encode_name(name)
+        Zlib.crc32(name)
+      end
+
+      class FileExistsException < StandardError
+        def initialize(value_set)
+          super("#{value_set}")
+        end
       end
     end
   end

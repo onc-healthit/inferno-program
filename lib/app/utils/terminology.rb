@@ -3,6 +3,7 @@
 require_relative 'valueset'
 require 'bloomer'
 require 'bloomer/msgpackable'
+require_relative 'fhir_package_manager'
 
 module Inferno
   class Terminology
@@ -22,13 +23,15 @@ module Inferno
     }.freeze
 
     SKIP_SYS = [
-      'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem',
-      'http://fhir.org/guides/argonaut/ValueSet/languages',
-      'http://fhir.org/guides/argonaut/ValueSet/substance-ndfrt',
-      'http://fhir.org/guides/argonaut/ValueSet/substance',
-      'http://hl7.org/fhir/ValueSet/message-events',
-      'http://hl7.org/fhir/ValueSet/care-team-category',
-      'http://hl7.org/fhir/ValueSet/action-participant-role'
+      'http://hl7.org/fhir/ValueSet/message-events',  # has 0 codes
+      'http://hl7.org/fhir/ValueSet/care-team-category',  # has 0 codes
+      'http://hl7.org/fhir/ValueSet/action-participant-role',  # has 0 codes
+      'http://hl7.org/fhir/ValueSet/example-filter',  # has fake property acme-plasma
+      'http://hl7.org/fhir/ValueSet/all-distance-units', # UCUM filter "canonical"
+      'http://hl7.org/fhir/ValueSet/all-time-units', # UCUM filter "canonical"
+      'http://hl7.org/fhir/ValueSet/example-intensional', # Unhandled filter parent =
+      'http://hl7.org/fhir/ValueSet/use-context', # Unknown ValueSet issue
+      'http://hl7.org/fhir/ValueSet/media-modality' # Unknown ValueSet issue
     ].freeze
 
     @known_valuesets = {}
@@ -39,10 +42,24 @@ module Inferno
     @missing_validators = nil
     class << self; attr_reader :loaded_validators, :known_valuesets; end
 
+    def self.load_fhir_r4
+      FHIRPackageManager.get_package('hl7.fhir.r4.core#4.0.1', 'tmp/terminology', ['ValueSet', 'CodeSystem'])
+    end
+
+    def self.load_us_core
+      FHIRPackageManager.get_package('hl7.fhir.us.core#3.1.0', 'tmp/terminology', ['ValueSet', 'CodeSystem'])
+    end
+
+    def self.load_fhir_expansions
+      FHIRPackageManager.get_package('hl7.fhir.r4.expansions#4.0.1', 'tmp/terminology', ['ValueSet', 'CodeSystem'])
+    end
+
     def self.load_valuesets_from_directory(directory, include_subdirectories = false)
       directory += '/**/' if include_subdirectories
-      valueset_files = Dir["#{directory}/ValueSet*"]
+      valueset_files = Dir["#{directory}/*.json"]
       valueset_files.each do |vs_file|
+        next unless JSON.parse(File.read(vs_file))['resourceType'] == 'ValueSet'
+
         add_valueset_from_file(vs_file)
       end
     end
@@ -58,8 +75,19 @@ module Inferno
 
           Inferno.logger.debug "Processing #{k}"
           filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(%r{[./]}, '_')}.msgpack"
-          save_bloom_to_file(vs.valueset, filename)
-          validators << { url: k, file: File.basename(filename), count: vs.count, type: 'bloom' }
+          begin
+            save_bloom_to_file(vs.valueset, filename)
+            validators << { url: k, file: File.basename(filename), count: vs.count, type: 'bloom' }
+          rescue Valueset::UnknownCodeSystemException => e
+            puts "#{e.message} for ValueSet: #{k}"
+            next
+          rescue Valueset::FilterOperationException => e
+            puts "#{e.message} for ValueSet: #{k}"
+            next
+          rescue UnknownValueSetException => e
+            puts "#{e.message} for ValueSet: #{url}"
+            next
+          end
         end
         vs = Inferno::Terminology::Valueset.new(@db)
         Inferno::Terminology::Valueset::SAB.each do |k, _v|

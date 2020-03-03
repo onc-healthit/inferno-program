@@ -806,23 +806,28 @@ namespace :terminology do |_argv|
     args.with_defaults(database: 'umls.db', type: 'bloom')
     validator_type = args.type.to_sym
     Inferno::Terminology.register_umls_db args.database
-    Inferno::Terminology.load_valuesets_from_directory('resources', true)
-    Inferno::Terminology.load_fhir_models_expansions
+    Inferno::Terminology.load_valuesets_from_directory('tmp/terminology', true)
     Inferno::Terminology.create_validators(validator_type)
   end
 
   desc 'Number of codes in ValueSet'
   task :codes_in_valueset, [:vs] do |_t, args|
     Inferno::Terminology.register_umls_db 'umls.db'
-    Inferno::Terminology.load_valuesets_from_directory('resources', true)
-    Inferno::Terminology.load_fhir_models_expansions
+    Inferno::Terminology.load_valuesets_from_directory('tmp/terminology', true)
     vs = Inferno::Terminology.known_valuesets[args.vs]
-    puts vs.valueset.count
+    puts vs&.valueset&.count
   end
 
   desc 'Download FHIR Package'
-  task :download_package, [:package] do |_t, args|
-    Inferno::FHIRPackageManager.get_package('hl7.fhir.us.core#3.1.0', 'tmp/us_core', ['ValueSet', 'CodeSystem'])
+  task :download_package, [:package, :location] do |_t, args|
+    Inferno::FHIRPackageManager.get_package(args.package, args.location)
+  end
+
+  desc 'Download Terminology from FHIR Package'
+  task :download_program_terminology do |_t, args|
+    Inferno::Terminology.load_fhir_r4
+    Inferno::Terminology.load_fhir_expansions
+    Inferno::Terminology.load_us_core
   end
 end
 

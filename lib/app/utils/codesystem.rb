@@ -26,6 +26,7 @@ module Inferno
 
       def find_concept(concept_code, starting_concept = codesystem_model.concept)
         next_concepts = []
+        starting_concept = [starting_concept].flatten
         starting_concept.each do |cs_concept|
           return cs_concept if cs_concept.code == concept_code
 
@@ -42,7 +43,7 @@ module Inferno
           parent_concept = find_concept(filter.value)
           cs_set = all_codes_in_concept([parent_concept])
         else
-          throw Terminology::FilterOperationException(filter.to_s)
+          throw Inferno::Terminology::Valueset::FilterOperationException(filter.to_s)
         end
         cs_set
       end
