@@ -136,7 +136,7 @@ module Inferno
         # if this param is present, the operation was called on a particular ValueSet instance
         if id_param.present?
           begin
-            valueset = Inferno::Terminology.get_valueset_by_id(id_param)
+            valueset = Inferno::Terminology.loaded_validators[id_param]
           rescue Inferno::Terminology::UnknownValueSetException
             error_code = { code: 'MSG_NO_MATCH', display: "No ValueSet found matching the id '#{id_param}''" }
             logger.warn "Need Valueset #{id_param}"
@@ -145,7 +145,7 @@ module Inferno
           end
         elsif url_param.present?
           begin
-            valueset = Inferno::Terminology.get_valueset(url_param)
+            valueset = Inferno::Terminology.loaded_validators[url_param]
           rescue Inferno::Terminology::UnknownValueSetException
             error_code = { code: 'MSG_NO_MATCH', display: "No ValueSet found matching the URL '#{url_param}''" }
             logger.warn "Need Valueset #{url_param}"
@@ -162,7 +162,7 @@ module Inferno
           issue = FHIR::OperationOutcome::Issue.new(severity: 'error', code: 'required', details: { text: issue_text })
           return FHIR::OperationOutcome.new(issue: issue)
         end
-        valueset.url
+        valueset[:url]
       end
 
       def respond_with_type(resource, accept, status = 200)

@@ -15,8 +15,8 @@ class TerminologyTest < Minitest::Test
   end
 
   def test_validator_hash_counts
-    assert_equal 2, Inferno::Terminology.loaded_validators[NARRATIVE_STATUS_VS]
-    assert_equal 3, Inferno::Terminology.loaded_validators[BIRTH_SEX_VS]
+    assert_equal 2, Inferno::Terminology.loaded_validators[NARRATIVE_STATUS_VS][:count]
+    assert_equal 3, Inferno::Terminology.loaded_validators[BIRTH_SEX_VS][:count]
   end
 
   def test_validators_set_on_structure_definition
