@@ -80,7 +80,7 @@ module Inferno
 
         jwt_token.header[:kid] = jwk['kid']
         jwk_private_key = jwk.to_key
-        client_assertion = jwt_token.sign(jwk_private_key)
+        client_assertion = jwt_token.sign(jwk_private_key, bulk_private_key['alg'])
 
         query_values =
           {
