@@ -64,13 +64,13 @@ module Inferno
             save_bloom_to_file(vs.valueset, filename)
             validators << { url: k, file: File.basename(filename), count: vs.count, type: 'bloom', code_systems: vs.included_code_systems }
           rescue Valueset::UnknownCodeSystemException => e
-            puts "#{e.message} for ValueSet: #{k}"
+            Inferno.logger.debug "#{e.message} for ValueSet: #{k}"
             next
           rescue Valueset::FilterOperationException => e
-            puts "#{e.message} for ValueSet: #{k}"
+            Inferno.logger.debug "#{e.message} for ValueSet: #{k}"
             next
           rescue UnknownValueSetException => e
-            puts "#{e.message} for ValueSet: #{url}"
+            Inferno.logger.debug "#{e.message} for ValueSet: #{url}"
             next
           end
         end
