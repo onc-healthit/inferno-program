@@ -7,31 +7,16 @@ require_relative 'fhir_package_manager'
 
 module Inferno
   class Terminology
-    CODE_SYSTEMS = {
-      'http://snomed.info/sct' => 'SNOMED',
-      'http://loinc.org' => 'LOINC',
-      'http://www.nlm.nih.gov/research/umls/rxnorm' => 'RXNORM',
-      'http://hl7.org/fhir/sid/icd-10' => 'ICD10',
-      'http://hl7.org/fhir/sid/icd-10-de' => 'ICD10',
-      'http://hl7.org/fhir/sid/icd-10-nl' => 'ICD10',
-      'http://hl7.org/fhir/sid/icd-10-us' => 'ICD10',
-      'http://www.icd10data.com/icd10pcs' => 'ICD10',
-      'http://hl7.org/fhir/sid/icd-9-cm' => 'ICD9',
-      'http://hl7.org/fhir/sid/icd-9-cm/diagnosis' => 'ICD9',
-      'http://hl7.org/fhir/sid/icd-9-cm/procedure' => 'ICD9',
-      'http://hl7.org/fhir/sid/cvx' => 'CVX'
-    }.freeze
-
     SKIP_SYS = [
-      'http://hl7.org/fhir/ValueSet/message-events',  # has 0 codes
-      'http://hl7.org/fhir/ValueSet/care-team-category',  # has 0 codes
-      'http://hl7.org/fhir/ValueSet/action-participant-role',  # has 0 codes
-      'http://hl7.org/fhir/ValueSet/example-filter',  # has fake property acme-plasma
+      'http://hl7.org/fhir/ValueSet/message-events', # has 0 codes
+      'http://hl7.org/fhir/ValueSet/care-team-category', # has 0 codes
+      'http://hl7.org/fhir/ValueSet/action-participant-role', # has 0 codes
+      'http://hl7.org/fhir/ValueSet/example-filter', # has fake property acme-plasma
       'http://hl7.org/fhir/ValueSet/all-distance-units', # UCUM filter "canonical"
       'http://hl7.org/fhir/ValueSet/all-time-units', # UCUM filter "canonical"
       'http://hl7.org/fhir/ValueSet/example-intensional', # Unhandled filter parent =
-      'http://hl7.org/fhir/ValueSet/use-context', # Unknown ValueSet issue
-      'http://hl7.org/fhir/ValueSet/media-modality' # Unknown ValueSet issue
+      'http://hl7.org/fhir/ValueSet/use-context', # ValueSet contains an unknown ValueSet
+      'http://hl7.org/fhir/ValueSet/media-modality' # ValueSet contains an unknown ValueSet
     ].freeze
 
     @known_valuesets = {}

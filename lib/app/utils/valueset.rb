@@ -137,14 +137,6 @@ module Inferno
         @valueset = include_set
       end
 
-      def generate_array
-        x = []
-        get_valueset_rows valueset do |row|
-          x << row[0]
-        end
-        x
-      end
-
       # Checks if the provided code is in the valueset
       #
       # Codes should be provided as a [Hash] type object
@@ -246,19 +238,18 @@ module Inferno
       # @param [FHIR::ValueSet::Compose::Include::Filter] filter the filter object
       # @return [Set] the filtered set of codes
       def filter_code_set(system, filter = nil, _version = nil)
-        fhir_codesystem = File.join('tmp', 'terminology', "#{FHIRPackageManager.encode_name(system).to_s}.json")
+        fhir_codesystem = File.join('tmp', 'terminology', FHIRPackageManager.encode_name(system).to_s + '.json')
         if CODE_SYS.include? system
           Inferno.logger.debug "  loading #{system} codes..."
           return filter.nil? ? CODE_SYS[system].call : CODE_SYS[system].call(filter)
         elsif File.exist?(fhir_codesystem)
           if SAB[system].nil?
             fhir_cs = Inferno::Terminology::Codesystem
-                .new(FHIR::Json.from_json(File.read(fhir_codesystem)))
-            if fhir_cs.codesystem_model.concept.empty?
-              raise UnknownCodeSystemException, system
-            else
-              return fhir_cs.filter_codes(filter)
-            end
+              .new(FHIR::Json.from_json(File.read(fhir_codesystem)))
+
+            raise UnknownCodeSystemException, system if fhir_cs.codesystem_model.concept.empty?
+
+            return fhir_cs.filter_codes(filter)
           end
         end
 
@@ -314,12 +305,7 @@ module Inferno
       # @param [Object] url the url of the desired valueset
       # @return [Set] the imported valueset
       def import_valueset(desired_url)
-        begin
-          puts "importing #{desired_url} for #{url}"
-          @vsa.get_valueset(desired_url).valueset
-        rescue
-          puts "Unknown ValueSet #{desired_url} in ValueSet: #{url}"
-        end
+        @vsa.get_valueset(desired_url).valueset
       end
 
       # Filters UMLS codes for "is-a" filters

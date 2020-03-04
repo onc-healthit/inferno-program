@@ -8,7 +8,6 @@ require 'json'
 module Inferno
   module FHIRPackageManager
     class << self
-
       REGISTRY_SERVER_URL = 'https://packages.fhir.org'
       # Get the FHIR Package from the registry.
       #
@@ -65,7 +64,7 @@ module Inferno
 
       class FileExistsException < StandardError
         def initialize(value_set)
-          super("#{value_set}")
+          super(value_set.to_s)
         end
       end
     end

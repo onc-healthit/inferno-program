@@ -824,7 +824,7 @@ namespace :terminology do |_argv|
   end
 
   desc 'Download Terminology from FHIR Package'
-  task :download_program_terminology do |_t, args|
+  task :download_program_terminology do |_t, _args|
     Inferno::Terminology.load_fhir_r4
     Inferno::Terminology.load_fhir_expansions
     Inferno::Terminology.load_us_core
