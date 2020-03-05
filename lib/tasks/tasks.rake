@@ -624,7 +624,12 @@ namespace :terminology do |_argv|
                           "-Dmmsys.config.uri=#{config_file} " \
                           '-Xms300M -Xmx8G ' \
                           'org.java.plugin.boot.Boot')
-      p output
+      unless output
+        puts 'MetamorphoSys run failed'
+        # The cwd at this point is 2 directories above where umls_subset is, so we have to navigate up to it
+        FileUtils.remove_dir(File.join(Dir.pwd, '..', '..', 'umls_subset')) if File.directory?(File.join(Dir.pwd, '..', '..', 'umls_subset'))
+        exit 1
+      end
     end
     puts 'done'
   end
