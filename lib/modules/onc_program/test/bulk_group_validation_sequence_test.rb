@@ -391,7 +391,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
     end
 
     it 'fails when NDJSON is valid and has only one resource' do
-      single_patient_export = @patient_export.split(/\n/)[0]
+      single_patient_export = @patient_export.each_line().first()
       stub_request(:get, 'https://www.example.com/single_patient_export.json')
         .with(headers: @file_request_headers)
         .to_return(
