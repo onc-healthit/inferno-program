@@ -196,16 +196,28 @@ module Inferno
       end
 
       def add_terminology_bindings(profile_definition, sequence)
-        sequence[:bindings] = profile_definition['snapshot']['element']
+        profile_elements = profile_definition['snapshot']['element']
+        elements_with_bindings = profile_elements
           .select { |e| e['binding'].present? }
-          .map do |e|
-            {
-              type: e['type'].first['code'],
-              strength: e.dig('binding', 'strength'),
-              system: e.dig('binding', 'valueSet')&.split('|')&.first,
-              path: e['path'].gsub('[x]', '').gsub("#{sequence[:resource]}.", '')
-            }
+          .reject do |e|
+            case e['type'].first['code']
+            when 'Quantity'
+              quantity_code = profile_elements.find { |el| el['path'] == e['path'] + '.code' }
+              quantity_system = profile_elements.find { |el| el['path'] == e['path'] + '.system' }
+              (quantity_code.present? && quantity_code['fixedCode']) || (quantity_system.present? && quantity_system['fixedUri'])
+            when 'code'
+              e['fixedCode'].present?
+            end
           end
+
+        sequence[:bindings] = elements_with_bindings.map do |e|
+          {
+            type: e['type'].first['code'],
+            strength: e.dig('binding', 'strength'),
+            system: e.dig('binding', 'valueSet')&.split('|')&.first,
+            path: e['path'].gsub('[x]', '').gsub("#{sequence[:resource]}.", '')
+          }
+        end
       end
 
       def add_must_support_elements(profile_definition, sequence)
