@@ -25,4 +25,4 @@ COPY resources /var/www/inferno/resources
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
-CMD ["./bin/run_terminology.sh"]
+ENTRYPOINT ["./bin/run_terminology.sh"]
