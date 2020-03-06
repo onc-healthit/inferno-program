@@ -4,6 +4,7 @@ require_relative 'valueset'
 require 'bloomer'
 require 'bloomer/msgpackable'
 require_relative 'fhir_package_manager'
+require 'fileutils'
 
 module Inferno
   class Terminology
@@ -30,17 +31,17 @@ module Inferno
     class << self; attr_reader :loaded_validators, :known_valuesets; end
 
     def self.load_fhir_r4
-      mkdir_p PACKAGE_DIR
+      FileUtils.mkdir_p PACKAGE_DIR
       FHIRPackageManager.get_package('hl7.fhir.r4.core#4.0.1', PACKAGE_DIR, ['ValueSet', 'CodeSystem'])
     end
 
     def self.load_us_core
-      mkdir_p PACKAGE_DIR
+      FileUtils.mkdir_p PACKAGE_DIR
       FHIRPackageManager.get_package('hl7.fhir.us.core#3.1.0', PACKAGE_DIR, ['ValueSet', 'CodeSystem'])
     end
 
     def self.load_fhir_expansions
-      mkdir_p PACKAGE_DIR
+      FileUtils.mkdir_p PACKAGE_DIR
       FHIRPackageManager.get_package('hl7.fhir.r4.expansions#4.0.1', PACKAGE_DIR, ['ValueSet', 'CodeSystem'])
     end
 
