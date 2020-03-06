@@ -238,7 +238,7 @@ module Inferno
       # @param [FHIR::ValueSet::Compose::Include::Filter] filter the filter object
       # @return [Set] the filtered set of codes
       def filter_code_set(system, filter = nil, _version = nil)
-        fhir_codesystem = File.join('tmp', 'terminology', FHIRPackageManager.encode_name(system).to_s + '.json')
+        fhir_codesystem = File.join(Terminology::PACKAGE_DIR, FHIRPackageManager.encode_name(system).to_s + '.json')
         if CODE_SYS.include? system
           Inferno.logger.debug "  loading #{system} codes..."
           return filter.nil? ? CODE_SYS[system].call : CODE_SYS[system].call(filter)

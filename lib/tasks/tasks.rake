@@ -818,14 +818,14 @@ namespace :terminology do |_argv|
     args.with_defaults(database: File.join(TEMP_DIR, 'umls.db'), type: 'bloom')
     validator_type = args.type.to_sym
     Inferno::Terminology.register_umls_db args.database
-    Inferno::Terminology.load_valuesets_from_directory('tmp/terminology', true)
+    Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
     Inferno::Terminology.create_validators(validator_type)
   end
 
   desc 'Number of codes in ValueSet'
   task :codes_in_valueset, [:vs] do |_t, args|
     Inferno::Terminology.register_umls_db File.join(TEMP_DIR, 'umls.db')
-    Inferno::Terminology.load_valuesets_from_directory('tmp/terminology', true)
+    Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
     vs = Inferno::Terminology.known_valuesets[args.vs]
     puts vs&.valueset&.count
   end

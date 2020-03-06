@@ -19,6 +19,8 @@ module Inferno
       'http://hl7.org/fhir/ValueSet/media-modality' # ValueSet contains an unknown ValueSet
     ].freeze
 
+    PACKAGE_DIR = File.join('tmp', 'terminology', 'fhir')
+
     @known_valuesets = {}
     @valueset_ids = nil
     @loaded_code_systems = nil
@@ -28,15 +30,18 @@ module Inferno
     class << self; attr_reader :loaded_validators, :known_valuesets; end
 
     def self.load_fhir_r4
-      FHIRPackageManager.get_package('hl7.fhir.r4.core#4.0.1', 'tmp/terminology', ['ValueSet', 'CodeSystem'])
+      mkdir_p PACKAGE_DIR
+      FHIRPackageManager.get_package('hl7.fhir.r4.core#4.0.1', PACKAGE_DIR, ['ValueSet', 'CodeSystem'])
     end
 
     def self.load_us_core
-      FHIRPackageManager.get_package('hl7.fhir.us.core#3.1.0', 'tmp/terminology', ['ValueSet', 'CodeSystem'])
+      mkdir_p PACKAGE_DIR
+      FHIRPackageManager.get_package('hl7.fhir.us.core#3.1.0', PACKAGE_DIR, ['ValueSet', 'CodeSystem'])
     end
 
     def self.load_fhir_expansions
-      FHIRPackageManager.get_package('hl7.fhir.r4.expansions#4.0.1', 'tmp/terminology', ['ValueSet', 'CodeSystem'])
+      mkdir_p PACKAGE_DIR
+      FHIRPackageManager.get_package('hl7.fhir.r4.expansions#4.0.1', PACKAGE_DIR, ['ValueSet', 'CodeSystem'])
     end
 
     def self.load_valuesets_from_directory(directory, include_subdirectories = false)
@@ -54,7 +59,7 @@ module Inferno
       case type
       when :bloom
         root_dir = 'resources/terminology/validators/bloom'
-        FileUtils.mkdir_p(root_dir) unless File.directory?(root_dir)
+        FileUtils.mkdir_p(root_dir)
         @known_valuesets.each do |k, vs|
           next if SKIP_SYS.include? k
 
@@ -86,7 +91,7 @@ module Inferno
         File.write("#{root_dir}/manifest.yml", validators.to_yaml)
       when :csv
         root_dir = 'resources/terminology/validators/csv'
-        FileUtils.mkdir_p(root_dir) unless File.directory?(root_dir)
+        FileUtils.mkdir_p(root_dir)
         @known_valuesets.each do |k, vs|
           next if (k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem') || (k == 'http://fhir.org/guides/argonaut/ValueSet/languages')
 

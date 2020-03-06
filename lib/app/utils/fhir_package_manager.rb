@@ -34,7 +34,7 @@ module Inferno
         tar = Gem::Package::TarReader.new(Zlib::GzipReader.open("tmp/#{package.split('#').join('-')}.tgz"))
 
         path = File.join destination.split('/')
-        FileUtils.mkdir_p(path) unless File.exist?(path)
+        FileUtils.mkdir_p(path)
 
         tar.each do |entry|
           next if entry.directory?
