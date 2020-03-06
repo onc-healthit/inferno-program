@@ -505,9 +505,7 @@ module Inferno
           )
         end
 
-        warning do
-          assert @has_min_resource_count, 'None of bulk data output file has more than one resources.'
-        end
+        skip_unless @has_min_resource_count, 'None of bulk data output file has more than one resources.'
       end
     end
   end
