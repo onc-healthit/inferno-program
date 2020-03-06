@@ -47,6 +47,20 @@ else
   echo "UMLS Subset already exists; skipping Metamorphosys Rake task."
 fi
 
+if [[ ! -f "$temp_folder/fhir" ]]; then
+  function control_c_packages {
+    kill -INT "$child"
+    rm -rf "$temp_folder/fhir"
+    exit $?
+  }
+  trap control_c_packages SIGHUP SIGINT SIGTERM SIGQUIT SIGKILL SIGTSTP
+  bundle exec rake terminology:download_program_terminology &
+  child=$!
+  wait "$child"
+else
+  echo "FHIR Package sources already exist; skipping Package download."
+fi
+
 if [[ ! -f "$temp_folder/umls.db" ]]; then
   function control_c_db {
     kill -INT "$child"
