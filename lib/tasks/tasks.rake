@@ -495,10 +495,13 @@ namespace :inferno do |_argv|
 end
 
 namespace :terminology do |_argv|
+  TEMP_DIR = 'tmp/terminology'
   desc 'download and execute UMLS terminology data'
   task :download_umls, [:username, :password] do |_t, args|
     # Adapted from python https://github.com/jmandel/umls-bloomer/blob/master/01-download.py
     default_target_file = 'https://download.nlm.nih.gov/umls/kss/2019AB/umls-2019AB-full.zip'
+
+    FileUtils.mkdir_p(TEMP_DIR)
 
     puts 'Getting Login Page'
     response = RestClient.get default_target_file
@@ -531,7 +534,7 @@ namespace :terminology do |_argv|
     size = 0
     percent = 0
     current_percent = 0
-    File.open('umls.zip', 'w') do |f|
+    File.open(File.join(TEMP_DIR, 'umls.zip'), 'w') do |f|
       block = proc do |response|
         puts response.header['content-type']
         if response.header['content-type'] == 'application/zip'
@@ -560,8 +563,8 @@ namespace :terminology do |_argv|
 
   desc 'unzip umls zip'
   task :unzip_umls, [:umls_zip] do |_t, args|
-    args.with_defaults(umls_zip: 'umls.zip')
-    destination = 'resources/terminology/umls'
+    args.with_defaults(umls_zip: File.join(TEMP_DIR, 'umls.zip'))
+    destination = File.join(TEMP_DIR, 'umls')
     # https://stackoverflow.com/questions/19754883/how-to-unzip-a-zip-file-containing-folders-and-files-in-rails-while-keeping-the
     Zip::File.open(args.umls_zip) do |zip_file|
       # Handle entries one by one
@@ -598,13 +601,17 @@ namespace :terminology do |_argv|
                     'linux'
                   end
     puts "#{jre_version} system detected"
-    config_file = Dir.pwd + "/resources/terminology/#{args.my_config}"
-    output_dir = Dir.pwd + '/resources/terminology/umls_subset'
+    config_file = File.join(Dir.pwd, 'resources', 'terminology', args.my_config)
+    output_dir = File.join(Dir.pwd, TEMP_DIR, 'umls_subset')
     FileUtils.mkdir(output_dir)
     puts "Using #{config_file}"
-    Dir.chdir(Dir['resources/terminology/umls/20*'][0]) do
+    Dir.chdir(Dir[File.join(Dir.pwd, TEMP_DIR, '/umls/20*')][0]) do
+      puts Dir.pwd
       Dir['lib/*.jar'].each do |jar|
         File.chmod(0o555, jar)
+      end
+      Dir["jre/#{jre_version}/bin/*"].each do |file|
+        File.chmod(0o555, file)
       end
       puts 'Running MetamorphoSys (this may take a while)...'
       output = system("./jre/#{jre_version}/bin/java " \
@@ -617,36 +624,31 @@ namespace :terminology do |_argv|
                           "-Dmmsys.config.uri=#{config_file} " \
                           '-Xms300M -Xmx8G ' \
                           'org.java.plugin.boot.Boot')
-      p output
+      unless output
+        puts 'MetamorphoSys run failed'
+        # The cwd at this point is 2 directories above where umls_subset is, so we have to navigate up to it
+        FileUtils.remove_dir(File.join(Dir.pwd, '..', '..', 'umls_subset')) if File.directory?(File.join(Dir.pwd, '..', '..', 'umls_subset'))
+        exit 1
+      end
     end
     puts 'done'
   end
 
-  desc 'cleanup umls'
-  task :cleanup_umls, [] do |_t, _args|
-    puts 'removing umls.zip...'
-    File.delete('umls.zip') if File.exist?('umls.zip')
-    puts 'removing unzipped umls...'
-    FileUtils.remove_dir('resources/terminology/umls') if File.directory?('resources/terminology/umls')
-    puts 'removing umls subset...'
-    FileUtils.remove_dir('resources/terminology/umls_subset') if File.directory?('resources/terminology/umls_subset')
-    puts 'removing umls.db'
-    File.delete('umls.db') if File.exist?('umls.db')
-    puts 'removing MRCONSO.pipe'
-    File.delete('MRCONSO.pipe') if File.exist?('MRCONSO.pipe')
-    puts 'removing MRREL.pipe'
-    File.delete('MRREL.pipe') if File.exist?('MRREL.pipe')
+  desc 'cleanup terminology files'
+  task :cleanup, [] do |_t, _args|
+    puts "removing terminology files in #{TEMP_DIR}"
+    FileUtils.remove_dir TEMP_DIR
   end
 
   desc 'post-process UMLS terminology file'
   task :process_umls, [] do |_t, _args|
     require 'find'
     require 'csv'
-    puts 'Looking for `./resources/terminology/MRCONSO.RRF`...'
-    input_file = Find.find('resources/terminology').find { |f| /MRCONSO.RRF$/ =~f }
+    puts 'Looking for `./tmp/terminology/MRCONSO.RRF`...'
+    input_file = Find.find(TEMP_DIR).find { |f| /MRCONSO.RRF$/ =~f }
     if input_file
       start = Time.now
-      output_filename = 'resources/terminology/terminology_umls.txt'
+      output_filename = File.join(TEMP_DIR, 'terminology_umls.txt')
       output = File.open(output_filename, 'w:UTF-8')
       line = 0
       excluded = 0
@@ -722,17 +724,17 @@ namespace :terminology do |_argv|
     puts '  -> https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html'
     puts 'Install the metathesaurus with the following data sources:'
     puts '  CVX|CVX;ICD10CM|ICD10CM;ICD10PCS|ICD10PCS;ICD9CM|ICD9CM;LNC|LNC;MTHICD9|ICD9CM;RXNORM|RXNORM;SNOMEDCT_US|SNOMEDCT;CPT;HCPCS'
-    puts 'After installation, copy `{install path}/META/MRCONSO.RRF` into your `./resources/terminology` folder, and rerun this task.'
+    puts 'After installation, copy `{install path}/META/MRCONSO.RRF` into your `./tmp/terminology` folder, and rerun this task.'
   end
 
   desc 'post-process UMLS terminology file for translations'
   task :process_umls_translations, [] do |_t, _args|
     require 'find'
-    puts 'Looking for `./resources/terminology/MRCONSO.RRF`...'
-    input_file = Find.find('resources/terminology').find { |f| /MRCONSO.RRF$/ =~f }
+    puts 'Looking for `./tmp/terminology/MRCONSO.RRF`...'
+    input_file = Find.find(File.join(TEMP_DIR, 'terminology')).find { |f| /MRCONSO.RRF$/ =~f }
     if input_file
       start = Time.now
-      output_filename = 'resources/terminology/translations_umls.txt'
+      output_filename = File.join(TEMP_DIR, 'translations_umls.txt')
       output = File.open(output_filename, 'w:UTF-8')
       line = 0
       excluded_systems = Hash.new(0)
@@ -803,21 +805,31 @@ namespace :terminology do |_argv|
 
   desc 'Create ValueSet Validators'
   task :create_vs_validators, [:database, :type] do |_t, args|
-    args.with_defaults(database: 'umls.db', type: 'bloom')
+    args.with_defaults(database: File.join(TEMP_DIR, 'umls.db'), type: 'bloom')
     validator_type = args.type.to_sym
     Inferno::Terminology.register_umls_db args.database
-    Inferno::Terminology.load_valuesets_from_directory('resources', true)
-    Inferno::Terminology.load_fhir_models_expansions
+    Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
     Inferno::Terminology.create_validators(validator_type)
   end
 
   desc 'Number of codes in ValueSet'
   task :codes_in_valueset, [:vs] do |_t, args|
-    Inferno::Terminology.register_umls_db 'umls.db'
-    Inferno::Terminology.load_valuesets_from_directory('resources', true)
-    Inferno::Terminology.load_fhir_models_expansions
+    Inferno::Terminology.register_umls_db File.join(TEMP_DIR, 'umls.db')
+    Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
     vs = Inferno::Terminology.known_valuesets[args.vs]
-    puts vs.valueset.count
+    puts vs&.valueset&.count
+  end
+
+  desc 'Download FHIR Package'
+  task :download_package, [:package, :location] do |_t, args|
+    Inferno::FHIRPackageManager.get_package(args.package, args.location)
+  end
+
+  desc 'Download Terminology from FHIR Package'
+  task :download_program_terminology do |_t, _args|
+    Inferno::Terminology.load_fhir_r4
+    Inferno::Terminology.load_fhir_expansions
+    Inferno::Terminology.load_us_core
   end
 end
 

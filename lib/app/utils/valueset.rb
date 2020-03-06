@@ -4,6 +4,7 @@ require 'sqlite3'
 require_relative 'bcp_13'
 require_relative 'bcp47'
 require_relative 'codesystem'
+require_relative 'fhir_package_manager'
 
 module Inferno
   class Terminology
@@ -39,30 +40,8 @@ module Inferno
       }.freeze
 
       CODE_SYS = {
-        'http://hl7.org/fhir/v3/Ethnicity' => -> { load_system('resources/misc_valuesets/CodeSystem-v3-Ethnicity.json') },
-        'http://hl7.org/fhir/v3/Race' => -> { load_system('resources/misc_valuesets/CodeSystem-v3-Race.json') },
-        'http://hl7.org/fhir/condition-category' => -> { load_system('resources/misc_valuesets/CodeSystem-condition-category.json') },
-        'http://hl7.org/fhir/us/core/CodeSystem/careplan-category' => -> { load_system('resources/us_core_r4/CodeSystem-careplan-category.json') },
-        'http://hl7.org/fhir/us/core/CodeSystem/condition-category' => -> { load_system('resources/us_core_r4/CodeSystem-condition-category.json') },
-        'http://hl7.org/fhir/us/core/CodeSystem/us-core-documentreference-category' => -> { load_system('resources/us_core_r4/cs-us-core-documentreference-category.json') },
-        'http://hl7.org/fhir/us/core/CodeSystem/us-core-provenance-participant-type' => -> { load_system('resources/us_core_r4/cs-us-core-provenance-participant-type.json') },
-        'http://terminology.hl7.org/CodeSystem/provenance-participant-type' => -> { load_system('resources/misc_valuesets/CodeSystem-provenance-participant-type.json') },
-        'http://terminology.hl7.org/CodeSystem/condition-category' => -> { load_system('resources/misc_valuesets/CodeSystem-terminology-condition-category.json') },
-        'http://hl7.org/fhir/condition-clinical' => -> { load_system('resources/misc_valuesets/codesystem-condition-clinical.json') },
-        'http://hl7.org/fhir/condition-ver-status' => -> { load_system('resources/misc_valuesets/codesystem-condition-ver-status.json') },
-        'http://hl7.org/fhir/observation-category' => -> { load_system('resources/misc_valuesets/codesystem-observation-category.json') },
-        'http://hl7.org/fhir/referencerange-meaning' => -> { load_system('resources/misc_valuesets/codesystem-referencerange-meaning.json') },
-        'http://hl7.org/fhir/v2/0203' => 'resources/misc_valuesets/codesystem-v2-0203.cs.json',
-        'http://terminology.hl7.org/CodeSystem/practitioner-role' => -> { load_system('resources/misc_valuesets/codesystem-practitioner-role.json') },
-        'http://terminology.hl7.org/CodeSystem/v3-RoleCode' => -> { load_system('resources/misc_valuesets/v3-RoleCode.cs.json') },
-        'http://terminology.hl7.org/CodeSystem/v2-0131' => -> { load_system('resources/misc_valuesets/v2-0131.cs.json') },
         'urn:ietf:bcp:13' => -> { BCP13.code_set },
-        'urn:ietf:bcp:47' => ->(filter = nil) { Inferno::BCP47.code_set(filter) },
-        'urn:oid:2.16.840.1.113883.6.238' => lambda do |filter = nil|
-          Inferno::Terminology::Codesystem
-            .new(FHIR::Json.from_json(File.read('resources/us_core_r4/CodeSystem-cdcrec.json')))
-            .filter_codes(filter)
-        end
+        'urn:ietf:bcp:47' => ->(filter = nil) { Inferno::BCP47.code_set(filter) }
       }.freeze
 
       # https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/attribute_names.html
@@ -72,8 +51,9 @@ module Inferno
         'SCALE_TYP' => 'LOINC_SCALE_TYP'
       }.freeze
 
-      def initialize(database)
+      def initialize(database, use_expansions = true)
         @db = database
+        @use_expansions = use_expansions
       end
 
       # The ValueSet [Set]
@@ -155,14 +135,6 @@ module Inferno
           include_set.add(system: contain.system, code: contain.code)
         end
         @valueset = include_set
-      end
-
-      def generate_array
-        x = []
-        get_valueset_rows valueset do |row|
-          x << row[0]
-        end
-        x
       end
 
       # Checks if the provided code is in the valueset
@@ -266,9 +238,19 @@ module Inferno
       # @param [FHIR::ValueSet::Compose::Include::Filter] filter the filter object
       # @return [Set] the filtered set of codes
       def filter_code_set(system, filter = nil, _version = nil)
+        fhir_codesystem = File.join(Terminology::PACKAGE_DIR, FHIRPackageManager.encode_name(system).to_s + '.json')
         if CODE_SYS.include? system
           Inferno.logger.debug "  loading #{system} codes..."
           return filter.nil? ? CODE_SYS[system].call : CODE_SYS[system].call(filter)
+        elsif File.exist?(fhir_codesystem)
+          if SAB[system].nil?
+            fhir_cs = Inferno::Terminology::Codesystem
+              .new(FHIR::Json.from_json(File.read(fhir_codesystem)))
+
+            raise UnknownCodeSystemException, system if fhir_cs.codesystem_model.concept.empty?
+
+            return fhir_cs.filter_codes(filter)
+          end
         end
 
         filter_clause = lambda do |filter|
@@ -293,7 +275,7 @@ module Inferno
         end
 
         filtered_set = Set.new
-        raise "Can't handle #{filter&.op} on #{system}" unless ['=', 'in', 'is-a', nil].include? filter&.op
+        raise FilterOperationException, filter&.op unless ['=', 'in', 'is-a', nil].include? filter&.op
         raise UnknownCodeSystemException, system if SAB[system].nil?
 
         if filter.nil?
@@ -322,8 +304,8 @@ module Inferno
       #
       # @param [Object] url the url of the desired valueset
       # @return [Set] the imported valueset
-      def import_valueset(url)
-        @vsa.get_valueset(url).valueset
+      def import_valueset(desired_url)
+        @vsa.get_valueset(desired_url).valueset
       end
 
       # Filters UMLS codes for "is-a" filters

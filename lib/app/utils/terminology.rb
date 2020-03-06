@@ -3,33 +3,24 @@
 require_relative 'valueset'
 require 'bloomer'
 require 'bloomer/msgpackable'
+require_relative 'fhir_package_manager'
+require 'fileutils'
 
 module Inferno
   class Terminology
-    CODE_SYSTEMS = {
-      'http://snomed.info/sct' => 'SNOMED',
-      'http://loinc.org' => 'LOINC',
-      'http://www.nlm.nih.gov/research/umls/rxnorm' => 'RXNORM',
-      'http://hl7.org/fhir/sid/icd-10' => 'ICD10',
-      'http://hl7.org/fhir/sid/icd-10-de' => 'ICD10',
-      'http://hl7.org/fhir/sid/icd-10-nl' => 'ICD10',
-      'http://hl7.org/fhir/sid/icd-10-us' => 'ICD10',
-      'http://www.icd10data.com/icd10pcs' => 'ICD10',
-      'http://hl7.org/fhir/sid/icd-9-cm' => 'ICD9',
-      'http://hl7.org/fhir/sid/icd-9-cm/diagnosis' => 'ICD9',
-      'http://hl7.org/fhir/sid/icd-9-cm/procedure' => 'ICD9',
-      'http://hl7.org/fhir/sid/cvx' => 'CVX'
-    }.freeze
-
     SKIP_SYS = [
-      'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem',
-      'http://fhir.org/guides/argonaut/ValueSet/languages',
-      'http://fhir.org/guides/argonaut/ValueSet/substance-ndfrt',
-      'http://fhir.org/guides/argonaut/ValueSet/substance',
-      'http://hl7.org/fhir/ValueSet/message-events',
-      'http://hl7.org/fhir/ValueSet/care-team-category',
-      'http://hl7.org/fhir/ValueSet/action-participant-role'
+      'http://hl7.org/fhir/ValueSet/message-events', # has 0 codes
+      'http://hl7.org/fhir/ValueSet/care-team-category', # has 0 codes
+      'http://hl7.org/fhir/ValueSet/action-participant-role', # has 0 codes
+      'http://hl7.org/fhir/ValueSet/example-filter', # has fake property acme-plasma
+      'http://hl7.org/fhir/ValueSet/all-distance-units', # UCUM filter "canonical"
+      'http://hl7.org/fhir/ValueSet/all-time-units', # UCUM filter "canonical"
+      'http://hl7.org/fhir/ValueSet/example-intensional', # Unhandled filter parent =
+      'http://hl7.org/fhir/ValueSet/use-context', # ValueSet contains an unknown ValueSet
+      'http://hl7.org/fhir/ValueSet/media-modality' # ValueSet contains an unknown ValueSet
     ].freeze
+
+    PACKAGE_DIR = File.join('tmp', 'terminology', 'fhir')
 
     @known_valuesets = {}
     @valueset_ids = nil
@@ -39,10 +30,27 @@ module Inferno
     @missing_validators = nil
     class << self; attr_reader :loaded_validators, :known_valuesets; end
 
+    def self.load_fhir_r4
+      FileUtils.mkdir_p PACKAGE_DIR
+      FHIRPackageManager.get_package('hl7.fhir.r4.core#4.0.1', PACKAGE_DIR, ['ValueSet', 'CodeSystem'])
+    end
+
+    def self.load_us_core
+      FileUtils.mkdir_p PACKAGE_DIR
+      FHIRPackageManager.get_package('hl7.fhir.us.core#3.1.0', PACKAGE_DIR, ['ValueSet', 'CodeSystem'])
+    end
+
+    def self.load_fhir_expansions
+      FileUtils.mkdir_p PACKAGE_DIR
+      FHIRPackageManager.get_package('hl7.fhir.r4.expansions#4.0.1', PACKAGE_DIR, ['ValueSet', 'CodeSystem'])
+    end
+
     def self.load_valuesets_from_directory(directory, include_subdirectories = false)
       directory += '/**/' if include_subdirectories
-      valueset_files = Dir["#{directory}/ValueSet*"]
+      valueset_files = Dir["#{directory}/*.json"]
       valueset_files.each do |vs_file|
+        next unless JSON.parse(File.read(vs_file))['resourceType'] == 'ValueSet'
+
         add_valueset_from_file(vs_file)
       end
     end
@@ -52,14 +60,25 @@ module Inferno
       case type
       when :bloom
         root_dir = 'resources/terminology/validators/bloom'
-        FileUtils.mkdir_p(root_dir) unless File.directory?(root_dir)
+        FileUtils.mkdir_p(root_dir)
         @known_valuesets.each do |k, vs|
           next if SKIP_SYS.include? k
 
           Inferno.logger.debug "Processing #{k}"
           filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(%r{[./]}, '_')}.msgpack"
-          save_bloom_to_file(vs.valueset, filename)
-          validators << { url: k, file: File.basename(filename), count: vs.count, type: 'bloom' }
+          begin
+            save_bloom_to_file(vs.valueset, filename)
+            validators << { url: k, file: File.basename(filename), count: vs.count, type: 'bloom', code_systems: vs.included_code_systems }
+          rescue Valueset::UnknownCodeSystemException => e
+            Inferno.logger.debug "#{e.message} for ValueSet: #{k}"
+            next
+          rescue Valueset::FilterOperationException => e
+            Inferno.logger.debug "#{e.message} for ValueSet: #{k}"
+            next
+          rescue UnknownValueSetException => e
+            Inferno.logger.debug "#{e.message} for ValueSet: #{url}"
+            next
+          end
         end
         vs = Inferno::Terminology::Valueset.new(@db)
         Inferno::Terminology::Valueset::SAB.each do |k, _v|
@@ -67,20 +86,20 @@ module Inferno
           cs = vs.code_system_set(k)
           filename = "#{root_dir}/#{bloom_file_name(k)}.msgpack"
           save_bloom_to_file(cs, filename)
-          validators << { url: k, file: File.basename(filename), count: cs.length, type: 'bloom' }
+          validators << { url: k, file: File.basename(filename), count: cs.length, type: 'bloom', code_systems: k }
         end
         # Write manifest for loading later
         File.write("#{root_dir}/manifest.yml", validators.to_yaml)
       when :csv
         root_dir = 'resources/terminology/validators/csv'
-        FileUtils.mkdir_p(root_dir) unless File.directory?(root_dir)
+        FileUtils.mkdir_p(root_dir)
         @known_valuesets.each do |k, vs|
           next if (k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem') || (k == 'http://fhir.org/guides/argonaut/ValueSet/languages')
 
           Inferno.logger.debug "Processing #{k}"
           filename = "#{root_dir}/#{bloom_file_name(vs.url)}.csv"
           save_csv_to_file(vs.valueset, filename)
-          validators << { url: k, file: File.basename(filename), count: vs.count, type: 'csv' }
+          validators << { url: k, file: File.basename(filename), count: vs.count, type: 'csv', code_systems: vs.included_code_systems }
         end
         vs = Inferno::Terminology::Valueset.new(@db)
         Inferno::Terminology::Valueset::SAB.each do |k, _v|
@@ -88,7 +107,7 @@ module Inferno
           cs = vs.code_system_set(k)
           filename = "#{root_dir}/#{bloom_file_name(k)}.csv"
           save_csv_to_file(cs, filename)
-          validators << { url: k, file: File.basename(filename), count: cs.length, type: 'csv' }
+          validators << { url: k, file: File.basename(filename), count: cs.length, type: 'csv', code_systems: k }
         end
         # Write manifest for loading later
         File.write("#{root_dir}/manifest.yml", validators.to_yaml)
@@ -146,28 +165,7 @@ module Inferno
         # Register the validators with FHIR Models for validation
         FHIR::DSTU2::StructureDefinition.validates_vs(validator[:url], &validate_fn)
         FHIR::StructureDefinition.validates_vs(validator[:url], &validate_fn)
-        @loaded_validators[validator[:url]] = validator[:count]
-      end
-    end
-
-    # Parse the expansions that are in FHIR Models into valueset validators
-    # @param [Boolean] process tells the loader whether to actually run the expansions, or
-    # whether to just load the expansions into @known_valuesets
-    def self.load_fhir_models_expansions
-      Inferno.logger.debug 'Loading FHIR Models Expansions'
-      FHIR::Definitions.expansions.each do |expansion|
-        url = expansion['url']
-        next if @known_valuesets[url]
-        next if SKIP_SYS.include? url
-
-        Inferno.logger.debug "Loading expansion #{url}"
-
-        valueset = Inferno::Terminology::Valueset.new(@db)
-        valueset.valueset_model = FHIR::ValueSet.new(expansion)
-        valueset.vsa = self
-        valueset.use_expansions = true
-
-        @known_valuesets[valueset.url] = valueset
+        @loaded_validators[validator[:url]] = validator
       end
     end
 
@@ -197,8 +195,8 @@ module Inferno
     end
 
     def self.loaded_code_systems
-      @loaded_code_systems ||= @known_valuesets.flat_map do |_, vs|
-        vs.included_code_systems.uniq
+      @loaded_code_systems ||= @loaded_validators.flat_map do |_, vs|
+        vs[:code_systems]
       end.uniq.compact
     end
 
@@ -220,14 +218,13 @@ module Inferno
     def self.validate_code(valueset_url, code, system = nil)
       # Get the valueset from the url. Redundant if the 'system' is not nil,
       # but allows us to throw a better error if the valueset isn't known by Inferno
-      valueset = get_valueset(valueset_url)
-      validation_fn = FHIR::StructureDefinition.vs_validators[valueset.url]
-      raise(UnknownValueSetException, valueset.url) unless validation_fn
+      validation_fn = FHIR::StructureDefinition.vs_validators[valueset_url]
+      raise(UnknownValueSetException, valueset_url) unless validation_fn
 
       if system
         validation_fn.call('code' => code, 'system' => system)
       else
-        valueset.included_code_systems.any? do |possible_system|
+        @loaded_validators[valueset_url][:code_systems].any? do |possible_system|
           validation_fn.call('code' => code, 'system' => possible_system)
         end
       end

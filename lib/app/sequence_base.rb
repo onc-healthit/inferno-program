@@ -22,8 +22,6 @@ require 'json'
 module Inferno
   module Sequence
     Inferno::Terminology.load_validators
-    Inferno::Terminology.load_valuesets_from_directory('resources', true)
-    Inferno::Terminology.load_fhir_models_expansions
 
     class SequenceBase
       include Assertions

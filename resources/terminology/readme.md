@@ -4,6 +4,10 @@ In order to validate terminologies Inferno can be loaded with files generated fr
 Unified Medical Language System (UMLS).  The UMLS is distributed by the National Library of Medicine (NLM)
 and requires an account to access.
 
+Inferno provides some rake tasks to make this process easier.
+Inferno provides some rake tasks which may make this process easier, as well as a Dockerfile and docker-compose file that will create the validators in a self-contained environment.
+
+## UMLS Data Sources
 Some material in the UMLS Metathesaurus is from copyrighted sources of the respective copyright holders.
 Users of the UMLS Metathesaurus are solely responsible for compliance with any copyright, patent or trademark
 restrictions and are referred to the copyright, patent or trademark notices appearing in the original sources,
@@ -13,7 +17,45 @@ all of which are hereby incorporated by reference.
       Nucleic Acids Res. 2004 Jan 1;32(Database issue):D267-70. doi: 10.1093/nar/gkh061.
       PubMed PMID: 14681409; PubMed Central PMCID: PMC308795.
 
-Inferno provides some rake tasks to make this process easier.
+## Building the validators with Docker
+
+### Prerequisites
+* A UMLS account
+* A working Docker toolchain, which has been assigned at least 10GB of RAM (The Metathesaurus step requires 8GB of RAM for the Java process)
+* A copy of the Inferno repository, which contains the required Docker and Ruby files
+
+### Building and Running the Terminology Docker container
+* You can prebuild the terminology docker container by running the following command:
+```sh
+docker-compose -f terminology_compose.yml build
+```
+* Once the container is built, you can run the terminology creation task by using the following commands, in order:
+```sh
+export UMLS_USERNAME=<your UMLS username>
+export UMLS_PASSWORD=<your UMLS password>
+docker-compose -f terminology_compose.yml up
+```
+This will run the terminology creation steps in order, using the UMLS credentials supplied. These tasks may take several hours. If the creation task is cancelled in progress and restarted, it will restart after the last _completed_ step. Intermediate files are saved to `tmp/terminology` in the Inferno repository that the Docker Compose job is run from, and the validators are saved to `resources/terminology/validators/bloom`, where Inferno can use them for validation.
+
+## Building the validators without Docker
+To build the validators without using the provided Docker script, run the following commands, from the Inferno repository root directory: 
+```sh
+export UMLS_USERNAME=<your UMLS username>
+export UMLS_PASSWORD=<your UMLS password>
+./bin/run_terminology.sh
+```
+This will run through all of the steps to create the validators on the local system, rather than in a Docker container. This step requires that Ruby be installed on your local system, and that you have run the `bundle install` task in your Inferno root directory as well.
+
+## Manually creating the validators
+If you want to manually walk through each step in the validator creation process, detailed instructions for each step are provided below:
+
+### Download FHIR ValueSet and CodeSystem resources
+
+Download the FHIR ValueSet and CodeSystem definitions:
+
+```sh
+bundle exec rake terminology:download_program_terminology
+```
 
 ### Downloading the UMLS
 
@@ -26,6 +68,11 @@ bundle exec rake terminology:download_umls[username, password]
 *Note: username and passwords should be entered as strings to avoid issues with special characters.  For example*
 ```sh
 bundle exec rake terminology:download_umls['jsmith','hunter2!']
+```
+
+Or
+```sh
+bundle exec rake 'terminology:download_umls[jsmith,hunter2!]'
 ```
 
 This command requires a valid UMLS `username` and `password`.  Inferno does not store this information and 
@@ -72,7 +119,7 @@ Inferno loads the UMLS subset into a SQLite database for executing the queries w
 A shell script is provided at the root of the project to automatically create the database
 
 ```sh
-./create_umls.sh
+./bin/create_umls.sh
 ```
 
 ### Creating the Terminology Validators

@@ -1,10 +1,14 @@
 #!/bin/sh
 
+tmpdir="./tmp/terminology"
+
+umls_db_location=${tmpdir}/umls.db
+
 echo 'Dropping existing mrconso table'
-sqlite3 umls.db "drop table if exists mrconso"
+sqlite3 $umls_db_location "drop table if exists mrconso"
 
 echo 'Creating mrconso table'
-sqlite3 umls.db "create table mrconso (
+sqlite3 $umls_db_location "create table mrconso (
         CUI	char(8) NOT NULL,
         LAT	char(3) NOT NULL,
         TS	char(1) NOT NULL,
@@ -26,20 +30,20 @@ sqlite3 umls.db "create table mrconso (
       );"
 
 # Remove the last pipe from each line
-if [ ! -e MRCONSO.pipe ]
+if [ ! -e ${tmpdir}/MRCONSO.pipe ]
 then
  echo 'Removing last pipe from RRF'
- sed -e 's/|$//' -e "s/\"/'/g" ./resources/terminology/umls_subset/MRCONSO.RRF > MRCONSO.pipe
+ sed -e 's/|$//' -e "s/\"/'/g" ${tmpdir}/umls_subset/MRCONSO.RRF > ${tmpdir}/MRCONSO.pipe
 fi
 
 echo 'Populating mrconso table'
-sqlite3 umls.db ".import MRCONSO.pipe mrconso"
+sqlite3 $umls_db_location ".import ${tmpdir}/MRCONSO.pipe mrconso"
 
 echo 'Dropping existing mrrel table'
-sqlite3 umls.db "drop table if exists mrrel;"
+sqlite3 $umls_db_location "drop table if exists mrrel;"
 
 echo 'Creating mrrel table'
-sqlite3 umls.db "create table mrrel (
+sqlite3 $umls_db_location "create table mrrel (
         CUI1	char(8) NOT NULL,
         AUI1	varchar(9),
         STYPE1	varchar(50) NOT NULL,
@@ -59,20 +63,20 @@ sqlite3 umls.db "create table mrrel (
       );"
 
 # Remove the last pipe from each line
-if [ ! -e MRREL.pipe ]
+if [ ! -e ${tmpdir}/MRREL.pipe ]
 then
  echo 'Removing last pipe from RRF'
- sed 's/|$//' ./resources/terminology/umls_subset/MRREL.RRF > MRREL.pipe
+ sed 's/|$//' ${tmpdir}/umls_subset/MRREL.RRF > ${tmpdir}/MRREL.pipe
 fi
 
 echo 'Populating mrrel table'
-sqlite3 umls.db ".import MRREL.pipe mrrel"
+sqlite3 $umls_db_location ".import ${tmpdir}/MRREL.pipe mrrel"
 
 echo 'Dropping existing mrsat table'
-sqlite3 umls.db "drop table if exists mrsat;"
+sqlite3 $umls_db_location "drop table if exists mrsat;"
 
 echo 'Creating mrsat table'
-sqlite3 umls.db "create table mrsat (
+sqlite3 $umls_db_location "create table mrsat (
         CUI 	char(8) NOT NULL,
         LUI       char(8),
         SUI       char(8),
@@ -90,26 +94,26 @@ sqlite3 umls.db "create table mrsat (
 
 # Remove the last pipe from each line, and quote all the fields/escape double quotes
 # Because MRSAT has stray unescaped quotes in one of the fields
-if [ ! -e MRSAT.pipe ]
+if [ ! -e ${tmpdir}/MRSAT.pipe ]
 then
  echo 'Removing last pipe from RRF'
- sed 's/|$//' ./resources/terminology/umls_subset/MRSAT.RRF | sed $'s/"/""/g;s/[^|]*/"&"/g' > MRSAT.pipe
+ sed 's/|$//' ${tmpdir}/umls_subset/MRSAT.RRF | sed $'s/"/""/g;s/[^|]*/"&"/g' > ${tmpdir}/MRSAT.pipe
 fi
 
 echo 'Populating mrsat table'
-sqlite3 umls.db ".import MRSAT.pipe mrsat"
+sqlite3 $umls_db_location ".import ${tmpdir}/MRSAT.pipe mrsat"
 
 echo 'Indexing mrsat(ATN,ATV)'
-sqlite3 umls.db "create index idx_at on mrsat(ATN,ATV);"
+sqlite3 $umls_db_location "create index idx_at on mrsat(ATN,ATV);"
 
 echo 'Indexing mrconso(tty)'
-sqlite3 umls.db "create index  idx_tty on mrconso(tty);"
+sqlite3 $umls_db_location "create index  idx_tty on mrconso(tty);"
 
 echo 'Indexing mrrel(rel,sab)'
-sqlite3 umls.db "create index idx_isa on mrrel(REL,SAB);"
+sqlite3 $umls_db_location "create index idx_isa on mrrel(REL,SAB);"
 
 echo 'Indexing mrconso(aui)'
-sqlite3 umls.db "CREATE INDEX idx_aui ON mrconso(AUI);"
+sqlite3 $umls_db_location "CREATE INDEX idx_aui ON mrconso(AUI);"
 
 echo 'Analyzing Database'
-sqlite3 umls.db "ANALYZE;"
+sqlite3 $umls_db_location "ANALYZE;"
