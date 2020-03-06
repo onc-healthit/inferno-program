@@ -908,8 +908,12 @@ module Inferno
       end
 
       def resources_with_invalid_binding(binding_def, resources)
+        path_source = resources
         resources.map do |resource|
-          invalid_code_found = resolve_element_from_path(resources, binding_def[:path]) do |el|
+          binding_def[:extensions]&.each do |url|
+            path_source = path_source.map { |el| el.extension.select { |extension| extension.url == url } }.flatten
+          end
+          invalid_code_found = resolve_element_from_path(path_source, binding_def[:path]) do |el|
             case binding_def[:type]
             when 'CodeableConcept'
               if el.is_a? FHIR::CodeableConcept
