@@ -70,6 +70,12 @@ bundle exec rake terminology:download_umls[username, password]
 bundle exec rake terminology:download_umls['jsmith','hunter2!']
 ```
 
+Or
+```sh
+bundle exec rake 'terminology:download_umls[jsmith,hunter2!]'
+```
+
+
 This command requires a valid UMLS `username` and `password`.  Inferno does not store this information and 
 only uses it to download the necessary files during this step.
 
