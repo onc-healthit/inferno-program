@@ -75,7 +75,6 @@ Or
 bundle exec rake 'terminology:download_umls[jsmith,hunter2!]'
 ```
 
-
 This command requires a valid UMLS `username` and `password`.  Inferno does not store this information and 
 only uses it to download the necessary files during this step.
 
@@ -120,7 +119,7 @@ Inferno loads the UMLS subset into a SQLite database for executing the queries w
 A shell script is provided at the root of the project to automatically create the database
 
 ```sh
-./create_umls.sh
+./bin/create_umls.sh
 ```
 
 ### Creating the Terminology Validators
