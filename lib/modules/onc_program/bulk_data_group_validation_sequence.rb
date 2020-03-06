@@ -15,9 +15,10 @@ module Inferno
 
       requires :bulk_status_output, :bulk_lines_to_validate, :bulk_patient_ids_in_group
 
-      attr_accessor :requires_access_token, :output, :patient_ids_seen
+      attr_accessor :requires_access_token, :output, :patient_ids_seen, :has_min_resource_count
 
       MAX_RECENT_LINE_SIZE = 100
+      MIN_RESOURCE_COUNT = 2
 
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
         super(instance, client, disable_tls_tests, sequence_result)
@@ -69,9 +70,11 @@ module Inferno
         streamed_ndjson_get(file['url'], headers) do |response, resource|
           assert response.headers['Content-Type'] == 'application/fhir+ndjson', "Content type must be 'application/fhir+ndjson' but is '#{response.headers['Content-type']}"
 
-          break if !validate_all && line_count >= lines_to_validate
+          break if !validate_all && line_count >= lines_to_validate && @has_min_resource_count
 
           line_count += 1
+
+          @has_min_resource_count = true if line_count >= MIN_RESOURCE_COUNT
 
           resource = versioned_resource_class.from_contents(resource)
           resource_type = resource.class.name.demodulize
@@ -490,6 +493,19 @@ module Inferno
         end
 
         test_output_against_profile('PractitionerRole')
+      end
+
+      test :validate_two_resources do
+        metadata do
+          id '23'
+          name 'NDJSON files have at least two resources'
+          link 'http://ndjson.org/'
+          description %(
+            This test checks if the output file use NDJSON format. This includes checking that at least one output file having at least two resources.
+          )
+        end
+
+        skip_unless @has_min_resource_count, 'None of bulk data output file has more than one resources.'
       end
     end
   end
