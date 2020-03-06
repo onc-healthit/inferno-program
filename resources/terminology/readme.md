@@ -49,6 +49,14 @@ This will run through all of the steps to create the validators on the local sys
 ## Manually creating the validators
 If you want to manually walk through each step in the validator creation process, detailed instructions for each step are provided below:
 
+### Download FHIR ValueSet and CodeSystem resources
+
+Download the FHIR ValueSet and CodeSystem definitions:
+
+```sh
+bundle exec rake terminology:download_program_terminology
+```
+
 ### Downloading the UMLS
 
 Inferno provides a task which attempts to download the UMLS for you:
