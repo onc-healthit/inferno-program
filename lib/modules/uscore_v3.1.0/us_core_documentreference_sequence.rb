@@ -434,25 +434,9 @@ module Inferno
         validate_history_reply(@document_reference, versioned_resource_class('DocumentReference'))
       end
 
-      test 'The server is capable of returning a reference to a generated CDA document in response to the $docref operation' do
-        metadata do
-          id '11'
-          link 'http://hl7.org/fhir/us/core/2019Sep/CapabilityStatement-us-core-server.html#documentreference'
-          description %(
-            A server SHALL be capable of responding to a $docref operation and capable of returning at least a reference to a generated CCD document, if available.
-          )
-          versions :r4
-        end
-
-        skip_if_known_not_supported(:DocumentReference, [], [:docref])
-        search_string = "/DocumentReference/$docref?patient=#{@instance.patient_id}"
-        reply = @client.get(search_string, @client.fhir_headers)
-        assert_response_ok(reply)
-      end
-
       test 'Server returns Provenance resources from DocumentReference search by patient + _revIncludes: Provenance:target' do
         metadata do
-          id '12'
+          id '11'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -487,7 +471,7 @@ module Inferno
 
       test :validate_resources do
         metadata do
-          id '13'
+          id '12'
           name 'DocumentReference resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
           description %(
@@ -604,7 +588,7 @@ module Inferno
 
       test 'All must support elements are provided in the DocumentReference resources returned.' do
         metadata do
-          id '14'
+          id '13'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -687,7 +671,7 @@ module Inferno
 
       test 'Every reference within DocumentReference resource is valid and can be read.' do
         metadata do
-          id '15'
+          id '14'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

@@ -85,12 +85,6 @@ module Inferno
               create_interaction_test(sequence, interaction)
             end
 
-          sequence[:operations]
-            .select { |operation| operation[:expectation] == 'SHALL' }
-            .each do |operation|
-              create_docref_test(sequence) if operation[:operation] == 'docref'
-            end
-
           create_include_test(sequence) if sequence[:include_params].any?
           create_revinclude_test(sequence) if sequence[:revincludes].any?
           create_resource_profile_test(sequence)
@@ -155,24 +149,6 @@ module Inferno
           resource_type: sequence[:resource],
           class_name: sequence[:class_name]
         )
-      end
-
-      def create_docref_test(sequence)
-        docref_test = {
-          tests_that: 'The server is capable of returning a reference to a generated CDA document in response to the $docref operation',
-          index: sequence[:tests].length + 1,
-          link: 'http://hl7.org/fhir/us/core/2019Sep/CapabilityStatement-us-core-server.html#documentreference',
-          description: 'A server SHALL be capable of responding to a $docref operation and capable of returning at least a reference to a generated CCD document, if available.'
-        }
-
-        docref_test[:test_code] = %(
-          skip_if_known_not_supported(:#{sequence[:resource]}, [], [:docref])
-          search_string = "/DocumentReference/$docref?patient=\#{@instance.patient_id}"
-          reply = @client.get(search_string, @client.fhir_headers)
-          assert_response_ok(reply)
-        )
-
-        sequence[:tests] << docref_test
       end
 
       def create_include_test(sequence)
