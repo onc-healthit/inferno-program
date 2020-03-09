@@ -1010,7 +1010,7 @@ body {
 }
 
 .guided .group-nav-label {
-  font-size: 12px;
+  font-size: 11px;
   position: relative;
   left: 8px;
   z-index: 10; /* must be above the psuedoelement */
@@ -1020,7 +1020,8 @@ body {
 .guided .group-nav li a {
   border-radius: 0;
   color: #53585e;
-  padding-top: 10px;
+  padding-top: 8px;
+  padding-top: 8px;
 }
 
 .guided .group-nav li a::after{
@@ -1300,18 +1301,18 @@ body {
 }
 
 .onc-index-page .nav-pills .nav-link, .nav-pills {
-  margin: 0 30px 0 0;
+  margin: 0 50px 0 0;
   font-size: 22px;
   text-align: center;
 }
 
-.onc-index-page .nav-pills .nav-link.active, .nav-pills {
+.onc-index-page .nav-pills .nav-link.active, .onc-index-page .nav-pills {
   border-radius: 0;
 }
-.onc-index-page .nav-pills .nav-link.active, .nav-pills a{
+.onc-index-page .nav-pills .nav-link.active, .onc-index-page .nav-pills a{
   padding: 14px 0;
 }
-.onc-index-page .nav-pills .nav-link.active, .nav-pills .show>.nav-link{
+.onc-index-page .nav-pills .nav-link.active, .onc-index-page .nav-pills .show>.nav-link{
   background-color: inherit;
   border-bottom: 4px solid #f76200;  
   color: black;
