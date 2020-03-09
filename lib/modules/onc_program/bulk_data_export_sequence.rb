@@ -275,6 +275,11 @@ module Inferno
         ['transactionTime', 'request', 'requiresAccessToken', 'output', 'error'].each do |key|
           assert response_body.key?(key), "Complete Status response did not contain \"#{key}\" as required"
         end
+
+        skip_if @instance.disable_bulk_data_require_access_token_test, 'Require Access Token Test has been disabled by configuration.'
+
+        requires_access_token = response_body['requiresAccessToken']
+        assert requires_access_token.to_s.downcase == 'true', 'Bulk Data file server access SHALL require access token.'
       end
 
       def build_header(headers, use_token: true)
