@@ -318,10 +318,10 @@ module Inferno
       private
 
       def group_result(results)
-        return :skip if results[:skip].positive?
         return :fail if results[:fail].positive?
         return :fail if results[:cancel].positive?
         return :error if results[:error].positive?
+        return :skip if results[:skip].positive?
         return :not_run if results[:total].zero?
 
         :pass
