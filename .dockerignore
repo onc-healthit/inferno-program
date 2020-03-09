@@ -19,8 +19,7 @@ fhir-pgdata/
 MR*.pipe
 umls.db
 umls.zip
-resources/terminology/umls
-resources/terminology/umls_subset
+resources/terminology
 
 # Don't need .git in the container
 .git
