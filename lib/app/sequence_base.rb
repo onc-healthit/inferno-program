@@ -923,7 +923,7 @@ module Inferno
               else
                 false
               end
-            when 'Quantity'
+            when 'Quantity', 'Coding'
               !Terminology.validate_code(binding_def[:system], el.code, el.system)
             when 'code'
               !Terminology.validate_code(binding_def[:system], el)
