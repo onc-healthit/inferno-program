@@ -95,7 +95,7 @@ test_sets:
           expects that the EHR will launch the application with a patient context.
 
           After `execute` is pressed, Inferno will wait for the system under test to launch the application.
-      - name: Single Patient Data Access
+      - name: Single Patient Query
         run_all: true
         run_skipped: true
         overview: >
@@ -140,7 +140,7 @@ test_sets:
           - USCore310PractitionerroleSequence
           - USCore310ProvenanceSequence
           - USCoreR4DataAbsentReasonSequence
-      - name: Multi-Patient Data Access
+      - name: Multi-Patient Query
         run_all: true
         run_skipped: false
         overview: >

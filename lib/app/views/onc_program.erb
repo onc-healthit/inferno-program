@@ -758,21 +758,6 @@
         </button>
       </div>
       <div class="modal-body">
-        <h6>Hints</h6>
-        <p>Inferno provides inline context about each of the tests and the standards that they are testing.  If you find yourself stuck, try the following:</p>
-        <ul>
-          <li>Click the 'Show Details' link on a test sequence
-          <li>Click on a completed test to see incoming/outgoing HTTP(S) requests and reasons why it passed or failed
-          <li>Follow any of the links on the page to standards definition documents
-        </ul>
-        <h6>Testing Order</h6>
-        <p>Inferno allows users to test anything at any time, but if you're new to FHIR (or SMART-on-FHIR) the easiest way to get started with Inferno is to run the following test sequences (in order):<p>
-        <ul>
-          <li><em>Conformance Statement</em>, which populates the OAuth endpoints needed for authentication/authorization
-          <li><em>Dynamic Registration</em>, which registers the Inferno client app with your server (if your server does not support this, you can always register the Inferno client manually and get the client ID)
-          <li><em>Patient Standalone Launch Sequence</em>, which allows the registered Inferno client app to pick a Patient record and authorize the Inferno client to query data from your FHIR server
-          <li><em>Patient</em>, which is the first (and arguably most important) Argonaut Profile Conformance test
-        </ul>
         <h6>Icon Legend</h6>
         <table class='table table-sm'>
           <thead class='sr-only'>
