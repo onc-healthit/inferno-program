@@ -87,6 +87,13 @@ module Inferno
         end
       end
 
+      def assert_requires_access_token(status_response = @status_response)
+        skip_if @instance.disable_bulk_data_require_access_token_test, 'Require Access Token Test has been disabled by configuration.'
+
+        requires_access_token = status_response['requiresAccessToken']
+        assert requires_access_token.present? && requires_access_token.to_s.downcase == 'true', 'Bulk Data file server access SHALL require access token.'
+      end
+
       details %(
 
       The #{title} Sequence tests `#{title}` operations.  The operation steps will be checked for consistency against the
@@ -215,6 +222,18 @@ module Inferno
         @instance.bulk_status_output = @status_response.to_json
       end
 
+      test 'Bulk Data Server returns requiresAccessToken with value true' do
+        metadata do
+          id '08'
+          link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#response---complete-status'
+          description %(
+            Bulk Data Server SHALL restrict bulk data file access with access token
+         )
+        end
+
+        assert_requires_access_token
+      end
+
       private
 
       def export_kick_off(endpoint,
@@ -275,11 +294,6 @@ module Inferno
         ['transactionTime', 'request', 'requiresAccessToken', 'output', 'error'].each do |key|
           assert response_body.key?(key), "Complete Status response did not contain \"#{key}\" as required"
         end
-
-        skip_if @instance.disable_bulk_data_require_access_token_test, 'Require Access Token Test has been disabled by configuration.'
-
-        requires_access_token = response_body['requiresAccessToken']
-        assert requires_access_token.to_s.downcase == 'true', 'Bulk Data file server access SHALL require access token.'
       end
 
       def build_header(headers, use_token: true)

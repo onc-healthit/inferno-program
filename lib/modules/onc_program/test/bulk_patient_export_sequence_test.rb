@@ -45,7 +45,7 @@ describe Inferno::Sequence::BulkDataExportSequence do
     end
   end
 
-  describe 'export status tests' do
+  describe 'requires access token tests' do
     before do
       @sequence = @sequence_class.new(@instance, @client)
 
@@ -58,35 +58,21 @@ describe Inferno::Sequence::BulkDataExportSequence do
       }
     end
 
-    it 'fails when missing a required fields' do
-      @complete_status.delete('request')
-
-      stub_request(:get, @content_location)
-        .to_return(
-          status: 200,
-          headers: { content_type: 'application/json' },
-          body: @complete_status.to_json
-        )
+    it 'fails when missing requiresAccessToken' do
+      @complete_status.delete('requiresAccessToken')
 
       error = assert_raises(Inferno::AssertionException) do
-        @sequence.check_export_status(@content_location)
+        @sequence.assert_requires_access_token(@complete_status)
       end
 
-      assert error.message == 'Complete Status response did not contain "request" as required'
+      assert error.message == 'Bulk Data file server access SHALL require access token.'
     end
 
     it 'fails when requiresAccessToken is false' do
       @complete_status['requiresAccessToken'] = 'false'
 
-      stub_request(:get, @content_location)
-        .to_return(
-          status: 200,
-          headers: { content_type: 'application/json' },
-          body: @complete_status.to_json
-        )
-
       error = assert_raises(Inferno::AssertionException) do
-        @sequence.check_export_status(@content_location)
+        @sequence.assert_requires_access_token(@complete_status)
       end
 
       assert error.message == 'Bulk Data file server access SHALL require access token.'
@@ -96,29 +82,15 @@ describe Inferno::Sequence::BulkDataExportSequence do
       @instance.disable_bulk_data_require_access_token_test = true
       @complete_status['requiresAccessToken'] = 'false'
 
-      stub_request(:get, @content_location)
-        .to_return(
-          status: 200,
-          headers: { content_type: 'application/json' },
-          body: @complete_status.to_json
-        )
-
       error = assert_raises(Inferno::SkipException) do
-        @sequence.check_export_status(@content_location)
+        @sequence.assert_requires_access_token(@complete_status)
       end
 
       assert error.message == 'Require Access Token Test has been disabled by configuration.'
     end
 
-    it 'succeeds when complete status has all required fields' do
-      stub_request(:get, @content_location)
-        .to_return(
-          status: 200,
-          headers: { content_type: 'application/json' },
-          body: @complete_status.to_json
-        )
-
-      @sequence.check_export_status(@content_location)
+    it 'succeeds when requiresAccessToken is true' do
+      @sequence.assert_requires_access_token(@complete_status)
     end
   end
 end
