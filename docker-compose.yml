@@ -5,6 +5,9 @@ services:
       context: ./
     volumes:
       - ./config.yml:/var/www/inferno/config.yml
+      - type: bind
+        source: "./resources/terminology/validators"
+        target: "/var/www/inferno/resources/terminology/validators"
   validator_service:
     image: infernocommunity/fhir-validator-wrapper
     environment:
