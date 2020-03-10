@@ -100,10 +100,10 @@
           </tr>
         </thead>
         <tbody>
-          <% Inferno::Terminology.loaded_validators.sort.each do |url, count| %>
+          <% Inferno::Terminology.loaded_validators.sort.each do |url, vs_metadata| %>
             <tr>
               <td><%= url %></td>
-              <td><%= count %></td>
+              <td><%= vs_metadata[:count] %></td>
             </tr>
           <% end %>
         </tbody>
