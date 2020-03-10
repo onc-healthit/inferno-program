@@ -1156,6 +1156,21 @@ value_sets:
 - value_set_url: http://hl7.org/fhir/ValueSet/link-type
   strength: required
   profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient
+- value_set_url: http://hl7.org/fhir/us/core/ValueSet/omb-race-category
+  strength: required
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient
+- value_set_url: http://hl7.org/fhir/us/core/ValueSet/detailed-race
+  strength: required
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient
+- value_set_url: http://hl7.org/fhir/us/core/ValueSet/omb-ethnicity-category
+  strength: required
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient
+- value_set_url: http://hl7.org/fhir/us/core/ValueSet/detailed-ethnicity
+  strength: required
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient
+- value_set_url: http://hl7.org/fhir/us/core/ValueSet/birthsex
+  strength: required
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient
 - value_set_url: http://hl7.org/fhir/ValueSet/languages
   strength: preferred
   profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner

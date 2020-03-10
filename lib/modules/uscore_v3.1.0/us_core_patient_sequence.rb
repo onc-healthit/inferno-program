@@ -517,6 +517,55 @@ module Inferno
             strength: 'required',
             system: 'http://hl7.org/fhir/ValueSet/link-type',
             path: 'link.type'
+          },
+          {
+            type: 'Coding',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/omb-race-category',
+            path: 'value',
+            extensions: [
+              'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race',
+              'ombCategory'
+            ]
+          },
+          {
+            type: 'Coding',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/detailed-race',
+            path: 'value',
+            extensions: [
+              'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race',
+              'detailed'
+            ]
+          },
+          {
+            type: 'Coding',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/omb-ethnicity-category',
+            path: 'value',
+            extensions: [
+              'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity',
+              'ombCategory'
+            ]
+          },
+          {
+            type: 'Coding',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/detailed-ethnicity',
+            path: 'value',
+            extensions: [
+              'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity',
+              'detailed'
+            ]
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/birthsex',
+            path: 'value',
+            extensions: [
+              'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex'
+            ]
           }
         ]
         invalid_binding_messages = []

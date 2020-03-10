@@ -218,6 +218,47 @@ module Inferno
             path: e['path'].gsub('[x]', '').gsub("#{sequence[:resource]}.", '')
           }
         end
+        extensions = profile_elements.select { |e| e['type'].present? && e['type'].first['code'] == 'Extension' }
+        extensions.each { |extension| add_terminology_bindings_from_extension(extension, sequence) }
+      end
+
+      def add_terminology_bindings_from_extension(extension, sequence)
+        profile = extension['type'].first['profile']
+        return unless profile.present?
+
+        extension_def = @resource_by_path[get_base_path(profile.first)]
+        return unless extension_def.present?
+
+        extension_url = profile.first
+        extension_elements = extension_def['snapshot']['element']
+        binding_els = extension_elements.select { |e| e['binding'].present? && !(e['id'].include? 'Extension.extension') }
+        sequence[:bindings] += binding_els.map do |e|
+          {
+            type: e['type'].first['code'],
+            strength: e.dig('binding', 'strength'),
+            system: e.dig('binding', 'valueSet')&.split('|')&.first,
+            path: e['path'].gsub('[x]', '').gsub('Extension.', ''),
+            extensions: [extension_url]
+          }
+        end
+
+        extensions_of_extension = extension_elements.select { |e| e['path'] == 'Extension.extension' }
+        extensions_of_extension.each do |extension_squared|
+          url_el = extension_elements.find { |e| e['id'] == extension_squared['id'] + '.url' }
+          next unless url_el.present?
+
+          extension_squared_url = url_el['fixedUri']
+          binding_els = extension_elements.select { |e| (e['id'].include? extension_squared['id']) && e['binding'].present? }
+          sequence[:bindings] += binding_els.map do |e|
+            {
+              type: e['type'].first['code'],
+              strength: e.dig('binding', 'strength'),
+              system: e.dig('binding', 'valueSet')&.split('|')&.first,
+              path: e['path'].gsub('[x]', '').gsub('Extension.extension.', ''),
+              extensions: [extension_url, extension_squared_url]
+            }
+          end
+        end
       end
 
       def add_must_support_elements(profile_definition, sequence)
