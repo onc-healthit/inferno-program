@@ -24,6 +24,20 @@ module Inferno
       def resource_id
         @instance.group_id
       end
+
+      def export_kick_off(endpoint,
+                          id = nil,
+                          search_params: nil,
+                          headers: { accept: 'application/fhir+json', prefer: 'respond-async' },
+                          use_token: true)
+        skip_unless id.present?, 'Bulk Data Group export is skipped becasue Group ID is empty'
+        super(endpoint, id, search_params: search_params, headers: headers, use_token: use_token)
+      end
+
+      def assert_output_has_type_url(output = @output)
+        skip_unless resource_id.present?, 'Bulk Data Group export is skipped becasue Group ID is empty'
+        super(output)
+      end
     end
   end
 end
