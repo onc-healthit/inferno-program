@@ -106,6 +106,42 @@ Please see the file
 [deployment-configuration.md](https://github.com/onc-healthit/inferno-program/blob/master/deployment-configuration.md)
 for details.
 
+### Optional Terminology Support
+In order to validate terminologies Inferno can be loaded with files generated from the 
+Unified Medical Language System (UMLS).  The UMLS is distributed by the National Library of Medicine (NLM)
+and requires an account to access.
+
+Inferno provides some rake tasks which may make this process easier, as well as a Dockerfile and docker-compose file that will create the validators in a self-contained environment.
+
+Prerequisites:
+* A UMLS account
+* A working Docker toolchain, which has been assigned at least 10GB of RAM (The Metathesaurus step requires 8GB of RAM for the Java process)
+* A copy of the Inferno repository, which contains the required Docker and Ruby files
+
+You can prebuild the terminology docker container by running the following command:
+```sh
+docker-compose -f terminology_compose.yml build
+```
+Once the container is built, you can run the terminology creation task by using the following commands, in order:
+```sh
+export UMLS_USERNAME=<your UMLS username>
+export UMLS_PASSWORD=<your UMLS password>
+docker-compose -f terminology_compose.yml up
+```
+This will run the terminology creation steps in order, using the UMLS credentials supplied. These tasks may take several hours. If the creation task is cancelled in progress and restarted, it will restart after the last _completed_ step. Intermediate files are saved to `tmp/terminology` in the Inferno repository that the Docker Compose job is run from, and the validators are saved to `resources/terminology/validators/bloom`, where Inferno can use them for validation.
+
+If this Docker-based method does not work based on your architecture, manual setup and creation of the terminology validators is documented [on this wiki page](https://github.com/onc-healthit/inferno/wiki/Installing-Terminology-Validators#building-the-validators-without-docker)
+
+#### UMLS Data Sources
+Some material in the UMLS Metathesaurus is from copyrighted sources of the respective copyright holders.
+Users of the UMLS Metathesaurus are solely responsible for compliance with any copyright, patent or trademark
+restrictions and are referred to the copyright, patent or trademark notices appearing in the original sources,
+all of which are hereby incorporated by reference.
+
+      Bodenreider O. The Unified Medical Language System (UMLS): integrating biomedical terminology.
+      Nucleic Acids Res. 2004 Jan 1;32(Database issue):D267-70. doi: 10.1093/nar/gkh061.
+      PubMed PMID: 14681409; PubMed Central PMCID: PMC308795.
+
 ### Reference Implementation
 
 While it is recommended that users install Inferno locally, a reference
