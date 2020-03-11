@@ -8,7 +8,7 @@ module Inferno
 
       test_id_prefix 'BDA'
 
-      requires :bulk_client_id, :bulk_jwks_url_auth, :bulk_encryption_method, :bulk_token_endpoint
+      requires :bulk_client_id, :bulk_jwks_url_auth, :bulk_encryption_method, :bulk_token_endpoint, :bulk_scope
       defines :bulk_access_token
 
       show_bulk_registration_info
@@ -29,7 +29,7 @@ module Inferno
 
       def authorize(bulk_private_key: @instance.bulk_selected_private_key,
                     content_type: 'application/x-www-form-urlencoded',
-                    scope: 'system/*.read',
+                    scope: @instance.bulk_scope,
                     grant_type: 'client_credentials',
                     client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
                     iss: @instance.bulk_client_id,
@@ -37,7 +37,7 @@ module Inferno
                     aud: @instance.bulk_token_endpoint,
                     exp: 5.minutes.from_now,
                     jti: SecureRandom.hex(32))
-
+                    
         header =
           {
             content_type: content_type,
