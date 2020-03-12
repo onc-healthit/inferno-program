@@ -236,7 +236,7 @@ module Inferno
       test :validate_two_patients do
         metadata do
           id '04'
-          name 'Group export has at least two patient'
+          name 'Group export has at least two patients'
           link 'http://ndjson.org/'
           description %(
             This test checks if the Group export has at least two patients.
