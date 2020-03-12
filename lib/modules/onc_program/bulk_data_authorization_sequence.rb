@@ -37,7 +37,7 @@ module Inferno
                     aud: @instance.bulk_token_endpoint,
                     exp: 5.minutes.from_now,
                     jti: SecureRandom.hex(32))
-                    
+
         header =
           {
             content_type: content_type,
