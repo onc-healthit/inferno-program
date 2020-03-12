@@ -82,7 +82,7 @@ describe Inferno::Sequence::BulkDataExportSequence do
       @instance.disable_bulk_data_require_access_token_test = true
       @complete_status['requiresAccessToken'] = 'false'
 
-      error = assert_raises(Inferno::SkipException) do
+      error = assert_raises(Inferno::OmitException) do
         @sequence.assert_requires_access_token(@complete_status)
       end
 

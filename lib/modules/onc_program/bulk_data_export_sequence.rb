@@ -88,7 +88,7 @@ module Inferno
       end
 
       def assert_requires_access_token(status_response = @status_response)
-        skip_if @instance.disable_bulk_data_require_access_token_test, 'Require Access Token Test has been disabled by configuration.'
+        omit 'Require Access Token Test has been disabled by configuration.' if @instance.disable_bulk_data_require_access_token_test
 
         requires_access_token = status_response['requiresAccessToken']
         assert requires_access_token.present? && requires_access_token.to_s.downcase == 'true', 'Bulk Data file server access SHALL require access token.'
