@@ -337,7 +337,6 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
 
     it 'skip validation when lines_to_validate is less than 1' do
       file = @output.find { |line| line['type'] == 'Patient' }
-      @sequence.has_min_resource_count = true
       @sequence.check_file_request(file, 'Condition', false, 0)
     end
 
@@ -384,13 +383,13 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       @sequence.check_file_request(file, 'Patient', false, 1)
     end
 
-    it 'succeeds when NDJSON is valid and has at least two resources' do
+    it 'succeeds when NDJSON is valid and has at least two patients' do
       file = @output.find { |line| line['type'] == 'Patient' }
       @sequence.check_file_request(file, 'Patient', false, 0)
-      assert @sequence.has_min_resource_count
+      assert @sequence.has_min_patient_count
     end
 
-    it 'fails when NDJSON is valid and has only one resource' do
+    it 'fails when NDJSON is valid and has only one patient' do
       single_patient_export = @patient_export.each_line.first
       stub_request(:get, 'https://www.example.com/single_patient_export.json')
         .with(headers: @file_request_headers)
@@ -403,7 +402,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       file = @output.find { |line| line['type'] == 'Patient' }
       file['url'] = 'https://www.example.com/single_patient_export.json'
       @sequence.check_file_request(file, 'Patient', false, 0)
-      assert !@sequence.has_min_resource_count
+      assert !@sequence.has_min_patient_count
     end
   end
 end
