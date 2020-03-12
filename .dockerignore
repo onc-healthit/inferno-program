@@ -19,7 +19,7 @@ fhir-pgdata/
 MR*.pipe
 umls.db
 umls.zip
-resources/terminology
+resources/terminology/validators
 
 # Don't need .git in the container
 .git
