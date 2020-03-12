@@ -58,8 +58,9 @@ module Inferno
     # Creates the valueset validators, based on the passed in parameters and the @known_valuesets hash
     # @param type [Symbol] the type of validators to create, either :bloom or :csv
     # @param selected_module [Symbol]/[String], the name of the module to build validators for, or :all (default)
-    # @param minimum_binding_strength [String], the lowest binding strength for which we should build validators
-    def self.create_validators(type, selected_module = :all, minimum_binding_strength = 'example')
+    # @param [String] minimum_binding_strength the lowest binding strength for which we should build validators
+    # @param [Boolean] include_umls a flag to determine if we should build validators that require UMLS
+    def self.create_validators(type, selected_module = :all, minimum_binding_strength = 'example', include_umls = true)
       strengths = ['example', 'preferred', 'extensible', 'required'].drop_while { |s| s != minimum_binding_strength }
       validators = []
       valuesets = if selected_module == :all
@@ -81,12 +82,14 @@ module Inferno
                     end
                     module_valuesets
                   end
+      umls_code_systems = Set.new(Inferno::Terminology::Valueset::SAB.keys)
       case type
       when :bloom
         root_dir = 'resources/terminology/validators/bloom'
         FileUtils.mkdir_p(root_dir)
         valuesets.each do |k, vs|
           next if SKIP_SYS.include? k
+          next if !include_umls && !umls_code_systems.disjoint?(Set.new(vs.included_code_systems))
 
           Inferno.logger.debug "Processing #{k}"
           filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(%r{[./]}, '_')}.msgpack"
@@ -94,23 +97,26 @@ module Inferno
             save_bloom_to_file(vs.valueset, filename)
             validators << { url: k, file: File.basename(filename), count: vs.count, type: 'bloom', code_systems: vs.included_code_systems }
           rescue Valueset::UnknownCodeSystemException => e
-            Inferno.logger.debug "#{e.message} for ValueSet: #{k}"
+            binding.pry
+            Inferno.logger.warn "#{e.message} for ValueSet: #{k}"
             next
           rescue Valueset::FilterOperationException => e
-            Inferno.logger.debug "#{e.message} for ValueSet: #{k}"
+            Inferno.logger.warn "#{e.message} for ValueSet: #{k}"
             next
           rescue UnknownValueSetException => e
-            Inferno.logger.debug "#{e.message} for ValueSet: #{url}"
+            Inferno.logger.warn "#{e.message} for ValueSet: #{url}"
             next
           end
         end
-        vs = Inferno::Terminology::Valueset.new(@db)
-        Inferno::Terminology::Valueset::SAB.each do |k, _v|
-          Inferno.logger.debug "Processing #{k}"
-          cs = vs.code_system_set(k)
-          filename = "#{root_dir}/#{bloom_file_name(k)}.msgpack"
-          save_bloom_to_file(cs, filename)
-          validators << { url: k, file: File.basename(filename), count: cs.length, type: 'bloom', code_systems: k }
+        if include_umls
+          vs = Inferno::Terminology::Valueset.new(@db)
+          Inferno::Terminology::Valueset::SAB.each do |k, _v|
+            Inferno.logger.debug "Processing #{k}"
+            cs = vs.code_system_set(k)
+            filename = "#{root_dir}/#{bloom_file_name(k)}.msgpack"
+            save_bloom_to_file(cs, filename)
+            validators << { url: k, file: File.basename(filename), count: cs.length, type: 'bloom', code_systems: k }
+          end
         end
         # Write manifest for loading later
         File.write("#{root_dir}/manifest.yml", validators.to_yaml)
@@ -118,20 +124,23 @@ module Inferno
         root_dir = 'resources/terminology/validators/csv'
         FileUtils.mkdir_p(root_dir)
         @known_valuesets.each do |k, vs|
-          next if (k == 'http://fhir.org/guides/argonaut/ValueSet/argo-codesystem') || (k == 'http://fhir.org/guides/argonaut/ValueSet/languages')
+          next if SKIP_SYS.include? k
+          next unless umls_code_systems.disjoint?(Set.new(vs.included_code_systems)) && !include_umls 
 
           Inferno.logger.debug "Processing #{k}"
           filename = "#{root_dir}/#{bloom_file_name(vs.url)}.csv"
           save_csv_to_file(vs.valueset, filename)
           validators << { url: k, file: File.basename(filename), count: vs.count, type: 'csv', code_systems: vs.included_code_systems }
         end
-        vs = Inferno::Terminology::Valueset.new(@db)
-        Inferno::Terminology::Valueset::SAB.each do |k, _v|
-          Inferno.logger.debug "Processing #{k}"
-          cs = vs.code_system_set(k)
-          filename = "#{root_dir}/#{bloom_file_name(k)}.csv"
-          save_csv_to_file(cs, filename)
-          validators << { url: k, file: File.basename(filename), count: cs.length, type: 'csv', code_systems: k }
+        if include_umls
+          vs = Inferno::Terminology::Valueset.new(@db)
+          Inferno::Terminology::Valueset::SAB.each do |k, _v|
+            Inferno.logger.debug "Processing #{k}"
+            cs = vs.code_system_set(k)
+            filename = "#{root_dir}/#{bloom_file_name(k)}.csv"
+            save_csv_to_file(cs, filename)
+            validators << { url: k, file: File.basename(filename), count: cs.length, type: 'csv', code_systems: k }
+          end
         end
         # Write manifest for loading later
         File.write("#{root_dir}/manifest.yml", validators.to_yaml)

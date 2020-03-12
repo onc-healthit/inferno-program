@@ -812,6 +812,18 @@ namespace :terminology do |_argv|
     Inferno::Terminology.create_validators(validator_type)
   end
 
+  desc 'Create only non-UMLS validators'
+  task :create_non_umls_vs_validators, [:module, :minimum_binding_strength] do |_t, args|
+    args.with_defaults(database: File.join(TEMP_DIR, 'umls.db'),
+                       type: 'bloom',
+                       module: :all,
+                       minimum_binding_strength: 'example')
+    validator_type = args.type.to_sym
+    Inferno::Terminology.register_umls_db args.database
+    Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
+    Inferno::Terminology.create_validators(validator_type, args.module, args.minimum_binding_strength, false)
+  end
+
   desc 'Create ValueSet Validators for a given module'
   task :create_module_vs_validators, [:module, :minimum_binding_strength] do |_t, args|
     args.with_defaults(module: 'all', minimum_binding_strength: 'example')
