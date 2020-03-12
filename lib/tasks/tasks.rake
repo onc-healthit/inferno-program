@@ -812,6 +812,14 @@ namespace :terminology do |_argv|
     Inferno::Terminology.create_validators(validator_type)
   end
 
+  desc 'Create ValueSet Validators for a given module'
+  task :create_module_vs_validators, [:module, :minimum_binding_strength] do |_t, args|
+    args.with_defaults(module: 'all', minimum_binding_strength: 'example')
+    Inferno::Terminology.register_umls_db File.join(TEMP_DIR, 'umls.db')
+    Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
+    Inferno::Terminology.create_validators(:bloom, args.module, args.minimum_binding_strength)
+  end
+
   desc 'Number of codes in ValueSet'
   task :codes_in_valueset, [:vs] do |_t, args|
     Inferno::Terminology.register_umls_db File.join(TEMP_DIR, 'umls.db')
