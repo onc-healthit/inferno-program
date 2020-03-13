@@ -106,10 +106,9 @@ Please see the file
 [deployment-configuration.md](https://github.com/onc-healthit/inferno-program/blob/master/deployment-configuration.md)
 for details.
 
-### Optional Terminology Support
-In order to validate terminologies Inferno can be loaded with files generated from the 
-Unified Medical Language System (UMLS).  The UMLS is distributed by the National Library of Medicine (NLM)
-and requires an account to access.
+### Terminology Support
+In order to validate terminologies, Inferno must be loaded with files generated from the 
+Unified Medical Language System (UMLS).  The UMLS is distributed by the National Library of Medicine (NLM) and requires an account to access.
 
 Inferno provides some rake tasks which may make this process easier, as well as a Dockerfile and docker-compose file that will create the validators in a self-contained environment.
 
