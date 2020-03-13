@@ -60,90 +60,71 @@ module Inferno
     # @param selected_module [Symbol]/[String], the name of the module to build validators for, or :all (default)
     # @param [String] minimum_binding_strength the lowest binding strength for which we should build validators
     # @param [Boolean] include_umls a flag to determine if we should build validators that require UMLS
-    def self.create_validators(type, selected_module = :all, minimum_binding_strength = 'example', include_umls = true)
+    def self.create_validators(type: :bloom, selected_module: :all, minimum_binding_strength: 'example', include_umls: true)
       strengths = ['example', 'preferred', 'extensible', 'required'].drop_while { |s| s != minimum_binding_strength }
       validators = []
-      valuesets = if selected_module == :all
-                    @known_valuesets
-                  else
-                    # get the list of unique value set URL strings where the corresponding
-                    # strength attribute is in the strengths array from above
-                    module_vs_urls = Inferno::Module.get(selected_module)
-                      .value_sets
-                      .keep_if { |vs| strengths.include? vs[:strength] }
-                      .collect { |vs| vs[:value_set_url] }
-                      .compact
-                      .uniq
-                    module_valuesets = @known_valuesets.keep_if { |key, _| module_vs_urls.include?(key) }
-                    # Throw an error message for each missing valueset
-                    # But don't halt the rake task
-                    (module_vs_urls - module_valuesets.keys).each do |missing_vs_url|
-                      Inferno.logger.error "Inferno doesn't know about valueset #{missing_vs_url} for module #{selected_module}"
-                    end
-                    module_valuesets
-                  end
+      valuesets = get_module_valuesets(selected_module, strengths)
       umls_code_systems = Set.new(Inferno::Terminology::Valueset::SAB.keys)
+      root_dir = "resources/terminology/validators/#{type}"
+      FileUtils.mkdir_p(root_dir)
+
+      valuesets.each do |k, vs|
+        next if SKIP_SYS.include? k
+        next if !include_umls && !umls_code_systems.disjoint?(Set.new(vs.included_code_systems))
+
+        Inferno.logger.debug "Processing #{k}"
+        filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(%r{[./]}, '_')}"
+        begin
+          save_to_file(vs.valueset, filename, type)
+          validators << { url: k, file: File.basename(filename), count: vs.count, type: type.to_s, code_systems: vs.included_code_systems }
+        rescue Valueset::UnknownCodeSystemException, Valueset::FilterOperationException, UnknownValueSetException => e
+          Inferno.logger.warn "#{e.message} for ValueSet: #{k}"
+          next
+        end
+      end
+      if include_umls
+        vs = Inferno::Terminology::Valueset.new(@db)
+        Inferno::Terminology::Valueset::SAB.each do |k, _v|
+          Inferno.logger.debug "Processing #{k}"
+          cs = vs.code_system_set(k)
+          filename = "#{root_dir}/#{bloom_file_name(k)}"
+          save_to_file(cs, filename, type)
+          validators << { url: k, file: File.basename(filename), count: cs.length, type: type.to_s, code_systems: k }
+        end
+      end
+      # Write manifest for loading later
+      File.write("#{root_dir}/manifest.yml", validators.to_yaml)
+    end
+
+    def self.get_module_valuesets(selected_module, strengths)
+      if selected_module == :all
+        @known_valuesets
+      else
+        # get the list of unique value set URL strings where the corresponding
+        # strength attribute is in the strengths array from above
+        module_vs_urls = Inferno::Module.get(selected_module)
+          .value_sets
+          .keep_if { |vs| strengths.include? vs[:strength] }
+          .collect { |vs| vs[:value_set_url] }
+          .compact
+          .uniq
+        module_valuesets = @known_valuesets.keep_if { |key, _| module_vs_urls.include?(key) }
+        # Throw an error message for each missing valueset
+        # But don't halt the rake task
+        (module_vs_urls - module_valuesets.keys).each do |missing_vs_url|
+          Inferno.logger.error "Inferno doesn't know about valueset #{missing_vs_url} for module #{selected_module}"
+        end
+        module_valuesets
+      end
+    end
+
+    # Chooses which filetype to save the validator as, based on the type variable passed in
+    def self.save_to_file(codeset, filename, type)
       case type
       when :bloom
-        root_dir = 'resources/terminology/validators/bloom'
-        FileUtils.mkdir_p(root_dir)
-        valuesets.each do |k, vs|
-          next if SKIP_SYS.include? k
-          next if !include_umls && !umls_code_systems.disjoint?(Set.new(vs.included_code_systems))
-
-          Inferno.logger.debug "Processing #{k}"
-          filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(%r{[./]}, '_')}.msgpack"
-          begin
-            save_bloom_to_file(vs.valueset, filename)
-            validators << { url: k, file: File.basename(filename), count: vs.count, type: 'bloom', code_systems: vs.included_code_systems }
-          rescue Valueset::UnknownCodeSystemException => e
-            binding.pry
-            Inferno.logger.warn "#{e.message} for ValueSet: #{k}"
-            next
-          rescue Valueset::FilterOperationException => e
-            Inferno.logger.warn "#{e.message} for ValueSet: #{k}"
-            next
-          rescue UnknownValueSetException => e
-            Inferno.logger.warn "#{e.message} for ValueSet: #{url}"
-            next
-          end
-        end
-        if include_umls
-          vs = Inferno::Terminology::Valueset.new(@db)
-          Inferno::Terminology::Valueset::SAB.each do |k, _v|
-            Inferno.logger.debug "Processing #{k}"
-            cs = vs.code_system_set(k)
-            filename = "#{root_dir}/#{bloom_file_name(k)}.msgpack"
-            save_bloom_to_file(cs, filename)
-            validators << { url: k, file: File.basename(filename), count: cs.length, type: 'bloom', code_systems: k }
-          end
-        end
-        # Write manifest for loading later
-        File.write("#{root_dir}/manifest.yml", validators.to_yaml)
+        save_bloom_to_file(codeset, "#{filename}.msgpack")
       when :csv
-        root_dir = 'resources/terminology/validators/csv'
-        FileUtils.mkdir_p(root_dir)
-        @known_valuesets.each do |k, vs|
-          next if SKIP_SYS.include? k
-          next unless umls_code_systems.disjoint?(Set.new(vs.included_code_systems)) && !include_umls 
-
-          Inferno.logger.debug "Processing #{k}"
-          filename = "#{root_dir}/#{bloom_file_name(vs.url)}.csv"
-          save_csv_to_file(vs.valueset, filename)
-          validators << { url: k, file: File.basename(filename), count: vs.count, type: 'csv', code_systems: vs.included_code_systems }
-        end
-        if include_umls
-          vs = Inferno::Terminology::Valueset.new(@db)
-          Inferno::Terminology::Valueset::SAB.each do |k, _v|
-            Inferno.logger.debug "Processing #{k}"
-            cs = vs.code_system_set(k)
-            filename = "#{root_dir}/#{bloom_file_name(k)}.csv"
-            save_csv_to_file(cs, filename)
-            validators << { url: k, file: File.basename(filename), count: cs.length, type: 'csv', code_systems: k }
-          end
-        end
-        # Write manifest for loading later
-        File.write("#{root_dir}/manifest.yml", validators.to_yaml)
+        save_csv_to_file(codeset, "#{filename}.csv")
       else
         raise 'Unknown Validator Type!'
       end
