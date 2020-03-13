@@ -15,7 +15,7 @@ describe Inferno::Sequence::BulkDataExportSequence do
       bulk_access_token: 99_897_979
     )
 
-    @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'stu3'))
+    @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'r4'))
 
     @client = FHIR::Client.new(@instance.url)
   end
@@ -42,6 +42,85 @@ describe Inferno::Sequence::BulkDataExportSequence do
         .to_raise(StandardError)
 
       @sequence.run_test(@test)
+    end
+  end
+
+  describe 'CapabilityStatment tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+      @headers = { accept: 'application/fhir+json' }
+      @conformance = load_json_fixture('bulk_data_conformance')
+    end
+
+    it 'fail if status code is not 200' do
+      stub_request(:get, @instance.bulk_url + '/metadata')
+        .with(headers: @headers)
+        .to_return(status: 400)
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.check_capability_statement
+      end
+
+      assert error.message == 'Bad response code: expected 200, 201, but found 400. '
+    end
+
+    it 'fail if CapabilityStatement does not declare Group resoure' do
+      @conformance['rest'][0]['resource'].delete_at(0)
+      stub_request(:get, @instance.bulk_url + '/metadata')
+        .with(headers: @headers)
+        .to_return(
+          status: 200,
+          body: @conformance.to_json
+        )
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.check_capability_statement
+      end
+
+      assert error.message == 'Server CapabilityStatement did not declare export operation in Group resource.'
+    end
+
+    it 'fail if CapabilityStatement does not declare operation in Group resoure' do
+      @conformance['rest'][0]['resource'][0].delete('operation')
+      stub_request(:get, @instance.bulk_url + '/metadata')
+        .with(headers: @headers)
+        .to_return(
+          status: 200,
+          body: @conformance.to_json
+        )
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.check_capability_statement
+      end
+
+      assert error.message == 'Server CapabilityStatement did not declare export operation in Group resource.'
+    end
+
+    it 'fail if CapabilityStatement does not declare export in Group resoure' do
+      @conformance['rest'][0]['resource'][0]['operation'].delete_at(0)
+      stub_request(:get, @instance.bulk_url + '/metadata')
+        .with(headers: @headers)
+        .to_return(
+          status: 200,
+          body: @conformance.to_json
+        )
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.check_capability_statement
+      end
+
+      assert error.message == 'Server CapabilityStatement did not declare export operation in Group resource.'
+    end
+
+    it 'pass if CapabilityStatement declares export in Group resoure' do
+      stub_request(:get, @instance.bulk_url + '/metadata')
+        .with(headers: @headers)
+        .to_return(
+          status: 200,
+          body: @conformance.to_json
+        )
+
+      @sequence.check_capability_statement
     end
   end
 
@@ -143,16 +222,27 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     @search_params = { '_type' => 'Patient' }
 
     client = FHIR::Client.new(@instance.url)
-    client.use_stu3
     client.default_json
     @sequence = Inferno::Sequence::BulkDataPatientExportSequence.new(@instance, client, true)
     @sequence.run_all_kick_off_tests = true
 
     @operation_outcome = load_json_fixture('bulk_data_operation_outcome')
+
+    @conformance = load_json_fixture('bulk_data_conformance')
   end
 
   def include_tls_stub
     stub_request(:get, @instance.bulk_url)
+  end
+
+  def include_metadata_stub
+    url = @instance.bulk_url + '/metadata'
+    stub_request(:get, url)
+      .with(headers: { accept: 'application/fhir+json' })
+      .to_return(
+        status: 200,
+        body: @conformance.to_json
+      )
   end
 
   def include_export_stub_no_token
@@ -218,6 +308,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     WebMock.reset!
 
     include_tls_stub
+    include_metadata_stub
     include_export_stub_no_token
     include_export_stub
     include_export_stub_invalid_accept
