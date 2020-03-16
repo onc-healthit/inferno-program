@@ -1,6 +1,5 @@
-
 <!--<div class="container-fluid onc-index-page" role="main" style="background-color: #ffc62f;padding: 3px;"></div>-->
-<div class="container-fluid onc-index-page" role="main" style="background-color: #fff; padding: 50px 0">
+<div class="container-fluid onc-index-page" role="main" style="background-color: #fff; padding: 50px 0 10px;">
   
   <%= erb(:missing_valuesets, {}, {}) %>
 
@@ -19,8 +18,7 @@
         INFERNO PROGRAM EDITION
         </div>
         <div style="display: inline-block; font-size: 26px;">
-        Test conformance to the Standardized API for Patient and Population Services criterion § 170.315(g)(10) in the
-        2015 Edition Certification Program.
+        Test conformance to the Standardized API for Patient and Population Services criterion § 170.315(g)(10) in the 2015 Edition Cures Update.
         </div>
         <!--<div style="display: inline-block; font-size: 26px; margin-top: 50px;">
         <button class="btn btn-dark" type="button">Start Testing</button>
@@ -58,6 +56,9 @@
         <% end %>
       </fieldset>
     </form>
+    <div class="alert alert-warning" style="width:100%; margin-top: 20px;">
+    This is a preview version that will be updated prior to the rule effective date.  Please see release notes below for more information.
+    </div>
 
     </div>
       </div>
@@ -79,6 +80,9 @@
 <li class="nav-item">
   <a class="nav-link" id="pills-install-tab" data-toggle="pill" href="#pills-install" role="tab" aria-controls="pills-install" aria-selected="false">INSTALLATION INSTRUCTIONS</a>
 </li>
+<li class="nav-item">
+  <a class="nav-link" id="pills-notes-tab" data-toggle="pill" href="#pills-notes" role="tab" aria-controls="pills-notes" aria-selected="false">RELEASE NOTES</a>
+</li>
 </ul>
 </div>
 </div>
@@ -97,13 +101,13 @@
  
 <div class="tab-content" id="pills-tabContent">
   <div class="tab-pane show active" style="font-size: 20px;" id="pills-overview" role="tabpanel" aria-labelledby="pills-overview-tab">
-    <div style="padding: 15px 0; font-size: 30px;">What is Inferno Program Edition</div>
+    <div style="padding: 15px 0; font-size: 30px;">Inferno Program Edition</div>
 
 
     <p>
     Inferno Program Edition is a streamlined testing tool for  Health
-    Level 7 (HL7®) Fast Healthcare Interoperability Resources (FHIR®) services seeking to meet the exact requirements
-    of the Standardized API for Patient and Population Services criterion § 170.315(g)(10) in the 2015 Edition Certification Program.
+    Level 7 (HL7®) Fast Healthcare Interoperability Resources (FHIR®) services seeking to meet
+    the requirements of the Standardized API for Patient and Population Services criterion § 170.315(g)(10) in the 2015 Edition Cures Update.
     </p>
     <p>
     Inferno behaves like an API consumer, making a series of HTTP requests that mimic a real world client to ensure that the API
@@ -123,7 +127,7 @@
     </p>
 
     <p>
-    To get started, enter the FHIR endpoint of the patient accessible endpoint.  Inferno Program Edition is only intended to be
+    To get started, enter the endpoint of the FHIR service.  Inferno Program Edition is only intended to be
     used on test systems that do not contain PHI.
     </p>
   
@@ -195,6 +199,35 @@ For alternate installation options, please visit <a href='https://github.com/onc
 </p>
   
   </div>
+  <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
+    <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v0.9.0</div>
+
+    <p>
+    The v0.9.0 release of Inferno Program Edition marks the first public release of the Inferno testing
+    tool targetting the Standardized API for Patient and Population Services criterion within the ONC 2015
+    Certification Edition Cures Update.
+    </p>
+    <p>
+    This release includes testing for all relevant implementation specifications required by the certification criterion,
+    including FHIR Release 4.0.1, FHIR US Core Implementation Guide STU 3.1.0, SMART Application Launch Framework
+    Implementation Guide Release 1.0.0, and HL7 FHIR Bulk Data Access (Flat FHIR) (v1.0.0: STU 1).
+    <p>
+    <p>
+    Inferno Program Edition will support the test procedure accompanying § 170.315(g)(10).  This version is provided as a
+    preview and may diverge from the test procedure in a number ways.  These will be addressed prior to the
+    effective date of the rule. Please report any issues at the <a href="https://github.com/onc-healthit/inferno-program/issues">Inferno Program Edition</a> GitHub repository.
+    </p>
+
+    <p>This version is configured to use the following by default:
+
+    <ul>
+    <li>FHIR Validation provided by <a href='https://confluence.hl7.org/display/FHIR/Using+the+FHIR+Validator'>FHIR Validator</a> v4.3.1-SNAPSHOT </li>
+    <li>Terminology codes validated against <a href='https://www.nlm.nih.gov/research/umls/index.html'>Unified Medical Language System (UMLS)</a> version 2019AB.  Account required for local installation.
+    </ul>
+
+    </p>
+
 </div>
 
 
