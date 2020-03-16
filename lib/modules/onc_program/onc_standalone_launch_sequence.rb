@@ -55,7 +55,7 @@ module Inferno
       end
 
       def required_scopes
-        ['openid', 'fhirUser', 'launch/patient', 'launch/encounter', 'offline_access']
+        ['openid', 'fhirUser', 'launch/patient', 'offline_access']
       end
 
       details %(
@@ -189,8 +189,6 @@ module Inferno
       end
 
       patient_context_test(index: '12')
-
-      encounter_context_test(index: '13')
     end
   end
 end

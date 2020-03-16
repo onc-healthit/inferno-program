@@ -93,10 +93,6 @@ module Inferno
           assert @token_response_body['patient'].present?, 'No patient id provided in token exchange.'
         end
 
-        warning do
-          assert @token_response_body['encounter'].present?, 'No encounter id provided in token exchange.'
-        end
-
         received_scopes = @token_response_body['scope'] || scopes
 
         @instance.update(received_scopes: received_scopes)
