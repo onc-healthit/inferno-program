@@ -54,7 +54,7 @@ module Inferno
           break if operation.present?
         end
 
-        assert operation.present?, 'Server CapabilityStatement did not declare export operation in Group resource.'
+        assert operation.present?, 'Server CapabilityStatement did not declare support of export operation in Group resource.'
       end
 
       def check_export_kick_off
@@ -149,12 +149,12 @@ module Inferno
         assert_deny_previous_tls @instance.bulk_url
       end
 
-      test 'Bulk Data Server declares Group export operation in CapabilityStatement' do
+      test 'Bulk Data Server declares support of Group export operation in CapabilityStatement' do
         metadata do
           id '02'
           link 'http://hl7.org/fhir/uv/bulkdata/OperationDefinition-group-export.html'
           description %(
-            The Bulk Data Server SHALL declare Group/[id]/$export operation in its server CapabilityStatement
+            The Bulk Data Server SHALL declare support of Group/[id]/$export operation in its server CapabilityStatement
           )
         end
 
@@ -274,6 +274,29 @@ module Inferno
         end
 
         assert_requires_access_token
+      end
+
+      test :bulk_data_delete_test do
+        metadata do
+          id '10'
+          name 'Bulk Data support DELETE request'
+          link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#bulk-data-delete-request'
+          description %(
+            Bulk Data Server SHALL support client DELETE request
+         )
+        end
+
+        reply = export_kick_off(endpoint, resource_id)
+
+        assert_response_accepted(reply)
+
+        content_location = reply.headers[:content_location]
+
+        assert content_location.present?, 'Export response header did not include "Content-Location"'
+
+        reply = LoggedRestClient.delete(content_location, build_header({ accept: 'application/json' }))
+
+        assert_response_accepted(reply)
       end
 
       private
