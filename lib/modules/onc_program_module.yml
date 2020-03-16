@@ -1,5 +1,5 @@
 name: onc_program
-title: ONC 2015 Edition Update -  Standardized API Testing 
+title: 2015 Edition Cures Update -  Standardized API Testing
 description: ONC Standardized API Testing 
 fhir_version: r4
 default_test_set: test_procedure
