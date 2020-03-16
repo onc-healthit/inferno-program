@@ -84,7 +84,7 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
         @sequence.check_capability_statement
       end
 
-      assert error.message == 'Server CapabilityStatement did not declare support of export operation in Group resource.'
+      assert error.message == 'Server CapabilityStatement did not declare support for export operation in Group resource.'
     end
 
     it 'fail if CapabilityStatement does not declare operation in Group resoure' do
@@ -100,7 +100,7 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
         @sequence.check_capability_statement
       end
 
-      assert error.message == 'Server CapabilityStatement did not declare support of export operation in Group resource.'
+      assert error.message == 'Server CapabilityStatement did not declare support for export operation in Group resource.'
     end
 
     it 'fail if CapabilityStatement does not declare export in Group resoure' do
@@ -116,7 +116,7 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
         @sequence.check_capability_statement
       end
 
-      assert error.message == 'Server CapabilityStatement did not declare support of export operation in Group resource.'
+      assert error.message == 'Server CapabilityStatement did not declare support for export operation in Group resource.'
     end
 
     it 'pass if CapabilityStatement declares export in Group resoure' do

@@ -54,7 +54,7 @@ module Inferno
           break if operation.present?
         end
 
-        assert operation.present?, 'Server CapabilityStatement did not declare support of export operation in Group resource.'
+        assert operation.present?, 'Server CapabilityStatement did not declare support for export operation in Group resource.'
       end
 
       def check_export_kick_off
@@ -149,12 +149,12 @@ module Inferno
         assert_deny_previous_tls @instance.bulk_url
       end
 
-      test 'Bulk Data Server declares support of Group export operation in CapabilityStatement' do
+      test 'Bulk Data Server declares support for Group export operation in CapabilityStatement' do
         metadata do
           id '02'
           link 'http://hl7.org/fhir/uv/bulkdata/OperationDefinition-group-export.html'
           description %(
-            The Bulk Data Server SHALL declare support of Group/[id]/$export operation in its server CapabilityStatement
+            The Bulk Data Server SHALL declare support for Group/[id]/$export operation in its server CapabilityStatement
           )
         end
 
