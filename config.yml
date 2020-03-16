@@ -18,7 +18,7 @@ bind: '0.0.0.0'
 disable_tls_tests: false
 
 # Default scopes
-default_scopes: launch launch/patient offline_access openid profile user/*.* patient/*.*
+default_scopes: launch user/*.read openid fhirUser offline_access
 
 # Log Level: unkown, fatal, error, warn, info, debug
 log_level: info

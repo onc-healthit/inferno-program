@@ -78,7 +78,6 @@ test_sets:
             title: EHR Launch with Practitioner Scope
             description: Perform EHR SMART launch sequence and test OpenID Connect and token refresh functionality.
             variable_defaults:
-              scopes: launch user/*.read openid fhirUser offline_access
               confidential_client: 'true'
           - sequence: OncOpenIDConnectSequence
             prefix: EHC
