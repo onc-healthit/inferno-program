@@ -495,7 +495,14 @@
               description: 'Client ID provided during registration time to the Inferno application.',
               instance: instance,
               value: instance.bulk_client_id,
-              })%>    
+              })%>   
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_scope,
+              label: 'Bulk Data Scopes',
+              description: 'Bulk Data Scopes provided during registration time to the Inferno application.',
+              instance: instance,
+              value: instance.bulk_scope,
+              })%>  
 
         <div class="form-group"
           data-requiredby="<%= test_set.variable_required_by(:bulk_encryption_method).map {|seq| seq.sequence_name}.join(',')%>"

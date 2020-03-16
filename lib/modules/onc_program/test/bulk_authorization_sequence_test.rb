@@ -11,7 +11,8 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
       url: 'http://www.example.com',
       bulk_client_id: config['client_id'],
       bulk_data_jwks: config['bulk_data_jwks'].to_json,
-      bulk_token_endpoint: config['token_url']
+      bulk_token_endpoint: config['token_url'],
+      bulk_scope: 'system/*.read'
     )
 
     @client = FHIR::Client.new(@instance.url)
@@ -20,7 +21,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
       'token_type' => 'bearer',
       'expires_in' => 900,
       'access_token' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYmVhcmVyIiwiZXhwaXJlc19pbiI6OTAwLCJpYXQiOjE1NzM5NDU1MDQsImV4cCI6MTU3Mzk0NjQwNH0.Ds-9HxQPJshkPYYBowJXltTaX2T6MSv_qYnZLjteTH8',
-      'scope' => 'system/*.read'
+      'scope' => @instance.bulk_scope
     }
   end
 

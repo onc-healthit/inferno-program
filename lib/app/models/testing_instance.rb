@@ -85,6 +85,7 @@ module Inferno
       property :bulk_status_output, String
       property :bulk_patient_ids_in_group, String
       property :bulk_stop_after_must_support, String, default: 'true'
+      property :bulk_scope, String
       property :disable_bulk_data_require_access_token_test, Boolean, default: false
 
       # These are used by BDT
