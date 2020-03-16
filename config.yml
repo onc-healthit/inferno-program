@@ -45,6 +45,8 @@ external_resource_validator_url: http://validator_service:4567
 modules:
   - onc_program
 
+disable_bulk_data_require_access_token_test: false
+
 bulk_data_jwks:
   keys:
     - kty: EC

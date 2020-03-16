@@ -55,13 +55,37 @@ module Inferno
       end
     end
 
-    def self.create_validators(type)
+    # Creates the valueset validators, based on the passed in parameters and the @known_valuesets hash
+    # @param type [Symbol] the type of validators to create, either :bloom or :csv
+    # @param selected_module [Symbol]/[String], the name of the module to build validators for, or :all (default)
+    # @param minimum_binding_strength [String], the lowest binding strength for which we should build validators
+    def self.create_validators(type, selected_module = :all, minimum_binding_strength = 'example')
+      strengths = ['example', 'preferred', 'extensible', 'required'].drop_while { |s| s != minimum_binding_strength }
       validators = []
+      valuesets = if selected_module == :all
+                    @known_valuesets
+                  else
+                    # get the list of unique value set URL strings where the corresponding
+                    # strength attribute is in the strengths array from above
+                    module_vs_urls = Inferno::Module.get(selected_module)
+                      .value_sets
+                      .keep_if { |vs| strengths.include? vs[:strength] }
+                      .collect { |vs| vs[:value_set_url] }
+                      .compact
+                      .uniq
+                    module_valuesets = @known_valuesets.keep_if { |key, _| module_vs_urls.include?(key) }
+                    # Throw an error message for each missing valueset
+                    # But don't halt the rake task
+                    (module_vs_urls - module_valuesets.keys).each do |missing_vs_url|
+                      Inferno.logger.error "Inferno doesn't know about valueset #{missing_vs_url} for module #{selected_module}"
+                    end
+                    module_valuesets
+                  end
       case type
       when :bloom
         root_dir = 'resources/terminology/validators/bloom'
         FileUtils.mkdir_p(root_dir)
-        @known_valuesets.each do |k, vs|
+        valuesets.each do |k, vs|
           next if SKIP_SYS.include? k
 
           Inferno.logger.debug "Processing #{k}"

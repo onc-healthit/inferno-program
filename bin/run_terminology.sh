@@ -80,4 +80,4 @@ fi
 
 trap - SIGHUP SIGINT SIGTERM SIGQUIT SIGKILL SIGTSTP
 
-exec bundle exec rake terminology:create_vs_validators
+exec bundle exec rake terminology:create_module_vs_validators["uscore_v3.1.0","preferred"]
