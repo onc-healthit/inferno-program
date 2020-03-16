@@ -27,6 +27,36 @@ module Inferno
         'Patient'
       end
 
+      def check_capability_statement
+        if @instance.bulk_url.present?
+          url = @instance.bulk_url
+          url = url.chop if url.end_with?('/')
+        else
+          url = ''
+        end
+
+        url += '/metadata'
+        headers = { accept: 'application/fhir+json' }
+        reply = LoggedRestClient.get(url, headers)
+        assert_response_ok(reply)
+
+        conformance = versioned_resource_class.from_contents(reply.body)
+        assert conformance.present?, 'Cannot read server CapabilityStatement.'
+
+        operation = nil
+
+        conformance.rest&.each do |rest|
+          group = rest.resource&.find { |r| r.type == 'Group' && r.respond_to?(:operation) }
+
+          next if group.nil?
+
+          operation = group.operation&.find { |op| op.definition == 'http://hl7.org/fhir/uv/bulkdata/OperationDefinition/group-export' }
+          break if operation.present?
+        end
+
+        assert operation.present?, 'Server CapabilityStatement did not declare export operation in Group resource.'
+      end
+
       def check_export_kick_off
         reply = export_kick_off(endpoint, resource_id)
 
@@ -119,9 +149,21 @@ module Inferno
         assert_deny_previous_tls @instance.bulk_url
       end
 
-      test 'Bulk Data Server rejects $export request without authorization' do
+      test 'Bulk Data Server declares Group export operation in CapabilityStatement' do
         metadata do
           id '02'
+          link 'http://hl7.org/fhir/uv/bulkdata/OperationDefinition-group-export.html'
+          description %(
+            The Bulk Data Server SHALL declare Group/[id]/$export operation in its server CapabilityStatement
+          )
+        end
+
+        check_capability_statement
+      end
+
+      test 'Bulk Data Server rejects $export request without authorization' do
+        metadata do
+          id '03'
           link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#bulk-data-kick-off-request'
           description %(
             The FHIR server SHALL limit the data returned to only those FHIR resources for which the client is authorized.
@@ -140,7 +182,7 @@ module Inferno
 
       test 'Bulk Data Server rejects $export operation with invalid Accept header' do
         metadata do
-          id '03'
+          id '04'
           link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#headers'
           description %(
             Accept (string, required)
@@ -154,7 +196,7 @@ module Inferno
 
       test 'Bulk Data Server rejects $export operation with invalid Prefer header' do
         metadata do
-          id '04'
+          id '05'
           link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#headers'
           description %(
             Prefer (string, required)
@@ -168,7 +210,7 @@ module Inferno
 
       test 'Bulk Data Server returns "202 Accepted" and "Content-location" for $export operation' do
         metadata do
-          id '05'
+          id '06'
           link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#response---success'
           description %(
             Response - Success
@@ -183,7 +225,7 @@ module Inferno
 
       test 'Bulk Data Server returns "202 Accepted" or "200 OK" for status check' do
         metadata do
-          id '06'
+          id '07'
           link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#bulk-data-status-request'
           description %(
             Clients SHOULD follow an exponential backoff approach when polling for status. Servers SHOULD respond with
@@ -202,7 +244,7 @@ module Inferno
 
       test 'Bulk Data Server returns output with type and url for status complete' do
         metadata do
-          id '07'
+          id '08'
           link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#response---complete-status'
           description %(
             The value of output field is an array of file items with one entry for each generated file.
@@ -224,7 +266,7 @@ module Inferno
 
       test 'Bulk Data Server returns requiresAccessToken with value true' do
         metadata do
-          id '08'
+          id '09'
           link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#response---complete-status'
           description %(
             Bulk Data Server SHALL restrict bulk data file access with access token

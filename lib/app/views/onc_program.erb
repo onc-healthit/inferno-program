@@ -492,16 +492,16 @@
 
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_client_id,
               label: 'Bulk Data Client ID',
-              description: 'Client ID provided during registration time to the Inferno application.',
+              description: 'Client ID provided at registration to the Inferno application.',
               instance: instance,
               value: instance.bulk_client_id,
               })%>   
 
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_scope,
               label: 'Bulk Data Scopes',
-              description: 'Bulk Data Scopes provided during registration time to the Inferno application.',
+              description: 'Bulk Data Scopes provided at registration to the Inferno application.',
               instance: instance,
-              value: instance.bulk_scope,
+              value: instance.bulk_scope || 'system/*.read',
               })%>  
 
         <div class="form-group"

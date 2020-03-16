@@ -14,7 +14,7 @@
   "instantiates": [
     "http://hl7.org/fhir/uv/bulkdata/CapabilityStatement/bulk-data"
   ],  
-  "fhirVersion": "3.0.1",
+  "fhirVersion": "4.0.1",
   "acceptUnknown": "extensions",
   "format": [
       "application/fhir+json"
@@ -62,7 +62,13 @@
                           "code": "read"
                       }
                   ],
-                  "searchParam": []
+                  "searchParam": [],
+                  "operation": [
+                      {
+                          "name": "export",
+                          "definition": "http://hl7.org/fhir/uv/bulkdata/OperationDefinition/group-export"
+                      }
+                  ]
               },
               {
                   "type": "OperationDefinition",
@@ -75,26 +81,6 @@
                       }
                   ],
                   "searchParam": []
-              }
-          ],
-          "operation": [
-              {
-                  "name": "export",
-                  "definition": {
-                      "reference": "OperationDefinition/BulkDataExport"
-                  }
-              },
-              {
-                  "name": "patient-export",
-                  "definition": {
-                      "reference": "OperationDefinition/PatientLevelExport"
-                  }
-              },
-              {
-                  "name": "group-export",
-                  "definition": {
-                      "reference": "OperationDefinition/GroupLevelExport"
-                  }
               }
           ]
       }
