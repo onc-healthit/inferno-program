@@ -188,8 +188,6 @@ module Inferno
       end
 
       patient_context_test(index: '05', refresh: true)
-
-      encounter_context_test(index: '06', refresh: true)
     end
   end
 end

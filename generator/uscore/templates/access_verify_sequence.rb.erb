@@ -33,7 +33,7 @@ module Inferno
       end
 
       def scope_granting_access(resource, scopes)
-        scopes.downcase.split(' ').find do |scope| 
+        scopes.split(' ').find do |scope| 
           scope.start_with?("patient/#{resource}", 'patient/*') && scope.end_with?('*', 'read')
         end
       end

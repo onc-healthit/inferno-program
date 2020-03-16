@@ -63,7 +63,6 @@ module Inferno
         'context-style',
         'context-ehr-patient',
         'context-standalone-patient',
-        'context-standalone-encounter',
         'permission-offline',
         'permission-patient',
         'permission-user'

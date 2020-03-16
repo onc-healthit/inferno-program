@@ -217,11 +217,9 @@ module Inferno
 
       patient_context_test(index: '14')
 
-      encounter_context_test(index: '15')
-
       test :smart_style_url do
         metadata do
-          id '16'
+          id '15'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#styling'
           name 'Launch context contains smart_style_url which links to valid JSON'
           description %(
@@ -244,7 +242,7 @@ module Inferno
 
       test :need_patient_banner do
         metadata do
-          id '17'
+          id '16'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#launch-context-arrives-with-your-access_token'
           name 'Launch context contains need_patient_banner'
           description %(
