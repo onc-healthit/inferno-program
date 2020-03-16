@@ -501,7 +501,7 @@
               label: 'Bulk Data Scopes',
               description: 'Bulk Data Scopes provided during registration time to the Inferno application.',
               instance: instance,
-              value: instance.bulk_scope,
+              value: instance.bulk_scope || 'system/*.read',
               })%>  
 
         <div class="form-group"
