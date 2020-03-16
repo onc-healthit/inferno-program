@@ -29,6 +29,8 @@ module Inferno
                 }
               end
 
+      reply[:timestamp] = DateTime.now
+
       request[:payload] = begin
                             JSON.parse(request[:payload])
                           rescue StandardError
@@ -56,7 +58,7 @@ module Inferno
       begin
         reply = RestClient.get(url, headers, &block)
       rescue StandardError => e
-        unless e.response
+        if !e.respond_to?(:response) || e.response.nil?
           # Re-raise the client error if there's no response.
           raise # Re-raise the same error we caught.
         end
@@ -77,7 +79,7 @@ module Inferno
       begin
         reply = RestClient.post(url, payload, headers, &block)
       rescue StandardError => e
-        unless e.response
+        if !e.respond_to?(:response) || e.response.nil?
           # Re-raise the client error if there's no response.
           raise # Re-raise the same error we caught.
         end

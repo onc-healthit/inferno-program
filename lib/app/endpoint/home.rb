@@ -2,6 +2,7 @@
 
 require_relative 'oauth2_endpoints'
 require_relative 'test_set_endpoints'
+require_relative 'jwks_endpoints'
 
 module Inferno
   class App
@@ -15,6 +16,7 @@ module Inferno
 
         include OAuth2Endpoints
         include TestSetEndpoints
+        include JwksEndpoints
 
         # Return the index page of the application
         get '/?' do
@@ -39,8 +41,16 @@ module Inferno
 
           @instance.client_endpoint_key = params['client_endpoint_key'] unless params['client_endpoint_key'].nil?
 
-          unless params['preset'].blank?
+          # onc specific info
+          @instance.onc_sl_url = url if @instance.respond_to?(:onc_sl_url)
+          @instance.bulk_url = url if @instance.respond_to?(:bulk_url)
 
+          @instance.bulk_data_jwks = settings.bulk_data_jwks.to_json if settings.respond_to? :bulk_data_jwks
+          if settings.respond_to? :disable_bulk_data_require_access_token_test
+            @instance.disable_bulk_data_require_access_token_test = settings.disable_bulk_data_require_access_token_test
+          end
+
+          unless params['preset'].blank?
             JSON.parse(params['preset']).each do |key, value|
               value = value.tr('\'', '"') if ['bulk_private_key', 'bulk_public_key'].include? key
 
@@ -74,12 +84,17 @@ module Inferno
         # Returns test details for a specific test including any applicable requests and responses.
         #   This route is typically used for retrieving test metadata before the test has been run
         get '/test_details/:module/:sequence_name/:test_index?' do
-          sequence = Inferno::Module.get(params[:module]).sequences.find do |x|
+          inferno_module = Inferno::Module.get(params[:module])
+          sequence = inferno_module.sequences.find do |x|
             x.sequence_name == params[:sequence_name]
           end
+
           halt 404 unless sequence
-          @test = sequence.tests[params[:test_index].to_i]
+
+          @test = sequence.tests(inferno_module)[params[:test_index].to_i]
+
           halt 404 unless @test.present?
+
           erb :test_details, layout: false
         end
 

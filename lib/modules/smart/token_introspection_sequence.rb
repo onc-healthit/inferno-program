@@ -41,9 +41,7 @@ module Inferno
 
         omit_if_tls_disabled
         assert_tls_1_2 @instance.oauth_introspection_endpoint
-        warning do
-          assert_deny_previous_tls @instance.oauth_introspection_endpoint
-        end
+        assert_deny_previous_tls @instance.oauth_introspection_endpoint
       end
 
       test 'Token introspection endpoint responds properly to introspection request for access token' do
@@ -103,7 +101,7 @@ module Inferno
 
         assert !@introspection_response_body.nil?, 'No introspection response body'
 
-        expected_scopes = @instance.scopes.split(' ')
+        expected_scopes = @instance.received_scopes.split(' ')
         actual_scopes = @introspection_response_body['scope'].split(' ')
 
         Inferno.logger.debug "Introspection: Expected scopes #{expected_scopes}, Actual scopes #{actual_scopes}"

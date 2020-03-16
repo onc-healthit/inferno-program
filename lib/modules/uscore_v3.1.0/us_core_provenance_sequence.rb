@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310ProvenanceSequence < SequenceBase
-      title 'Provenance Tests'
+      include Inferno::DataAbsentReasonChecker
+
+      title 'Provenance'
 
       description 'Verify that Provenance resources on the FHIR server follow the US Core Implementation Guide'
 
@@ -17,12 +21,16 @@ module Inferno
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
+      end
+
       @resources_found = false
 
       test :resource_read do
         metadata do
           id '01'
-          name 'Can read Provenance from the server'
+          name 'Server returns correct Provenance resource from the Provenance read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             Reference to Provenance can be resolved and read.
@@ -30,32 +38,36 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Provenance, [:read])
+        skip_if_known_not_supported(:Provenance, [:read])
 
-        provenance_id = @instance.resource_references.find { |reference| reference.resource_type == 'Provenance' }&.resource_id
-        skip 'No Provenance references found from the prior searches' if provenance_id.nil?
+        provenance_references = @instance.resource_references.select { |reference| reference.resource_type == 'Provenance' }
+        skip 'No Provenance references found from the prior searches' if provenance_references.blank?
 
-        @provenance = validate_read_reply(
-          FHIR::Provenance.new(id: provenance_id),
-          FHIR::Provenance
-        )
-        @provenance_ary = Array.wrap(@provenance).compact
+        @provenance_ary = provenance_references.map do |reference|
+          validate_read_reply(
+            FHIR::Provenance.new(id: reference.resource_id),
+            FHIR::Provenance,
+            check_for_data_absent_reasons
+          )
+        end
+        @provenance = @provenance_ary.first
         @resources_found = @provenance.present?
       end
 
       test :vread_interaction do
         metadata do
           id '02'
-          name 'Provenance vread interaction supported'
+          name 'Server returns correct Provenance resource from Provenance vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Provenance vread interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Provenance, [:vread])
-        skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:Provenance, [:vread])
+        skip_if_not_found(resource_type: 'Provenance', delayed: true)
 
         validate_vread_reply(@provenance, versioned_resource_class('Provenance'))
       end
@@ -63,23 +75,25 @@ module Inferno
       test :history_interaction do
         metadata do
           id '03'
-          name 'Provenance history interaction supported'
+          name 'Server returns correct Provenance resource from Provenance history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Provenance history interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Provenance, [:history])
-        skip 'No Provenance resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:Provenance, [:history])
+        skip_if_not_found(resource_type: 'Provenance', delayed: true)
 
         validate_history_reply(@provenance, versioned_resource_class('Provenance'))
       end
 
-      test 'Provenance resources associated with Patient conform to US Core R4 profiles' do
+      test :validate_resources do
         metadata do
           id '04'
+          name 'Provenance resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
           description %(
 
@@ -90,11 +104,82 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Provenance', delayed: true)
         test_resources_against_profile('Provenance')
+        bindings = [
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://terminology.hl7.org/ValueSet/v3-PurposeOfUse',
+            path: 'reason'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/provenance-activity-type',
+            path: 'activity'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-provenance-participant-type',
+            path: 'agent.type'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/provenance-agent-type',
+            path: 'agent.type'
+          },
+          {
+            type: 'CodeableConcept',
+            strength: 'extensible',
+            system: 'http://hl7.org/fhir/ValueSet/provenance-agent-type',
+            path: 'agent.type'
+          },
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/provenance-entity-role',
+            path: 'entity.role'
+          }
+        ]
+        invalid_binding_messages = []
+        invalid_binding_resources = Set.new
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          begin
+            invalid_bindings = resources_with_invalid_binding(binding_def, @provenance_ary)
+          rescue Inferno::Terminology::UnknownValueSetException => e
+            warning do
+              assert false, e.message
+            end
+            invalid_bindings = []
+          end
+          invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
+          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
+        end
+        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required binding(s) found in #{invalid_binding_resources.count} resources:" \
+                                                "#{invalid_binding_messages.join('. ')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          begin
+            invalid_bindings = resources_with_invalid_binding(binding_def, @provenance_ary)
+          rescue Inferno::Terminology::UnknownValueSetException => e
+            warning do
+              assert false, e.message
+            end
+            invalid_bindings = []
+          end
+          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
+        end
+        warning do
+          invalid_binding_messages.each do |error_message|
+            assert false, error_message
+          end
+        end
       end
 
-      test 'At least one of every must support element is provided in any Provenance for this patient.' do
+      test 'All must support elements are provided in the Provenance resources returned.' do
         metadata do
           id '05'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
@@ -115,46 +200,78 @@ module Inferno
 
             Provenance.agent.onBehalfOf
 
-            Provenance.agent
+            Provenance.agent.type.coding.code
 
-            Provenance.agent.type
+            Provenance.agent.type.coding.code
 
-            Provenance.agent
+            Provenance.agent:ProvenanceAuthor
 
-            Provenance.agent.type
+            Provenance.agent:ProvenanceTransmitter
 
           )
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @provenance_ary&.any?
-        must_support_confirmed = {}
-        must_support_elements = [
-          'Provenance.target',
-          'Provenance.recorded',
-          'Provenance.agent',
-          'Provenance.agent.type',
-          'Provenance.agent.who',
-          'Provenance.agent.onBehalfOf',
-          'Provenance.agent',
-          'Provenance.agent.type',
-          'Provenance.agent',
-          'Provenance.agent.type'
-        ]
-        must_support_elements.each do |path|
-          @provenance_ary&.each do |resource|
-            truncated_path = path.gsub('Provenance.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
-            break if must_support_confirmed[path]
-          end
-          resource_count = @provenance_ary.length
+        skip_if_not_found(resource_type: 'Provenance', delayed: true)
 
-          skip "Could not find #{path} in any of the #{resource_count} provided Provenance resource(s)" unless must_support_confirmed[path]
+        must_support_slices = [
+          {
+            name: 'Provenance.agent:ProvenanceAuthor',
+            path: 'Provenance.agent',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: 'type',
+              code: 'author',
+              system: 'http://terminology.hl7.org/CodeSystem/provenance-participant-type'
+            }
+          },
+          {
+            name: 'Provenance.agent:ProvenanceTransmitter',
+            path: 'Provenance.agent',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: 'type',
+              code: 'transmitter',
+              system: 'http://hl7.org/fhir/us/core/CodeSystem/us-core-provenance-participant-type'
+            }
+          }
+        ]
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('Provenance.', '')
+          @provenance_ary&.any? do |resource|
+            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found.present?
+          end
         end
+
+        must_support_elements = [
+          { path: 'Provenance.target' },
+          { path: 'Provenance.recorded' },
+          { path: 'Provenance.agent' },
+          { path: 'Provenance.agent.type' },
+          { path: 'Provenance.agent.who' },
+          { path: 'Provenance.agent.onBehalfOf' },
+          { path: 'Provenance.agent.type.coding.code', fixed_value: 'author' },
+          { path: 'Provenance.agent.type.coding.code', fixed_value: 'transmitter' }
+        ]
+
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('Provenance.', '')
+          @provenance_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@provenance_ary&.length} provided Provenance resource(s)"
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Provenance resource is valid and can be read.' do
         metadata do
           id '06'
           link 'http://hl7.org/fhir/references.html'
@@ -164,10 +281,15 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Provenance, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:Provenance, [:search, :read])
+        skip_if_not_found(resource_type: 'Provenance', delayed: true)
 
-        validate_reference_resolutions(@provenance)
+        validated_resources = Set.new
+        max_resolutions = 50
+
+        @provenance_ary&.each do |resource|
+          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
+        end
       end
     end
   end

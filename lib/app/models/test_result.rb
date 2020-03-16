@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../utils/result_statuses'
+require_relative 'information_message'
 
 module Inferno
   module Models
@@ -25,8 +26,9 @@ module Inferno
       property :wait_at_endpoint, String
       property :redirect_to_url, String
 
-      has n, :request_responses, through: Resource
+      has n, :request_responses, through: Resource, order: [:timestamp.asc]
       has n, :test_warnings
+      has n, :information_messages
       belongs_to :sequence_result
     end
   end

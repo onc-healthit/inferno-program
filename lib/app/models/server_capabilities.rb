@@ -24,7 +24,8 @@ module Inferno
           rest.resource.map do |resource|
             {
               resource_type: resource.type,
-              interactions: resource_interactions(resource).sort
+              interactions: resource_interactions(resource).sort,
+              operations: resource_operations(resource).sort
             }
           end
         end
@@ -48,10 +49,47 @@ module Inferno
         smart_extensions.map(&:valueCode)
       end
 
+      def search_documented?(resource_type)
+        statement&.rest&.any? do |rest|
+          rest&.resource
+            &.select { |resource| resource&.type == resource_type }
+            &.flat_map(&:interaction)
+            &.select { |interaction| interaction&.code == 'search-type' }
+            &.any? { |interaction| interaction&.documentation&.present? }
+        end
+      end
+
+      def supported_search_params(resource_type)
+        rest_resource(resource_type)&.searchParam&.map(&:name) || []
+      end
+
+      def supported_includes(resource_type)
+        rest_resource(resource_type)&.searchInclude || []
+      end
+
+      def include_supported?(resource_type, include)
+        supported_includes(resource_type).include?('*') ||
+          supported_includes(resource_type).include?(include)
+      end
+
+      def supported_revincludes(resource_type)
+        rest_resource(resource_type)&.searchRevInclude || []
+      end
+
+      def revinclude_supported?(resource_type, revinclude)
+        supported_revincludes(resource_type).include?('*') ||
+          supported_revincludes(resource_type).include?(revinclude)
+      end
+
       private
 
       def statement
         @statement ||= FHIR::CapabilityStatement.new(capabilities)
+      end
+
+      def rest_resource(resource_type)
+        statement&.rest&.first&.resource
+          &.find { |resource| resource&.type == resource_type }
       end
 
       def security_extensions
@@ -74,6 +112,10 @@ module Inferno
 
       def resource_interactions(resource)
         resource.interaction.map { |interaction| interaction_display(interaction) }
+      end
+
+      def resource_operations(resource)
+        resource.operation.map(&:name)
       end
     end
   end

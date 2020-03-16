@@ -1,71 +1,87 @@
 # frozen_string_literal: true
 
+require_relative './data_absent_reason_checker'
+
 module Inferno
   module Sequence
     class USCore310GoalSequence < SequenceBase
-      title 'Goal Tests'
+      include Inferno::DataAbsentReasonChecker
+
+      title 'Goal'
 
       description 'Verify that Goal resources on the FHIR server follow the US Core Implementation Guide'
 
       test_id_prefix 'USCG'
 
-      requires :token, :patient_id
+      requires :token, :patient_ids
       conformance_supports :Goal
 
       def validate_resource_item(resource, property, value)
         case property
 
         when 'lifecycle-status'
-          value_found = can_resolve_path(resource, 'lifecycleStatus') { |value_in_resource| value_in_resource == value }
-          assert value_found, 'lifecycle-status on resource does not match lifecycle-status requested'
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          value_found = resolve_element_from_path(resource, 'lifecycleStatus') { |value_in_resource| values.include? value_in_resource }
+          assert value_found.present?, 'lifecycle-status on resource does not match lifecycle-status requested'
 
         when 'patient'
-          value_found = can_resolve_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found, 'patient on resource does not match patient requested'
+          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
+          assert value_found.present?, 'patient on resource does not match patient requested'
 
         when 'target-date'
-          value_found = can_resolve_path(resource, 'target.dueDate') do |date|
-            validate_date_search(value, date)
-          end
-          assert value_found, 'target-date on resource does not match target-date requested'
+          value_found = resolve_element_from_path(resource, 'target.dueDate') { |date| validate_date_search(value, date) }
+          assert value_found.present?, 'target-date on resource does not match target-date requested'
 
         end
+      end
+
+      def perform_search_with_status(reply, search_param)
+        begin
+          parsed_reply = JSON.parse(reply.body)
+          assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
+        rescue JSON::ParserError
+          assert false, 'Server returned a status of 400 without an OperationOutcome.'
+        end
+
+        warning do
+          assert @instance.server_capabilities&.search_documented?('Goal'),
+                 %(Server returned a status of 400 with an OperationOutcome, but the
+                search interaction for this resource is not documented in the
+                CapabilityStatement. If this response was due to the server
+                requiring a status parameter, the server must document this
+                requirement in its CapabilityStatement.)
+        end
+
+        ['proposed', 'planned', 'accepted', 'active', 'on-hold', 'completed', 'cancelled', 'entered-in-error', 'rejected'].each do |status_value|
+          params_with_status = search_param.merge('lifecycle-status': status_value)
+          reply = get_resource_by_params(versioned_resource_class('Goal'), params_with_status)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+
+          entries = reply.resource.entry.select { |entry| entry.resource.resourceType == 'Goal' }
+          next if entries.blank?
+
+          search_param.merge!('lifecycle-status': status_value)
+          break
+        end
+
+        reply
       end
 
       details %(
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
 
-      @resources_found = false
-
-      test :unauthorized_search do
-        metadata do
-          id '01'
-          name 'Server rejects Goal search without authorization'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
-          description %(
-            A server SHALL reject any unauthorized requests by returning an HTTP 401 unauthorized response code.
-          )
-          versions :r4
-        end
-
-        skip_if_not_supported(:Goal, [:search])
-
-        @client.set_no_auth
-        omit 'Do not test if no bearer token set' if @instance.token.blank?
-
-        search_params = {
-          'patient': @instance.patient_id
-        }
-
-        reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
-        @client.set_bearer_token(@instance.token)
-        assert_response_unauthorized reply
+      def patient_ids
+        @instance.patient_ids.split(',').map(&:strip)
       end
 
-      test 'Server returns expected results from Goal search by patient' do
+      @resources_found = false
+
+      test :search_by_patient do
         metadata do
-          id '02'
+          id '01'
+          name 'Server returns expected results from Goal search by patient'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
@@ -75,65 +91,89 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+        skip_if_known_search_not_supported('Goal', ['patient'])
+        @goal_ary = {}
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
 
-        reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
+          reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
 
-        resource_count = reply&.resource&.entry&.length || 0
-        @resources_found = true if resource_count.positive?
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
 
-        @goal = reply&.resource&.entry&.first&.resource
-        @goal_ary = fetch_all_bundled_resources(reply&.resource)
-        save_resource_ids_in_bundle(versioned_resource_class('Goal'), reply)
-        save_delayed_sequence_references(@goal_ary)
-        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
+          any_resources = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Goal' }
+
+          next unless any_resources
+
+          @goal_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+
+          @goal = @goal_ary[patient]
+            .find { |resource| resource.resourceType == 'Goal' }
+          @resources_found = @goal.present?
+
+          save_resource_references(versioned_resource_class('Goal'), @goal_ary[patient])
+          save_delayed_sequence_references(@goal_ary[patient])
+          validate_reply_entries(@goal_ary[patient], search_params)
+        end
+
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
       end
 
-      test 'Server returns expected results from Goal search by patient+target-date' do
+      test :search_by_patient_target_date do
         metadata do
-          id '03'
+          id '02'
+          name 'Server returns expected results from Goal search by patient+target-date'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
             A server SHOULD support searching by patient+target-date on the Goal resource
 
-              including support for these target-date comparators: gt, lt, le
+              including support for these target-date comparators: gt, lt, le, ge
           )
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@goal.nil?, 'Expected valid Goal resource to be present'
+        skip_if_known_search_not_supported('Goal', ['patient', 'target-date'])
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'target-date': get_value_for_search_param(resolve_element_from_path(@goal_ary, 'target.dueDate'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        resolved_one = false
 
-        reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
-        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
-        assert_response_ok(reply)
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'target-date': get_value_for_search_param(resolve_element_from_path(@goal_ary[patient], 'target.dueDate') { |el| get_value_for_search_param(el).present? })
+          }
 
-        ['gt', 'lt', 'le'].each do |comparator|
-          comparator_val = date_comparator_value(comparator, search_params[:'target-date'])
-          comparator_search_params = { 'patient': search_params[:patient], 'target-date': comparator_val }
-          reply = get_resource_by_params(versioned_resource_class('Goal'), comparator_search_params)
-          validate_search_reply(versioned_resource_class('Goal'), reply, comparator_search_params)
-          assert_response_ok(reply)
+          next if search_params.any? { |_param, value| value.nil? }
+
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
+
+          ['gt', 'lt', 'le', 'ge'].each do |comparator|
+            comparator_val = date_comparator_value(comparator, search_params[:'target-date'])
+            comparator_search_params = search_params.merge('target-date': comparator_val)
+            reply = get_resource_by_params(versioned_resource_class('Goal'), comparator_search_params)
+            validate_search_reply(versioned_resource_class('Goal'), reply, comparator_search_params)
+          end
         end
+
+        skip 'Could not resolve all parameters (patient, target-date) in any resource.' unless resolved_one
       end
 
-      test 'Server returns expected results from Goal search by patient+lifecycle-status' do
+      test :search_by_patient_lifecycle_status do
         metadata do
-          id '04'
+          id '03'
+          name 'Server returns expected results from Goal search by patient+lifecycle-status'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
@@ -144,24 +184,33 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
-        assert !@goal.nil?, 'Expected valid Goal resource to be present'
+        skip_if_known_search_not_supported('Goal', ['patient', 'lifecycle-status'])
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
 
-        search_params = {
-          'patient': @instance.patient_id,
-          'lifecycle-status': get_value_for_search_param(resolve_element_from_path(@goal_ary, 'lifecycleStatus'))
-        }
-        search_params.each { |param, value| skip "Could not resolve #{param} in given resource" if value.nil? }
+        resolved_one = false
 
-        reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
-        validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
-        assert_response_ok(reply)
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'lifecycle-status': get_value_for_search_param(resolve_element_from_path(@goal_ary[patient], 'lifecycleStatus') { |el| get_value_for_search_param(el).present? })
+          }
+
+          next if search_params.any? { |_param, value| value.nil? }
+
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
+
+          validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
+        end
+
+        skip 'Could not resolve all parameters (patient, lifecycle-status) in any resource.' unless resolved_one
       end
 
       test :read_interaction do
         metadata do
-          id '05'
-          name 'Goal read interaction supported'
+          id '04'
+          name 'Server returns correct Goal resource from Goal read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the Goal read interaction.
@@ -169,49 +218,51 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Goal, [:read])
-        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:Goal, [:read])
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
 
-        validate_read_reply(@goal, versioned_resource_class('Goal'))
+        validate_read_reply(@goal, versioned_resource_class('Goal'), check_for_data_absent_reasons)
       end
 
       test :vread_interaction do
         metadata do
-          id '06'
-          name 'Goal vread interaction supported'
+          id '05'
+          name 'Server returns correct Goal resource from Goal vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Goal vread interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Goal, [:vread])
-        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:Goal, [:vread])
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
 
         validate_vread_reply(@goal, versioned_resource_class('Goal'))
       end
 
       test :history_interaction do
         metadata do
-          id '07'
-          name 'Goal history interaction supported'
+          id '06'
+          name 'Server returns correct Goal resource from Goal history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          optional
           description %(
             A server SHOULD support the Goal history interaction.
           )
           versions :r4
         end
 
-        skip_if_not_supported(:Goal, [:history])
-        skip 'No Goal resources could be found for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:Goal, [:history])
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
 
         validate_history_reply(@goal, versioned_resource_class('Goal'))
       end
 
-      test 'Server returns the appropriate resources from the following _revincludes: Provenance:target' do
+      test 'Server returns Provenance resources from Goal search by patient + _revIncludes: Provenance:target' do
         metadata do
-          id '08'
+          id '07'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
             A Server SHALL be capable of supporting the following _revincludes: Provenance:target
@@ -219,21 +270,35 @@ module Inferno
           versions :r4
         end
 
-        search_params = {
-          'patient': @instance.patient_id
-        }
+        skip_if_known_revinclude_not_supported('Goal', 'Provenance:target')
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
 
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results = reply&.resource&.entry&.map(&:resource)&.any? { |resource| resource.resourceType == 'Provenance' }
-        assert provenance_results, 'No Provenance resources were returned from this search'
+        provenance_results = []
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient
+          }
+
+          search_params['_revinclude'] = 'Provenance:target'
+          reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            .select { |resource| resource.resourceType == 'Provenance' }
+        end
+        save_resource_references(versioned_resource_class('Provenance'), provenance_results)
+        save_delayed_sequence_references(provenance_results)
+
+        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test 'Goal resources associated with Patient conform to US Core R4 profiles' do
+      test :validate_resources do
         metadata do
-          id '09'
+          id '08'
+          name 'Goal resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal'
           description %(
 
@@ -244,13 +309,54 @@ module Inferno
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
         test_resources_against_profile('Goal')
+        bindings = [
+          {
+            type: 'code',
+            strength: 'required',
+            system: 'http://hl7.org/fhir/ValueSet/goal-status',
+            path: 'lifecycleStatus'
+          }
+        ]
+        invalid_binding_messages = []
+        invalid_binding_resources = Set.new
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          begin
+            invalid_bindings = resources_with_invalid_binding(binding_def, @goal_ary&.values&.flatten)
+          rescue Inferno::Terminology::UnknownValueSetException => e
+            warning do
+              assert false, e.message
+            end
+            invalid_bindings = []
+          end
+          invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
+          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
+        end
+        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required binding(s) found in #{invalid_binding_resources.count} resources:" \
+                                                "#{invalid_binding_messages.join('. ')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          begin
+            invalid_bindings = resources_with_invalid_binding(binding_def, @goal_ary&.values&.flatten)
+          rescue Inferno::Terminology::UnknownValueSetException => e
+            warning do
+              assert false, e.message
+            end
+            invalid_bindings = []
+          end
+          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
+        end
+        warning do
+          invalid_binding_messages.each do |error_message|
+            assert false, error_message
+          end
+        end
       end
 
-      test 'At least one of every must support element is provided in any Goal for this patient.' do
+      test 'All must support elements are provided in the Goal resources returned.' do
         metadata do
-          id '10'
+          id '09'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -265,37 +371,58 @@ module Inferno
 
             Goal.target
 
-            Goal.target.dueDate
+            Goal.target.due[x]:dueDate
 
           )
           versions :r4
         end
 
-        skip 'No resources appear to be available for this patient. Please use patients with more information' unless @goal_ary&.any?
-        must_support_confirmed = {}
-        must_support_elements = [
-          'Goal.lifecycleStatus',
-          'Goal.description',
-          'Goal.subject',
-          'Goal.target',
-          'Goal.target.dueDate'
-        ]
-        must_support_elements.each do |path|
-          @goal_ary&.each do |resource|
-            truncated_path = path.gsub('Goal.', '')
-            must_support_confirmed[path] = true if can_resolve_path(resource, truncated_path)
-            break if must_support_confirmed[path]
-          end
-          resource_count = @goal_ary.length
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
 
-          skip "Could not find #{path} in any of the #{resource_count} provided Goal resource(s)" unless must_support_confirmed[path]
+        must_support_slices = [
+          {
+            name: 'Goal.target.due[x]:dueDate',
+            path: 'Goal.target.due',
+            discriminator: {
+              type: 'type',
+              code: 'Date'
+            }
+          }
+        ]
+        missing_slices = must_support_slices.reject do |slice|
+          truncated_path = slice[:path].gsub('Goal.', '')
+          @goal_ary&.values&.flatten&.any? do |resource|
+            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found.present?
+          end
         end
+
+        must_support_elements = [
+          { path: 'Goal.lifecycleStatus' },
+          { path: 'Goal.description' },
+          { path: 'Goal.subject' },
+          { path: 'Goal.target' }
+        ]
+
+        missing_must_support_elements = must_support_elements.reject do |element|
+          truncated_path = element[:path].gsub('Goal.', '')
+          @goal_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@goal_ary&.values&.flatten&.length} provided Goal resource(s)"
         @instance.save!
       end
 
-      test 'All references can be resolved' do
+      test 'Every reference within Goal resource is valid and can be read.' do
         metadata do
-          id '11'
+          id '10'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.
@@ -303,10 +430,15 @@ module Inferno
           versions :r4
         end
 
-        skip_if_not_supported(:Goal, [:search, :read])
-        skip 'No resources appear to be available for this patient. Please use patients with more information.' unless @resources_found
+        skip_if_known_not_supported(:Goal, [:search, :read])
+        skip_if_not_found(resource_type: 'Goal', delayed: false)
 
-        validate_reference_resolutions(@goal)
+        validated_resources = Set.new
+        max_resolutions = 50
+
+        @goal_ary&.values&.flatten&.each do |resource|
+          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
+        end
       end
     end
   end

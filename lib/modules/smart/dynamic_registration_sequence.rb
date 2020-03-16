@@ -48,9 +48,7 @@ module Inferno
         skip_if_url_invalid @instance.oauth_register_endpoint, 'OAuth 2.0 Dynamic Registration Endpoint'
 
         assert_tls_1_2 @instance.oauth_register_endpoint
-        warning do
-          assert_deny_previous_tls @instance.oauth_register_endpoint
-        end
+        assert_deny_previous_tls @instance.oauth_register_endpoint
       end
 
       test 'Client registration endpoint accepts POST messages' do
@@ -116,7 +114,7 @@ module Inferno
         assert @registration_response.code == 201, "Expected HTTP 201 response from registration endpoint but received #{@registration_response.code}"
         assert @registration_response_body.key?('client_id') && @registration_response_body.key?('scope'), 'Registration response did not include client_id and scope fields in JSON body'
 
-        # TODO: check all values, and not just client and scope
+        # TODO: check all values, and not just client and scope, validate scope value
 
         update_params = {
           client_id: @registration_response_body['client_id'],

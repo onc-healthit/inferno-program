@@ -13,6 +13,7 @@ require_relative 'utils/result_statuses'
 require_relative 'utils/search_validation'
 require_relative 'models/testing_instance'
 require_relative 'models/inferno_test'
+require_relative 'utils/hl7_validator'
 
 require 'bloomer'
 require 'bloomer/msgpackable'
@@ -42,6 +43,7 @@ module Inferno
 
       @@optional = []
       @@show_uris = []
+      @@show_bulk_registration_info = []
       @@delayed_sequences = []
 
       @@test_id_prefixes = {}
@@ -53,6 +55,7 @@ module Inferno
       delegate :versioned_resource_class, to: :@client
       delegate :versioned_conformance_class, to: :@instance
       delegate :save_resource_ids_in_bundle, to: :@instance
+      delegate :save_resource_references, to: :@instance
 
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
         @client = client
@@ -62,6 +65,7 @@ module Inferno
         @sequence_result = sequence_result
         @disable_tls_tests = disable_tls_tests
         @test_warnings = []
+        @information_messages = []
       end
 
       def resume(request = nil, headers = nil, params = nil, fail_message = nil, &block)
@@ -81,7 +85,8 @@ module Inferno
             request_url: request.url,
             request_headers: headers.to_json,
             request_payload: request.body.read,
-            instance_id: @instance.id
+            instance_id: @instance.id,
+            timestamp: DateTime.now
           )
         end
 
@@ -114,7 +119,7 @@ module Inferno
 
         output_results = save_output(sequence_name)
 
-        run_tests(self.class.tests[start_at..-1], &block)
+        run_tests(tests[start_at..-1], &block)
 
         update_output(sequence_name, output_results)
 
@@ -208,12 +213,12 @@ module Inferno
         end
       end
 
-      def self.test_count
-        tests.length
+      def self.test_count(inferno_module = nil)
+        tests(inferno_module).length
       end
 
-      def test_count
-        self.class.test_count
+      def test_count(inferno_module = @instance.module)
+        tests(inferno_module).length
       end
 
       def sequence_name
@@ -307,8 +312,18 @@ module Inferno
         @@test_id_prefixes[sequence_name]
       end
 
-      def self.tests
-        @tests ||= []
+      def self.all_tests
+        @all_tests ||= []
+      end
+
+      def self.tests(inferno_module = nil)
+        return all_tests unless inferno_module&.hide_optional
+
+        all_tests.select(&:required?)
+      end
+
+      def tests(inferno_module = @instance.module)
+        self.class.tests(inferno_module)
       end
 
       def self.[](key)
@@ -335,6 +350,14 @@ module Inferno
         @@show_uris.include?(sequence_name)
       end
 
+      def self.show_bulk_registration_info
+        @@show_bulk_registration_info << sequence_name
+      end
+
+      def self.show_bulk_registration_info?
+        @@show_bulk_registration_info.include?(sequence_name)
+      end
+
       def self.preconditions(description, &block)
         @@preconditions[sequence_name] = {
           block: block,
@@ -355,7 +378,7 @@ module Inferno
 
       # this must be called to ensure that the child class is referenced in self.sequence_name
       def self.extends_sequence(klass)
-        tests.concat(klass.tests)
+        all_tests.concat(klass.all_tests)
       end
 
       # Defines a new test.
@@ -366,16 +389,17 @@ module Inferno
         @@test_index += 1
         new_test = InfernoTest.new(name, @@test_index, @@test_id_prefixes[sequence_name], &block)
 
-        if new_test.key.present? && tests.any? { |test| test.key == new_test.key }
+        if new_test.key.present? && all_tests.any? { |test| test.key == new_test.key }
           raise InvalidKeyException, "Duplicate test key #{new_test.key.inspect} in #{self.name.demodulize}"
         end
 
-        tests << new_test
+        all_tests << new_test
       end
 
       def wrap_test(test)
         lambda do
           @test_warnings = []
+          @information_messages = []
           Models::TestResult.new(
             test_id: test.id,
             name: test.name,
@@ -396,6 +420,7 @@ module Inferno
                 e.update_result(result)
               else
                 Inferno.logger.error "Fatal Error: #{e.message}"
+                Inferno.logger.error e.class.name
                 Inferno.logger.error e.backtrace
                 result.error!
                 result.message = "Fatal Error: #{e.message}"
@@ -403,6 +428,7 @@ module Inferno
             end
 
             result.test_warnings = @test_warnings.map { |w| Models::TestWarning.new(message: w) }
+            result.information_messages = @information_messages.map { |m| Models::InformationMessage.new(message: m) }
             Inferno.logger.info "Finished Test: #{test.id} [#{result.result}]"
           end
         end
@@ -494,40 +520,41 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        entries = reply.resource.entry.select { |entry| entry.resource.class == klass }
+        entries = fetch_all_bundled_resources(reply).select { |entry| entry.class == klass }
+        validate_reply_entries(entries, search_params)
         assert entries.present?, 'No resources of this type were returned'
+      end
 
-        if klass == versioned_resource_class('Patient')
-          assert reply.resource.get_by_id(@instance.patient_id).present?, 'Server returned nil patient'
-          assert reply.resource.get_by_id(@instance.patient_id).equals?(@patient, ['_id', 'text', 'meta', 'lastUpdated']), 'Server returned wrong patient'
-        end
-
-        entries.each do |entry|
+      def validate_reply_entries(resources, search_params)
+        resources.each do |resource|
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.
-          base_resource_validation_errors = entry.resource.validate
-          assert base_resource_validation_errors.empty?, "Invalid #{entry.resource.resourceType}: #{base_resource_validation_errors}"
+          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
+          assert resource_validation_errors[:errors].empty?, "Invalid #{resource.resourceType}: #{resource_validation_errors[:errors].join("<br/>\n")}"
 
           search_params.each do |key, value|
-            validate_resource_item(entry.resource, key.to_s, value)
+            validate_resource_item(resource, key.to_s, value)
           end
         end
       end
 
-      def validate_read_reply(resource, klass)
+      def validate_read_reply(resource, klass, reply_handler = nil)
         class_name = klass.name.demodulize
         assert !resource.nil?, "No #{class_name} resources available from search."
-        if resource.is_a? FHIR::DSTU2::Reference
+        if resource.is_a? versioned_resource_class('Reference')
           read_response = resource.read
+          id = resource.reference.split('/').last
         else
-          id = resource.try(:id)
+          id = resource&.id
           assert !id.nil?, "#{class_name} id not returned"
           read_response = @client.read(klass, id)
           assert_response_ok read_response
+          reply_handler&.call(read_response)
           read_response = read_response.resource
         end
         assert !read_response.nil?, "Expected #{class_name} resource to be present."
         assert read_response.is_a?(klass), "Expected resource to be of type #{class_name}."
+        assert read_response.id.present? && read_response.id == id, "Expected resource to contain id: #{id}"
         read_response
       end
 
@@ -558,8 +585,14 @@ module Inferno
       end
 
       def validate_resource(resource_type, resource, profile)
-        errors = profile.validate_resource(resource)
-        @test_warnings.concat(profile.warnings.reject(&:empty?))
+        resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, profile.url)
+
+        errors = resource_validation_errors[:errors]
+        errors.concat(yield resource) if block_given?
+
+        @test_warnings.concat resource_validation_errors[:warnings]
+        @information_messages.concat resource_validation_errors[:information]
+
         errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
         @profiles_failed[profile.url].concat(errors) unless errors.empty?
         errors
@@ -573,7 +606,7 @@ module Inferno
         resource
       end
 
-      def test_resources(resource_type)
+      def test_resources(resource_type, &block)
         references = @instance.resource_references.all(resource_type: resource_type)
         skip_if(
           references.empty?,
@@ -585,22 +618,38 @@ module Inferno
           p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
           if p
             @profiles_encountered << p.url
-            validate_resource(resource_type, resource, p)
+            validate_resource(resource_type, resource, p, &block)
           else
             warn { assert false, 'No profiles found for this Resource' }
-            resource.validate
+            issues = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
+            issues[:errors]
           end
         end
-        # TODO
-        # bundle = client.next_bundle
+
         assert(errors.empty?, errors.join("<br/>\n"))
       end
 
-      def test_resources_against_profile(resource_type, specified_profile = nil)
+      def test_resource_collection(resource_type, resources)
+        errors = resources.flat_map do |resource|
+          p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
+          if p
+            @profiles_encountered << p.url
+            validate_resource(resource_type, resource, p)
+          else
+            warn { assert false, 'No profiles found for this Resource' }
+            issues = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
+            issues[:errors]
+          end
+        end
+
+        assert(errors.empty?, errors.join("<br/>\n"))
+      end
+
+      def test_resources_against_profile(resource_type, specified_profile = nil, &block)
         @profiles_encountered ||= Set.new
         @profiles_failed ||= Hash.new { |hash, key| hash[key] = [] }
 
-        return test_resources(resource_type) if specified_profile.blank?
+        return test_resources(resource_type, &block) if specified_profile.blank?
 
         profile = Inferno::ValidationUtil::DEFINITIONS[specified_profile]
         skip_if(
@@ -629,18 +678,21 @@ module Inferno
         @profiles_encountered << profile.url
 
         errors = resources.flat_map do |resource|
-          validate_resource(resource_type, resource, profile)
+          validate_resource(resource_type, resource, profile, &block)
         end
-        # TODO
-        # bundle = client.next_bundle
+
         assert(errors.empty?, errors.join("<br/>\n"))
       end
 
-      def validate_reference_resolutions(resource)
+      # Set max_resolutions in a single sequence to a large number by default
+      def validate_reference_resolutions(resource, resolved_references = Set.new, max_resolutions = 1_000_000)
         problems = []
 
         walk_resource(resource) do |value, meta, path|
           next if meta['type'] != 'Reference'
+          next if value.reference.blank?
+          next if resolved_references.include?(value.reference)
+          break if resolved_references.length > max_resolutions
 
           begin
             # Should potentially update valid? method in fhir_dstu2_models
@@ -655,10 +707,13 @@ module Inferno
               end
             end
             value.read
+            resolved_references.add(value.reference)
           rescue ClientException => e
             problems << "#{path} did not resolve: #{e}"
           end
         end
+
+        Inferno.logger.info "Surpassed the maximum reference resolutions: #{max_resolutions}" if resolved_references.length > max_resolutions
 
         assert(problems.empty?, problems.join("<br/>\n"))
       end
@@ -672,13 +727,15 @@ module Inferno
             if value.relative?
               begin
                 resource_class = value.resource_class.name.demodulize
-                @instance.save_resource_reference(resource_class, value.reference.split('/').last) if delayed_resource_types.include? resource_class.to_sym
+                @instance.save_resource_reference_without_reloading(resource_class, value.reference.split('/').last) if delayed_resource_types.include? resource_class.to_sym
               rescue NameError
                 next
               end
             end
           end
         end
+
+        @instance.reload
       end
 
       def check_resource_against_profile(resource, resource_type, specified_profile = nil)
@@ -691,77 +748,81 @@ module Inferno
         end
         if p
           @profiles_encountered << p.url
-          errors = p.validate_resource(resource)
-          unless errors.empty?
-            errors.map! { |e| "#{resource_type}/#{resource.id}: #{e}" }
-            @profiles_failed[p.url].concat(errors)
-          end
+          errors = validate_resource(resource_type, resource, p)
         else
-          errors = entry.resource.validate
+          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class)
+          errors = resource_validation_errors[:errors]
         end
         assert(errors.empty?, errors.join("<br/>\n"))
       end
 
-      def can_resolve_path(element, path)
-        if path.empty?
-          return false if element.nil?
+      def resolve_path(elements, path)
+        elements = Array.wrap(elements)
+        return elements if path.blank?
 
-          return Array.wrap(element).any? { |el| yield(el) } if block_given?
+        paths = path.split('.')
 
-          return true
-        end
-
-        path_ary = path.split('.')
-        el_as_array = Array.wrap(element)
-        cur_path_part = path_ary.shift.to_sym
-        return false if el_as_array.none? { |el| el.try(cur_path_part).present? }
-
-        if block_given?
-          el_as_array.any? { |el| can_resolve_path(el.send(cur_path_part), path_ary.join('.')) { |value_found| yield(value_found) } }
-        else
-          el_as_array.any? { |el| can_resolve_path(el.send(cur_path_part), path_ary.join('.')) }
-        end
+        elements.flat_map do |element|
+          resolve_path(element&.send(paths.first), paths.drop(1).join('.'))
+        end.compact
       end
 
       def resolve_element_from_path(element, path)
         el_as_array = Array.wrap(element)
-        return el_as_array&.first if path.empty?
+        if path.empty?
+          return nil if element.nil?
+
+          return el_as_array.find { |el| yield(el) } if block_given?
+
+          return el_as_array.first
+        end
 
         path_ary = path.split('.')
         cur_path_part = path_ary.shift.to_sym
+        return nil if el_as_array.none? { |el| el.send(cur_path_part).present? }
 
-        found_subset = el_as_array.select { |el| el.try(cur_path_part).present? }
-        return nil if found_subset.empty?
-
-        found_subset.each do |el|
-          el_found = resolve_element_from_path(el.send(cur_path_part), path_ary.join('.'))
-          return el_found unless el_found.nil?
+        el_as_array.each do |el|
+          el_found = if block_given?
+                       resolve_element_from_path(el.send(cur_path_part), path_ary.join('.')) { |value_found| yield(value_found) }
+                     else
+                       resolve_element_from_path(el.send(cur_path_part), path_ary.join('.'))
+                     end
+          return el_found unless el_found.blank?
         end
+
         nil
       end
 
       def get_value_for_search_param(element)
-        case element
-        when FHIR::Period
-          element.start || element.end
-        when FHIR::Reference
-          element.reference
-        when FHIR::CodeableConcept
-          resolve_element_from_path(element, 'coding.code')
-        when FHIR::Identifier
-          element.value
-        when FHIR::Coding
-          element.code
-        when FHIR::HumanName
-          element.family || element.given&.first || element.text
-        when FHIR::Address
-          element.text || element.city || element.state || element.postalCode || element.country
-        else
-          element
-        end
+        search_value = case element
+                       when FHIR::Period
+                         if element.start.present?
+                           'gt' + element.start
+                         else
+                           'lt' + element.end
+                         end
+                       when FHIR::Reference
+                         element.reference
+                       when FHIR::CodeableConcept
+                         resolve_element_from_path(element, 'coding.code')
+                       when FHIR::Identifier
+                         element.value
+                       when FHIR::Coding
+                         element.code
+                       when FHIR::HumanName
+                         element.family || element.given&.first || element.text
+                       when FHIR::Address
+                         element.text || element.city || element.state || element.postalCode || element.country
+                       else
+                         element
+                       end
+        escaped_value = search_value&.gsub(',', '\\,')
+        escaped_value
       end
 
       def date_comparator_value(comparator, date)
+        date = date.slice(2..-1) if ['gt', 'ge', 'lt', 'le'].include? date[0, 2]
+
         case comparator
         when 'lt', 'le'
           comparator + (DateTime.xmlschema(date) + 1).xmlschema
@@ -772,20 +833,123 @@ module Inferno
         end
       end
 
-      def fetch_all_bundled_resources(bundle)
+      def fetch_all_bundled_resources(reply, reply_handler = nil)
         page_count = 1
         resources = []
+        bundle = reply.resource
         until bundle.nil? || page_count == 20
           resources += bundle&.entry&.map { |entry| entry&.resource }
           next_bundle_link = bundle&.link&.find { |link| link.relation == 'next' }&.url
-          bundle = bundle.next_bundle
-          assert next_bundle_link.nil? || !bundle.nil?, "Could not resolve next bundle. #{next_bundle_link}"
+          reply_handler&.call(reply)
+          break if next_bundle_link.blank?
+
+          reply = @client.raw_read_url(next_bundle_link)
+          error_message = "Could not resolve next bundle. #{next_bundle_link}"
+          assert_response_ok(reply, error_message)
+          assert_valid_json(reply.body, error_message)
+
+          bundle = FHIR.from_contents(reply.body)
+
           page_count += 1
         end
         resources
       end
+
+      # pattern, values, type
+      def find_slice(resource, path_to_ary, discriminator)
+        resolve_element_from_path(resource, path_to_ary) do |array_el|
+          case discriminator[:type]
+          when 'patternCodeableConcept'
+            path_to_coding = discriminator[:path].present? ? [discriminator[:path], 'coding'].join('.') : 'coding'
+            resolve_element_from_path(array_el, path_to_coding) do |coding|
+              coding.code == discriminator[:code] && coding.system == discriminator[:system]
+            end
+          when 'patternIdentifier'
+            resolve_element_from_path(array_el, discriminator[:path]) { |identifier| identifier.system == discriminator[:system] }
+          when 'value'
+            values_clone = discriminator[:values].deep_dup
+            values_clone.each do |value_def|
+              value_def[:path] = value_def[:path].split('.')
+            end
+            find_slice_by_values(array_el, values_clone)
+          when 'type'
+            case discriminator[:code]
+            when 'Date'
+              begin
+                Date.parse(array_el)
+              rescue ArgumentError
+                false
+              end
+            when 'String'
+              array_el.is_a? String
+            else
+              array_el.is_a? FHIR.const_get(discriminator[:code])
+            end
+          end
+        end
+      end
+
+      def find_slice_by_values(element, values)
+        unique_first_part = values.map { |value_def| value_def[:path].first }.uniq
+        Array.wrap(element).find do |el|
+          unique_first_part.all? do |part|
+            values_matching = values.select { |value_def| value_def[:path].first == part }
+            values_matching.each { |value_def| value_def[:path] = value_def[:path].drop(1) }
+            resolve_element_from_path(el, part) do |el_found|
+              all_matches = values_matching.select { |value_def| value_def[:path].empty? }.all? { |value_def| value_def[:value] == el_found }
+              remaining_values = values_matching.reject { |value_def| value_def[:path].empty? }
+              remaining_matches = remaining_values.present? ? find_slice_by_values(el_found, remaining_values) : true
+              all_matches && remaining_matches
+            end
+          end
+        end
+      end
+
+      def resources_with_invalid_binding(binding_def, resources)
+        path_source = resources
+        resources.map do |resource|
+          binding_def[:extensions]&.each do |url|
+            path_source = path_source.map { |el| el.extension.select { |extension| extension.url == url } }.flatten
+          end
+          invalid_code_found = resolve_element_from_path(path_source, binding_def[:path]) do |el|
+            case binding_def[:type]
+            when 'CodeableConcept'
+              if el.is_a? FHIR::CodeableConcept
+                el.coding.none? do |coding|
+                  Terminology.validate_code(binding_def[:system], coding.code, coding.system)
+                end
+              else
+                false
+              end
+            when 'Quantity', 'Coding'
+              !Terminology.validate_code(binding_def[:system], el.code, el.system)
+            when 'code'
+              !Terminology.validate_code(binding_def[:system], el)
+            else
+              false
+            end
+          end
+
+          { resource: resource, element: invalid_code_found } if invalid_code_found.present?
+        end.reject(&:nil?)
+      end
+
+      def invalid_binding_message(invalid_binding, binding_def)
+        code_as_string = invalid_binding[:element]
+        if invalid_binding[:element].is_a? FHIR::CodeableConcept
+          code_as_string = invalid_binding[:element]&.coding&.map do |coding|
+            "#{coding.system}|#{coding.code}"
+          end&.join(' or ')
+        elsif invalid_binding[:element].is_a?(FHIR::Coding) || invalid_binding[:element].is_a?(FHIR::Quantity)
+          code_as_string = "#{invalid_binding[:element].system}|#{invalid_binding[:element].code}"
+        end
+
+        "#{invalid_binding[:resource].resourceType}/#{invalid_binding[:resource].id} " \
+        "at #{invalid_binding[:resource].resourceType}.#{binding_def[:path]} with code '#{code_as_string}' " \
+        "is not in #{binding_def[:system]}"
+      end
     end
 
-    Dir.glob(File.join(__dir__, '..', 'modules', '**', '*_sequence.rb')).each { |file| require file }
+    Dir.glob(File.join(__dir__, '..', 'modules', '**', '*_sequence.rb')).sort.each { |file| require file }
   end
 end

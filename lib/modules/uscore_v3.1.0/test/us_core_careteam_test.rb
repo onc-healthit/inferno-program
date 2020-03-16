@@ -9,59 +9,123 @@ describe Inferno::Sequence::USCore310CareteamSequence do
   before do
     @sequence_class = Inferno::Sequence::USCore310CareteamSequence
     @base_url = 'http://www.example.com/fhir'
-    @client = FHIR::Client.new(@base_url)
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(token: @token, selected_module: 'uscore_v3.1.0')
-    @patient_id = '123'
-    @instance.patient_id = @patient_id
-    set_resource_support(@instance, 'CareTeam')
+    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.0')
+    @client = FHIR::Client.for_testing_instance(@instance)
+    @patient_ids = 'example'
+    @instance.patient_ids = @patient_ids
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
 
-  describe 'unauthorized search test' do
+  describe 'CareTeam search by patient+status test' do
     before do
-      @test = @sequence_class[:unauthorized_search]
+      @test = @sequence_class[:search_by_patient_status]
       @sequence = @sequence_class.new(@instance, @client)
+      @care_team = FHIR.from_contents(load_fixture(:us_core_careteam))
+      @care_team_ary = { @sequence.patient_ids.first => @care_team }
+      @sequence.instance_variable_set(:'@care_team', @care_team)
+      @sequence.instance_variable_set(:'@care_team_ary', @care_team_ary)
 
       @query = {
-        'patient': @instance.patient_id,
-        'status': 'proposed'
+        'patient': @sequence.patient_ids.first,
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_team_ary[@sequence.patient_ids.first], 'status'))
       }
     end
 
-    it 'skips if the CareTeam search interaction is not supported' do
-      @instance.server_capabilities.destroy
-      @instance.reload
+    it 'skips if the search params are not supported' do
+      capabilities = Inferno::Models::ServerCapabilities.new
+      def capabilities.supported_search_params(_)
+        ['patient']
+      end
+      @instance.server_capabilities = capabilities
+
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      skip_message = 'This server does not support CareTeam search operation(s) according to conformance statement.'
-      assert_equal skip_message, exception.message
+      assert_match(/The server doesn't support the search parameters:/, exception.message)
     end
 
-    it 'fails when the token refresh response has a success status' do
-      stub_request(:get, "#{@base_url}/CareTeam")
-        .with(query: @query)
-        .to_return(status: 200)
+    it 'fails if a non-success response code is received' do
+      ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error'].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          'status': value
+        }
+        stub_request(:get, "#{@base_url}/CareTeam")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 401)
+      end
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'Bad response code: expected 401, but found 200', exception.message
+      assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
     end
 
-    it 'succeeds when the token refresh response has an error status' do
-      stub_request(:get, "#{@base_url}/CareTeam")
-        .with(query: @query)
-        .to_return(status: 401)
+    it 'fails if a Bundle is not received' do
+      ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error'].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          'status': value
+        }
+        stub_request(:get, "#{@base_url}/CareTeam")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: FHIR::CareTeam.new.to_json)
+      end
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected FHIR Bundle but found: CareTeam', exception.message
+    end
+
+    it 'skips if an empty Bundle is received' do
+      ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error'].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          'status': value
+        }
+        stub_request(:get, "#{@base_url}/CareTeam")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: FHIR::Bundle.new.to_json)
+      end
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No CareTeam resources appear to be available. Please use patients with more information.', exception.message
+    end
+
+    it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
+      ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error'].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          'status': value
+        }
+        stub_request(:get, "#{@base_url}/CareTeam")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::CareTeam.new(id: '!@#$%')).to_json)
+      end
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Invalid \w+:/, exception.message)
+    end
+
+    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error'].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          'status': value
+        }
+        body =
+          if @sequence.resolve_element_from_path(@care_team, 'status') == value
+            wrap_resources_in_bundle(@care_team_ary.values.flatten).to_json
+          else
+            FHIR::Bundle.new.to_json
+          end
+        stub_request(:get, "#{@base_url}/CareTeam")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
+      end
 
       @sequence.run_test(@test)
-    end
-
-    it 'is omitted when no token is set' do
-      @instance.token = ''
-
-      exception = assert_raises(Inferno::OmitException) { @sequence.run_test(@test) }
-
-      assert_equal 'Do not test if no bearer token set', exception.message
     end
   end
 
@@ -75,7 +139,10 @@ describe Inferno::Sequence::USCore310CareteamSequence do
     end
 
     it 'skips if the CareTeam read interaction is not supported' do
-      @instance.server_capabilities.destroy
+      Inferno::Models::ServerCapabilities.create(
+        testing_instance_id: @instance.id,
+        capabilities: FHIR::CapabilityStatement.new.to_json
+      )
       @instance.reload
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
@@ -87,7 +154,7 @@ describe Inferno::Sequence::USCore310CareteamSequence do
       @sequence.instance_variable_set(:'@resources_found', false)
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
-      assert_equal 'No CareTeam resources could be found for this patient. Please use patients with more information.', exception.message
+      assert_equal 'No CareTeam resources appear to be available. Please use patients with more information.', exception.message
     end
 
     it 'fails if a non-success response code is received' do
@@ -136,6 +203,24 @@ describe Inferno::Sequence::USCore310CareteamSequence do
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
       assert_equal 'Expected resource to be of type CareTeam.', exception.message
+    end
+
+    it 'fails if the resource has an incorrect id' do
+      Inferno::Models::ResourceReference.create(
+        resource_type: 'CareTeam',
+        resource_id: @care_team_id,
+        testing_instance: @instance
+      )
+
+      care_team = FHIR::CareTeam.new(
+        id: 'wrong_id'
+      )
+
+      stub_request(:get, "#{@base_url}/CareTeam/#{@care_team_id}")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: care_team.to_json)
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      assert_equal "Expected resource to contain id: #{@care_team_id}", exception.message
     end
 
     it 'succeeds when a CareTeam resource is read successfully' do

@@ -57,6 +57,8 @@
   </div>
 </div>
 
+ <%= erb(:missing_valuesets, {}, {}) %>
+
 <div class="container">
   <div class="main main-details" role='region'>
 
@@ -213,6 +215,12 @@
               value: instance.patient_id,
               })%>
 
+        <%= erb(:prerequisite_field,{},{prerequisite: :patient_ids,
+              label: 'Patient IDs',
+              instance: instance,
+              value: instance.patient_ids,
+              })%>
+
         <%= erb(:prerequisite_field,{},{prerequisite: :id_token,
               label: 'OAuth 2.0 ID Token',
               instance: instance,
@@ -224,6 +232,13 @@
               instance: instance,
               value: instance.refresh_token,
               })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :device_codes,
+              label: 'Implantable Device Type Code',
+              description: 'Enter the code for an Implantable Device type, or multiple codes separated by commas. If blank, Inferno will validate all Device resources against the Implantable Device profile',
+              instance: instance,
+              value: instance.device_codes,
+        })%>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :group_id,
               label: 'Group ID',
@@ -293,6 +308,12 @@
               value: instance.bulk_token_endpoint,
               })%>   
 
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_access_token,
+              label: 'Bulk Bearer Token',
+              instance: instance,
+              value: instance.bulk_access_token,
+              })%>
+
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_client_id,
               instance: instance,
               label: 'Bulk Client ID',
@@ -337,8 +358,7 @@
                 
               </label>
               <textarea type="text" class="form-control" name="bulk_private_key" id="bulk_private_key" placeholder="" rows="5"><%=instance.bulk_private_key %></textarea>
-          </div>
-
+          </div>     
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />

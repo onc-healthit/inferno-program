@@ -9,8 +9,6 @@ ENV['RACK_ENV'] = 'test'
 require 'minitest/autorun'
 require 'webmock/minitest'
 require 'rack/test'
-require 'json/jwt'
-
 test_log_filename = File.join('tmp', 'test.log')
 FileUtils.rm test_log_filename if File.exist? test_log_filename
 
@@ -63,10 +61,12 @@ def valid_uri?(uri)
 end
 
 def wrap_resources_in_bundle(resources, type: 'searchset')
-  bundle = FHIR::DSTU2::Bundle.new('id': 'foo', 'type': type)
   resources = [resources].flatten.compact
+  # get the Bundle class from the same version of FHIR models
+  bundle_class = resources.first.class.parent::Bundle
+  bundle = bundle_class.new('id': 'foo', 'type': type)
   resources.each do |resource|
-    bundle.entry << FHIR::DSTU2::Bundle::Entry.new
+    bundle.entry << bundle_class::Entry.new
     bundle.entry.last.resource = resource
   end
   bundle
@@ -89,7 +89,7 @@ def get_test_instance(url: 'http://www.example.com',
                       oauth_token_endpoint: 'http://oauth_reg.example.com/token',
                       scopes: 'launch openid patient/*.* profile',
                       selected_module: 'argonaut',
-                      token: JSON::JWT.new(iss: 'foo'))
+                      token: 'ACCESS_TOKEN')
 
   @instance = Inferno::Models::TestingInstance.new(url: url,
                                                    client_name: client_name,

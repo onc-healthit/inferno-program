@@ -28,7 +28,7 @@ class SequenceBaseTest < MiniTest::Test
   end
 
   def test_save_delayed_resource_references
-    delayed_resources = ['Location', 'Medication', 'Organization', 'Practitioner', 'PractitionerRole']
+    delayed_resources = ['Location', 'Organization', 'Practitioner', 'PractitionerRole']
     some_non_delayed_resources = ['AllergyIntolerance', 'CarePlan', 'Careteam', 'Condition', 'Device', 'Observation', 'Encounter', 'Goal']
 
     delayed_resources.each do |res|
@@ -59,7 +59,12 @@ class SequenceBaseTest < MiniTest::Test
     it 'returns value from period' do
       { start: 'now', end: 'later' }.each do |key, value|
         element = FHIR::Period.new(key => value)
-        assert @sequence.get_value_for_search_param(element) == value
+        expected_value = if key == :start
+                           'gt' + value
+                         else
+                           'lt' + value
+                         end
+        assert @sequence.get_value_for_search_param(element) == expected_value
       end
     end
 
@@ -92,7 +97,7 @@ class SequenceBaseTest < MiniTest::Test
       stub_request(:get, @bundle1.link.first.url)
         .to_return(body: @bundle2)
 
-      all_resources = @sequence.fetch_all_bundled_resources(@bundle1)
+      all_resources = @sequence.fetch_all_bundled_resources(OpenStruct.new(resource: @bundle1))
       assert all_resources.map(&:id) == ['1', '2']
     end
 
@@ -101,12 +106,14 @@ class SequenceBaseTest < MiniTest::Test
         .to_return(body: '', status: 404)
 
       assert_raises Inferno::AssertionException do
-        @sequence.fetch_all_bundled_resources(@bundle1)
+        @sequence.fetch_all_bundled_resources(OpenStruct.new(resource: @bundle1))
       end
     end
 
     it 'returns resources when no next page' do
-      all_resources = @sequence.fetch_all_bundled_resources(FHIR.from_contents(@bundle2))
+      all_resources = @sequence.fetch_all_bundled_resources(
+        OpenStruct.new(resource: FHIR.from_contents(@bundle2))
+      )
       assert all_resources.map(&:id) == ['2']
     end
   end
@@ -127,6 +134,153 @@ class SequenceBaseTest < MiniTest::Test
           end
         end
       end
+    end
+  end
+
+  class OptionalTestSequence < Inferno::Sequence::SequenceBase
+    2.times do |index|
+      test :"test #{index}" do
+        metadata do
+          id "0#{index + 1}"
+          name 'a'
+          description 'a'
+          link 'http://example.com'
+          optional if index.odd?
+        end
+      end
+    end
+  end
+
+  describe '.tests' do
+    before do
+      @sequence_class = OptionalTestSequence
+    end
+
+    it 'returns all tests if no arguments are given' do
+      assert_equal 2, @sequence_class.tests.length
+    end
+
+    it 'returns all tests if module.hide_optional is false' do
+      inferno_module = OpenStruct.new(hide_optional: false)
+
+      assert_equal 2, @sequence_class.tests(inferno_module).length
+    end
+
+    it 'returns only required if module.hide_optional is truth' do
+      inferno_module = OpenStruct.new(hide_optional: true)
+
+      assert_equal 1, @sequence_class.tests(inferno_module).length
+      @sequence_class.tests(inferno_module).each { |test| assert_equal true, test.required? }
+    end
+  end
+
+  describe '.test_count' do
+    before do
+      @sequence_class = OptionalTestSequence
+    end
+
+    it 'includes all tests if no arguments are given' do
+      assert_equal 2, @sequence_class.test_count
+    end
+
+    it 'includes all tests if module.hide_optional is false' do
+      inferno_module = OpenStruct.new(hide_optional: false)
+
+      assert_equal 2, @sequence_class.test_count(inferno_module)
+    end
+
+    it 'returns only required if module.hide_optional is truth' do
+      inferno_module = OpenStruct.new(hide_optional: true)
+
+      assert_equal 1, @sequence_class.test_count(inferno_module)
+    end
+  end
+
+  describe '#tests' do
+    before do
+      @instance = Inferno::Models::TestingInstance.create
+      client = FHIR::Client.new('')
+      @sequence = OptionalTestSequence.new(@instance, client)
+    end
+
+    it 'uses @instance.module if no argument is supplied' do
+      module_without_optional = OpenStruct.new(hide_optional: true)
+      module_with_optional = OpenStruct.new(hide_optional: false)
+
+      @instance.instance_variable_set(:@module, module_without_optional)
+      assert_equal 1, @sequence.tests.length
+
+      @instance.instance_variable_set(:@module, module_with_optional)
+      assert_equal 2, @sequence.tests.length
+    end
+  end
+
+  describe '#test_count' do
+    before do
+      @instance = Inferno::Models::TestingInstance.create
+      client = FHIR::Client.new('')
+      @sequence = OptionalTestSequence.new(@instance, client)
+    end
+
+    it 'uses @instance.module if no argument is supplied' do
+      module_without_optional = OpenStruct.new(hide_optional: true)
+      module_with_optional = OpenStruct.new(hide_optional: false)
+
+      @instance.instance_variable_set(:@module, module_without_optional)
+      assert_equal 1, @sequence.test_count
+
+      @instance.instance_variable_set(:@module, module_with_optional)
+      assert_equal 2, @sequence.test_count
+    end
+  end
+
+  describe '#find_slice_by_values' do
+    before do
+      @instance = Inferno::Models::TestingInstance.create
+      client = FHIR::Client.new('')
+      @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
+    end
+
+    it 'fails to find anything when values match on different elements in array' do
+      values = [
+        {
+          path: ['coding', 'code'],
+          value: 'correct-code'
+        },
+        {
+          path: ['coding', 'system'],
+          value: 'correct-system'
+        }
+      ]
+      element = {
+        coding: [
+          { code: 'correct-code', system: 'wrong-system' },
+          { code: 'wrong-code', system: 'correct-system' }
+        ]
+      }
+      element_as_obj = JSON.parse(element.to_json, object_class: OpenStruct)
+      assert @sequence.find_slice_by_values(element_as_obj, values).blank?
+    end
+
+    it 'succeeds to find slice' do
+      values = [
+        {
+          path: ['coding', 'code'],
+          value: 'correct-code'
+        },
+        {
+          path: ['coding', 'system'],
+          value: 'correct-system'
+        }
+      ]
+      element = {
+        coding: [
+          { code: 'correct-code', system: 'correct-system' },
+          { code: 'wrong-code', system: 'wrong-system' }
+        ]
+      }
+      element_as_obj = JSON.parse(element.to_json, object_class: OpenStruct)
+      assert @sequence.find_slice_by_values(element_as_obj, values).present?
     end
   end
 end

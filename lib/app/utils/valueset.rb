@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
 require 'sqlite3'
+require_relative 'bcp_13'
+require_relative 'bcp47'
+require_relative 'codesystem'
+require_relative 'fhir_package_manager'
+
 module Inferno
   class Terminology
     class Valueset
@@ -17,41 +22,49 @@ module Inferno
       # The ValueSet Authority
       attr_accessor :vsa
 
+      # Flag to say "use the provided expansion" when processing the valueset
+      attr_accessor :use_expansions
+
       # UMLS Vocabulary: https://www.nlm.nih.gov/research/umls/sourcereleasedocs/index.html
       SAB = {
         'http://www.nlm.nih.gov/research/umls/rxnorm' => 'RXNORM',
         'http://loinc.org' => 'LNC',
         'http://snomed.info/sct' => 'SNOMEDCT_US',
-        'http://www.icd10data.com/icd10pcs' => 'ICD10CM',
+        'http://www.icd10data.com/icd10pcs' => 'ICD10PCS',
+        'http://hl7.org/fhir/sid/icd-10-cm' => 'ICD10CM',
+        'http://hl7.org/fhir/sid/icd-9-cm' => 'ICD9CM',
         'http://unitsofmeasure.org' => 'NCI_UCUM',
-        'http://hl7.org/fhir/ndfrt' => 'NDFRT',
         'http://nucc.org/provider-taxonomy' => 'NUCCPT',
-        'http://www.ama-assn.org/go/cpt' => 'CPT'
+        'http://www.ama-assn.org/go/cpt' => 'CPT',
+        'urn:oid:2.16.840.1.113883.6.285' => 'HCPCS'
       }.freeze
 
       CODE_SYS = {
-        'http://hl7.org/fhir/v3/Ethnicity' => 'resources/misc_valuesets/CodeSystem-v3-Ethnicity.json',
-        'http://hl7.org/fhir/v3/Race' => 'resources/misc_valuesets/CodeSystem-v3-Race.json',
-        'http://hl7.org/fhir/condition-category' => 'resources/misc_valuesets/CodeSystem-condition-category.json',
-        'http://hl7.org/fhir/us/core/CodeSystem/careplan-category' => 'resources/us_core_r4/CodeSystem-careplan-category.json',
-        'urn:oid:2.16.840.1.113883.6.238' => 'resources/us_core_r4/CodeSystem-cdcrec.json',
-        'http://hl7.org/fhir/us/core/CodeSystem/condition-category' => 'resources/us_core_r4/CodeSystem-condition-category.json',
-        'http://hl7.org/fhir/us/core/CodeSystem/us-core-documentreference-category' => 'resources/us_core_r4/CodeSystem-us-core-documentreference-category.json',
-        'http://terminology.hl7.org/CodeSystem/condition-category' => 'resources/misc_valuesets/CodeSystem-terminology-condition-category.json'
+        'urn:ietf:bcp:13' => -> { BCP13.code_set },
+        'urn:ietf:bcp:47' => ->(filter = nil) { Inferno::BCP47.code_set(filter) }
       }.freeze
 
       # https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/attribute_names.html
       FILTER_PROP = {
+        'CLASSTYPE' => 'LCN',
+        'DOC' => 'Doc',
         'SCALE_TYP' => 'LOINC_SCALE_TYP'
       }.freeze
 
-      def initialize(database)
+      def initialize(database, use_expansions = true)
         @db = database
+        @use_expansions = use_expansions
       end
 
       # The ValueSet [Set]
       def valueset
-        @valueset || process_valueset
+        return @valueset if @valueset
+
+        if @use_expansions
+          process_with_expansions
+        else
+          process_valueset
+        end
       end
 
       # Read the desired valueset from a JSON file
@@ -75,10 +88,35 @@ module Inferno
         @valueset.length
       end
 
+      def included_code_systems
+        @valueset_model.compose.include.map(&:system).compact.uniq
+      end
+
+      # Delegates to process_expanded_valueset if there's already an expansion
+      # Otherwise it delegates to process_valueset to do the expansion
+      def process_with_expansions
+        valueset_toocostly = @valueset_model&.expansion&.extension&.find { |vs| vs.url == 'http://hl7.org/fhir/StructureDefinition/valueset-toocostly' }&.value
+        valueset_unclosed = @valueset_model&.expansion&.extension&.find { |vs| vs.url == 'http://hl7.org/fhir/StructureDefinition/valueset-unclosed' }&.value
+        if @valueset_model&.expansion&.contains
+          # This is moved into a nested clause so we can tell in the debug statements which path we're taking
+          if valueset_toocostly || valueset_unclosed
+            Inferno.logger.debug("Valueset too costly or unclosed: #{url}")
+            process_valueset
+          else
+            Inferno.logger.debug("Processing expanded valueset: #{url}")
+            process_expanded_valueset
+          end
+        else
+          Inferno.logger.debug("Processing composed valueset: #{url}")
+          process_valueset
+        end
+      end
+
       # Creates the whole valueset
       #
       # Creates a [Set] representing the valueset
       def process_valueset
+        Inferno.logger.debug "Processing #{@valueset_model.url}"
         include_set = Set.new
         @valueset_model.compose.include.each do |include|
           # Cumulative of each include
@@ -91,12 +129,12 @@ module Inferno
         @valueset = include_set
       end
 
-      def generate_array
-        x = []
-        get_valueset_rows valueset do |row|
-          x << row[0]
+      def process_expanded_valueset
+        include_set = Set.new
+        @valueset_model.expansion.contains.each do |contain|
+          include_set.add(system: contain.system, code: contain.code)
         end
-        x
+        @valueset = include_set
       end
 
       # Checks if the provided code is in the valueset
@@ -125,7 +163,8 @@ module Inferno
       # @param [String] filename the name of the file
       def save_bloom_to_file(filename = "resources/validators/bloom/#{(URI(url).host + URI(url).path).gsub(%r{[./]}, '_')}.msgpack")
         generate_bloom unless @bf
-        File.write(filename, @bf.to_msgpack) unless @bf.nil?
+        bloom_file = File.new(filename, 'wb')
+        bloom_file.write(@bf.to_msgpack) unless @bf.nil?
         filename
       end
 
@@ -137,6 +176,23 @@ module Inferno
             csv << [code[:system], code[:code]]
           end
         end
+      end
+
+      # Load a code system from a file
+      #
+      # @param [String] filename the file containing the code system JSON
+      def self.load_system(filename)
+        # TODO: Generalize this
+        cs = FHIR::Json.from_json(File.read(filename))
+        cs_set = Set.new
+        load_codes = lambda do |concept|
+          concept.each do |concept_code|
+            cs_set.add(system: cs.url, code: concept_code.code)
+            load_codes.call(concept_code.concept) unless concept_code.concept.empty?
+          end
+        end
+        load_codes.call(cs.concept)
+        cs_set
       end
 
       private
@@ -182,6 +238,21 @@ module Inferno
       # @param [FHIR::ValueSet::Compose::Include::Filter] filter the filter object
       # @return [Set] the filtered set of codes
       def filter_code_set(system, filter = nil, _version = nil)
+        fhir_codesystem = File.join(Terminology::PACKAGE_DIR, FHIRPackageManager.encode_name(system).to_s + '.json')
+        if CODE_SYS.include? system
+          Inferno.logger.debug "  loading #{system} codes..."
+          return filter.nil? ? CODE_SYS[system].call : CODE_SYS[system].call(filter)
+        elsif File.exist?(fhir_codesystem)
+          if SAB[system].nil?
+            fhir_cs = Inferno::Terminology::Codesystem
+              .new(FHIR::Json.from_json(File.read(fhir_codesystem)))
+
+            raise UnknownCodeSystemException, system if fhir_cs.codesystem_model.concept.empty?
+
+            return fhir_cs.filter_codes(filter)
+          end
+        end
+
         filter_clause = lambda do |filter|
           where = +''
           if filter.op == 'in'
@@ -198,17 +269,13 @@ module Inferno
             col = filter.property
             where << "#{col} = '#{filter.value}'"
           else
-            puts "Cannot handle filter operation: #{filter.op}"
+            Inferno.logger.debug "Cannot handle filter operation: #{filter.op}"
           end
           where
         end
 
         filtered_set = Set.new
-        if CODE_SYS.include? system
-          puts "loading #{system} codes..."
-          return load_code_system(system)
-        end
-        raise "Can't handle #{filter&.op}" unless ['=', 'in', 'is-a', nil].include? filter&.op
+        raise FilterOperationException, filter&.op unless ['=', 'in', 'is-a', nil].include? filter&.op
         raise UnknownCodeSystemException, system if SAB[system].nil?
 
         if filter.nil?
@@ -216,38 +283,29 @@ module Inferno
             filtered_set.add(system: system, code: row[0])
           end
         elsif ['=', 'in', nil].include? filter&.op
-          @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}' AND #{filter_clause.call(filter)}") do |row|
-            filtered_set.add(system: system, code: row[0])
+          if FILTER_PROP[filter.property]
+            @db.execute("SELECT code FROM mrsat WHERE SAB = '#{SAB[system]}' AND ATN = '#{fp_self(filter.property)}' AND ATV = '#{fp_self(filter.value)}'") do |row|
+              filtered_set.add(system: system, code: row[0])
+            end
+          else
+            @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}' AND #{filter_clause.call(filter)}") do |row|
+              filtered_set.add(system: system, code: row[0])
+            end
           end
         elsif filter&.op == 'is-a'
           filtered_set = filter_is_a(system, filter)
+        else
+          throw FilterOperationException(filter&.op)
         end
         filtered_set
-      end
-
-      # Load a code system from a file
-      #
-      # @param [String] system the name of the code system
-      def load_code_system(system)
-        # TODO: Generalize this
-        cs = FHIR::Json.from_json(File.read(CODE_SYS[system]))
-        cs_set = Set.new
-        load_codes = lambda do |concept|
-          concept.each do |concept_code|
-            cs_set.add(system: system, code: concept_code.code)
-            load_codes.call(concept_code.concept) unless concept_code.concept.empty?
-          end
-        end
-        load_codes.call(cs.concept)
-        cs_set
       end
 
       # Imports the ValueSet with the provided URL from the known local ValueSet Authority
       #
       # @param [Object] url the url of the desired valueset
       # @return [Set] the imported valueset
-      def import_valueset(url)
-        @vsa.get_valueset(url)
+      def import_valueset(desired_url)
+        @vsa.get_valueset(desired_url).valueset
       end
 
       # Filters UMLS codes for "is-a" filters
@@ -258,7 +316,6 @@ module Inferno
       def filter_is_a(system, filter)
         children = {}
         find_children = lambda do |_parent, system|
-          puts 'getting children...'
           @db.execute("SELECT c1.code, c2.code
           FROM mrrel r
             JOIN mrconso c1 ON c1.aui=r.aui1
@@ -284,6 +341,13 @@ module Inferno
         end
         subsume.call(filter.value)
         desired_children
+      end
+
+      # fp_self is short for filter_prop_or_self
+      # @param [String] prop The property name
+      # @return [String] either the value from FILTER_PROP for that key, or prop if that key isn't in FILTER_PROP
+      def fp_self(prop)
+        FILTER_PROP[prop] || prop
       end
 
       class FilterOperationException < StandardError
