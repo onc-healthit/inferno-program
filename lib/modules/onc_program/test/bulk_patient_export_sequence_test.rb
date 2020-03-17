@@ -2,12 +2,12 @@
 
 require_relative '../../../../test/test_helper'
 
-describe Inferno::Sequence::BulkDataExportSequence do
+describe Inferno::Sequence::BulkDataPatientExportSequence do
   before do
     @content_location = 'http://www.example.com/status'
     @file_location = 'http://www.example.com/patient_export.ndjson'
 
-    @sequence_class = Inferno::Sequence::BulkDataExportSequence
+    @sequence_class = Inferno::Sequence::BulkDataPatientExportSequence
 
     @instance = Inferno::Models::TestingInstance.create(
       url: 'http://www.example.com',
@@ -18,6 +18,13 @@ describe Inferno::Sequence::BulkDataExportSequence do
     @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'r4'))
 
     @client = FHIR::Client.new(@instance.url)
+
+    @export_request_headers = { accept: 'application/fhir+json',
+                                prefer: 'respond-async',
+                                authorization: "Bearer #{@instance.bulk_access_token}" }
+
+    @status_request_headers = { accept: 'application/json',
+                                authorization: "Bearer #{@instance.bulk_access_token}" }
   end
 
   describe 'endpoint TLS tests' do
@@ -77,7 +84,7 @@ describe Inferno::Sequence::BulkDataExportSequence do
         @sequence.check_capability_statement
       end
 
-      assert error.message == 'Server CapabilityStatement did not declare export operation in Group resource.'
+      assert error.message == 'Server CapabilityStatement did not declare support for export operation in Group resource.'
     end
 
     it 'fail if CapabilityStatement does not declare operation in Group resoure' do
@@ -93,7 +100,7 @@ describe Inferno::Sequence::BulkDataExportSequence do
         @sequence.check_capability_statement
       end
 
-      assert error.message == 'Server CapabilityStatement did not declare export operation in Group resource.'
+      assert error.message == 'Server CapabilityStatement did not declare support for export operation in Group resource.'
     end
 
     it 'fail if CapabilityStatement does not declare export in Group resoure' do
@@ -109,7 +116,7 @@ describe Inferno::Sequence::BulkDataExportSequence do
         @sequence.check_capability_statement
       end
 
-      assert error.message == 'Server CapabilityStatement did not declare export operation in Group resource.'
+      assert error.message == 'Server CapabilityStatement did not declare support for export operation in Group resource.'
     end
 
     it 'pass if CapabilityStatement declares export in Group resoure' do
@@ -170,6 +177,35 @@ describe Inferno::Sequence::BulkDataExportSequence do
 
     it 'succeeds when requiresAccessToken is true' do
       @sequence.assert_requires_access_token(@complete_status)
+    end
+  end
+
+  describe 'delete request tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+      @test = @sequence_class[:bulk_data_delete_test]
+      @headers = { accept: 'application/json' }
+    end
+
+    it 'fails when server returns 200' do
+      stub_request(:get, @instance.bulk_url + '/Patient/$export')
+        .with(headers: @export_request_headers)
+        .to_return(
+          status: 202,
+          headers: { content_location: @content_location }
+        )
+
+      stub_request(:delete, @content_location)
+        .with(headers: @status_request_headers)
+        .to_return(
+          status: 200
+        )
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert error.message == 'Bad response code: expected 202, but found 200'
     end
   end
 end
@@ -304,6 +340,14 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
+  def include_delete_stub(status_code: 202)
+    stub_request(:delete, @content_location)
+      .with(headers: @status_request_headers)
+      .to_return(
+        status: status_code
+      )
+  end
+
   def test_all_pass
     WebMock.reset!
 
@@ -314,6 +358,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_export_stub_invalid_accept
     include_export_stub_invalid_prefer
     include_status_check_stub
+    include_delete_stub
 
     sequence_result = @sequence.start
     failures = sequence_result.failures
