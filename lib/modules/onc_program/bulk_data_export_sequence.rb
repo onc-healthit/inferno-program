@@ -279,10 +279,11 @@ module Inferno
       test :bulk_data_delete_test do
         metadata do
           id '10'
-          name 'Bulk Data support DELETE request'
+          name 'Bulk Data Server returns "202 Accepted" for delete request'
           link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#bulk-data-delete-request'
           description %(
-            Bulk Data Server SHALL support client DELETE request
+            After a bulk data request has been started, a client MAY send a delete request to the URL provided in the Content-Location header to cancel the request.
+            Bulk Data Server MUST support client's delete request and return HTTP Status Code of "202 Accepted"
          )
         end
 
