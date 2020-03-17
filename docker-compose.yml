@@ -5,6 +5,7 @@ services:
       context: ./
     volumes:
       - ./config.yml:/var/www/inferno/config.yml
+      - ./data:/var/www/inferno/data
       - type: bind
         source: "./resources/terminology/validators"
         target: "/var/www/inferno/resources/terminology/validators"
