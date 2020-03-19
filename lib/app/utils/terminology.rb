@@ -63,12 +63,11 @@ module Inferno
     def self.create_validators(type: :bloom, selected_module: :all, minimum_binding_strength: 'example', include_umls: true)
       strengths = ['example', 'preferred', 'extensible', 'required'].drop_while { |s| s != minimum_binding_strength }
       validators = []
-      valuesets = get_module_valuesets(selected_module, strengths)
       umls_code_systems = Set.new(Inferno::Terminology::Valueset::SAB.keys)
       root_dir = "resources/terminology/validators/#{type}"
       FileUtils.mkdir_p(root_dir)
 
-      valuesets.each do |k, vs|
+      get_module_valuesets(selected_module, strengths).each do |k, vs|
         next if SKIP_SYS.include? k
         next if !include_umls && !umls_code_systems.disjoint?(Set.new(vs.included_code_systems))
 
