@@ -201,27 +201,11 @@ module Inferno
       @known_valuesets[url] || raise(UnknownValueSetException, url)
     end
 
-    def self.get_valueset_by_id(id)
-      unless @valueset_ids
-        @valueset_ids = {}
-        @known_valuesets.each_pair do |k, v|
-          @valueset_ids[v&.valueset_model&.id] = k
-        end
-      end
-      @known_valuesets[@valueset_ids[id]] || raise(UnknownValueSetException, id)
-    end
-
     def self.bloom_file_name(codesystem)
       uri = URI(codesystem)
       return (uri.host + uri.path).gsub(%r{[./]}, '_') if uri.host && uri.port
 
       codesystem.gsub(/[.\W]/, '_')
-    end
-
-    def self.loaded_code_systems
-      @loaded_code_systems ||= @loaded_validators.flat_map do |_, vs|
-        vs[:code_systems]
-      end.uniq.compact
     end
 
     def self.missing_validators
