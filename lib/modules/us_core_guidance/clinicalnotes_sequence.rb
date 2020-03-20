@@ -64,7 +64,7 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
-          next if reply&.resource&.entry&.none? { |entry| entry&.resource&.resourceType == resource_class }
+          next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == resource_class }
 
           self.document_attachments = ClinicalNoteAttachment.new(resource_class) if document_attachments.nil?
 
@@ -95,7 +95,7 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
-          next if reply&.resource&.entry&.none? { |entry| entry&.resource&.resourceType == resource_class }
+          next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == resource_class }
 
           self.report_attachments = ClinicalNoteAttachment.new(resource_class) if report_attachments.nil?
 
