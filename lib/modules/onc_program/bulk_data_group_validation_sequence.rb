@@ -397,8 +397,6 @@ module Inferno
           )
         end
 
-        must_supports = Inferno::Sequence::USCore310DeviceSequence::MUST_SUPPORTS
-        test_output_for_must_support('Device', must_supports)
         test_output_against_profile('Device')
       end
 
