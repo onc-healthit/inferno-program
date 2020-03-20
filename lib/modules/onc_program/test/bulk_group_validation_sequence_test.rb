@@ -9,8 +9,11 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
     @patient_file_location = 'https://www.example.com/patient_export.ndjson'
     @condition_file_location = 'https://www.example.com/condition_export.ndjson'
 
+    @patient_export = load_fixture_with_extension('bulk_data_patient.ndjson')
+    @condition_export = load_fixture_with_extension('bulk_data_condition.ndjson')
+
     @output = [
-      { 'type' => 'Patient', 'url' => @patient_file_location },
+      { 'type' => 'Patient', 'url' => @patient_file_location, 'count' => @patient_export.lines.count },
       { 'type' => 'Condition', 'url' => @condition_file_location }
     ]
 
@@ -31,9 +34,6 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
 
     @file_request_headers = { accept: 'application/fhir+ndjson',
                               authorization: "Bearer #{@instance.bulk_access_token}" }
-
-    @patient_export = load_fixture_with_extension('bulk_data_patient.ndjson')
-    @condition_export = load_fixture_with_extension('bulk_data_condition.ndjson')
   end
 
   describe 'initialize' do
@@ -311,6 +311,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       @sequence = @sequence_class.new(@instance, @client)
       @headers = { accept: 'application/fhir+ndjson' }
       @headers['Authorization'] = "Bearer #{@instance.bulk_access_token}"
+
       stub_request(:get, @patient_file_location)
         .with(headers: @file_request_headers)
         .to_return(
@@ -390,8 +391,10 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
     end
 
     it 'fails when NDJSON is valid and has only one patient' do
-      single_patient_export = @patient_export.each_line.first
-      stub_request(:get, 'https://www.example.com/single_patient_export.json')
+      single_patient_export = @patient_export.lines.first
+      single_patient_file_location = 'https://www.example.com/single_patient_export.json'
+
+      stub_request(:get, single_patient_file_location)
         .with(headers: @file_request_headers)
         .to_return(
           status: 200,
@@ -403,6 +406,32 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       file['url'] = 'https://www.example.com/single_patient_export.json'
       @sequence.check_file_request(file, 'Patient', false, 0)
       assert !@sequence.has_min_patient_count
+    end
+
+    it 'warns when count does not match number of resources' do
+      file = @output.find { |line| line['type'] == 'Patient' }
+      file['count'] = @patient_export.lines.count + 1
+
+      @sequence.check_file_request(file, 'Patient', true, 0)
+
+      assert @sequence.instance_variable_get(:@test_warnings).include?("Count in status output (#{file['count']}) did not match actual number of resources returned (#{@patient_export.lines.count})")
+    end
+
+    it 'does not warn when not validate all resources' do
+      file = @output.find { |line| line['type'] == 'Patient' }
+      file['count'] = @patient_export.lines.count + 1
+
+      @sequence.check_file_request(file, 'Patient', false, 1)
+
+      assert !@sequence.instance_variable_get(:@test_warnings).include?("Count in status output (#{file['count']}) did not match actual number of resources returned (#{@patient_export.lines.count})")
+    end
+
+    it 'does not warn count does match number of resources' do
+      file = @output.find { |line| line['type'] == 'Patient' }
+
+      @sequence.check_file_request(file, 'Patient', true, 0)
+
+      assert !@sequence.instance_variable_get(:@test_warnings).include?("Count in status output (#{file['count']}) did not match actual number of resources returned (#{@patient_export.lines.count})")
     end
   end
 end
