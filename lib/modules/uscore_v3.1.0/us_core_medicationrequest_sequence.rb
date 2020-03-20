@@ -119,6 +119,43 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [],
+        elements: [
+          {
+            path: 'status'
+          },
+          {
+            path: 'intent'
+          },
+          {
+            path: 'reported'
+          },
+          {
+            path: 'medication'
+          },
+          {
+            path: 'subject'
+          },
+          {
+            path: 'encounter'
+          },
+          {
+            path: 'authoredOn'
+          },
+          {
+            path: 'requester'
+          },
+          {
+            path: 'dosageInstruction'
+          },
+          {
+            path: 'dosageInstruction.text'
+          }
+        ]
+      }.freeze
+
       test :search_by_patient_intent do
         metadata do
           id '01'
@@ -538,25 +575,25 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all MedicationRequest resources returned from prior searches to see if any of them provide the following must support elements:
 
-            MedicationRequest.status
+            status
 
-            MedicationRequest.intent
+            intent
 
-            MedicationRequest.reported[x]
+            reported[x]
 
-            MedicationRequest.medication[x]
+            medication[x]
 
-            MedicationRequest.subject
+            subject
 
-            MedicationRequest.encounter
+            encounter
 
-            MedicationRequest.authoredOn
+            authoredOn
 
-            MedicationRequest.requester
+            requester
 
-            MedicationRequest.dosageInstruction
+            dosageInstruction
 
-            MedicationRequest.dosageInstruction.text
+            dosageInstruction.text
 
           )
           versions :r4
@@ -564,23 +601,9 @@ module Inferno
 
         skip_if_not_found(resource_type: 'MedicationRequest', delayed: false)
 
-        must_support_elements = [
-          { path: 'MedicationRequest.status' },
-          { path: 'MedicationRequest.intent' },
-          { path: 'MedicationRequest.reported' },
-          { path: 'MedicationRequest.medication' },
-          { path: 'MedicationRequest.subject' },
-          { path: 'MedicationRequest.encounter' },
-          { path: 'MedicationRequest.authoredOn' },
-          { path: 'MedicationRequest.requester' },
-          { path: 'MedicationRequest.dosageInstruction' },
-          { path: 'MedicationRequest.dosageInstruction.text' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('MedicationRequest.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @medication_request_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end

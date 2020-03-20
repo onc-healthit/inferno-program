@@ -49,6 +49,38 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [
+          {
+            name: 'Practitioner.identifier:NPI',
+            path: 'identifier',
+            discriminator: {
+              type: 'patternIdentifier',
+              path: '',
+              system: 'http://hl7.org/fhir/sid/us-npi'
+            }
+          }
+        ],
+        elements: [
+          {
+            path: 'identifier'
+          },
+          {
+            path: 'identifier.system'
+          },
+          {
+            path: 'identifier.value'
+          },
+          {
+            path: 'name'
+          },
+          {
+            path: 'name.family'
+          }
+        ]
+      }.freeze
+
       test :resource_read do
         metadata do
           id '01'
@@ -298,15 +330,15 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all Practitioner resources returned from prior searches to see if any of them provide the following must support elements:
 
-            Practitioner.identifier
+            identifier
 
-            Practitioner.identifier.system
+            identifier.system
 
-            Practitioner.identifier.value
+            identifier.value
 
-            Practitioner.name
+            name
 
-            Practitioner.name.family
+            name.family
 
             Practitioner.identifier:NPI
 
@@ -316,37 +348,16 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Practitioner', delayed: true)
 
-        must_support_slices = [
-          {
-            name: 'Practitioner.identifier:NPI',
-            path: 'Practitioner.identifier',
-            discriminator: {
-              type: 'patternIdentifier',
-              path: '',
-              system: 'http://hl7.org/fhir/sid/us-npi'
-            }
-          }
-        ]
-        missing_slices = must_support_slices.reject do |slice|
-          truncated_path = slice[:path].gsub('Practitioner.', '')
+        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
           @practitioner_ary&.any? do |resource|
-            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found = find_slice(resource, slice[:path], slice[:discriminator])
             slice_found.present?
           end
         end
 
-        must_support_elements = [
-          { path: 'Practitioner.identifier' },
-          { path: 'Practitioner.identifier.system' },
-          { path: 'Practitioner.identifier.value' },
-          { path: 'Practitioner.name' },
-          { path: 'Practitioner.name.family' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('Practitioner.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @practitioner_ary&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end

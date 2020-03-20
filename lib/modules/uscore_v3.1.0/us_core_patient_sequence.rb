@@ -72,6 +72,86 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [
+          {
+            id: 'Patient.extension:race',
+            url: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race'
+          },
+          {
+            id: 'Patient.extension:ethnicity',
+            url: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity'
+          },
+          {
+            id: 'Patient.extension:birthsex',
+            url: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex'
+          }
+        ],
+        slices: [],
+        elements: [
+          {
+            path: 'identifier'
+          },
+          {
+            path: 'identifier.system'
+          },
+          {
+            path: 'identifier.value'
+          },
+          {
+            path: 'name'
+          },
+          {
+            path: 'name.family'
+          },
+          {
+            path: 'name.given'
+          },
+          {
+            path: 'telecom'
+          },
+          {
+            path: 'telecom.system'
+          },
+          {
+            path: 'telecom.value'
+          },
+          {
+            path: 'telecom.use'
+          },
+          {
+            path: 'gender'
+          },
+          {
+            path: 'birthDate'
+          },
+          {
+            path: 'address'
+          },
+          {
+            path: 'address.line'
+          },
+          {
+            path: 'address.city'
+          },
+          {
+            path: 'address.state'
+          },
+          {
+            path: 'address.postalCode'
+          },
+          {
+            path: 'address.period'
+          },
+          {
+            path: 'communication'
+          },
+          {
+            path: 'communication.language'
+          }
+        ]
+      }.freeze
+
       test :search_by__id do
         metadata do
           id '01'
@@ -612,45 +692,45 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all Patient resources returned from prior searches to see if any of them provide the following must support elements:
 
-            Patient.identifier
+            identifier
 
-            Patient.identifier.system
+            identifier.system
 
-            Patient.identifier.value
+            identifier.value
 
-            Patient.name
+            name
 
-            Patient.name.family
+            name.family
 
-            Patient.name.given
+            name.given
 
-            Patient.telecom
+            telecom
 
-            Patient.telecom.system
+            telecom.system
 
-            Patient.telecom.value
+            telecom.value
 
-            Patient.telecom.use
+            telecom.use
 
-            Patient.gender
+            gender
 
-            Patient.birthDate
+            birthDate
 
-            Patient.address
+            address
 
-            Patient.address.line
+            address.line
 
-            Patient.address.city
+            address.city
 
-            Patient.address.state
+            address.state
 
-            Patient.address.postalCode
+            address.postalCode
 
-            Patient.address.period
+            address.period
 
-            Patient.communication
+            communication
 
-            Patient.communication.language
+            communication.language
 
             Patient.extension:race
 
@@ -664,50 +744,21 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Patient', delayed: false)
 
-        must_support_extensions = {
-          'Patient.extension:race': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race',
-          'Patient.extension:ethnicity': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity',
-          'Patient.extension:birthsex': 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex'
-        }
-        missing_must_support_extensions = must_support_extensions.reject do |_id, url|
+        missing_must_support_extensions = MUST_SUPPORTS[:extensions].reject do |must_support_extension|
           @patient_ary&.values&.flatten&.any? do |resource|
-            resource.extension.any? { |extension| extension.url == url }
+            resource.extension.any? { |extension| extension.url == must_support_extension[:url] }
           end
         end
 
-        must_support_elements = [
-          { path: 'Patient.identifier' },
-          { path: 'Patient.identifier.system' },
-          { path: 'Patient.identifier.value' },
-          { path: 'Patient.name' },
-          { path: 'Patient.name.family' },
-          { path: 'Patient.name.given' },
-          { path: 'Patient.telecom' },
-          { path: 'Patient.telecom.system' },
-          { path: 'Patient.telecom.value' },
-          { path: 'Patient.telecom.use' },
-          { path: 'Patient.gender' },
-          { path: 'Patient.birthDate' },
-          { path: 'Patient.address' },
-          { path: 'Patient.address.line' },
-          { path: 'Patient.address.city' },
-          { path: 'Patient.address.state' },
-          { path: 'Patient.address.postalCode' },
-          { path: 'Patient.address.period' },
-          { path: 'Patient.communication' },
-          { path: 'Patient.communication.language' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('Patient.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @patient_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
 
-        missing_must_support_elements += missing_must_support_extensions.keys
+        missing_must_support_elements += missing_must_support_extensions.map { |must_support| must_support[:id] }
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@patient_ary&.values&.flatten&.length} provided Patient resource(s)"

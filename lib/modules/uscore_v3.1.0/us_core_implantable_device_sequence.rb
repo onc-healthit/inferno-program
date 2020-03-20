@@ -41,6 +41,46 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [],
+        elements: [
+          {
+            path: 'udiCarrier'
+          },
+          {
+            path: 'udiCarrier.deviceIdentifier'
+          },
+          {
+            path: 'udiCarrier.carrierAIDC'
+          },
+          {
+            path: 'udiCarrier.carrierHRF'
+          },
+          {
+            path: 'distinctIdentifier'
+          },
+          {
+            path: 'manufactureDate'
+          },
+          {
+            path: 'expirationDate'
+          },
+          {
+            path: 'lotNumber'
+          },
+          {
+            path: 'serialNumber'
+          },
+          {
+            path: 'type'
+          },
+          {
+            path: 'patient'
+          }
+        ]
+      }.freeze
+
       test :search_by_patient do
         metadata do
           id '01'
@@ -308,27 +348,27 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all Device resources returned from prior searches to see if any of them provide the following must support elements:
 
-            Device.udiCarrier
+            udiCarrier
 
-            Device.udiCarrier.deviceIdentifier
+            udiCarrier.deviceIdentifier
 
-            Device.udiCarrier.carrierAIDC
+            udiCarrier.carrierAIDC
 
-            Device.udiCarrier.carrierHRF
+            udiCarrier.carrierHRF
 
-            Device.distinctIdentifier
+            distinctIdentifier
 
-            Device.manufactureDate
+            manufactureDate
 
-            Device.expirationDate
+            expirationDate
 
-            Device.lotNumber
+            lotNumber
 
-            Device.serialNumber
+            serialNumber
 
-            Device.type
+            type
 
-            Device.patient
+            patient
 
           )
           versions :r4
@@ -336,24 +376,9 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Device', delayed: false)
 
-        must_support_elements = [
-          { path: 'Device.udiCarrier' },
-          { path: 'Device.udiCarrier.deviceIdentifier' },
-          { path: 'Device.udiCarrier.carrierAIDC' },
-          { path: 'Device.udiCarrier.carrierHRF' },
-          { path: 'Device.distinctIdentifier' },
-          { path: 'Device.manufactureDate' },
-          { path: 'Device.expirationDate' },
-          { path: 'Device.lotNumber' },
-          { path: 'Device.serialNumber' },
-          { path: 'Device.type' },
-          { path: 'Device.patient' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('Device.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @device_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end

@@ -27,6 +27,60 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [
+          {
+            name: 'Provenance.agent:ProvenanceAuthor',
+            path: 'agent',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: 'type',
+              code: 'author',
+              system: 'http://terminology.hl7.org/CodeSystem/provenance-participant-type'
+            }
+          },
+          {
+            name: 'Provenance.agent:ProvenanceTransmitter',
+            path: 'agent',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: 'type',
+              code: 'transmitter',
+              system: 'http://hl7.org/fhir/us/core/CodeSystem/us-core-provenance-participant-type'
+            }
+          }
+        ],
+        elements: [
+          {
+            path: 'target'
+          },
+          {
+            path: 'recorded'
+          },
+          {
+            path: 'agent'
+          },
+          {
+            path: 'agent.type'
+          },
+          {
+            path: 'agent.who'
+          },
+          {
+            path: 'agent.onBehalfOf'
+          },
+          {
+            path: 'agent.type.coding.code',
+            fixed_value: 'author'
+          },
+          {
+            path: 'agent.type.coding.code',
+            fixed_value: 'transmitter'
+          }
+        ]
+      }.freeze
+
       test :resource_read do
         metadata do
           id '01'
@@ -188,21 +242,21 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all Provenance resources returned from prior searches to see if any of them provide the following must support elements:
 
-            Provenance.target
+            target
 
-            Provenance.recorded
+            recorded
 
-            Provenance.agent
+            agent
 
-            Provenance.agent.type
+            agent.type
 
-            Provenance.agent.who
+            agent.who
 
-            Provenance.agent.onBehalfOf
+            agent.onBehalfOf
 
-            Provenance.agent.type.coding.code
+            agent.type.coding.code
 
-            Provenance.agent.type.coding.code
+            agent.type.coding.code
 
             Provenance.agent:ProvenanceAuthor
 
@@ -214,51 +268,16 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Provenance', delayed: true)
 
-        must_support_slices = [
-          {
-            name: 'Provenance.agent:ProvenanceAuthor',
-            path: 'Provenance.agent',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: 'type',
-              code: 'author',
-              system: 'http://terminology.hl7.org/CodeSystem/provenance-participant-type'
-            }
-          },
-          {
-            name: 'Provenance.agent:ProvenanceTransmitter',
-            path: 'Provenance.agent',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: 'type',
-              code: 'transmitter',
-              system: 'http://hl7.org/fhir/us/core/CodeSystem/us-core-provenance-participant-type'
-            }
-          }
-        ]
-        missing_slices = must_support_slices.reject do |slice|
-          truncated_path = slice[:path].gsub('Provenance.', '')
+        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
           @provenance_ary&.any? do |resource|
-            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found = find_slice(resource, slice[:path], slice[:discriminator])
             slice_found.present?
           end
         end
 
-        must_support_elements = [
-          { path: 'Provenance.target' },
-          { path: 'Provenance.recorded' },
-          { path: 'Provenance.agent' },
-          { path: 'Provenance.agent.type' },
-          { path: 'Provenance.agent.who' },
-          { path: 'Provenance.agent.onBehalfOf' },
-          { path: 'Provenance.agent.type.coding.code', fixed_value: 'author' },
-          { path: 'Provenance.agent.type.coding.code', fixed_value: 'transmitter' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('Provenance.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @provenance_ary&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end

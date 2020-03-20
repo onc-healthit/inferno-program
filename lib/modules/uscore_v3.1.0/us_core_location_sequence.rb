@@ -63,6 +63,40 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [],
+        elements: [
+          {
+            path: 'status'
+          },
+          {
+            path: 'name'
+          },
+          {
+            path: 'telecom'
+          },
+          {
+            path: 'address'
+          },
+          {
+            path: 'address.line'
+          },
+          {
+            path: 'address.city'
+          },
+          {
+            path: 'address.state'
+          },
+          {
+            path: 'address.postalCode'
+          },
+          {
+            path: 'managingOrganization'
+          }
+        ]
+      }.freeze
+
       test :resource_read do
         metadata do
           id '01'
@@ -414,23 +448,23 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all Location resources returned from prior searches to see if any of them provide the following must support elements:
 
-            Location.status
+            status
 
-            Location.name
+            name
 
-            Location.telecom
+            telecom
 
-            Location.address
+            address
 
-            Location.address.line
+            address.line
 
-            Location.address.city
+            address.city
 
-            Location.address.state
+            address.state
 
-            Location.address.postalCode
+            address.postalCode
 
-            Location.managingOrganization
+            managingOrganization
 
           )
           versions :r4
@@ -438,22 +472,9 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Location', delayed: true)
 
-        must_support_elements = [
-          { path: 'Location.status' },
-          { path: 'Location.name' },
-          { path: 'Location.telecom' },
-          { path: 'Location.address' },
-          { path: 'Location.address.line' },
-          { path: 'Location.address.city' },
-          { path: 'Location.address.state' },
-          { path: 'Location.address.postalCode' },
-          { path: 'Location.managingOrganization' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('Location.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @location_ary&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end

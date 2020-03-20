@@ -83,6 +83,42 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [
+          {
+            name: 'CarePlan.category:AssessPlan',
+            path: 'category',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: '',
+              code: 'assess-plan',
+              system: 'http://hl7.org/fhir/us/core/CodeSystem/careplan-category'
+            }
+          }
+        ],
+        elements: [
+          {
+            path: 'text'
+          },
+          {
+            path: 'text.status'
+          },
+          {
+            path: 'status'
+          },
+          {
+            path: 'intent'
+          },
+          {
+            path: 'category'
+          },
+          {
+            path: 'subject'
+          }
+        ]
+      }.freeze
+
       test :search_by_patient_category do
         metadata do
           id '01'
@@ -449,17 +485,17 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all CarePlan resources returned from prior searches to see if any of them provide the following must support elements:
 
-            CarePlan.text
+            text
 
-            CarePlan.text.status
+            text.status
 
-            CarePlan.status
+            status
 
-            CarePlan.intent
+            intent
 
-            CarePlan.category
+            category
 
-            CarePlan.subject
+            subject
 
             CarePlan.category:AssessPlan
 
@@ -469,39 +505,16 @@ module Inferno
 
         skip_if_not_found(resource_type: 'CarePlan', delayed: false)
 
-        must_support_slices = [
-          {
-            name: 'CarePlan.category:AssessPlan',
-            path: 'CarePlan.category',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: '',
-              code: 'assess-plan',
-              system: 'http://hl7.org/fhir/us/core/CodeSystem/careplan-category'
-            }
-          }
-        ]
-        missing_slices = must_support_slices.reject do |slice|
-          truncated_path = slice[:path].gsub('CarePlan.', '')
+        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
           @care_plan_ary&.values&.flatten&.any? do |resource|
-            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found = find_slice(resource, slice[:path], slice[:discriminator])
             slice_found.present?
           end
         end
 
-        must_support_elements = [
-          { path: 'CarePlan.text' },
-          { path: 'CarePlan.text.status' },
-          { path: 'CarePlan.status' },
-          { path: 'CarePlan.intent' },
-          { path: 'CarePlan.category' },
-          { path: 'CarePlan.subject' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('CarePlan.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @care_plan_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end

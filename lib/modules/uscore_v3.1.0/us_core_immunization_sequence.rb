@@ -78,6 +78,31 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [],
+        elements: [
+          {
+            path: 'status'
+          },
+          {
+            path: 'statusReason'
+          },
+          {
+            path: 'vaccineCode'
+          },
+          {
+            path: 'patient'
+          },
+          {
+            path: 'occurrence'
+          },
+          {
+            path: 'primarySource'
+          }
+        ]
+      }.freeze
+
       test :search_by_patient do
         metadata do
           id '01'
@@ -375,17 +400,17 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all Immunization resources returned from prior searches to see if any of them provide the following must support elements:
 
-            Immunization.status
+            status
 
-            Immunization.statusReason
+            statusReason
 
-            Immunization.vaccineCode
+            vaccineCode
 
-            Immunization.patient
+            patient
 
-            Immunization.occurrence[x]
+            occurrence[x]
 
-            Immunization.primarySource
+            primarySource
 
           )
           versions :r4
@@ -393,19 +418,9 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Immunization', delayed: false)
 
-        must_support_elements = [
-          { path: 'Immunization.status' },
-          { path: 'Immunization.statusReason' },
-          { path: 'Immunization.vaccineCode' },
-          { path: 'Immunization.patient' },
-          { path: 'Immunization.occurrence' },
-          { path: 'Immunization.primarySource' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('Immunization.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @immunization_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end

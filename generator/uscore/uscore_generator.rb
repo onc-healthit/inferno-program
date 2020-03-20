@@ -531,8 +531,7 @@ module Inferno
           )
         }
 
-        sequence[:must_supports] = sequence[:must_supports].uniq
-        sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
+        sequence[:must_supports][:elements].each do |element|
           test[:description] += %(
             #{element[:path]}
           )
@@ -542,80 +541,54 @@ module Inferno
           element[:path] = element[:path].gsub('.class', '.local_class')
         end
 
-        sequence[:must_supports].each { |must_support| must_support[:path]&.gsub!('[x]', '') }
-        must_support_extensions = sequence[:must_supports].select { |must_support| must_support[:type] == 'extension' }
+        must_support_extensions = sequence[:must_supports][:extensions]
         must_support_extensions.each do |extension|
           test[:description] += %(
             #{extension[:id]}
           )
         end
 
-        test[:test_code] += %(
-          #{skip_if_not_found_code(sequence)}
-        )
-        resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
-
-        if must_support_extensions.present?
-          extensions_list = must_support_extensions.map { |extension| "'#{extension[:id]}': '#{extension[:url]}'" }
-
-          test[:test_code] += %(
-            must_support_extensions = {
-              #{extensions_list.join(",\n          ")}
-            }
-            missing_must_support_extensions = must_support_extensions.reject do |_id, url|
-              #{resource_array}&.any? do |resource|
-                resource.extension.any? { |extension| extension.url == url }
-              end
-            end
-      )
-        end
-
-        must_support_slices = sequence[:must_supports].select { |must_support| must_support[:type] == 'slice' }
+        must_support_slices = sequence[:must_supports][:slices]
         must_support_slices.each do |slice|
           test[:description] += %(
             #{slice[:name]}
           )
         end
-        slices_list = must_support_slices.map do |slice_def|
-          %({
-              name: '#{slice_def[:name]}',
-              path: '#{slice_def[:path]}',
-              discriminator: #{structure_to_string(slice_def[:discriminator])}
-            })
+
+        sequence[:must_supports][:elements].each { |must_support| must_support[:path]&.gsub!('[x]', '') }
+        sequence[:must_supports][:slices].each { |must_support| must_support[:path]&.gsub!('[x]', '') }
+
+        test[:test_code] += %(
+          #{skip_if_not_found_code(sequence)}
+        )
+        resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
+
+        if sequence[:must_supports][:extensions].present?
+          test[:test_code] += %(
+            missing_must_support_extensions = MUST_SUPPORTS[:extensions].reject do |must_support_extension|
+              #{resource_array}&.any? do |resource|
+                resource.extension.any? { |extension| extension.url == must_support_extension[:url] }
+              end
+            end
+      )
         end
 
-        if must_support_slices.present?
+        if sequence[:must_supports][:slices].present?
           test[:test_code] += %(
-            must_support_slices = [
-              #{slices_list.join(",\n")}
-            ]
-            missing_slices = must_support_slices.reject do |slice|
-              truncated_path = slice[:path].gsub('#{sequence[:resource]}.', '')
+            missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
               @#{sequence[:resource].underscore}_ary#{'&.values&.flatten' unless sequence[:delayed_sequence]}&.any? do |resource|
-                slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+                slice_found = find_slice(resource, slice[:path], slice[:discriminator])
                 slice_found.present?
               end
             end
           )
         end
-        elements_list = []
-        sequence[:must_supports].select { |must_support| must_support[:type] == 'element' }.each do |element|
-          element[:path] = element[:path].gsub('.class', '.local_class') # class is mapped to local_class in fhir_models
-          element_list_parts = ["path: '#{element[:path]}'"]
-          element_list_parts << ["fixed_value: '#{element[:fixed_value]}'"] if element[:fixed_value].present?
-          elements_list << "{ #{element_list_parts.join(', ')} }"
-        end
 
-        if elements_list.present?
+        if sequence[:must_supports][:elements].present?
           test[:test_code] += %(
-            must_support_elements = [
-              #{elements_list.join(",\n")}
-            ]
-
-            missing_must_support_elements = must_support_elements.reject do |element|
-              truncated_path = element[:path].gsub('#{sequence[:resource]}.', '')
+            missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
               #{resource_array}&.any? do |resource|
-                value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+                value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
                 value_found.present?
               end
             end
@@ -624,7 +597,7 @@ module Inferno
 
           if must_support_extensions.present?
             test[:test_code] += %(
-              missing_must_support_elements += missing_must_support_extensions.keys
+              missing_must_support_elements += missing_must_support_extensions.map { |must_support| must_support[:id] }
             )
           end
           if must_support_slices.present?
@@ -642,6 +615,10 @@ module Inferno
           @instance.save!)
 
         sequence[:tests] << test
+
+        sequence[:must_support_constants] = %(
+          MUST_SUPPORTS = #{structure_to_string(sequence[:must_supports])}.freeze
+        )
       end
 
       def structure_to_string(struct)
