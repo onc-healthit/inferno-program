@@ -75,7 +75,7 @@ module Inferno
         filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(%r{[./]}, '_')}"
         begin
           save_to_file(vs.valueset, filename, type)
-          validators << { url: k, file: File.basename(filename), count: vs.count, type: type.to_s, code_systems: vs.included_code_systems }
+          validators << { url: k, file: name_by_type(File.basename(filename), type), count: vs.count, type: type.to_s, code_systems: vs.included_code_systems }
         rescue Valueset::UnknownCodeSystemException, Valueset::FilterOperationException, UnknownValueSetException => e
           Inferno.logger.warn "#{e.message} for ValueSet: #{k}"
           next
@@ -121,9 +121,20 @@ module Inferno
     def self.save_to_file(codeset, filename, type)
       case type
       when :bloom
-        save_bloom_to_file(codeset, "#{filename}.msgpack")
+        save_bloom_to_file(codeset, name_by_type(filename, type))
       when :csv
-        save_csv_to_file(codeset, "#{filename}.csv")
+        save_csv_to_file(codeset, name_by_type(filename, type))
+      else
+        raise 'Unknown Validator Type!'
+      end
+    end
+
+    def self.name_by_type(filename, type)
+      case type
+      when :bloom
+        "#{filename}.msgpack"
+      when :csv
+        "#{filename}.csv"
       else
         raise 'Unknown Validator Type!'
       end
