@@ -118,7 +118,7 @@ module Inferno
           assert errors.empty?, "Failed Profile validation for resource #{line_count}: #{errors}"
         end
 
-        assert_must_supports_found(must_supports)
+        assert_must_supports_found(must_supports) if lines_to_validate.positive?
 
         if file.key?('count') && validate_all
           warning do
