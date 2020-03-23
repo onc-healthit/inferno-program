@@ -28,7 +28,7 @@ test_sets:
             title: Standalone Launch with Patient Scope
             description: Perform Standalone SMART launch sequence and test OpenID Connect and token refresh functionality.
             variable_defaults:
-              onc_sl_scopes: launch/patient launch/encounter patient/*.read openid fhirUser offline_access
+              onc_sl_scopes: launch/patient patient/*.read openid fhirUser offline_access
               onc_sl_confidential_client: true
           - sequence: OncStandaloneOpenIDConnectSequence
             prefix: SPC
@@ -78,7 +78,6 @@ test_sets:
             title: EHR Launch with Practitioner Scope
             description: Perform EHR SMART launch sequence and test OpenID Connect and token refresh functionality.
             variable_defaults:
-              scopes: launch user/*.read openid fhirUser offline_access
               confidential_client: 'true'
           - sequence: OncOpenIDConnectSequence
             prefix: EHC

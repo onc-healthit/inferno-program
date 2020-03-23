@@ -82,4 +82,3 @@ end
 
 require_relative 'endpoint/landing'
 require_relative 'endpoint/home'
-require_relative 'endpoint/terminology'

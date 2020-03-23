@@ -18,7 +18,7 @@ bind: '0.0.0.0'
 disable_tls_tests: false
 
 # Default scopes
-default_scopes: launch launch/patient offline_access openid profile user/*.* patient/*.*
+default_scopes: launch user/*.read openid fhirUser offline_access
 
 # Log Level: unkown, fatal, error, warn, info, debug
 log_level: info
@@ -38,7 +38,7 @@ include_extras: true
 badge_text: PROGRAM EDITION
 
 # Resource validator options: must be one of "internal" or "external". external_resource_validator_url is only used if resource_validator is set to external.
-resource_validator: internal
+resource_validator: external
 external_resource_validator_url: http://validator_service:4567
 
 # module options: one or more must be set.  The first option in the list will be checked by default
