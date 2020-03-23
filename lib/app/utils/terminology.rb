@@ -81,15 +81,19 @@ module Inferno
           next
         end
       end
-      if include_umls
-        vs = Inferno::Terminology::Valueset.new(@db)
-        Inferno::Terminology::Valueset::SAB.each do |k, _v|
-          Inferno.logger.debug "Processing #{k}"
-          cs = vs.code_system_set(k)
-          filename = "#{root_dir}/#{bloom_file_name(k)}"
-          save_to_file(cs, filename, type)
-          validators << { url: k, file: name_by_type(File.basename(filename), type), count: cs.length, type: type.to_s, code_systems: k }
-        end
+
+      code_systems = validators.flat_map { |vs| vs[:code_systems] }.uniq
+      vs = Inferno::Terminology::Valueset.new(@db)
+
+      code_systems.each do |cs_name|
+        next if SKIP_SYS.include? cs_name
+        next if !include_umls && umls_code_systems.include?(cs_name)
+
+        Inferno.logger.debug "Processing #{cs_name}"
+        cs = vs.code_system_set(cs_name)
+        filename = "#{root_dir}/#{bloom_file_name(cs_name)}"
+        save_to_file(cs, filename, type)
+        validators << { url: cs_name, file: name_by_type(File.basename(filename), type), count: cs.length, type: type.to_s, code_systems: cs_name }
       end
       # Write manifest for loading later
       File.write("#{root_dir}/manifest.yml", validators.to_yaml)

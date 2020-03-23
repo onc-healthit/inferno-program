@@ -31,6 +31,7 @@ module Inferno
         'http://loinc.org' => 'LNC',
         'http://snomed.info/sct' => 'SNOMEDCT_US',
         'http://www.icd10data.com/icd10pcs' => 'ICD10PCS',
+        'http://hl7.org/fhir/sid/cvx' => 'CVX',
         'http://hl7.org/fhir/sid/icd-10-cm' => 'ICD10CM',
         'http://hl7.org/fhir/sid/icd-9-cm' => 'ICD9CM',
         'http://unitsofmeasure.org' => 'NCI_UCUM',
@@ -41,7 +42,9 @@ module Inferno
 
       CODE_SYS = {
         'urn:ietf:bcp:13' => -> { BCP13.code_set },
-        'urn:ietf:bcp:47' => ->(filter = nil) { Inferno::BCP47.code_set(filter) }
+        'urn:ietf:bcp:47' => ->(filter = nil) { Inferno::BCP47.code_set(filter) },
+        'http://ihe.net/fhir/ValueSet/IHE.FormatCode.codesystem' => -> { Inferno::Terminology.known_valuesets['http://hl7.org/fhir/ValueSet/formatcodes'].valueset },
+        'https://www.usps.com/' => -> { Inferno::Terminology.known_valuesets['http://hl7.org/fhir/us/core/ValueSet/us-core-usps-state'].valueset }
       }.freeze
 
       # https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/attribute_names.html
