@@ -88,7 +88,7 @@ module Inferno
           cs = vs.code_system_set(k)
           filename = "#{root_dir}/#{bloom_file_name(k)}"
           save_to_file(cs, filename, type)
-          validators << { url: k, file: File.basename(filename), count: cs.length, type: type.to_s, code_systems: k }
+          validators << { url: k, file: name_by_type(File.basename(filename), type), count: cs.length, type: type.to_s, code_systems: k }
         end
       end
       # Write manifest for loading later
