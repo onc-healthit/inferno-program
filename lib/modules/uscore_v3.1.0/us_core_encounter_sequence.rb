@@ -115,7 +115,7 @@ module Inferno
             path: 'status'
           },
           {
-            path: 'class'
+            path: 'local_class'
           },
           {
             path: 'type'

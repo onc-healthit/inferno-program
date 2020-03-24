@@ -538,6 +538,7 @@ module Inferno
           # class is mapped to local_class in fhir_models. Update this after it
           # has been added to the description so that the description contains
           # the original path
+          element[:path] = 'local_class' if element[:path] == 'class'
           element[:path] = element[:path].gsub('.class', '.local_class')
         end
 
