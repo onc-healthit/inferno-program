@@ -681,6 +681,10 @@ module Inferno
         bindings = sequence[:bindings]
           .select { |binding_def| ['required', 'extensible'].include? binding_def[:strength] }
 
+        bindings.each do |binding|
+          binding[:path].gsub!('.class', '.local_class')
+          binding[:path] = 'local_class' if binding[:path] == 'class'
+        end
         resources_ary_str = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
         if bindings.present?
           test[:test_code] += %(
