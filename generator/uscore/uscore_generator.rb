@@ -538,8 +538,7 @@ module Inferno
           # class is mapped to local_class in fhir_models. Update this after it
           # has been added to the description so that the description contains
           # the original path
-          element[:path] = 'local_class' if element[:path] == 'class'
-          element[:path] = element[:path].gsub('.class', '.local_class')
+          element[:path] = element[:path].gsub(/(?<!\w)class(?!\w)/, 'local_class')
         end
 
         must_support_extensions = sequence[:must_supports][:extensions]
@@ -682,8 +681,7 @@ module Inferno
           .select { |binding_def| ['required', 'extensible'].include? binding_def[:strength] }
 
         bindings.each do |binding|
-          binding[:path].gsub!('.class', '.local_class')
-          binding[:path] = 'local_class' if binding[:path] == 'class'
+          binding[:path].gsub!(/(?<!\w)class(?!\w)/, 'local_class')
         end
         resources_ary_str = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
         if bindings.present?
@@ -841,7 +839,7 @@ module Inferno
       end
 
       def resolve_element_path(search_param_description, delayed_sequence)
-        element_path = search_param_description[:path].gsub('.class', '.local_class') # match fhir_models because class is protected keyword in ruby
+        element_path = search_param_description[:path].gsub(/(?<!\w)class(?!\w)/, 'local_class')
         path_parts = element_path.split('.')
         resource_val = delayed_sequence ? "@#{path_parts.shift.underscore}_ary" : "@#{path_parts.shift.underscore}_ary[patient]"
         "resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}')"
