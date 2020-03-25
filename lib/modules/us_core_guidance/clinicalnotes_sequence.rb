@@ -215,7 +215,7 @@ module Inferno
           name 'DiagnosticReport and DocumentReference reference the same attachment'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html#fhir-resources-to-exchange-clinical-notes'
           description %(
-            All presentedForms urls referenced in DiagnosticReports shall have corresponding content attachment urls referenced in DocumentReference.ascii_only?
+            All presentedForms urls referenced in DiagnosticReports shall have corresponding content attachment urls referenced in DocumentReference.
 
             There is no single best practice for representing a scanned, or narrative-only report due to the overlapping scope of the underlying resources and 
             variability in system implementation. Reports may be represented by either a DocumentReference or a DiagnosticReport. To require Clients query both 
