@@ -217,11 +217,11 @@ module Inferno
           description %(
             All presentedForms urls referenced in DiagnosticReports shall have corresponding content attachment urls referenced in DocumentReference.
 
-            There is no single best practice for representing a scanned, or narrative-only report due to the overlapping scope of the underlying resources and 
-            variability in system implementation. Reports may be represented by either a DocumentReference or a DiagnosticReport. To require Clients query both 
+            There is no single best practice for representing a scanned, or narrative-only report due to the overlapping scope of the underlying resources and
+            variability in system implementation. Reports may be represented by either a DocumentReference or a DiagnosticReport. To require Clients query both
             DocumentReference and DiagnosticReport to get all the information for a patient is potentially dangerous if a client doesn’t understand or follow this requirement.
-            
-            To simplify the requirement, US Core IG requires servers implement the duplicate reference to allow a client to find a Pathology report, or other Diagnostic Reports, 
+
+            To simplify the requirement, US Core IG requires servers implement the duplicate reference to allow a client to find a Pathology report, or other Diagnostic Reports,
             in either Resource.
           )
           versions :r4
