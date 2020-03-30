@@ -17,7 +17,8 @@ module Inferno
       'http://hl7.org/fhir/ValueSet/all-time-units', # UCUM filter "canonical"
       'http://hl7.org/fhir/ValueSet/example-intensional', # Unhandled filter parent =
       'http://hl7.org/fhir/ValueSet/use-context', # ValueSet contains an unknown ValueSet
-      'http://hl7.org/fhir/ValueSet/media-modality' # ValueSet contains an unknown ValueSet
+      'http://hl7.org/fhir/ValueSet/media-modality', # ValueSet contains an unknown ValueSet
+      'http://hl7.org/fhir/ValueSet/example-hierarchical' # Example valueset with fake codes
     ].freeze
 
     PACKAGE_DIR = File.join('tmp', 'terminology', 'fhir')
@@ -76,19 +77,28 @@ module Inferno
         begin
           save_to_file(vs.valueset, filename, type)
           validators << { url: k, file: name_by_type(File.basename(filename), type), count: vs.count, type: type.to_s, code_systems: vs.included_code_systems }
-        rescue Valueset::UnknownCodeSystemException, Valueset::FilterOperationException, UnknownValueSetException => e
+        rescue Valueset::UnknownCodeSystemException, Valueset::FilterOperationException, UnknownValueSetException, URI::InvalidURIError => e
           Inferno.logger.warn "#{e.message} for ValueSet: #{k}"
           next
         end
       end
-      if include_umls
-        vs = Inferno::Terminology::Valueset.new(@db)
-        Inferno::Terminology::Valueset::SAB.each do |k, _v|
-          Inferno.logger.debug "Processing #{k}"
-          cs = vs.code_system_set(k)
-          filename = "#{root_dir}/#{bloom_file_name(k)}"
+
+      code_systems = validators.flat_map { |vs| vs[:code_systems] }.uniq
+      vs = Inferno::Terminology::Valueset.new(@db)
+
+      code_systems.each do |cs_name|
+        next if SKIP_SYS.include? cs_name
+        next if !include_umls && umls_code_systems.include?(cs_name)
+
+        Inferno.logger.debug "Processing #{cs_name}"
+        begin
+          cs = vs.code_system_set(cs_name)
+          filename = "#{root_dir}/#{bloom_file_name(cs_name)}"
           save_to_file(cs, filename, type)
-          validators << { url: k, file: name_by_type(File.basename(filename), type), count: cs.length, type: type.to_s, code_systems: k }
+          validators << { url: cs_name, file: name_by_type(File.basename(filename), type), count: cs.length, type: type.to_s, code_systems: cs_name }
+        rescue Valueset::UnknownCodeSystemException, Valueset::FilterOperationException, UnknownValueSetException, URI::InvalidURIError => e
+          Inferno.logger.warn "#{e.message} for CodeSystem #{cs_name}"
+          next
         end
       end
       # Write manifest for loading later
