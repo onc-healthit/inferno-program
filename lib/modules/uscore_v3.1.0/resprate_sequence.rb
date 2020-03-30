@@ -88,6 +88,85 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [
+          {
+            name: 'Observation.category:VSCat',
+            path: 'category',
+            discriminator: {
+              type: 'value',
+              values: [
+                {
+                  path: 'coding.code',
+                  value: 'vital-signs'
+                },
+                {
+                  path: 'coding.system',
+                  value: 'http://terminology.hl7.org/CodeSystem/observation-category'
+                }
+              ]
+            }
+          },
+          {
+            name: 'Observation.value[x]:valueQuantity',
+            path: 'value',
+            discriminator: {
+              type: 'type',
+              code: 'Quantity'
+            }
+          }
+        ],
+        elements: [
+          {
+            path: 'status'
+          },
+          {
+            path: 'category'
+          },
+          {
+            path: 'category.coding'
+          },
+          {
+            path: 'category.coding.system',
+            fixed_value: 'http://terminology.hl7.org/CodeSystem/observation-category'
+          },
+          {
+            path: 'category.coding.code',
+            fixed_value: 'vital-signs'
+          },
+          {
+            path: 'code'
+          },
+          {
+            path: 'subject'
+          },
+          {
+            path: 'effective'
+          },
+          {
+            path: 'value'
+          },
+          {
+            path: 'value.value'
+          },
+          {
+            path: 'value.unit'
+          },
+          {
+            path: 'value.system',
+            fixed_value: 'http://unitsofmeasure.org'
+          },
+          {
+            path: 'value.code',
+            fixed_value: '/min'
+          },
+          {
+            path: 'dataAbsentReason'
+          }
+        ]
+      }.freeze
+
       test :search_by_patient_code do
         metadata do
           id '01'
@@ -516,33 +595,33 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all Observation resources returned from prior searches to see if any of them provide the following must support elements:
 
-            Observation.status
+            status
 
-            Observation.category
+            category
 
-            Observation.category.coding
+            category.coding
 
-            Observation.category.coding.system
+            category.coding.system
 
-            Observation.category.coding.code
+            category.coding.code
 
-            Observation.code
+            code
 
-            Observation.subject
+            subject
 
-            Observation.effective[x]
+            effective[x]
 
-            Observation.value[x]
+            value[x]
 
-            Observation.value[x].value
+            value[x].value
 
-            Observation.value[x].unit
+            value[x].unit
 
-            Observation.value[x].system
+            value[x].system
 
-            Observation.value[x].code
+            value[x].code
 
-            Observation.dataAbsentReason
+            dataAbsentReason
 
             Observation.category:VSCat
 
@@ -554,62 +633,16 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Observation', delayed: false)
 
-        must_support_slices = [
-          {
-            name: 'Observation.category:VSCat',
-            path: 'Observation.category',
-            discriminator: {
-              type: 'value',
-              values: [
-                {
-                  path: 'coding.code',
-                  value: 'vital-signs'
-                },
-                {
-                  path: 'coding.system',
-                  value: 'http://terminology.hl7.org/CodeSystem/observation-category'
-                }
-              ]
-            }
-          },
-          {
-            name: 'Observation.value[x]:valueQuantity',
-            path: 'Observation.value',
-            discriminator: {
-              type: 'type',
-              code: 'Quantity'
-            }
-          }
-        ]
-        missing_slices = must_support_slices.reject do |slice|
-          truncated_path = slice[:path].gsub('Observation.', '')
+        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
           @observation_ary&.values&.flatten&.any? do |resource|
-            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found = find_slice(resource, slice[:path], slice[:discriminator])
             slice_found.present?
           end
         end
 
-        must_support_elements = [
-          { path: 'Observation.status' },
-          { path: 'Observation.category' },
-          { path: 'Observation.category.coding' },
-          { path: 'Observation.category.coding.system', fixed_value: 'http://terminology.hl7.org/CodeSystem/observation-category' },
-          { path: 'Observation.category.coding.code', fixed_value: 'vital-signs' },
-          { path: 'Observation.code' },
-          { path: 'Observation.subject' },
-          { path: 'Observation.effective' },
-          { path: 'Observation.value' },
-          { path: 'Observation.value.value' },
-          { path: 'Observation.value.unit' },
-          { path: 'Observation.value.system', fixed_value: 'http://unitsofmeasure.org' },
-          { path: 'Observation.value.code', fixed_value: '/min' },
-          { path: 'Observation.dataAbsentReason' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('Observation.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @observation_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end

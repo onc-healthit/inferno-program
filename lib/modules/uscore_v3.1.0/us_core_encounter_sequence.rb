@@ -98,6 +98,64 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [],
+        elements: [
+          {
+            path: 'identifier'
+          },
+          {
+            path: 'identifier.system'
+          },
+          {
+            path: 'identifier.value'
+          },
+          {
+            path: 'status'
+          },
+          {
+            path: 'local_class'
+          },
+          {
+            path: 'type'
+          },
+          {
+            path: 'subject'
+          },
+          {
+            path: 'participant'
+          },
+          {
+            path: 'participant.type'
+          },
+          {
+            path: 'participant.period'
+          },
+          {
+            path: 'participant.individual'
+          },
+          {
+            path: 'period'
+          },
+          {
+            path: 'reasonCode'
+          },
+          {
+            path: 'hospitalization'
+          },
+          {
+            path: 'hospitalization.dischargeDisposition'
+          },
+          {
+            path: 'location'
+          },
+          {
+            path: 'location.location'
+          }
+        ]
+      }.freeze
+
       test :search_by_patient do
         metadata do
           id '01'
@@ -583,39 +641,39 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all Encounter resources returned from prior searches to see if any of them provide the following must support elements:
 
-            Encounter.identifier
+            identifier
 
-            Encounter.identifier.system
+            identifier.system
 
-            Encounter.identifier.value
+            identifier.value
 
-            Encounter.status
+            status
 
-            Encounter.class
+            class
 
-            Encounter.type
+            type
 
-            Encounter.subject
+            subject
 
-            Encounter.participant
+            participant
 
-            Encounter.participant.type
+            participant.type
 
-            Encounter.participant.period
+            participant.period
 
-            Encounter.participant.individual
+            participant.individual
 
-            Encounter.period
+            period
 
-            Encounter.reasonCode
+            reasonCode
 
-            Encounter.hospitalization
+            hospitalization
 
-            Encounter.hospitalization.dischargeDisposition
+            hospitalization.dischargeDisposition
 
-            Encounter.location
+            location
 
-            Encounter.location.location
+            location.location
 
           )
           versions :r4
@@ -623,30 +681,9 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Encounter', delayed: false)
 
-        must_support_elements = [
-          { path: 'Encounter.identifier' },
-          { path: 'Encounter.identifier.system' },
-          { path: 'Encounter.identifier.value' },
-          { path: 'Encounter.status' },
-          { path: 'Encounter.local_class' },
-          { path: 'Encounter.type' },
-          { path: 'Encounter.subject' },
-          { path: 'Encounter.participant' },
-          { path: 'Encounter.participant.type' },
-          { path: 'Encounter.participant.period' },
-          { path: 'Encounter.participant.individual' },
-          { path: 'Encounter.period' },
-          { path: 'Encounter.reasonCode' },
-          { path: 'Encounter.hospitalization' },
-          { path: 'Encounter.hospitalization.dischargeDisposition' },
-          { path: 'Encounter.location' },
-          { path: 'Encounter.location.location' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('Encounter.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @encounter_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end
