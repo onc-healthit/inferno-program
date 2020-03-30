@@ -393,9 +393,60 @@ module Inferno
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test :validate_resources do
+      test 'All must support elements are provided in the CarePlan resources returned.' do
         metadata do
           id '09'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
+          description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all CarePlan resources returned from prior searches to see if any of them provide the following must support elements:
+
+            text
+
+            text.status
+
+            status
+
+            intent
+
+            category
+
+            subject
+
+            CarePlan.category:AssessPlan
+
+          )
+          versions :r4
+        end
+
+        skip_if_not_found(resource_type: 'CarePlan', delayed: false)
+
+        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
+          @care_plan_ary&.values&.flatten&.any? do |resource|
+            slice_found = find_slice(resource, slice[:path], slice[:discriminator])
+            slice_found.present?
+          end
+        end
+
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+          @care_plan_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@care_plan_ary&.values&.flatten&.length} provided CarePlan resource(s)"
+        @instance.save!
+      end
+
+      test :validate_resources do
+        metadata do
+          id '10'
           name 'CarePlan resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan'
           description %(
@@ -480,57 +531,6 @@ module Inferno
             assert false, error_message
           end
         end
-      end
-
-      test 'All must support elements are provided in the CarePlan resources returned.' do
-        metadata do
-          id '10'
-          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
-          description %(
-
-            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all CarePlan resources returned from prior searches to see if any of them provide the following must support elements:
-
-            text
-
-            text.status
-
-            status
-
-            intent
-
-            category
-
-            subject
-
-            CarePlan.category:AssessPlan
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'CarePlan', delayed: false)
-
-        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
-          @care_plan_ary&.values&.flatten&.any? do |resource|
-            slice_found = find_slice(resource, slice[:path], slice[:discriminator])
-            slice_found.present?
-          end
-        end
-
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
-          @care_plan_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
-          end
-        end
-        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
-
-        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
-
-        skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@care_plan_ary&.values&.flatten&.length} provided CarePlan resource(s)"
-        @instance.save!
       end
 
       test 'Every reference within CarePlan resource is valid and can be read.' do

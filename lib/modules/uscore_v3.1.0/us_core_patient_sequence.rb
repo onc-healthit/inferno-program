@@ -497,9 +497,91 @@ module Inferno
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test :validate_resources do
+      test 'All must support elements are provided in the Patient resources returned.' do
         metadata do
           id '12'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
+          description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all Patient resources returned from prior searches to see if any of them provide the following must support elements:
+
+            identifier
+
+            identifier.system
+
+            identifier.value
+
+            name
+
+            name.family
+
+            name.given
+
+            telecom
+
+            telecom.system
+
+            telecom.value
+
+            telecom.use
+
+            gender
+
+            birthDate
+
+            address
+
+            address.line
+
+            address.city
+
+            address.state
+
+            address.postalCode
+
+            address.period
+
+            communication
+
+            communication.language
+
+            Patient.extension:race
+
+            Patient.extension:ethnicity
+
+            Patient.extension:birthsex
+
+          )
+          versions :r4
+        end
+
+        skip_if_not_found(resource_type: 'Patient', delayed: false)
+
+        missing_must_support_extensions = MUST_SUPPORTS[:extensions].reject do |must_support_extension|
+          @patient_ary&.values&.flatten&.any? do |resource|
+            resource.extension.any? { |extension| extension.url == must_support_extension[:url] }
+          end
+        end
+
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+          @patient_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_must_support_extensions.map { |must_support| must_support[:id] }
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@patient_ary&.values&.flatten&.length} provided Patient resource(s)"
+        @instance.save!
+      end
+
+      test :validate_resources do
+        metadata do
+          id '13'
           name 'Patient resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
           description %(
@@ -687,88 +769,6 @@ module Inferno
             assert false, error_message
           end
         end
-      end
-
-      test 'All must support elements are provided in the Patient resources returned.' do
-        metadata do
-          id '13'
-          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
-          description %(
-
-            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all Patient resources returned from prior searches to see if any of them provide the following must support elements:
-
-            identifier
-
-            identifier.system
-
-            identifier.value
-
-            name
-
-            name.family
-
-            name.given
-
-            telecom
-
-            telecom.system
-
-            telecom.value
-
-            telecom.use
-
-            gender
-
-            birthDate
-
-            address
-
-            address.line
-
-            address.city
-
-            address.state
-
-            address.postalCode
-
-            address.period
-
-            communication
-
-            communication.language
-
-            Patient.extension:race
-
-            Patient.extension:ethnicity
-
-            Patient.extension:birthsex
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'Patient', delayed: false)
-
-        missing_must_support_extensions = MUST_SUPPORTS[:extensions].reject do |must_support_extension|
-          @patient_ary&.values&.flatten&.any? do |resource|
-            resource.extension.any? { |extension| extension.url == must_support_extension[:url] }
-          end
-        end
-
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
-          @patient_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
-          end
-        end
-        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
-
-        missing_must_support_elements += missing_must_support_extensions.map { |must_support| must_support[:id] }
-
-        skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@patient_ary&.values&.flatten&.length} provided Patient resource(s)"
-        @instance.save!
       end
 
       test 'Every reference within Patient resource is valid and can be read.' do

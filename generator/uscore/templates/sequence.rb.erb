@@ -14,9 +14,9 @@ module Inferno
       test_id_prefix '<%=test_id_prefix%>'
 
       requires :token<%=", :patient_ids" unless delayed_sequence%><%=', :device_codes' if resource == 'Device'  %>
-      conformance_supports :<%=resource%><%="
-      delayed_sequence" if delayed_sequence%>
-<%=search_validator%>
+      conformance_supports :<%=resource%>
+      <%="delayed_sequence" if delayed_sequence%>
+      <%=search_validator%>
       details %(
         The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
       )
@@ -26,7 +26,7 @@ module Inferno
       end
 
       @resources_found = false
-      <%=must_support_constants%>
+      <%=must_support_constants unless delayed_sequence%>
       <% tests.each do |test|%>
 
 

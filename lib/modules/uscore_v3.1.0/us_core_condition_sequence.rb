@@ -405,9 +405,47 @@ module Inferno
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test :validate_resources do
+      test 'All must support elements are provided in the Condition resources returned.' do
         metadata do
           id '10'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
+          description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all Condition resources returned from prior searches to see if any of them provide the following must support elements:
+
+            clinicalStatus
+
+            verificationStatus
+
+            category
+
+            code
+
+            subject
+
+          )
+          versions :r4
+        end
+
+        skip_if_not_found(resource_type: 'Condition', delayed: false)
+
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+          @condition_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@condition_ary&.values&.flatten&.length} provided Condition resource(s)"
+        @instance.save!
+      end
+
+      test :validate_resources do
+        metadata do
+          id '11'
           name 'Condition resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
           description %(
@@ -502,44 +540,6 @@ module Inferno
             assert false, error_message
           end
         end
-      end
-
-      test 'All must support elements are provided in the Condition resources returned.' do
-        metadata do
-          id '11'
-          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
-          description %(
-
-            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all Condition resources returned from prior searches to see if any of them provide the following must support elements:
-
-            clinicalStatus
-
-            verificationStatus
-
-            category
-
-            code
-
-            subject
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'Condition', delayed: false)
-
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
-          @condition_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
-          end
-        end
-        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
-
-        skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@condition_ary&.values&.flatten&.length} provided Condition resource(s)"
-        @instance.save!
       end
 
       test 'Every reference within Condition resource is valid and can be read.' do

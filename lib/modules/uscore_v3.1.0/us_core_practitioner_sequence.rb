@@ -49,38 +49,6 @@ module Inferno
 
       @resources_found = false
 
-      MUST_SUPPORTS = {
-        extensions: [],
-        slices: [
-          {
-            name: 'Practitioner.identifier:NPI',
-            path: 'identifier',
-            discriminator: {
-              type: 'patternIdentifier',
-              path: '',
-              system: 'http://hl7.org/fhir/sid/us-npi'
-            }
-          }
-        ],
-        elements: [
-          {
-            path: 'identifier'
-          },
-          {
-            path: 'identifier.system'
-          },
-          {
-            path: 'identifier.value'
-          },
-          {
-            path: 'name'
-          },
-          {
-            path: 'name.family'
-          }
-        ]
-      }.freeze
-
       test :resource_read do
         metadata do
           id '01'
@@ -108,145 +76,9 @@ module Inferno
         @resources_found = @practitioner.present?
       end
 
-      test :search_by_name do
-        metadata do
-          id '02'
-          name 'Server returns expected results from Practitioner search by name'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          description %(
-
-            A server SHALL support searching by name on the Practitioner resource
-
-          )
-          versions :r4
-        end
-
-        skip_if_known_search_not_supported('Practitioner', ['name'])
-
-        search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name') { |el| get_value_for_search_param(el).present? })
-        }
-
-        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
-
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-
-        @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'Practitioner' }
-        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
-        search_result_resources = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-        @practitioner_ary += search_result_resources
-        @practitioner = @practitioner_ary
-          .find { |resource| resource.resourceType == 'Practitioner' }
-
-        save_resource_references(versioned_resource_class('Practitioner'), @practitioner_ary)
-        save_delayed_sequence_references(@practitioner_ary)
-        validate_reply_entries(search_result_resources, search_params)
-      end
-
-      test :search_by_identifier do
-        metadata do
-          id '03'
-          name 'Server returns expected results from Practitioner search by identifier'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          description %(
-
-            A server SHALL support searching by identifier on the Practitioner resource
-
-          )
-          versions :r4
-        end
-
-        skip_if_known_search_not_supported('Practitioner', ['identifier'])
-        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
-
-        search_params = {
-          'identifier': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'identifier') { |el| get_value_for_search_param(el).present? })
-        }
-
-        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
-
-        reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
-
-        validate_search_reply(versioned_resource_class('Practitioner'), reply, search_params)
-      end
-
-      test :vread_interaction do
-        metadata do
-          id '04'
-          name 'Server returns correct Practitioner resource from Practitioner vread interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-            A server SHOULD support the Practitioner vread interaction.
-          )
-          versions :r4
-        end
-
-        skip_if_known_not_supported(:Practitioner, [:vread])
-        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
-
-        validate_vread_reply(@practitioner, versioned_resource_class('Practitioner'))
-      end
-
-      test :history_interaction do
-        metadata do
-          id '05'
-          name 'Server returns correct Practitioner resource from Practitioner history interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-            A server SHOULD support the Practitioner history interaction.
-          )
-          versions :r4
-        end
-
-        skip_if_known_not_supported(:Practitioner, [:history])
-        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
-
-        validate_history_reply(@practitioner, versioned_resource_class('Practitioner'))
-      end
-
-      test 'Server returns Provenance resources from Practitioner search by name + _revIncludes: Provenance:target' do
-        metadata do
-          id '06'
-          link 'https://www.hl7.org/fhir/search.html#revinclude'
-          description %(
-            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
-          )
-          versions :r4
-        end
-
-        skip_if_known_revinclude_not_supported('Practitioner', 'Provenance:target')
-        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
-
-        provenance_results = []
-
-        search_params = {
-          'name': get_value_for_search_param(resolve_element_from_path(@practitioner_ary, 'name') { |el| get_value_for_search_param(el).present? })
-        }
-
-        search_params.each { |param, value| skip "Could not resolve #{param} in any resource." if value.nil? }
-
-        search_params['_revinclude'] = 'Provenance:target'
-        reply = get_resource_by_params(versioned_resource_class('Practitioner'), search_params)
-
-        assert_response_ok(reply)
-        assert_bundle_response(reply)
-        provenance_results += fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          .select { |resource| resource.resourceType == 'Provenance' }
-
-        save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results)
-
-        skip 'No Provenance resources were returned from this search' unless provenance_results.present?
-      end
-
       test :validate_resources do
         metadata do
-          id '07'
+          id '02'
           name 'Practitioner resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
           description %(
@@ -327,58 +159,9 @@ module Inferno
         end
       end
 
-      test 'All must support elements are provided in the Practitioner resources returned.' do
-        metadata do
-          id '08'
-          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
-          description %(
-
-            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all Practitioner resources returned from prior searches to see if any of them provide the following must support elements:
-
-            identifier
-
-            identifier.system
-
-            identifier.value
-
-            name
-
-            name.family
-
-            Practitioner.identifier:NPI
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
-
-        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
-          @practitioner_ary&.any? do |resource|
-            slice_found = find_slice(resource, slice[:path], slice[:discriminator])
-            slice_found.present?
-          end
-        end
-
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
-          @practitioner_ary&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
-          end
-        end
-        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
-
-        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
-
-        skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@practitioner_ary&.length} provided Practitioner resource(s)"
-        @instance.save!
-      end
-
       test 'Every reference within Practitioner resource is valid and can be read.' do
         metadata do
-          id '09'
+          id '03'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.
