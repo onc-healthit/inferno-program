@@ -469,7 +469,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       file = @output.find { |line| line['type'] == 'Patient' }
       file['count'] = @patient_export.lines.count + 1
 
-      @sequence.check_file_request(file, 'Patient', true, 0)
+      @sequence.check_file_request(file, 'Patient', true, 0, [])
 
       assert @sequence.instance_variable_get(:@test_warnings).include?("Count in status output (#{file['count']}) did not match actual number of resources returned (#{@patient_export.lines.count})")
     end
@@ -478,7 +478,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       file = @output.find { |line| line['type'] == 'Patient' }
       file['count'] = @patient_export.lines.count + 1
 
-      @sequence.check_file_request(file, 'Patient', false, 1)
+      @sequence.check_file_request(file, 'Patient', false, 1, [])
 
       assert !@sequence.instance_variable_get(:@test_warnings).include?("Count in status output (#{file['count']}) did not match actual number of resources returned (#{@patient_export.lines.count})")
     end
@@ -486,7 +486,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
     it 'does not warn count does match number of resources' do
       file = @output.find { |line| line['type'] == 'Patient' }
 
-      @sequence.check_file_request(file, 'Patient', true, 0)
+      @sequence.check_file_request(file, 'Patient', true, 0, [])
 
       assert !@sequence.instance_variable_get(:@test_warnings).include?("Count in status output (#{file['count']}) did not match actual number of resources returned (#{@patient_export.lines.count})")
     end
