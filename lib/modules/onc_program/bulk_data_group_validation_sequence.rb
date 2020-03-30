@@ -93,7 +93,7 @@ module Inferno
           assert errors.empty?, "Failed Profile validation for resource #{line_count}: #{errors}"
         end
 
-        if file.key?('count')
+        if file.key?('count') && validate_all
           warning do
             assert file['count'].to_s == line_count.to_s, "Count in status output (#{file['count']}) did not match actual number of resources returned (#{line_count})"
           end
