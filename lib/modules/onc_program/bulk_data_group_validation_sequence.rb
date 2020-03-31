@@ -465,13 +465,7 @@ module Inferno
           )
         end
 
-        must_supports = [
-          {
-            profile: nil,
-            must_support_info: Inferno::Sequence::USCore310EncounterSequence::MUST_SUPPORTS.dup
-          }
-        ]
-        test_output_against_profile('Encounter', must_supports)
+        test_output_against_profile('Encounter')
       end
 
       test :validate_goal do
@@ -602,13 +596,7 @@ module Inferno
           )
         end
 
-        must_supports = [
-          {
-            profile: nil,
-            must_support_info: Inferno::Sequence::USCore310LocationSequence::MUST_SUPPORTS.dup
-          }
-        ]
-        test_output_against_profile('Location', must_supports)
+        test_output_against_profile('Location')
       end
 
       test :validate_medication do
@@ -634,13 +622,7 @@ module Inferno
           )
         end
 
-        must_supports = [
-          {
-            profile: nil,
-            must_support_info: Inferno::Sequence::USCore310OrganizationSequence::MUST_SUPPORTS.dup
-          }
-        ]
-        test_output_against_profile('Organization', must_supports)
+        test_output_against_profile('Organization')
       end
 
       test :validate_practitioner do
@@ -653,13 +635,7 @@ module Inferno
           )
         end
 
-        must_supports = [
-          {
-            profile: nil,
-            must_support_info: Inferno::Sequence::USCore310PractitionerSequence::MUST_SUPPORTS.dup
-          }
-        ]
-        test_output_against_profile('Practitioner', must_supports)
+        test_output_against_profile('Practitioner')
       end
 
       test :validate_practitionerrole do
@@ -672,13 +648,7 @@ module Inferno
           )
         end
 
-        must_supports = [
-          {
-            profile: nil,
-            must_support_info: Inferno::Sequence::USCore310PractitionerroleSequence::MUST_SUPPORTS.dup
-          }
-        ]
-        test_output_against_profile('PractitionerRole', must_supports)
+        test_output_against_profile('PractitionerRole')
       end
     end
   end
