@@ -87,7 +87,7 @@ module Inferno
 
           p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
           if p && @instance.fhir_version == 'r4'
-            errors = p.validate_resource(resource)
+            errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class(klass), p.url)
           else
             warn { assert false, 'No profiles found for this Resource' }
             errors = resource.validate
