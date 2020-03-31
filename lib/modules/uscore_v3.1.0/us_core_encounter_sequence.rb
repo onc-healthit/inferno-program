@@ -570,13 +570,13 @@ module Inferno
             type: 'Coding',
             strength: 'extensible',
             system: 'http://terminology.hl7.org/ValueSet/v3-ActEncounterCode',
-            path: 'class'
+            path: 'local_class'
           },
           {
             type: 'Coding',
             strength: 'extensible',
             system: 'http://terminology.hl7.org/ValueSet/v3-ActEncounterCode',
-            path: 'classHistory.class'
+            path: 'classHistory.local_class'
           },
           {
             type: 'CodeableConcept',
