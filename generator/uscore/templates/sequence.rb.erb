@@ -25,7 +25,10 @@ module Inferno
         @instance.patient_ids.split(',').map(&:strip)
       end
 
-      @resources_found = false<% tests.each do |test|%>
+      @resources_found = false
+      <%=must_support_constants%>
+      <% tests.each do |test|%>
+
 
 <% if test[:key].present? %>
       test :<%= test[:key] %> do

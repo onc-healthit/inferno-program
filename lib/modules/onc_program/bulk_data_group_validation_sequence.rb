@@ -20,6 +20,8 @@ module Inferno
       MAX_RECENT_LINE_SIZE = 100
       MIN_RESOURCE_COUNT = 2
 
+      US_CORE_R4_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
+
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
         super(instance, client, disable_tls_tests, sequence_result)
 
@@ -32,6 +34,7 @@ module Inferno
       end
 
       def test_output_against_profile(klass,
+                                      must_supports = [],
                                       output = @output,
                                       bulk_lines_to_validate = @instance.bulk_lines_to_validate)
         skip 'Bulk Data Server response does not have output data' unless output.present?
@@ -42,7 +45,7 @@ module Inferno
 
         skip "Bulk Data Server export does not have #{klass} data" if file.nil?
 
-        success_count = check_file_request(file, klass, lines_to_validate[:validate_all], lines_to_validate[:lines_to_validate])
+        success_count = check_file_request(file, klass, lines_to_validate[:validate_all], lines_to_validate[:lines_to_validate], must_supports)
 
         pass "Successfully validated #{success_count} resource(s)."
       end
@@ -60,7 +63,7 @@ module Inferno
         }
       end
 
-      def check_file_request(file, klass, validate_all, lines_to_validate)
+      def check_file_request(file, klass, validate_all, lines_to_validate, must_supports)
         headers = { accept: 'application/fhir+ndjson' }
         headers['Authorization'] = "Bearer #{@instance.bulk_access_token}" if @requires_access_token && @instance.bulk_access_token.present?
 
@@ -90,16 +93,56 @@ module Inferno
             errors = resource.validate
           end
 
+          if must_supports.present?
+            if must_supports.length > 1 && p
+              profile_must_support = must_supports.find { |must_support| must_support[:profile] == p.url }
+              must_support_info = profile_must_support.present? ? profile_must_support[:must_support_info] : nil
+            else
+              must_support_info = must_supports.first[:must_support_info]
+            end
+
+            if must_support_info.present?
+              must_support_info[:elements].reject! do |ms_element|
+                resolve_element_from_path(resource, ms_element[:path]) { |value| ms_element[:fixed_value].blank? || value == ms_element[:fixed_value] }
+              end
+
+              must_support_info[:extensions].reject! do |ms_extension|
+                resource.extension.any? { |extension| extension.url == ms_extension[:url] }
+              end
+
+              must_support_info[:slices].reject! do |ms_slice|
+                find_slice(resource, ms_slice[:path], ms_slice[:discriminator])
+              end
+            end
+          end
           assert errors.empty?, "Failed Profile validation for resource #{line_count}: #{errors}"
         end
 
-        if file.key?('count')
+        assert_must_supports_found(must_supports) if validate_all || lines_to_validate.positive?
+
+        if file.key?('count') && validate_all
           warning do
             assert file['count'].to_s == line_count.to_s, "Count in status output (#{file['count']}) did not match actual number of resources returned (#{line_count})"
           end
         end
 
         line_count
+      end
+
+      def assert_must_supports_found(must_supports)
+        must_supports.each do |must_support|
+          error_string = "Could not verify presence#{' for profile ' + must_support[:profile] if must_support[:profile].present?} of the following must support %s: %s"
+          missing_must_supports = must_support[:must_support_info]
+
+          missing_elements_list = missing_must_supports[:elements].map { |el| "#{el[:path]}#{': ' + el[:fixed_value] if el[:fixed_value].present?}" }
+          assert missing_elements_list.empty?, format(error_string, 'elements', missing_elements_list.join(', '))
+
+          missing_slices_list = missing_must_supports[:slices].map { |slice| slice[:name] }
+          assert missing_slices_list.empty?, format(error_string, 'slices', missing_slices_list.join(', '))
+
+          missing_extensions_list = missing_must_supports[:extensions].map { |extension| extension[:id] }
+          assert missing_extensions_list.empty?, format(error_string, 'extensions', missing_extensions_list.join(', '))
+        end
       end
 
       def log_and_reraise_if_error(request, response, truncated)
@@ -230,7 +273,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Patient')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310PatientSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('Patient', must_supports)
       end
 
       test :validate_two_patients do
@@ -276,7 +325,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('AllergyIntolerance')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310AllergyintoleranceSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('AllergyIntolerance', must_supports)
       end
 
       test :validate_careplan do
@@ -289,7 +344,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('CarePlan')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310CareplanSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('CarePlan', must_supports)
       end
 
       test :validate_careteam do
@@ -302,7 +363,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('CareTeam')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310CareteamSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('CareTeam', must_supports)
       end
 
       test :validate_condition do
@@ -315,7 +382,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Condition')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310ConditionSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('Condition', must_supports)
       end
 
       test :validate_device do
@@ -344,7 +417,17 @@ module Inferno
           )
         end
 
-        test_output_against_profile('DiagnosticReport')
+        must_supports = [
+          {
+            profile: US_CORE_R4_URIS[:diagnostic_report_lab],
+            must_support_info: Inferno::Sequence::USCore310DiagnosticreportLabSequence::MUST_SUPPORTS.dup
+          },
+          {
+            profile: US_CORE_R4_URIS[:diagnostic_report_note],
+            must_support_info: Inferno::Sequence::USCore310DiagnosticreportNoteSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('DiagnosticReport', must_supports)
       end
 
       test :validate_documentreference do
@@ -357,7 +440,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('DocumentReference')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310DocumentreferenceSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('DocumentReference', must_supports)
       end
 
       test :validate_encounter do
@@ -370,7 +459,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Encounter')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310EncounterSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('Encounter', must_supports)
       end
 
       test :validate_goal do
@@ -383,7 +478,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Goal')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310GoalSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('Goal', must_supports)
       end
 
       test :validate_immunization do
@@ -396,7 +497,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Immunization')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310ImmunizationSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('Immunization', must_supports)
       end
 
       test :validate_medicationrequest do
@@ -409,7 +516,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('MedicationRequest')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310MedicationrequestSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('MedicationRequest', must_supports)
       end
 
       test :validate_observation do
@@ -427,7 +540,31 @@ module Inferno
             * http://hl7.org/fhir/us/core/StructureDefinition/us-core-smokingstatus
           )
         end
-        test_output_against_profile('Observation')
+
+        must_supports = [
+          {
+            profile: US_CORE_R4_URIS[:pediatric_bmi_age],
+            must_support_info: Inferno::Sequence::USCore310PediatricBmiForAgeSequence::MUST_SUPPORTS.dup
+          },
+          {
+            profile: US_CORE_R4_URIS[:pediatric_weight_height],
+            must_support_info: Inferno::Sequence::USCore310PediatricWeightForHeightSequence::MUST_SUPPORTS.dup
+          },
+          {
+            profile: US_CORE_R4_URIS[:USCore310PulseOximetrySequence],
+            must_support_info: Inferno::Sequence::USCore310PulseOximetrySequence::MUST_SUPPORTS.dup
+          },
+          {
+            profile: US_CORE_R4_URIS[:lab_results],
+            must_support_info: Inferno::Sequence::USCore310ObservationLabSequence::MUST_SUPPORTS.dup
+          },
+          {
+            profile: US_CORE_R4_URIS[:smoking_status],
+            must_support_info: Inferno::Sequence::USCore310SmokingstatusSequence::MUST_SUPPORTS.dup
+          }
+        ]
+
+        test_output_against_profile('Observation', must_supports)
       end
 
       test :validate_procedure do
@@ -440,7 +577,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Procedure')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310ProcedureSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('Procedure', must_supports)
       end
 
       test :validate_location do
@@ -453,7 +596,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Location')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310LocationSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('Location', must_supports)
       end
 
       test :validate_medication do
@@ -479,7 +628,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Organization')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310OrganizationSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('Organization', must_supports)
       end
 
       test :validate_practitioner do
@@ -492,7 +647,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Practitioner')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310PractitionerSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('Practitioner', must_supports)
       end
 
       test :validate_practitionerrole do
@@ -505,7 +666,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('PractitionerRole')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310PractitionerroleSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('PractitionerRole', must_supports)
       end
     end
   end

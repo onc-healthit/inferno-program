@@ -78,6 +78,34 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [
+          {
+            name: 'Goal.target.due[x]:dueDate',
+            path: 'target.due',
+            discriminator: {
+              type: 'type',
+              code: 'Date'
+            }
+          }
+        ],
+        elements: [
+          {
+            path: 'lifecycleStatus'
+          },
+          {
+            path: 'description'
+          },
+          {
+            path: 'subject'
+          },
+          {
+            path: 'target'
+          }
+        ]
+      }.freeze
+
       test :search_by_patient do
         metadata do
           id '01'
@@ -363,13 +391,13 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all Goal resources returned from prior searches to see if any of them provide the following must support elements:
 
-            Goal.lifecycleStatus
+            lifecycleStatus
 
-            Goal.description
+            description
 
-            Goal.subject
+            subject
 
-            Goal.target
+            target
 
             Goal.target.due[x]:dueDate
 
@@ -379,35 +407,16 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Goal', delayed: false)
 
-        must_support_slices = [
-          {
-            name: 'Goal.target.due[x]:dueDate',
-            path: 'Goal.target.due',
-            discriminator: {
-              type: 'type',
-              code: 'Date'
-            }
-          }
-        ]
-        missing_slices = must_support_slices.reject do |slice|
-          truncated_path = slice[:path].gsub('Goal.', '')
+        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
           @goal_ary&.values&.flatten&.any? do |resource|
-            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found = find_slice(resource, slice[:path], slice[:discriminator])
             slice_found.present?
           end
         end
 
-        must_support_elements = [
-          { path: 'Goal.lifecycleStatus' },
-          { path: 'Goal.description' },
-          { path: 'Goal.subject' },
-          { path: 'Goal.target' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('Goal.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @goal_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end

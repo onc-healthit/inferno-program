@@ -809,7 +809,20 @@ namespace :terminology do |_argv|
     validator_type = args.type.to_sym
     Inferno::Terminology.register_umls_db args.database
     Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
-    Inferno::Terminology.create_validators(validator_type)
+    Inferno::Terminology.create_validators(type: validator_type)
+  end
+
+  desc 'Create only non-UMLS validators'
+  task :create_non_umls_vs_validators, [:module, :minimum_binding_strength] do |_t, args|
+    args.with_defaults(type: 'bloom',
+                       module: :all,
+                       minimum_binding_strength: 'example')
+    validator_type = args.type.to_sym
+    Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
+    Inferno::Terminology.create_validators(type: validator_type,
+                                           selected_module: args.module,
+                                           minimum_binding_strength: args.minimum_binding_strength,
+                                           include_umls: false)
   end
 
   desc 'Create ValueSet Validators for a given module'
@@ -817,7 +830,9 @@ namespace :terminology do |_argv|
     args.with_defaults(module: 'all', minimum_binding_strength: 'example')
     Inferno::Terminology.register_umls_db File.join(TEMP_DIR, 'umls.db')
     Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
-    Inferno::Terminology.create_validators(:bloom, args.module, args.minimum_binding_strength)
+    Inferno::Terminology.create_validators(type: :bloom,
+                                           selected_module: args.module,
+                                           minimum_binding_strength: args.minimum_binding_strength)
   end
 
   desc 'Number of codes in ValueSet'

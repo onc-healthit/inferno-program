@@ -98,6 +98,64 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [],
+        elements: [
+          {
+            path: 'identifier'
+          },
+          {
+            path: 'status'
+          },
+          {
+            path: 'type'
+          },
+          {
+            path: 'category'
+          },
+          {
+            path: 'subject'
+          },
+          {
+            path: 'date'
+          },
+          {
+            path: 'author'
+          },
+          {
+            path: 'custodian'
+          },
+          {
+            path: 'content'
+          },
+          {
+            path: 'content.attachment'
+          },
+          {
+            path: 'content.attachment.contentType'
+          },
+          {
+            path: 'content.attachment.data'
+          },
+          {
+            path: 'content.attachment.url'
+          },
+          {
+            path: 'content.format'
+          },
+          {
+            path: 'context'
+          },
+          {
+            path: 'context.encounter'
+          },
+          {
+            path: 'context.period'
+          }
+        ]
+      }.freeze
+
       test :search_by_patient do
         metadata do
           id '01'
@@ -595,39 +653,39 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all DocumentReference resources returned from prior searches to see if any of them provide the following must support elements:
 
-            DocumentReference.identifier
+            identifier
 
-            DocumentReference.status
+            status
 
-            DocumentReference.type
+            type
 
-            DocumentReference.category
+            category
 
-            DocumentReference.subject
+            subject
 
-            DocumentReference.date
+            date
 
-            DocumentReference.author
+            author
 
-            DocumentReference.custodian
+            custodian
 
-            DocumentReference.content
+            content
 
-            DocumentReference.content.attachment
+            content.attachment
 
-            DocumentReference.content.attachment.contentType
+            content.attachment.contentType
 
-            DocumentReference.content.attachment.data
+            content.attachment.data
 
-            DocumentReference.content.attachment.url
+            content.attachment.url
 
-            DocumentReference.content.format
+            content.format
 
-            DocumentReference.context
+            context
 
-            DocumentReference.context.encounter
+            context.encounter
 
-            DocumentReference.context.period
+            context.period
 
           )
           versions :r4
@@ -635,30 +693,9 @@ module Inferno
 
         skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
 
-        must_support_elements = [
-          { path: 'DocumentReference.identifier' },
-          { path: 'DocumentReference.status' },
-          { path: 'DocumentReference.type' },
-          { path: 'DocumentReference.category' },
-          { path: 'DocumentReference.subject' },
-          { path: 'DocumentReference.date' },
-          { path: 'DocumentReference.author' },
-          { path: 'DocumentReference.custodian' },
-          { path: 'DocumentReference.content' },
-          { path: 'DocumentReference.content.attachment' },
-          { path: 'DocumentReference.content.attachment.contentType' },
-          { path: 'DocumentReference.content.attachment.data' },
-          { path: 'DocumentReference.content.attachment.url' },
-          { path: 'DocumentReference.content.format' },
-          { path: 'DocumentReference.context' },
-          { path: 'DocumentReference.context.encounter' },
-          { path: 'DocumentReference.context.period' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('DocumentReference.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @document_reference_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end

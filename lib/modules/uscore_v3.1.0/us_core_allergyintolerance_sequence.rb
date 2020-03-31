@@ -74,6 +74,25 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [],
+        elements: [
+          {
+            path: 'clinicalStatus'
+          },
+          {
+            path: 'verificationStatus'
+          },
+          {
+            path: 'code'
+          },
+          {
+            path: 'patient'
+          }
+        ]
+      }.freeze
+
       test :search_by_patient do
         metadata do
           id '01'
@@ -364,13 +383,13 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all AllergyIntolerance resources returned from prior searches to see if any of them provide the following must support elements:
 
-            AllergyIntolerance.clinicalStatus
+            clinicalStatus
 
-            AllergyIntolerance.verificationStatus
+            verificationStatus
 
-            AllergyIntolerance.code
+            code
 
-            AllergyIntolerance.patient
+            patient
 
           )
           versions :r4
@@ -378,17 +397,9 @@ module Inferno
 
         skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
 
-        must_support_elements = [
-          { path: 'AllergyIntolerance.clinicalStatus' },
-          { path: 'AllergyIntolerance.verificationStatus' },
-          { path: 'AllergyIntolerance.code' },
-          { path: 'AllergyIntolerance.patient' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('AllergyIntolerance.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @allergy_intolerance_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end

@@ -88,6 +88,48 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [
+          {
+            name: 'DiagnosticReport.category:LaboratorySlice',
+            path: 'category',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: '',
+              code: 'LAB',
+              system: 'http://terminology.hl7.org/CodeSystem/v2-0074'
+            }
+          }
+        ],
+        elements: [
+          {
+            path: 'status'
+          },
+          {
+            path: 'category'
+          },
+          {
+            path: 'code'
+          },
+          {
+            path: 'subject'
+          },
+          {
+            path: 'effective'
+          },
+          {
+            path: 'issued'
+          },
+          {
+            path: 'performer'
+          },
+          {
+            path: 'result'
+          }
+        ]
+      }.freeze
+
       test :search_by_patient_category do
         metadata do
           id '01'
@@ -502,21 +544,21 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all DiagnosticReport resources returned from prior searches to see if any of them provide the following must support elements:
 
-            DiagnosticReport.status
+            status
 
-            DiagnosticReport.category
+            category
 
-            DiagnosticReport.code
+            code
 
-            DiagnosticReport.subject
+            subject
 
-            DiagnosticReport.effective[x]
+            effective[x]
 
-            DiagnosticReport.issued
+            issued
 
-            DiagnosticReport.performer
+            performer
 
-            DiagnosticReport.result
+            result
 
             DiagnosticReport.category:LaboratorySlice
 
@@ -526,41 +568,16 @@ module Inferno
 
         skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
 
-        must_support_slices = [
-          {
-            name: 'DiagnosticReport.category:LaboratorySlice',
-            path: 'DiagnosticReport.category',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: '',
-              code: 'LAB',
-              system: 'http://terminology.hl7.org/CodeSystem/v2-0074'
-            }
-          }
-        ]
-        missing_slices = must_support_slices.reject do |slice|
-          truncated_path = slice[:path].gsub('DiagnosticReport.', '')
+        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
           @diagnostic_report_ary&.values&.flatten&.any? do |resource|
-            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found = find_slice(resource, slice[:path], slice[:discriminator])
             slice_found.present?
           end
         end
 
-        must_support_elements = [
-          { path: 'DiagnosticReport.status' },
-          { path: 'DiagnosticReport.category' },
-          { path: 'DiagnosticReport.code' },
-          { path: 'DiagnosticReport.subject' },
-          { path: 'DiagnosticReport.effective' },
-          { path: 'DiagnosticReport.issued' },
-          { path: 'DiagnosticReport.performer' },
-          { path: 'DiagnosticReport.result' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('DiagnosticReport.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @diagnostic_report_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end

@@ -48,6 +48,68 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [
+          {
+            name: 'Organization.identifier:NPI',
+            path: 'identifier',
+            discriminator: {
+              type: 'patternIdentifier',
+              path: '',
+              system: 'http://hl7.org/fhir/sid/us-npi'
+            }
+          },
+          {
+            name: 'Organization.identifier:CLIA',
+            path: 'identifier',
+            discriminator: {
+              type: 'patternIdentifier',
+              path: '',
+              system: 'urn:oid:2.16.840.1.113883.4.7'
+            }
+          }
+        ],
+        elements: [
+          {
+            path: 'identifier'
+          },
+          {
+            path: 'identifier.system'
+          },
+          {
+            path: 'identifier.value'
+          },
+          {
+            path: 'active'
+          },
+          {
+            path: 'name'
+          },
+          {
+            path: 'telecom'
+          },
+          {
+            path: 'address'
+          },
+          {
+            path: 'address.line'
+          },
+          {
+            path: 'address.city'
+          },
+          {
+            path: 'address.state'
+          },
+          {
+            path: 'address.postalCode'
+          },
+          {
+            path: 'address.country'
+          }
+        ]
+      }.freeze
+
       test :resource_read do
         metadata do
           id '01'
@@ -309,29 +371,29 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all Organization resources returned from prior searches to see if any of them provide the following must support elements:
 
-            Organization.identifier
+            identifier
 
-            Organization.identifier.system
+            identifier.system
 
-            Organization.identifier.value
+            identifier.value
 
-            Organization.active
+            active
 
-            Organization.name
+            name
 
-            Organization.telecom
+            telecom
 
-            Organization.address
+            address
 
-            Organization.address.line
+            address.line
 
-            Organization.address.city
+            address.city
 
-            Organization.address.state
+            address.state
 
-            Organization.address.postalCode
+            address.postalCode
 
-            Organization.address.country
+            address.country
 
             Organization.identifier:NPI
 
@@ -343,53 +405,16 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Organization', delayed: true)
 
-        must_support_slices = [
-          {
-            name: 'Organization.identifier:NPI',
-            path: 'Organization.identifier',
-            discriminator: {
-              type: 'patternIdentifier',
-              path: '',
-              system: 'http://hl7.org/fhir/sid/us-npi'
-            }
-          },
-          {
-            name: 'Organization.identifier:CLIA',
-            path: 'Organization.identifier',
-            discriminator: {
-              type: 'patternIdentifier',
-              path: '',
-              system: 'urn:oid:2.16.840.1.113883.4.7'
-            }
-          }
-        ]
-        missing_slices = must_support_slices.reject do |slice|
-          truncated_path = slice[:path].gsub('Organization.', '')
+        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
           @organization_ary&.any? do |resource|
-            slice_found = find_slice(resource, truncated_path, slice[:discriminator])
+            slice_found = find_slice(resource, slice[:path], slice[:discriminator])
             slice_found.present?
           end
         end
 
-        must_support_elements = [
-          { path: 'Organization.identifier' },
-          { path: 'Organization.identifier.system' },
-          { path: 'Organization.identifier.value' },
-          { path: 'Organization.active' },
-          { path: 'Organization.name' },
-          { path: 'Organization.telecom' },
-          { path: 'Organization.address' },
-          { path: 'Organization.address.line' },
-          { path: 'Organization.address.city' },
-          { path: 'Organization.address.state' },
-          { path: 'Organization.address.postalCode' },
-          { path: 'Organization.address.country' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('Organization.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @organization_ary&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end

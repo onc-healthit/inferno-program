@@ -43,6 +43,40 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [],
+        elements: [
+          {
+            path: 'practitioner'
+          },
+          {
+            path: 'organization'
+          },
+          {
+            path: 'code'
+          },
+          {
+            path: 'specialty'
+          },
+          {
+            path: 'location'
+          },
+          {
+            path: 'telecom'
+          },
+          {
+            path: 'telecom.system'
+          },
+          {
+            path: 'telecom.value'
+          },
+          {
+            path: 'endpoint'
+          }
+        ]
+      }.freeze
+
       test :resource_read do
         metadata do
           id '01'
@@ -388,23 +422,23 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through all PractitionerRole resources returned from prior searches to see if any of them provide the following must support elements:
 
-            PractitionerRole.practitioner
+            practitioner
 
-            PractitionerRole.organization
+            organization
 
-            PractitionerRole.code
+            code
 
-            PractitionerRole.specialty
+            specialty
 
-            PractitionerRole.location
+            location
 
-            PractitionerRole.telecom
+            telecom
 
-            PractitionerRole.telecom.system
+            telecom.system
 
-            PractitionerRole.telecom.value
+            telecom.value
 
-            PractitionerRole.endpoint
+            endpoint
 
           )
           versions :r4
@@ -412,22 +446,9 @@ module Inferno
 
         skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
 
-        must_support_elements = [
-          { path: 'PractitionerRole.practitioner' },
-          { path: 'PractitionerRole.organization' },
-          { path: 'PractitionerRole.code' },
-          { path: 'PractitionerRole.specialty' },
-          { path: 'PractitionerRole.location' },
-          { path: 'PractitionerRole.telecom' },
-          { path: 'PractitionerRole.telecom.system' },
-          { path: 'PractitionerRole.telecom.value' },
-          { path: 'PractitionerRole.endpoint' }
-        ]
-
-        missing_must_support_elements = must_support_elements.reject do |element|
-          truncated_path = element[:path].gsub('PractitionerRole.', '')
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
           @practitioner_role_ary&.any? do |resource|
-            value_found = resolve_element_from_path(resource, truncated_path) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
           end
         end

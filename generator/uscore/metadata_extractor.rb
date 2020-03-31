@@ -81,7 +81,11 @@ module Inferno
           searches: [],
           search_param_descriptions: {},
           element_descriptions: {},
-          must_supports: [],
+          must_supports: {
+            extensions: [],
+            slices: [],
+            elements: []
+          },
           tests: []
         }
       end
@@ -270,18 +274,16 @@ module Inferno
           next if profile_definition['name'].include?('Pediatric') && element['path'] == 'Observation.dataAbsentReason'
 
           if element['path'].end_with? 'extension'
-            sequence[:must_supports] <<
+            sequence[:must_supports][:extensions] <<
               {
-                type: 'extension',
                 id: element['id'],
-                path: element['path'],
                 url: element['type'].first['profile'].first
               }
             next
           elsif element['sliceName'].present?
             array_el = profile_elements.find { |el| el['id'] == element['path'] }
             discriminators = array_el['slicing']['discriminator']
-            must_support_element = { type: 'slice', name: element['id'], path: element['path'] }
+            must_support_element = { name: element['id'], path: element['path'].gsub(sequence[:resource] + '.', '') }
             if discriminators.first['type'] == 'pattern'
               discriminator_path = discriminators.first['path']
               discriminator_path = '' if discriminator_path == '$this'
@@ -323,11 +325,11 @@ module Inferno
                 }
               end
             end
-            sequence[:must_supports] << must_support_element
+            sequence[:must_supports][:slices] << must_support_element
             next
           end
-          path = element['path']
-          must_support_element = { type: 'element', path: path }
+          path = element['path'].gsub(sequence[:resource] + '.', '')
+          must_support_element = { path: path }
           if element['fixedUri'].present?
             must_support_element[:fixed_value] = element['fixedUri']
           elsif element['patternCodeableConcept'].present?
@@ -339,8 +341,8 @@ module Inferno
             must_support_element[:fixed_value] = element['patternIdentifier']['system']
             must_support_element[:path] += '.system'
           end
-          sequence[:must_supports].delete_if { |must_support| must_support[:path] == must_support_element[:path] && must_support[:fixed_value].blank? }
-          sequence[:must_supports] << must_support_element
+          sequence[:must_supports][:elements].delete_if { |must_support| must_support[:path] == must_support_element[:path] && must_support[:fixed_value].blank? }
+          sequence[:must_supports][:elements] << must_support_element
         end
       end
 
