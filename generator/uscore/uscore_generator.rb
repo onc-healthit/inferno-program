@@ -708,13 +708,19 @@ module Inferno
             bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
               begin
                 invalid_bindings = resources_with_invalid_binding(binding_def, #{resources_ary_str})
-              rescue Inferno::Terminology::UnknownValueSetException => e
+                binding_def_new = binding_def
+                # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
+                if invalid_bindings && !invalid_bindings.empty?
+                  invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), #{resources_ary_str})
+                  binding_def_new = binding_def.except(:system)
+                end
+              rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::Valueset::UnknownCodeSystemException => e
                 warning do
                   assert false, e.message
                 end
                 invalid_bindings = []
               end
-              invalid_binding_messages.concat(invalid_bindings.map{ |invalid| invalid_binding_message(invalid, binding_def)})
+              invalid_binding_messages.concat(invalid_bindings.map{ |invalid| invalid_binding_message(invalid, binding_def_new)})
             end
             warning do
               invalid_binding_messages.each do |error_message|

@@ -916,22 +916,26 @@ module Inferno
             when 'CodeableConcept'
               if el.is_a? FHIR::CodeableConcept
                 el.coding.none? do |coding|
-                  Terminology.validate_code(binding_def[:system], coding.code, coding.system)
+                  Terminology.validate_code(valueset_url: binding_def[:system],
+                                            code: coding.code,
+                                            system: coding.system)
                 end
               else
                 false
               end
             when 'Quantity', 'Coding'
-              !Terminology.validate_code(binding_def[:system], el.code, el.system)
+              !Terminology.validate_code(valueset_url: binding_def[:system],
+                                         code: el.code,
+                                         system: el.system)
             when 'code'
-              !Terminology.validate_code(binding_def[:system], el)
+              !Terminology.validate_code(valueset_url: binding_def[:system], code: el)
             else
               false
             end
           end
 
           { resource: resource, element: invalid_code_found } if invalid_code_found.present?
-        end.reject(&:nil?)
+        end.compact
       end
 
       def invalid_binding_message(invalid_binding, binding_def)
@@ -944,9 +948,15 @@ module Inferno
           code_as_string = "#{invalid_binding[:element].system}|#{invalid_binding[:element].code}"
         end
 
-        "#{invalid_binding[:resource].resourceType}/#{invalid_binding[:resource].id} " \
-        "at #{invalid_binding[:resource].resourceType}.#{binding_def[:path]} with code '#{code_as_string}' " \
-        "is not in #{binding_def[:system]}"
+        if binding_def[:system]
+          "#{invalid_binding[:resource].resourceType}/#{invalid_binding[:resource].id} " \
+          "at #{invalid_binding[:resource].resourceType}.#{binding_def[:path]} with code '#{code_as_string}' " \
+          "is not in #{binding_def[:system]}"
+        else
+          "#{invalid_binding[:resource].resourceType}/#{invalid_binding[:resource].id} " \
+          "at #{invalid_binding[:resource].resourceType}.#{binding_def[:path]} with code '#{code_as_string}' " \
+          'is not in the declared CodeSystem'
+        end
       end
     end
 
