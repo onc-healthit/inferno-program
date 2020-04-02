@@ -8,9 +8,9 @@ require_relative 'fhir_package_manager'
 
 module Inferno
   class Terminology
-    class Valueset
-      # STU3 Valuesets located at: http://hl7.org/fhir/stu3/terminologies-valuesets.html
-      # STU3 Valueset Resource: http://hl7.org/fhir/stu3/valueset.html
+    class ValueSet
+      # STU3 ValueSets located at: http://hl7.org/fhir/stu3/terminologies-valuesets.html
+      # STU3 ValueSet Resource: http://hl7.org/fhir/stu3/valueset.html
       #
       # snomed in umls: https://www.nlm.nih.gov/research/umls/Snomed/snomed_represented.html
 
@@ -103,7 +103,7 @@ module Inferno
         if @valueset_model&.expansion&.contains
           # This is moved into a nested clause so we can tell in the debug statements which path we're taking
           if valueset_toocostly || valueset_unclosed
-            Inferno.logger.debug("Valueset too costly or unclosed: #{url}")
+            Inferno.logger.debug("ValueSet too costly or unclosed: #{url}")
             process_valueset
           else
             Inferno.logger.debug("Processing expanded valueset: #{url}")
@@ -204,7 +204,7 @@ module Inferno
       #
       # See: http://hl7.org/fhir/stu3/valueset.html#compositions
       #
-      # @param [ValueSet::Compose::Include] vscs the FHIR Valueset include or exclude
+      # @param [ValueSet::Compose::Include] vscs the FHIR ValueSet include or exclude
       def get_code_sets(vscs)
         intersection_set = nil
 
