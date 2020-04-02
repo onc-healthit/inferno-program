@@ -848,7 +848,11 @@ namespace :terminology do |_argv|
     Inferno::Terminology.register_umls_db File.join(TEMP_DIR, 'umls.db')
     Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
     vs = Inferno::Terminology.known_valuesets[args.vs]
-    Inferno::Terminology.save_to_file(vs.valueset, args.filename, args.type.to_sym)
+    if args.type == 'json'
+      File.open("#{args.filename}.json", 'wb') { |f| f << vs.expansion_as_fhir_valueset.to_json }
+    else
+      Inferno::Terminology.save_to_file(vs.valueset, args.filename, args.type.to_sym)
+    end
   end
 
   desc 'Download FHIR Package'
