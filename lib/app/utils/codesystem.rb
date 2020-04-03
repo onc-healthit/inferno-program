@@ -43,7 +43,7 @@ module Inferno
           parent_concept = find_concept(filter.value)
           cs_set = all_codes_in_concept([parent_concept])
         else
-          throw Inferno::Terminology::Valueset::FilterOperationException(filter.to_s)
+          throw Inferno::Terminology::ValueSet::FilterOperationException(filter.to_s)
         end
         cs_set
       end
