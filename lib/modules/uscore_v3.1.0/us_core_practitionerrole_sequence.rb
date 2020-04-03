@@ -400,7 +400,7 @@ module Inferno
             invalid_bindings = resources_with_invalid_binding(binding_def, @practitioner_role_ary)
             binding_def_new = binding_def
             # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
-            if invalid_bindings && !invalid_bindings.empty?
+            if invalid_bindings.present?
               invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), @practitioner_role_ary)
               binding_def_new = binding_def.except(:system)
             end

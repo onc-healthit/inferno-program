@@ -286,7 +286,7 @@ module Inferno
             invalid_bindings = resources_with_invalid_binding(binding_def, @care_team_ary&.values&.flatten)
             binding_def_new = binding_def
             # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
-            if invalid_bindings && !invalid_bindings.empty?
+            if invalid_bindings.present?
               invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), @care_team_ary&.values&.flatten)
               binding_def_new = binding_def.except(:system)
             end

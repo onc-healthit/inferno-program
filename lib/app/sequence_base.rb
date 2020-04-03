@@ -947,16 +947,11 @@ module Inferno
         elsif invalid_binding[:element].is_a?(FHIR::Coding) || invalid_binding[:element].is_a?(FHIR::Quantity)
           code_as_string = "#{invalid_binding[:element].system}|#{invalid_binding[:element].code}"
         end
+        binding_entity = binding_def[:system].presence || 'the declared CodeSystem'
 
-        if binding_def[:system]
-          "#{invalid_binding[:resource].resourceType}/#{invalid_binding[:resource].id} " \
-          "at #{invalid_binding[:resource].resourceType}.#{binding_def[:path]} with code '#{code_as_string}' " \
-          "is not in #{binding_def[:system]}"
-        else
-          "#{invalid_binding[:resource].resourceType}/#{invalid_binding[:resource].id} " \
-          "at #{invalid_binding[:resource].resourceType}.#{binding_def[:path]} with code '#{code_as_string}' " \
-          'is not in the declared CodeSystem'
-        end
+        "#{invalid_binding[:resource].resourceType}/#{invalid_binding[:resource].id} " \
+        "at #{invalid_binding[:resource].resourceType}.#{binding_def[:path]} with code '#{code_as_string}' " \
+        "is not in #{binding_entity}"
       end
     end
 
