@@ -843,6 +843,18 @@ namespace :terminology do |_argv|
     puts vs&.valueset&.count
   end
 
+  desc 'Expand and Save ValueSet to a file'
+  task :expand_valueset_to_file, [:vs, :filename, :type] do |_t, args|
+    Inferno::Terminology.register_umls_db File.join(TEMP_DIR, 'umls.db')
+    Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
+    vs = Inferno::Terminology.known_valuesets[args.vs]
+    if args.type == 'json'
+      File.open("#{args.filename}.json", 'wb') { |f| f << vs.expansion_as_fhir_valueset.to_json }
+    else
+      Inferno::Terminology.save_to_file(vs.valueset, args.filename, args.type.to_sym)
+    end
+  end
+
   desc 'Download FHIR Package'
   task :download_package, [:package, :location] do |_t, args|
     Inferno::FHIRPackageManager.get_package(args.package, args.location)

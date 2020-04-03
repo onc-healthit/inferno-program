@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'sqlite3'
+require 'date'
 require_relative 'bcp_13'
 require_relative 'bcp47'
 require_relative 'codesystem'
@@ -79,6 +80,18 @@ module Inferno
 
       def code_system_set(code_system)
         filter_code_set(code_system)
+      end
+
+      def expansion_as_fhir_valueset
+        expansion_backbone = FHIR::ValueSet::Expansion.new
+        expansion_backbone.timestamp = DateTime.now.strftime('%Y-%m-%dT%H:%M:%S%:z')
+        expansion_backbone.contains = valueset.map do |code|
+          FHIR::ValueSet::Expansion::Contains.new({ system: code[:system], code: code[:code] })
+        end
+        expansion_backbone.total = expansion_backbone.contains.length
+        expansion_valueset = @valueset_model.deep_dup # Make a copy so that the original definition is left intact
+        expansion_valueset.expansion = expansion_backbone
+        expansion_valueset
       end
 
       # Return the url of the valueset
