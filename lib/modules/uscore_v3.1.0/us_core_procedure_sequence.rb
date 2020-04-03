@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_procedure_definitions'
 
 module Inferno
   module Sequence
     class USCore310ProcedureSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'Procedure'
 
@@ -83,25 +85,6 @@ module Inferno
 
       @resources_found = false
 
-      MUST_SUPPORTS = {
-        extensions: [],
-        slices: [],
-        elements: [
-          {
-            path: 'status'
-          },
-          {
-            path: 'code'
-          },
-          {
-            path: 'subject'
-          },
-          {
-            path: 'performed'
-          }
-        ]
-      }.freeze
-
       test :search_by_patient do
         metadata do
           id '01'
@@ -140,7 +123,7 @@ module Inferno
           @resources_found = @procedure.present?
 
           save_resource_references(versioned_resource_class('Procedure'), @procedure_ary[patient])
-          save_delayed_sequence_references(@procedure_ary[patient])
+          save_delayed_sequence_references(@procedure_ary[patient], USCore310ProcedureSequenceDefinitions::DELAYED_REFERENCES)
           validate_reply_entries(@procedure_ary[patient], search_params)
         end
 
@@ -361,7 +344,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results)
+        save_delayed_sequence_references(provenance_results, USCore310ProcedureSequenceDefinitions::DELAYED_REFERENCES)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -459,8 +442,9 @@ module Inferno
         end
 
         skip_if_not_found(resource_type: 'Procedure', delayed: false)
+        must_supports = USCore310ProcedureSequenceDefinitions::MUST_SUPPORTS
 
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @procedure_ary&.values&.flatten&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?

@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_organization_definitions'
 
 module Inferno
   module Sequence
     class USCore310OrganizationSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'Organization'
 
@@ -47,68 +49,6 @@ module Inferno
       end
 
       @resources_found = false
-
-      MUST_SUPPORTS = {
-        extensions: [],
-        slices: [
-          {
-            name: 'Organization.identifier:NPI',
-            path: 'identifier',
-            discriminator: {
-              type: 'patternIdentifier',
-              path: '',
-              system: 'http://hl7.org/fhir/sid/us-npi'
-            }
-          },
-          {
-            name: 'Organization.identifier:CLIA',
-            path: 'identifier',
-            discriminator: {
-              type: 'patternIdentifier',
-              path: '',
-              system: 'urn:oid:2.16.840.1.113883.4.7'
-            }
-          }
-        ],
-        elements: [
-          {
-            path: 'identifier'
-          },
-          {
-            path: 'identifier.system'
-          },
-          {
-            path: 'identifier.value'
-          },
-          {
-            path: 'active'
-          },
-          {
-            path: 'name'
-          },
-          {
-            path: 'telecom'
-          },
-          {
-            path: 'address'
-          },
-          {
-            path: 'address.line'
-          },
-          {
-            path: 'address.city'
-          },
-          {
-            path: 'address.state'
-          },
-          {
-            path: 'address.postalCode'
-          },
-          {
-            path: 'address.country'
-          }
-        ]
-      }.freeze
 
       test :resource_read do
         metadata do
@@ -274,15 +214,16 @@ module Inferno
         end
 
         skip_if_not_found(resource_type: 'Organization', delayed: true)
+        must_supports = USCore310OrganizationSequenceDefinitions::MUST_SUPPORTS
 
-        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
+        missing_slices = must_supports[:slices].reject do |slice|
           @organization_ary&.any? do |resource|
             slice_found = find_slice(resource, slice[:path], slice[:discriminator])
             slice_found.present?
           end
         end
 
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @organization_ary&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?

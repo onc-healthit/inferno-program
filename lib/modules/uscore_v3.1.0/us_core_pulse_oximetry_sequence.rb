@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_pulse_oximetry_definitions'
 
 module Inferno
   module Sequence
     class USCore310PulseOximetrySequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'Pulse Oximetry'
 
@@ -88,175 +90,6 @@ module Inferno
 
       @resources_found = false
 
-      MUST_SUPPORTS = {
-        extensions: [],
-        slices: [
-          {
-            name: 'Observation.category:VSCat',
-            path: 'category',
-            discriminator: {
-              type: 'value',
-              values: [
-                {
-                  path: 'coding.code',
-                  value: 'vital-signs'
-                },
-                {
-                  path: 'coding.system',
-                  value: 'http://terminology.hl7.org/CodeSystem/observation-category'
-                }
-              ]
-            }
-          },
-          {
-            name: 'Observation.code.coding:PulseOx',
-            path: 'code.coding',
-            discriminator: {
-              type: 'value',
-              values: [
-                {
-                  path: 'code',
-                  value: '59408-5'
-                },
-                {
-                  path: 'system',
-                  value: 'http://loinc.org'
-                }
-              ]
-            }
-          },
-          {
-            name: 'Observation.value[x]:valueQuantity',
-            path: 'value',
-            discriminator: {
-              type: 'type',
-              code: 'Quantity'
-            }
-          },
-          {
-            name: 'Observation.component:FlowRate',
-            path: 'component',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: 'code',
-              code: '3151-8',
-              system: 'http://loinc.org'
-            }
-          },
-          {
-            name: 'Observation.component:Concentration',
-            path: 'component',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: 'code',
-              code: '3150-0',
-              system: 'http://loinc.org'
-            }
-          }
-        ],
-        elements: [
-          {
-            path: 'status'
-          },
-          {
-            path: 'category'
-          },
-          {
-            path: 'category.coding'
-          },
-          {
-            path: 'category.coding.system',
-            fixed_value: 'http://terminology.hl7.org/CodeSystem/observation-category'
-          },
-          {
-            path: 'category.coding.code',
-            fixed_value: 'vital-signs'
-          },
-          {
-            path: 'code'
-          },
-          {
-            path: 'code.coding'
-          },
-          {
-            path: 'code.coding.system',
-            fixed_value: 'http://loinc.org'
-          },
-          {
-            path: 'code.coding.code',
-            fixed_value: '59408-5'
-          },
-          {
-            path: 'subject'
-          },
-          {
-            path: 'effective'
-          },
-          {
-            path: 'value'
-          },
-          {
-            path: 'value.value'
-          },
-          {
-            path: 'value.unit'
-          },
-          {
-            path: 'value.system',
-            fixed_value: 'http://unitsofmeasure.org'
-          },
-          {
-            path: 'value.code',
-            fixed_value: '%'
-          },
-          {
-            path: 'dataAbsentReason'
-          },
-          {
-            path: 'component'
-          },
-          {
-            path: 'component.code'
-          },
-          {
-            path: 'component.code.coding.code',
-            fixed_value: '3151-8'
-          },
-          {
-            path: 'component.value.system',
-            fixed_value: 'http://unitsofmeasure.org'
-          },
-          {
-            path: 'component.value.code',
-            fixed_value: 'l/min'
-          },
-          {
-            path: 'component.code.coding.code',
-            fixed_value: '3150-0'
-          },
-          {
-            path: 'component.value'
-          },
-          {
-            path: 'component.value.value'
-          },
-          {
-            path: 'component.value.unit'
-          },
-          {
-            path: 'component.value.system',
-            fixed_value: 'http://unitsofmeasure.org'
-          },
-          {
-            path: 'component.value.code',
-            fixed_value: '%'
-          },
-          {
-            path: 'component.dataAbsentReason'
-          }
-        ]
-      }.freeze
-
       test :search_by_patient_code do
         metadata do
           id '01'
@@ -294,7 +127,7 @@ module Inferno
             @observation_ary[patient] += resources_returned
 
             save_resource_references(versioned_resource_class('Observation'), @observation_ary[patient], Inferno::ValidationUtil::US_CORE_R4_URIS[:pulse_oximetry])
-            save_delayed_sequence_references(resources_returned)
+            save_delayed_sequence_references(resources_returned, USCore310PulseOximetrySequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
 
             break
@@ -564,7 +397,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results)
+        save_delayed_sequence_references(provenance_results, USCore310PulseOximetrySequenceDefinitions::DELAYED_REFERENCES)
         skip 'Could not resolve all parameters (patient, code) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -806,15 +639,16 @@ module Inferno
         end
 
         skip_if_not_found(resource_type: 'Observation', delayed: false)
+        must_supports = USCore310PulseOximetrySequenceDefinitions::MUST_SUPPORTS
 
-        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
+        missing_slices = must_supports[:slices].reject do |slice|
           @observation_ary&.values&.flatten&.any? do |resource|
             slice_found = find_slice(resource, slice[:path], slice[:discriminator])
             slice_found.present?
           end
         end
 
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @observation_ary&.values&.flatten&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?

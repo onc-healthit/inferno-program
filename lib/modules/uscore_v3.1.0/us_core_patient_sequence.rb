@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_patient_definitions'
 
 module Inferno
   module Sequence
     class USCore310PatientSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'Patient'
 
@@ -72,86 +74,6 @@ module Inferno
 
       @resources_found = false
 
-      MUST_SUPPORTS = {
-        extensions: [
-          {
-            id: 'Patient.extension:race',
-            url: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-race'
-          },
-          {
-            id: 'Patient.extension:ethnicity',
-            url: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity'
-          },
-          {
-            id: 'Patient.extension:birthsex',
-            url: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex'
-          }
-        ],
-        slices: [],
-        elements: [
-          {
-            path: 'identifier'
-          },
-          {
-            path: 'identifier.system'
-          },
-          {
-            path: 'identifier.value'
-          },
-          {
-            path: 'name'
-          },
-          {
-            path: 'name.family'
-          },
-          {
-            path: 'name.given'
-          },
-          {
-            path: 'telecom'
-          },
-          {
-            path: 'telecom.system'
-          },
-          {
-            path: 'telecom.value'
-          },
-          {
-            path: 'telecom.use'
-          },
-          {
-            path: 'gender'
-          },
-          {
-            path: 'birthDate'
-          },
-          {
-            path: 'address'
-          },
-          {
-            path: 'address.line'
-          },
-          {
-            path: 'address.city'
-          },
-          {
-            path: 'address.state'
-          },
-          {
-            path: 'address.postalCode'
-          },
-          {
-            path: 'address.period'
-          },
-          {
-            path: 'communication'
-          },
-          {
-            path: 'communication.language'
-          }
-        ]
-      }.freeze
-
       test :search_by__id do
         metadata do
           id '01'
@@ -188,7 +110,7 @@ module Inferno
           @resources_found = @patient.present?
 
           save_resource_references(versioned_resource_class('Patient'), @patient_ary[patient])
-          save_delayed_sequence_references(@patient_ary[patient])
+          save_delayed_sequence_references(@patient_ary[patient], USCore310PatientSequenceDefinitions::DELAYED_REFERENCES)
           validate_reply_entries(@patient_ary[patient], search_params)
         end
 
@@ -492,7 +414,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results)
+        save_delayed_sequence_references(provenance_results, USCore310PatientSequenceDefinitions::DELAYED_REFERENCES)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -749,14 +671,15 @@ module Inferno
         end
 
         skip_if_not_found(resource_type: 'Patient', delayed: false)
+        must_supports = USCore310PatientSequenceDefinitions::MUST_SUPPORTS
 
-        missing_must_support_extensions = MUST_SUPPORTS[:extensions].reject do |must_support_extension|
+        missing_must_support_extensions = must_supports[:extensions].reject do |must_support_extension|
           @patient_ary&.values&.flatten&.any? do |resource|
             resource.extension.any? { |extension| extension.url == must_support_extension[:url] }
           end
         end
 
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @patient_ary&.values&.flatten&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?

@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_immunization_definitions'
 
 module Inferno
   module Sequence
     class USCore310ImmunizationSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'Immunization'
 
@@ -78,31 +80,6 @@ module Inferno
 
       @resources_found = false
 
-      MUST_SUPPORTS = {
-        extensions: [],
-        slices: [],
-        elements: [
-          {
-            path: 'status'
-          },
-          {
-            path: 'statusReason'
-          },
-          {
-            path: 'vaccineCode'
-          },
-          {
-            path: 'patient'
-          },
-          {
-            path: 'occurrence'
-          },
-          {
-            path: 'primarySource'
-          }
-        ]
-      }.freeze
-
       test :search_by_patient do
         metadata do
           id '01'
@@ -141,7 +118,7 @@ module Inferno
           @resources_found = @immunization.present?
 
           save_resource_references(versioned_resource_class('Immunization'), @immunization_ary[patient])
-          save_delayed_sequence_references(@immunization_ary[patient])
+          save_delayed_sequence_references(@immunization_ary[patient], USCore310ImmunizationSequenceDefinitions::DELAYED_REFERENCES)
           validate_reply_entries(@immunization_ary[patient], search_params)
         end
 
@@ -315,7 +292,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results)
+        save_delayed_sequence_references(provenance_results, USCore310ImmunizationSequenceDefinitions::DELAYED_REFERENCES)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -423,8 +400,9 @@ module Inferno
         end
 
         skip_if_not_found(resource_type: 'Immunization', delayed: false)
+        must_supports = USCore310ImmunizationSequenceDefinitions::MUST_SUPPORTS
 
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @immunization_ary&.values&.flatten&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?

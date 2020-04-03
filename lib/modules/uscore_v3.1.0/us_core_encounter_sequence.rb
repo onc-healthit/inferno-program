@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_encounter_definitions'
 
 module Inferno
   module Sequence
     class USCore310EncounterSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'Encounter'
 
@@ -98,64 +100,6 @@ module Inferno
       end
 
       @resources_found = false
-
-      MUST_SUPPORTS = {
-        extensions: [],
-        slices: [],
-        elements: [
-          {
-            path: 'identifier'
-          },
-          {
-            path: 'identifier.system'
-          },
-          {
-            path: 'identifier.value'
-          },
-          {
-            path: 'status'
-          },
-          {
-            path: 'local_class'
-          },
-          {
-            path: 'type'
-          },
-          {
-            path: 'subject'
-          },
-          {
-            path: 'participant'
-          },
-          {
-            path: 'participant.type'
-          },
-          {
-            path: 'participant.period'
-          },
-          {
-            path: 'participant.individual'
-          },
-          {
-            path: 'period'
-          },
-          {
-            path: 'reasonCode'
-          },
-          {
-            path: 'hospitalization'
-          },
-          {
-            path: 'hospitalization.dischargeDisposition'
-          },
-          {
-            path: 'location'
-          },
-          {
-            path: 'location.location'
-          }
-        ]
-      }.freeze
 
       test :resource_read do
         metadata do
@@ -345,8 +289,9 @@ module Inferno
         end
 
         skip_if_not_found(resource_type: 'Encounter', delayed: true)
+        must_supports = USCore310EncounterSequenceDefinitions::MUST_SUPPORTS
 
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @encounter_ary&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?

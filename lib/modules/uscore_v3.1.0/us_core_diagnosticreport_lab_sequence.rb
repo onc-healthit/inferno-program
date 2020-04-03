@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_diagnosticreport_lab_definitions'
 
 module Inferno
   module Sequence
     class USCore310DiagnosticreportLabSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'DiagnosticReport for Laboratory Results Reporting'
 
@@ -88,48 +90,6 @@ module Inferno
 
       @resources_found = false
 
-      MUST_SUPPORTS = {
-        extensions: [],
-        slices: [
-          {
-            name: 'DiagnosticReport.category:LaboratorySlice',
-            path: 'category',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: '',
-              code: 'LAB',
-              system: 'http://terminology.hl7.org/CodeSystem/v2-0074'
-            }
-          }
-        ],
-        elements: [
-          {
-            path: 'status'
-          },
-          {
-            path: 'category'
-          },
-          {
-            path: 'code'
-          },
-          {
-            path: 'subject'
-          },
-          {
-            path: 'effective'
-          },
-          {
-            path: 'issued'
-          },
-          {
-            path: 'performer'
-          },
-          {
-            path: 'result'
-          }
-        ]
-      }.freeze
-
       test :search_by_patient_category do
         metadata do
           id '01'
@@ -167,7 +127,7 @@ module Inferno
             @diagnostic_report_ary[patient] += resources_returned
 
             save_resource_references(versioned_resource_class('DiagnosticReport'), @diagnostic_report_ary[patient], Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
-            save_delayed_sequence_references(resources_returned)
+            save_delayed_sequence_references(resources_returned, USCore310DiagnosticreportLabSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
 
             break
@@ -465,7 +425,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results)
+        save_delayed_sequence_references(provenance_results, USCore310DiagnosticreportLabSequenceDefinitions::DELAYED_REFERENCES)
         skip 'Could not resolve all parameters (patient, category) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -573,15 +533,16 @@ module Inferno
         end
 
         skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
+        must_supports = USCore310DiagnosticreportLabSequenceDefinitions::MUST_SUPPORTS
 
-        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
+        missing_slices = must_supports[:slices].reject do |slice|
           @diagnostic_report_ary&.values&.flatten&.any? do |resource|
             slice_found = find_slice(resource, slice[:path], slice[:discriminator])
             slice_found.present?
           end
         end
 
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @diagnostic_report_ary&.values&.flatten&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?

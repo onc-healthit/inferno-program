@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'http' # for streaming http client
+Dir['lib/modules/uscore_v3.1.0/profile_definitions/*'].sort.each { |file| require './' + file }
 
 module Inferno
   module Sequence
@@ -21,6 +22,7 @@ module Inferno
       MIN_RESOURCE_COUNT = 2
 
       US_CORE_R4_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
+      include Inferno::USCore310ProfileDefinitions
 
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
         super(instance, client, disable_tls_tests, sequence_result)
@@ -282,7 +284,7 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: Inferno::Sequence::USCore310PatientSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310PatientSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
         test_output_against_profile('Patient', must_supports)
@@ -334,7 +336,7 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: Inferno::Sequence::USCore310AllergyintoleranceSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310AllergyintoleranceSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
         test_output_against_profile('AllergyIntolerance', must_supports)
@@ -353,7 +355,7 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: Inferno::Sequence::USCore310CareplanSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310CareplanSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
         test_output_against_profile('CarePlan', must_supports)
@@ -372,7 +374,7 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: Inferno::Sequence::USCore310CareteamSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310CareteamSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
         test_output_against_profile('CareTeam', must_supports)
@@ -391,7 +393,7 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: Inferno::Sequence::USCore310ConditionSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310ConditionSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
         test_output_against_profile('Condition', must_supports)
@@ -426,11 +428,11 @@ module Inferno
         must_supports = [
           {
             profile: US_CORE_R4_URIS[:diagnostic_report_lab],
-            must_support_info: Inferno::Sequence::USCore310DiagnosticreportLabSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310DiagnosticreportLabSequenceDefinitions::MUST_SUPPORTS.dup
           },
           {
             profile: US_CORE_R4_URIS[:diagnostic_report_note],
-            must_support_info: Inferno::Sequence::USCore310DiagnosticreportNoteSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310DiagnosticreportNoteSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
         test_output_against_profile('DiagnosticReport', must_supports)
@@ -449,7 +451,7 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: Inferno::Sequence::USCore310DocumentreferenceSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310DocumentreferenceSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
         test_output_against_profile('DocumentReference', must_supports)
@@ -468,7 +470,7 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: Inferno::Sequence::USCore310EncounterSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310EncounterSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
         test_output_against_profile('Encounter', must_supports)
@@ -487,7 +489,7 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: Inferno::Sequence::USCore310GoalSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310GoalSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
         test_output_against_profile('Goal', must_supports)
@@ -506,7 +508,7 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: Inferno::Sequence::USCore310ImmunizationSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310ImmunizationSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
         test_output_against_profile('Immunization', must_supports)
@@ -525,7 +527,7 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: Inferno::Sequence::USCore310MedicationrequestSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310MedicationrequestSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
         test_output_against_profile('MedicationRequest', must_supports)
@@ -550,23 +552,23 @@ module Inferno
         must_supports = [
           {
             profile: US_CORE_R4_URIS[:pediatric_bmi_age],
-            must_support_info: Inferno::Sequence::USCore310PediatricBmiForAgeSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310PediatricBmiForAgeSequenceDefinitions::MUST_SUPPORTS.dup
           },
           {
             profile: US_CORE_R4_URIS[:pediatric_weight_height],
-            must_support_info: Inferno::Sequence::USCore310PediatricWeightForHeightSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310PediatricWeightForHeightSequenceDefinitions::MUST_SUPPORTS.dup
           },
           {
             profile: US_CORE_R4_URIS[:USCore310PulseOximetrySequence],
-            must_support_info: Inferno::Sequence::USCore310PulseOximetrySequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310PulseOximetrySequenceDefinitions::MUST_SUPPORTS.dup
           },
           {
             profile: US_CORE_R4_URIS[:lab_results],
-            must_support_info: Inferno::Sequence::USCore310ObservationLabSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310ObservationLabSequenceDefinitions::MUST_SUPPORTS.dup
           },
           {
             profile: US_CORE_R4_URIS[:smoking_status],
-            must_support_info: Inferno::Sequence::USCore310SmokingstatusSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310SmokingstatusSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
 
@@ -586,7 +588,7 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: Inferno::Sequence::USCore310ProcedureSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310ProcedureSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
         test_output_against_profile('Procedure', must_supports)
@@ -602,7 +604,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Location')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: USCore310LocationSequenceDefinitions::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('Location', must_supports)
       end
 
       test :validate_medication do
@@ -631,7 +639,7 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: Inferno::Sequence::USCore310OrganizationSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310OrganizationSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
         test_output_against_profile('Organization', must_supports)
@@ -650,7 +658,7 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: Inferno::Sequence::USCore310PractitionerSequence::MUST_SUPPORTS.dup
+            must_support_info: USCore310PractitionerSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
         test_output_against_profile('Practitioner', must_supports)
@@ -666,7 +674,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('PractitionerRole')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: USCore310PractitionerroleSequenceDefinitions::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('PractitionerRole', must_supports)
       end
     end
   end

@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_goal_definitions'
 
 module Inferno
   module Sequence
     class USCore310GoalSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'Goal'
 
@@ -78,34 +80,6 @@ module Inferno
 
       @resources_found = false
 
-      MUST_SUPPORTS = {
-        extensions: [],
-        slices: [
-          {
-            name: 'Goal.target.due[x]:dueDate',
-            path: 'target.due',
-            discriminator: {
-              type: 'type',
-              code: 'Date'
-            }
-          }
-        ],
-        elements: [
-          {
-            path: 'lifecycleStatus'
-          },
-          {
-            path: 'description'
-          },
-          {
-            path: 'subject'
-          },
-          {
-            path: 'target'
-          }
-        ]
-      }.freeze
-
       test :search_by_patient do
         metadata do
           id '01'
@@ -144,7 +118,7 @@ module Inferno
           @resources_found = @goal.present?
 
           save_resource_references(versioned_resource_class('Goal'), @goal_ary[patient])
-          save_delayed_sequence_references(@goal_ary[patient])
+          save_delayed_sequence_references(@goal_ary[patient], USCore310GoalSequenceDefinitions::DELAYED_REFERENCES)
           validate_reply_entries(@goal_ary[patient], search_params)
         end
 
@@ -318,7 +292,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results)
+        save_delayed_sequence_references(provenance_results, USCore310GoalSequenceDefinitions::DELAYED_REFERENCES)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -412,15 +386,16 @@ module Inferno
         end
 
         skip_if_not_found(resource_type: 'Goal', delayed: false)
+        must_supports = USCore310GoalSequenceDefinitions::MUST_SUPPORTS
 
-        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
+        missing_slices = must_supports[:slices].reject do |slice|
           @goal_ary&.values&.flatten&.any? do |resource|
             slice_found = find_slice(resource, slice[:path], slice[:discriminator])
             slice_found.present?
           end
         end
 
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @goal_ary&.values&.flatten&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
