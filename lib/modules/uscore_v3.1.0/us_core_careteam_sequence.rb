@@ -234,89 +234,9 @@ module Inferno
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test 'All must support elements are provided in the CareTeam resources returned.' do
-        metadata do
-          id '06'
-          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
-          description %(
-
-            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all CareTeam resources returned from prior searches to see if any of them provide the following must support elements:
-
-            status
-
-            subject
-
-            participant
-
-            participant.role
-
-            participant.member
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
-
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
-          @care_team_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
-          end
-        end
-        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
-
-        skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@care_team_ary&.values&.flatten&.length} provided CareTeam resource(s)"
-        @instance.save!
-      end
-
-      test 'The server returns expected results when parameters use composite-or' do
-        metadata do
-          id '07'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
-          description %(
-
-          )
-          versions :r4
-        end
-
-        skip_if_known_search_not_supported('CareTeam', ['patient', 'status'])
-
-        resolved_one = false
-
-        found_second_val = false
-        patient_ids.each do |patient|
-          search_params = {
-            'patient': patient,
-            'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
-          }
-
-          next if search_params.any? { |_param, value| value.nil? }
-
-          resolved_one = true
-
-          second_status_val = resolve_element_from_path(@care_team_ary[patient], 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
-          next if second_status_val.nil?
-
-          found_second_val = true
-          search_params[:status] += ',' + get_value_for_search_param(second_status_val)
-          reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
-          validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
-          assert_response_ok(reply)
-          resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          missing_values = search_params[:status].split(',').reject do |val|
-            resolve_element_from_path(resources_returned, 'status') { |val_found| val_found == val }
-          end
-          assert missing_values.blank?, "Could not find #{missing_values.join(',')} values from status in any of the resources returned"
-        end
-        skip 'Cannot find second value for status to perform a multipleOr search' unless found_second_val
-      end
-
       test :validate_resources do
         metadata do
-          id '08'
+          id '06'
           name 'CareTeam resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
@@ -383,6 +303,86 @@ module Inferno
             assert false, error_message
           end
         end
+      end
+
+      test 'All must support elements are provided in the CareTeam resources returned.' do
+        metadata do
+          id '07'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
+          description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all CareTeam resources returned from prior searches to see if any of them provide the following must support elements:
+
+            status
+
+            subject
+
+            participant
+
+            participant.role
+
+            participant.member
+
+          )
+          versions :r4
+        end
+
+        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
+
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+          @care_team_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@care_team_ary&.values&.flatten&.length} provided CareTeam resource(s)"
+        @instance.save!
+      end
+
+      test 'The server returns expected results when parameters use composite-or' do
+        metadata do
+          id '08'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
+          description %(
+
+          )
+          versions :r4
+        end
+
+        skip_if_known_search_not_supported('CareTeam', ['patient', 'status'])
+
+        resolved_one = false
+
+        found_second_val = false
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
+          }
+
+          next if search_params.any? { |_param, value| value.nil? }
+
+          resolved_one = true
+
+          second_status_val = resolve_element_from_path(@care_team_ary[patient], 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
+          next if second_status_val.nil?
+
+          found_second_val = true
+          search_params[:status] += ',' + get_value_for_search_param(second_status_val)
+          reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
+          validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
+          assert_response_ok(reply)
+          resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          missing_values = search_params[:status].split(',').reject do |val|
+            resolve_element_from_path(resources_returned, 'status') { |val_found| val_found == val }
+          end
+          assert missing_values.blank?, "Could not find #{missing_values.join(',')} values from status in any of the resources returned"
+        end
+        skip 'Cannot find second value for status to perform a multipleOr search' unless found_second_val
       end
 
       test 'Every reference within CareTeam resource is valid and can be read.' do

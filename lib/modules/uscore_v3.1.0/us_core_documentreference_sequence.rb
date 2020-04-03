@@ -527,71 +527,9 @@ module Inferno
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test 'All must support elements are provided in the DocumentReference resources returned.' do
-        metadata do
-          id '12'
-          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
-          description %(
-
-            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all DocumentReference resources returned from prior searches to see if any of them provide the following must support elements:
-
-            identifier
-
-            status
-
-            type
-
-            category
-
-            subject
-
-            date
-
-            author
-
-            custodian
-
-            content
-
-            content.attachment
-
-            content.attachment.contentType
-
-            content.attachment.data
-
-            content.attachment.url
-
-            content.format
-
-            context
-
-            context.encounter
-
-            context.period
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
-
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
-          @document_reference_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
-          end
-        end
-        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
-
-        skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@document_reference_ary&.values&.flatten&.length} provided DocumentReference resource(s)"
-        @instance.save!
-      end
-
       test :validate_resources do
         metadata do
-          id '13'
+          id '12'
           name 'DocumentReference resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
           description %(
@@ -710,6 +648,68 @@ module Inferno
             assert false, error_message
           end
         end
+      end
+
+      test 'All must support elements are provided in the DocumentReference resources returned.' do
+        metadata do
+          id '13'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
+          description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all DocumentReference resources returned from prior searches to see if any of them provide the following must support elements:
+
+            identifier
+
+            status
+
+            type
+
+            category
+
+            subject
+
+            date
+
+            author
+
+            custodian
+
+            content
+
+            content.attachment
+
+            content.attachment.contentType
+
+            content.attachment.data
+
+            content.attachment.url
+
+            content.format
+
+            context
+
+            context.encounter
+
+            context.period
+
+          )
+          versions :r4
+        end
+
+        skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
+
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+          @document_reference_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@document_reference_ary&.values&.flatten&.length} provided DocumentReference resource(s)"
+        @instance.save!
       end
 
       test 'Every reference within DocumentReference resource is valid and can be read.' do

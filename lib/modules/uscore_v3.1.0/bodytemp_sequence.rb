@@ -478,78 +478,9 @@ module Inferno
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test 'All must support elements are provided in the Observation resources returned.' do
-        metadata do
-          id '10'
-          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
-          description %(
-
-            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all Observation resources returned from prior searches to see if any of them provide the following must support elements:
-
-            status
-
-            category
-
-            category.coding
-
-            category.coding.system
-
-            category.coding.code
-
-            code
-
-            subject
-
-            effective[x]
-
-            value[x]
-
-            value[x].value
-
-            value[x].unit
-
-            value[x].system
-
-            value[x].code
-
-            dataAbsentReason
-
-            Observation.category:VSCat
-
-            Observation.value[x]:valueQuantity
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'Observation', delayed: false)
-
-        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
-          @observation_ary&.values&.flatten&.any? do |resource|
-            slice_found = find_slice(resource, slice[:path], slice[:discriminator])
-            slice_found.present?
-          end
-        end
-
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
-          @observation_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
-          end
-        end
-        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
-
-        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
-
-        skip_if missing_must_support_elements.present?,
-                "Could not find #{missing_must_support_elements.join(', ')} in the #{@observation_ary&.values&.flatten&.length} provided Observation resource(s)"
-        @instance.save!
-      end
-
       test :validate_resources do
         metadata do
-          id '11'
+          id '10'
           name 'Observation resources returned conform to US Core R4 profiles'
           link 'http://hl7.org/fhir/StructureDefinition/bodytemp'
           description %(
@@ -664,6 +595,75 @@ module Inferno
             assert false, error_message
           end
         end
+      end
+
+      test 'All must support elements are provided in the Observation resources returned.' do
+        metadata do
+          id '11'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
+          description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all Observation resources returned from prior searches to see if any of them provide the following must support elements:
+
+            status
+
+            category
+
+            category.coding
+
+            category.coding.system
+
+            category.coding.code
+
+            code
+
+            subject
+
+            effective[x]
+
+            value[x]
+
+            value[x].value
+
+            value[x].unit
+
+            value[x].system
+
+            value[x].code
+
+            dataAbsentReason
+
+            Observation.category:VSCat
+
+            Observation.value[x]:valueQuantity
+
+          )
+          versions :r4
+        end
+
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
+
+        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
+          @observation_ary&.values&.flatten&.any? do |resource|
+            slice_found = find_slice(resource, slice[:path], slice[:discriminator])
+            slice_found.present?
+          end
+        end
+
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+          @observation_ary&.values&.flatten&.any? do |resource|
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@observation_ary&.values&.flatten&.length} provided Observation resource(s)"
+        @instance.save!
       end
 
       test 'Every reference within Observation resource is valid and can be read.' do
