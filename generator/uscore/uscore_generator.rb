@@ -90,7 +90,7 @@ module Inferno
             create_revinclude_test(sequence) if sequence[:revincludes].any?
           end
           create_resource_profile_test(sequence)
-          unless sequence[:delayed_sequence]  
+          unless sequence[:delayed_sequence]
             create_must_support_test(sequence)
             create_multiple_or_test(sequence)
           end
