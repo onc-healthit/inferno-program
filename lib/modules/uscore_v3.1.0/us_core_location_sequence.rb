@@ -430,7 +430,7 @@ module Inferno
               invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), @location_ary)
               binding_def_new = binding_def.except(:system)
             end
-          rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::Valueset::UnknownCodeSystemException => e
+          rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::ValueSet::UnknownCodeSystemException => e
             warning do
               assert false, e.message
             end
