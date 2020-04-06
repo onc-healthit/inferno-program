@@ -58,6 +58,16 @@ class TerminologyTest < Minitest::Test
                                               code: 'R',
                                               system: 'http://fake-cs'),
            'Validate code helper should return false for an invalid code with an invalid codesystem'
+    # valid code, no valueset url, codesystem URL instead
+    assert Inferno::Terminology.validate_code(valueset_url: nil,
+                                              code: 'M',
+                                              system: ADMIN_GENDER_CS),
+           'Validate code helper should return true for a valid code with a provided codesystem'
+    # invalid code, no valueset url, codesystem URL instead
+    refute Inferno::Terminology.validate_code(valueset_url: nil,
+                                              code: 'R',
+                                              system: ADMIN_GENDER_CS),
+           'Validate code helper should return false for an invalid code with a provided codesystem'
 
     # An invalid valueset should raise an error
     assert_raises Inferno::Terminology::UnknownValueSetException do

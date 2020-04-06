@@ -915,10 +915,22 @@ module Inferno
             case binding_def[:type]
             when 'CodeableConcept'
               if el.is_a? FHIR::CodeableConcept
-                el.coding.none? do |coding|
-                  Terminology.validate_code(valueset_url: binding_def[:system],
-                                            code: coding.code,
-                                            system: coding.system)
+                # If we're validating a valueset (AKA if we have a 'system' URL)
+                # We want at least one of the codes to be in the valueset
+                if binding_def[:system].present?
+                  el.coding.none? do |coding|
+                    Terminology.validate_code(valueset_url: binding_def[:system],
+                                              code: coding.code,
+                                              system: coding.system)
+                  end
+                # If we're validating a codesystem (AKA if there's no 'system' URL)
+                # We want all of the codes to be in their respective systems
+                else
+                  el.coding.any? do |coding|
+                    Terminology.validate_code(valueset_url: nil,
+                                              code: coding.code,
+                                              system: coding.system)
+                  end
                 end
               else
                 false
