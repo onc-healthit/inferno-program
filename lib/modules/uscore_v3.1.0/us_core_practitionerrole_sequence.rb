@@ -43,6 +43,40 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [],
+        elements: [
+          {
+            path: 'practitioner'
+          },
+          {
+            path: 'organization'
+          },
+          {
+            path: 'code'
+          },
+          {
+            path: 'specialty'
+          },
+          {
+            path: 'location'
+          },
+          {
+            path: 'telecom'
+          },
+          {
+            path: 'telecom.system'
+          },
+          {
+            path: 'telecom.value'
+          },
+          {
+            path: 'endpoint'
+          }
+        ]
+      }.freeze
+
       test :resource_read do
         metadata do
           id '01'
@@ -159,9 +193,55 @@ module Inferno
         end
       end
 
-      test 'Every reference within PractitionerRole resource is valid and can be read.' do
+      test 'All must support elements are provided in the PractitionerRole resources returned.' do
         metadata do
           id '03'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
+          description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all PractitionerRole resources returned from prior searches to see if any of them provide the following must support elements:
+
+            practitioner
+
+            organization
+
+            code
+
+            specialty
+
+            location
+
+            telecom
+
+            telecom.system
+
+            telecom.value
+
+            endpoint
+
+          )
+          versions :r4
+        end
+
+        skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
+
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+          @practitioner_role_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@practitioner_role_ary&.length} provided PractitionerRole resource(s)"
+        @instance.save!
+      end
+
+      test 'Every reference within PractitionerRole resource is valid and can be read.' do
+        metadata do
+          id '04'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

@@ -465,7 +465,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Encounter')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310EncounterSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('Encounter', must_supports)
       end
 
       test :validate_goal do
@@ -622,7 +628,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Organization')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310OrganizationSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('Organization', must_supports)
       end
 
       test :validate_practitioner do
@@ -635,7 +647,13 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Practitioner')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: Inferno::Sequence::USCore310PractitionerSequence::MUST_SUPPORTS.dup
+          }
+        ]
+        test_output_against_profile('Practitioner', must_supports)
       end
 
       test :validate_practitionerrole do

@@ -27,6 +27,60 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [
+          {
+            name: 'Provenance.agent:ProvenanceAuthor',
+            path: 'agent',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: 'type',
+              code: 'author',
+              system: 'http://terminology.hl7.org/CodeSystem/provenance-participant-type'
+            }
+          },
+          {
+            name: 'Provenance.agent:ProvenanceTransmitter',
+            path: 'agent',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: 'type',
+              code: 'transmitter',
+              system: 'http://hl7.org/fhir/us/core/CodeSystem/us-core-provenance-participant-type'
+            }
+          }
+        ],
+        elements: [
+          {
+            path: 'target'
+          },
+          {
+            path: 'recorded'
+          },
+          {
+            path: 'agent'
+          },
+          {
+            path: 'agent.type'
+          },
+          {
+            path: 'agent.who'
+          },
+          {
+            path: 'agent.onBehalfOf'
+          },
+          {
+            path: 'agent.type.coding.code',
+            fixed_value: 'author'
+          },
+          {
+            path: 'agent.type.coding.code',
+            fixed_value: 'transmitter'
+          }
+        ]
+      }.freeze
+
       test :resource_read do
         metadata do
           id '01'
@@ -149,9 +203,66 @@ module Inferno
         end
       end
 
-      test 'Every reference within Provenance resource is valid and can be read.' do
+      test 'All must support elements are provided in the Provenance resources returned.' do
         metadata do
           id '03'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
+          description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all Provenance resources returned from prior searches to see if any of them provide the following must support elements:
+
+            target
+
+            recorded
+
+            agent
+
+            agent.type
+
+            agent.who
+
+            agent.onBehalfOf
+
+            agent.type.coding.code
+
+            agent.type.coding.code
+
+            Provenance.agent:ProvenanceAuthor
+
+            Provenance.agent:ProvenanceTransmitter
+
+          )
+          versions :r4
+        end
+
+        skip_if_not_found(resource_type: 'Provenance', delayed: true)
+
+        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
+          @provenance_ary&.any? do |resource|
+            slice_found = find_slice(resource, slice[:path], slice[:discriminator])
+            slice_found.present?
+          end
+        end
+
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+          @provenance_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@provenance_ary&.length} provided Provenance resource(s)"
+        @instance.save!
+      end
+
+      test 'Every reference within Provenance resource is valid and can be read.' do
+        metadata do
+          id '04'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

@@ -99,6 +99,64 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [],
+        elements: [
+          {
+            path: 'identifier'
+          },
+          {
+            path: 'identifier.system'
+          },
+          {
+            path: 'identifier.value'
+          },
+          {
+            path: 'status'
+          },
+          {
+            path: 'local_class'
+          },
+          {
+            path: 'type'
+          },
+          {
+            path: 'subject'
+          },
+          {
+            path: 'participant'
+          },
+          {
+            path: 'participant.type'
+          },
+          {
+            path: 'participant.period'
+          },
+          {
+            path: 'participant.individual'
+          },
+          {
+            path: 'period'
+          },
+          {
+            path: 'reasonCode'
+          },
+          {
+            path: 'hospitalization'
+          },
+          {
+            path: 'hospitalization.dischargeDisposition'
+          },
+          {
+            path: 'location'
+          },
+          {
+            path: 'location.location'
+          }
+        ]
+      }.freeze
+
       test :resource_read do
         metadata do
           id '01'
@@ -239,9 +297,71 @@ module Inferno
         end
       end
 
-      test 'Every reference within Encounter resource is valid and can be read.' do
+      test 'All must support elements are provided in the Encounter resources returned.' do
         metadata do
           id '03'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
+          description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all Encounter resources returned from prior searches to see if any of them provide the following must support elements:
+
+            identifier
+
+            identifier.system
+
+            identifier.value
+
+            status
+
+            class
+
+            type
+
+            subject
+
+            participant
+
+            participant.type
+
+            participant.period
+
+            participant.individual
+
+            period
+
+            reasonCode
+
+            hospitalization
+
+            hospitalization.dischargeDisposition
+
+            location
+
+            location.location
+
+          )
+          versions :r4
+        end
+
+        skip_if_not_found(resource_type: 'Encounter', delayed: true)
+
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+          @encounter_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@encounter_ary&.length} provided Encounter resource(s)"
+        @instance.save!
+      end
+
+      test 'Every reference within Encounter resource is valid and can be read.' do
+        metadata do
+          id '04'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.

@@ -49,6 +49,38 @@ module Inferno
 
       @resources_found = false
 
+      MUST_SUPPORTS = {
+        extensions: [],
+        slices: [
+          {
+            name: 'Practitioner.identifier:NPI',
+            path: 'identifier',
+            discriminator: {
+              type: 'patternIdentifier',
+              path: '',
+              system: 'http://hl7.org/fhir/sid/us-npi'
+            }
+          }
+        ],
+        elements: [
+          {
+            path: 'identifier'
+          },
+          {
+            path: 'identifier.system'
+          },
+          {
+            path: 'identifier.value'
+          },
+          {
+            path: 'name'
+          },
+          {
+            path: 'name.family'
+          }
+        ]
+      }.freeze
+
       test :resource_read do
         metadata do
           id '01'
@@ -159,9 +191,58 @@ module Inferno
         end
       end
 
-      test 'Every reference within Practitioner resource is valid and can be read.' do
+      test 'All must support elements are provided in the Practitioner resources returned.' do
         metadata do
           id '03'
+          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
+          description %(
+
+            US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
+            This will look through all Practitioner resources returned from prior searches to see if any of them provide the following must support elements:
+
+            identifier
+
+            identifier.system
+
+            identifier.value
+
+            name
+
+            name.family
+
+            Practitioner.identifier:NPI
+
+          )
+          versions :r4
+        end
+
+        skip_if_not_found(resource_type: 'Practitioner', delayed: true)
+
+        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
+          @practitioner_ary&.any? do |resource|
+            slice_found = find_slice(resource, slice[:path], slice[:discriminator])
+            slice_found.present?
+          end
+        end
+
+        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+          @practitioner_ary&.any? do |resource|
+            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found.present?
+          end
+        end
+        missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        missing_must_support_elements += missing_slices.map { |slice| slice[:name] }
+
+        skip_if missing_must_support_elements.present?,
+                "Could not find #{missing_must_support_elements.join(', ')} in the #{@practitioner_ary&.length} provided Practitioner resource(s)"
+        @instance.save!
+      end
+
+      test 'Every reference within Practitioner resource is valid and can be read.' do
+        metadata do
+          id '04'
           link 'http://hl7.org/fhir/references.html'
           description %(
             This test checks if references found in resources from prior searches can be resolved.
