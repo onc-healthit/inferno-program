@@ -141,7 +141,7 @@ module Inferno
             <% additional_filters = access_verify_status_codes[sequence[:resource].downcase.to_sym] %>
 
             <% additional_filters.each do |key, value| %>
-            options.merge!({'<%= key %>': '<%= value %>'})
+            options[:search][:parameters].merge!({'<%= key %>': '<%= value %>'})
             <% end %>
             reply = @client.search('<%=sequence[:resource]%>', options)
           end

@@ -158,7 +158,7 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!({ 'clinical-status': 'active' })
+            options[:search][:parameters].merge!({ 'clinical-status': 'active' })
 
             reply = @client.search('AllergyIntolerance', options)
           end
@@ -209,7 +209,7 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!({ 'status': 'active' })
+            options[:search][:parameters].merge!({ 'status': 'active' })
 
             reply = @client.search('CarePlan', options)
           end
@@ -260,7 +260,7 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!({ 'status': 'active' })
+            options[:search][:parameters].merge!({ 'status': 'active' })
 
             reply = @client.search('CareTeam', options)
           end
@@ -310,7 +310,7 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!({ 'clinical-status': 'active' })
+            options[:search][:parameters].merge!({ 'clinical-status': 'active' })
 
             reply = @client.search('Condition', options)
           end
@@ -397,7 +397,7 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!({ 'status': 'final' })
+            options[:search][:parameters].merge!({ 'status': 'final' })
 
             reply = @client.search('DiagnosticReport', options)
           end
@@ -447,7 +447,7 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!({ 'status': 'current' })
+            options[:search][:parameters].merge!({ 'status': 'current' })
 
             reply = @client.search('DocumentReference', options)
           end
@@ -497,7 +497,7 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!({ 'status': 'finished' })
+            options[:search][:parameters].merge!({ 'status': 'finished' })
 
             reply = @client.search('Encounter', options)
           end
@@ -547,7 +547,7 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!({ 'status': 'active' })
+            options[:search][:parameters].merge!({ 'status': 'active' })
 
             reply = @client.search('Goal', options)
           end
@@ -597,7 +597,7 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!({ 'status': 'completed' })
+            options[:search][:parameters].merge!({ 'status': 'completed' })
 
             reply = @client.search('Immunization', options)
           end
@@ -648,7 +648,7 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!({ 'status': 'active' })
+            options[:search][:parameters].merge!({ 'status': 'active' })
 
             reply = @client.search('MedicationRequest', options)
           end
@@ -699,7 +699,7 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!({ 'status': 'final' })
+            options[:search][:parameters].merge!({ 'status': 'final' })
 
             reply = @client.search('Observation', options)
           end
@@ -749,7 +749,7 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!({ 'status': 'completed' })
+            options[:search][:parameters].merge!({ 'status': 'completed' })
 
             reply = @client.search('Procedure', options)
           end
