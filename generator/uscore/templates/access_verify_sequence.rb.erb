@@ -138,7 +138,11 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!(access_verify_status_codes[sequence[:resource].downcase])
+            <% additional_filters = access_verify_status_codes[sequence[:resource].downcase.to_sym] %>
+
+            <% additional_filters.each do |key, value| %>
+            options.merge!({'<%= key %>': '<%= value %>'})
+            <% end %>
             reply = @client.search('<%=sequence[:resource]%>', options)
           end
           <% end %>
