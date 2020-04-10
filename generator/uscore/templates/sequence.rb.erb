@@ -13,15 +13,61 @@ module Inferno
 
       description 'Verify that <%=resource%> resources on the FHIR server follow the US Core Implementation Guide'
 
+      details %(
+        # Background
+
+        The US Core #{title} sequence looks to see if the selected FHIR server is able to serve `#{title.gsub(/\s+/, '')}` resources 
+        while following the US Core Implementation Guide. 
+
+        # Testing Methodology
+
+        <%if delayed_sequence%>
+        Because <%=resource%> resources do not exist in USCDI, no searches are performed on this test sequence. Instead, references to
+        this profile found in other resources are used for testing. If no references can be found this way, then all the tests
+        in this sequence are skipped.
+        <%else%>
+        ## Searching
+        This test sequence will first perform each required search associated with this resource. This sequence will perform searches
+        with the following parameters:
+        <%searches.select { |search_param| search_param[:expectation] == 'SHALL' }.each do |search| %>
+          * <%=search[:names].join(', ')%><%end%>
+        
+        ### Search Parameters
+        The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its 
+        parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is 
+        performed by looking for an existing `Patient.identifier` from any of the resources returned in the `_id` search. If a 
+        value cannot be found this way, the search is skipped.
+        
+        ### Search Validation
+        Inferno will look through the first 20 bundle pages of the reply for `#{title.gsub(/\s+/, '')}` resources and save them 
+        for subsequent tests.
+        Each of these resources is then checked to see if it matches the searched parameters in accordance
+        with [FHIR search guidelines](https://www.hl7.org/fhir/search.html). The test will fail, for example, if a patient search 
+        for gender=male returns a female patient. 
+        <%end%>
+        ## Must Support
+        Each profile has a list of elements marked as "must support". This test sequence expects to see each of these elements
+        at least once. If at least one cannot be found, the test will fail. The test will look through the `#{title.gsub(/\s+/, '')}`
+        resources found for these elements.
+
+        ## Profile Validation
+        Each resource returned from the first search is expected to conform to the (US Core profile)[<%=profile%>].
+        Each element is checked against teminology binding and cardinality requirements.
+
+        Elements with a required binding is validated against its bound valueset. If the code/system in the element is not part
+        of the valueset, then the test will fail.
+
+        ## Reference Validation
+        Each reference within the resources found from the first search must resolve. The test will attempt to read each reference found 
+        and will fail if any attempted read fails.
+      )
+
       test_id_prefix '<%=test_id_prefix%>'
 
       requires :token<%=", :patient_ids" unless delayed_sequence%><%=', :device_codes' if resource == 'Device'  %>
-      conformance_supports :<%=resource%>
-      <%="delayed_sequence" if delayed_sequence%>
-      <%=search_validator%>
-      details %(
-        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-      )
+      conformance_supports :<%=resource%><%="
+      delayed_sequence" if delayed_sequence%>
+<%=search_validator%>
 
       def patient_ids
         @instance.patient_ids.split(',').map(&:strip)

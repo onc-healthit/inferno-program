@@ -13,6 +13,51 @@ module Inferno
 
       description 'Verify that CareTeam resources on the FHIR server follow the US Core Implementation Guide'
 
+      details %(
+        # Background
+
+        The US Core #{title} sequence looks to see if the selected FHIR server is able to serve `#{title.gsub(/\s+/, '')}` resources
+        while following the US Core Implementation Guide.
+
+        # Testing Methodology
+
+
+        ## Searching
+        This test sequence will first perform each required search associated with this resource. This sequence will perform searches
+        with the following parameters:
+
+          * patient, status
+
+        ### Search Parameters
+        The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
+        parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is
+        performed by looking for an existing `Patient.identifier` from any of the resources returned in the `_id` search. If a
+        value cannot be found this way, the search is skipped.
+
+        ### Search Validation
+        Inferno will look through the first 20 bundle pages of the reply for `#{title.gsub(/\s+/, '')}` resources and save them
+        for subsequent tests.
+        Each of these resources is then checked to see if it matches the searched parameters in accordance
+        with [FHIR search guidelines](https://www.hl7.org/fhir/search.html). The test will fail, for example, if a patient search
+        for gender=male returns a female patient.
+
+        ## Must Support
+        Each profile has a list of elements marked as "must support". This test sequence expects to see each of these elements
+        at least once. If at least one cannot be found, the test will fail. The test will look through the `#{title.gsub(/\s+/, '')}`
+        resources found for these elements.
+
+        ## Profile Validation
+        Each resource returned from the first search is expected to conform to the (US Core profile)[http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam].
+        Each element is checked against teminology binding and cardinality requirements.
+
+        Elements with a required binding is validated against its bound valueset. If the code/system in the element is not part
+        of the valueset, then the test will fail.
+
+        ## Reference Validation
+        Each reference within the resources found from the first search must resolve. The test will attempt to read each reference found
+        and will fail if any attempted read fails.
+      )
+
       test_id_prefix 'USCCT'
 
       requires :token, :patient_ids
@@ -66,10 +111,6 @@ module Inferno
         reply
       end
 
-      details %(
-        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-      )
-
       def patient_ids
         @instance.patient_ids.split(',').map(&:strip)
       end
@@ -79,12 +120,13 @@ module Inferno
       test :search_by_patient_status do
         metadata do
           id '01'
-          name 'Server returns expected results from CareTeam search by patient+status'
+          name 'Server returns results from CareTeam search by patient+status'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
-            A server SHALL support searching by patient+status on the CareTeam resource
-
+            A server SHALL support searching by patient+status on the CareTeam resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
+          Because this is the first search of the sequence, resources in the response will be used for subsequent tests.
           )
           versions :r4
         end
@@ -179,7 +221,12 @@ module Inferno
           id '05'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
-            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
+
+            A Server SHALL be capable of supporting the following _revincludes: Provenance:target.
+
+            This test will perform a search for patient + status + _revIncludes: Provenance:target and will pass
+            if a Provenance resource is found in the reponse.
+
           )
           versions :r4
         end
@@ -221,8 +268,10 @@ module Inferno
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
 
-            This test checks if the resources returned from prior searches conform to the US Core profiles.
-            This includes checking for missing data elements and valueset verification.
+            This test checks if the resources returned from the first search conform to the [US Core Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam).
+            This test will check to see if the cardinality and required bindings of elements are respected.
+            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the valueset.
+            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
           )
           versions :r4
@@ -292,18 +341,13 @@ module Inferno
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all CareTeam resources returned from prior searches to see if any of them provide the following must support elements:
+            This will look through the CareTeam resources found previously for the following must support elements:
 
-            status
-
-            subject
-
-            participant
-
-            participant.role
-
-            participant.member
-
+            * status
+            * subject
+            * participant
+            * participant.role
+            * participant.member
           )
           versions :r4
         end
@@ -324,11 +368,18 @@ module Inferno
         @instance.save!
       end
 
-      test 'The server returns expected results when parameters use composite-or' do
+      test 'The server returns results when parameters use composite-or' do
         metadata do
           id '08'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
+
+            This test will check if the server is capable of returning results for composite search parameters.
+            The test will look through the resources returned from the first search to identify two different values
+            to use for the parameter being tested. If no two different values can be found, then the test is skipped.
+            [FHIR Composite Search Guideline](https://www.hl7.org/fhir/search.html#combining)
+
+          Parameters being tested: status
 
           )
           versions :r4
@@ -366,12 +417,15 @@ module Inferno
         skip 'Cannot find second value for status to perform a multipleOr search' unless found_second_val
       end
 
-      test 'Every reference within CareTeam resource is valid and can be read.' do
+      test 'Every reference within CareTeam resources can be read.' do
         metadata do
           id '09'
           link 'http://hl7.org/fhir/references.html'
           description %(
-            This test checks if references found in resources from prior searches can be resolved.
+
+            This test will attempt to read the first 50 reference found in the resources from the first search.
+            The test will fail if Inferno fails to read any of those references.
+
           )
           versions :r4
         end

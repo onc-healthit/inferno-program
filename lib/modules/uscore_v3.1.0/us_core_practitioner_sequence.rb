@@ -13,6 +13,36 @@ module Inferno
 
       description 'Verify that Practitioner resources on the FHIR server follow the US Core Implementation Guide'
 
+      details %(
+        # Background
+
+        The US Core #{title} sequence looks to see if the selected FHIR server is able to serve `#{title.gsub(/\s+/, '')}` resources
+        while following the US Core Implementation Guide.
+
+        # Testing Methodology
+
+
+        Because Practitioner resources do not exist in USCDI, no searches are performed on this test sequence. Instead, references to
+        this profile found in other resources are used for testing. If no references can be found this way, then all the tests
+        in this sequence are skipped.
+
+        ## Must Support
+        Each profile has a list of elements marked as "must support". This test sequence expects to see each of these elements
+        at least once. If at least one cannot be found, the test will fail. The test will look through the `#{title.gsub(/\s+/, '')}`
+        resources found for these elements.
+
+        ## Profile Validation
+        Each resource returned from the first search is expected to conform to the (US Core profile)[http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner].
+        Each element is checked against teminology binding and cardinality requirements.
+
+        Elements with a required binding is validated against its bound valueset. If the code/system in the element is not part
+        of the valueset, then the test will fail.
+
+        ## Reference Validation
+        Each reference within the resources found from the first search must resolve. The test will attempt to read each reference found
+        and will fail if any attempted read fails.
+      )
+
       test_id_prefix 'USCPR'
 
       requires :token
@@ -41,10 +71,6 @@ module Inferno
         end
       end
 
-      details %(
-        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-      )
-
       def patient_ids
         @instance.patient_ids.split(',').map(&:strip)
       end
@@ -57,7 +83,7 @@ module Inferno
           name 'Server returns correct Practitioner resource from the Practitioner read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
-            Reference to Practitioner can be resolved and read.
+            This test will attempt to Reference to Practitioner can be resolved and read.
           )
           versions :r4
         end
@@ -85,8 +111,10 @@ module Inferno
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
           description %(
 
-            This test checks if the resources returned from prior searches conform to the US Core profiles.
-            This includes checking for missing data elements and valueset verification.
+            This test checks if the resources returned from the first search conform to the [US Core Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner).
+            This test will check to see if the cardinality and required bindings of elements are respected.
+            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the valueset.
+            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
           )
           versions :r4
@@ -168,20 +196,14 @@ module Inferno
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all Practitioner resources returned from prior searches to see if any of them provide the following must support elements:
+            This will look through the Practitioner resources found previously for the following must support elements:
 
-            identifier
-
-            identifier.system
-
-            identifier.value
-
-            name
-
-            name.family
-
-            Practitioner.identifier:NPI
-
+            * identifier
+            * identifier.system
+            * identifier.value
+            * name
+            * name.family
+            * Practitioner.identifier:NPI
           )
           versions :r4
         end
@@ -211,12 +233,15 @@ module Inferno
         @instance.save!
       end
 
-      test 'Every reference within Practitioner resource is valid and can be read.' do
+      test 'Every reference within Practitioner resources can be read.' do
         metadata do
           id '04'
           link 'http://hl7.org/fhir/references.html'
           description %(
-            This test checks if references found in resources from prior searches can be resolved.
+
+            This test will attempt to read the first 50 reference found in the resources from the first search.
+            The test will fail if Inferno fails to read any of those references.
+
           )
           versions :r4
         end
