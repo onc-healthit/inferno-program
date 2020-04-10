@@ -306,6 +306,166 @@ namespace :inferno do |_argv|
     workbook.write(args.filename)
   end
 
+  desc 'Generate a visual matrix of test procedure coverage'
+  task :generate_matrix, [:module, :test_set, :filename] do |_task, args|
+    require 'rubyXL'
+    require 'rubyXL/convenience_methods'
+    args.with_defaults(module: 'onc_program', test_set: 'test_procedure')
+    args.with_defaults(filename: "#{args.module}_matrix.xlsx")
+
+    workbook = RubyXL::Workbook.new
+    worksheet = workbook.worksheets[0]
+
+    # columns.each_with_index do |row_name, index|
+    #   cell = worksheet.add_cell(0, index, row_name.first)
+    #   cell.change_text_wrap(true)
+    # end
+
+    # worksheet.change_row_bold(0, true)
+    # worksheet.change_row_fill(0, 'BBBBBB')
+    # worksheet.change_row_height(0, 40)
+
+    test_module = Inferno::Module.get(args.module)
+    test_set = test_module.test_sets[args.test_set.to_sym]
+    col = 2
+    cell = worksheet.add_cell(0, 1, "Inferno Program Tests (v#{Inferno::VERSION})")
+    worksheet.change_row_height(0,20)
+    worksheet.change_row_vertical_alignment(0, 'distributed')
+    tests = []
+    column_map = {}
+    worksheet.change_column_width(1, 25)
+    worksheet.change_row_height(1,20)
+    worksheet.change_row_horizontal_alignment(1, 'center')
+    worksheet.change_row_vertical_alignment(1, 'distributed')
+    column_borders = []
+
+    test_set.groups.each do |group|
+      cell = worksheet.add_cell(1, col, group.name)
+      worksheet.merge_cells(1, col, 1, col + group.test_cases.length-1)
+      cell.change_text_wrap(true)
+      worksheet.change_column_border(col, :left, 'medium') 
+      worksheet.change_column_border_color(col, :left, '000000') 
+      column_borders << col
+      # worksheet.change_row_fill(row, 'EEEEEE')
+      # worksheet.change_row_height(row, 25)
+      # row += 1
+      group.test_cases.each do |test_case|
+        worksheet.change_column_width(col, 4.2)
+        
+        test_case_id = test_case.sequence.tests.first.id.split('-').first
+        test_case_id = "#{test_case.prefix}#{test_case_id}" unless test_case.prefix.nil?
+        cell = worksheet.add_cell(2, col, test_case_id)
+        cell.change_text_rotation(90)
+        cell.change_border_color(:bottom, '000000') 
+        cell.change_border(:bottom, 'medium') 
+        worksheet.change_column_border(col, :right, 'thin') 
+        worksheet.change_column_border_color(col, :right, '666666') 
+        test_case.sequence.tests.each do |test|
+          tests << {test_case: test_case, test: test}
+          full_test_id = "#{test_case.prefix}#{test.id}"
+          column_map[full_test_id] = col
+
+          # next if test_case.sequence.optional? || test.optional?
+
+          # this_row = columns.map do |col|
+          #   col[2].call(group, test_case, test)
+          # end
+
+          # this_row.each_with_index do |value, index|
+          #   cell = worksheet.add_cell(row, index, value)
+          #   cell.change_text_wrap(true)
+          # end
+          # worksheet.change_row_height(row, 30)
+          # worksheet.change_row_vertical_alignment(row, 'top')
+          # worksheet.change_row_font_color(row, '666666') unless !test_case.sequence.optional? && !test.optional?
+        end
+        col += 1
+      end
+    end
+
+    total_width = col-1
+    worksheet.merge_cells(0, 1, 0, total_width)
+    worksheet.change_row_horizontal_alignment(0, 'center')
+
+    cell = worksheet.add_cell(2, total_width+2, 'Supported?')
+    row = 3
+
+    test_module.test_procedure.sections.each do |section|
+      section.steps.each do |step|
+        cell = worksheet.add_cell(row, 1, "#{step.id.upcase} ")
+        worksheet.change_row_height(row, 13)
+        worksheet.change_row_vertical_alignment(row, 'distributed')
+
+        (2..total_width).each do |col|
+          cell = worksheet.add_cell(row, col, '')
+        end
+
+        step.inferno_tests.each do |test|
+          column = column_map[test]
+          if column.nil?
+            puts "No such test found: #{test}"
+            next
+          end
+
+          cell = worksheet.add_cell(row, column, '')
+          cell.change_fill('3C63FF')
+
+        end
+
+        cell = worksheet.add_cell(row, total_width +2, step.inferno_supported.upcase)
+
+        row += 1
+      end
+    end
+    worksheet.change_column_horizontal_alignment(1, 'right')
+    worksheet.change_row_horizontal_alignment(0, 'center')
+
+    column_borders.each do |col|
+      worksheet.change_column_border(col, :left, 'medium') 
+      worksheet.change_column_border_color(col, :left, '000000') 
+    end
+    worksheet.change_column_border_color(total_width, :right, '000000') 
+    worksheet.change_column_border(total_width, :right, 'medium') 
+    worksheet.change_column_width(total_width+1, 3)
+
+    # worksheet.change_row_border(row-1, :bottom, 'medium') 
+    # worksheet.change_row_border_color(row-1, :bottom, '000000') 
+
+    # test_set.groups.each do |group|
+    #   cell = worksheet.add_cell(row, 0, group.name)
+    #   cell.change_text_wrap(true)
+    #   worksheet.merge_cells(row, 0, row, columns.length)
+    #   worksheet.change_row_fill(row, 'EEEEEE')
+    #   worksheet.change_row_height(row, 25)
+    #   worksheet.change_row_vertical_alignment(row, 'distributed')
+    #   row += 1
+    #   group.test_cases.each do |test_case|
+    #     test_case.sequence.tests.each do |test|
+    #       next if test_case.sequence.optional? || test.optional?
+
+    #       this_row = columns.map do |col|
+    #         col[2].call(group, test_case, test)
+    #       end
+
+    #       this_row.each_with_index do |value, index|
+    #         cell = worksheet.add_cell(row, index, value)
+    #         cell.change_text_wrap(true)
+    #       end
+    #       worksheet.change_row_height(row, 30)
+    #       worksheet.change_row_vertical_alignment(row, 'top')
+    #       worksheet.change_row_font_color(row, '666666') unless !test_case.sequence.optional? && !test.optional?
+    #       row += 1
+    #     end
+    #   end
+    # end
+
+    # columns.each_with_index do |col, index|
+    #   worksheet.change_column_width(index, col[1])
+    # end
+
+    Inferno.logger.info "Writing to #{args.filename}"
+    workbook.write(args.filename)
+  end
   desc 'Generate automated run script'
   task :generate_script, [:server, :module] do |_task, args|
     sequences = []
