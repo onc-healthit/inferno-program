@@ -158,7 +158,8 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!(access_verify_status_codes[sequence[:resource].downcase])
+            options[:search][:parameters].merge!({ 'clinical-status': 'active' })
+
             reply = @client.search('AllergyIntolerance', options)
           end
 
@@ -208,7 +209,8 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!(access_verify_status_codes[sequence[:resource].downcase])
+            options[:search][:parameters].merge!({ 'status': 'active' })
+
             reply = @client.search('CarePlan', options)
           end
 
@@ -258,7 +260,8 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!(access_verify_status_codes[sequence[:resource].downcase])
+            options[:search][:parameters].merge!({ 'status': 'active' })
+
             reply = @client.search('CareTeam', options)
           end
 
@@ -307,7 +310,8 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!(access_verify_status_codes[sequence[:resource].downcase])
+            options[:search][:parameters].merge!({ 'clinical-status': 'active' })
+
             reply = @client.search('Condition', options)
           end
 
@@ -393,7 +397,8 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!(access_verify_status_codes[sequence[:resource].downcase])
+            options[:search][:parameters].merge!({ 'status': 'final' })
+
             reply = @client.search('DiagnosticReport', options)
           end
 
@@ -442,7 +447,8 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!(access_verify_status_codes[sequence[:resource].downcase])
+            options[:search][:parameters].merge!({ 'status': 'current' })
+
             reply = @client.search('DocumentReference', options)
           end
 
@@ -491,7 +497,8 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!(access_verify_status_codes[sequence[:resource].downcase])
+            options[:search][:parameters].merge!({ 'status': 'finished' })
+
             reply = @client.search('Encounter', options)
           end
 
@@ -540,7 +547,8 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!(access_verify_status_codes[sequence[:resource].downcase])
+            options[:search][:parameters].merge!({ 'status': 'active' })
+
             reply = @client.search('Goal', options)
           end
 
@@ -589,7 +597,8 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!(access_verify_status_codes[sequence[:resource].downcase])
+            options[:search][:parameters].merge!({ 'status': 'completed' })
+
             reply = @client.search('Immunization', options)
           end
 
@@ -639,7 +648,8 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!(access_verify_status_codes[sequence[:resource].downcase])
+            options[:search][:parameters].merge!({ 'status': 'active' })
+
             reply = @client.search('MedicationRequest', options)
           end
 
@@ -689,7 +699,8 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!(access_verify_status_codes[sequence[:resource].downcase])
+            options[:search][:parameters].merge!({ 'status': 'final' })
+
             reply = @client.search('Observation', options)
           end
 
@@ -738,7 +749,8 @@ module Inferno
               assert false, error_message
             end
 
-            options.merge!(access_verify_status_codes[sequence[:resource].downcase])
+            options[:search][:parameters].merge!({ 'status': 'completed' })
+
             reply = @client.search('Procedure', options)
           end
 
