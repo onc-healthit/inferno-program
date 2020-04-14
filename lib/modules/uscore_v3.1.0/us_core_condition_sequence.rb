@@ -69,26 +69,31 @@ module Inferno
 
         when 'category'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'category on resource does not match category requested'
+          values_found = resolve_path(resource, 'category.coding.code')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "category in  Condition/#{resource.id} (#{values_found}) does not match category requested (#{values})"
 
         when 'clinical-status'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'clinicalStatus.coding.code') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'clinical-status on resource does not match clinical-status requested'
+          values_found = resolve_path(resource, 'clinicalStatus.coding.code')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "clinical-status in  Condition/#{resource.id} (#{values_found}) does not match clinical-status requested (#{values})"
 
         when 'patient'
-          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found.present?, 'patient on resource does not match patient requested'
+          references_found = resolve_path(resource, 'subject.reference')
+          match_found = references_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          assert match_found, "patient in  Condition/#{resource.id} (#{references_found}) does not match patient requested (#{value})"
 
         when 'onset-date'
-          value_found = resolve_element_from_path(resource, 'onsetDateTime') { |date| validate_date_search(value, date) }
-          assert value_found.present?, 'onset-date on resource does not match onset-date requested'
+          values_found = resolve_path(resource, 'onsetDateTime')
+          match_found = values_found.any? { |date| validate_date_search(value, date) }
+          assert match_found, "onset-date in Condition/#{resource.id} (#{values_found}) does not match onset-date requested (#{value})"
 
         when 'code'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'code.coding.code') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'code on resource does not match code requested'
+          values_found = resolve_path(resource, 'code.coding.code')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "code in  Condition/#{resource.id} (#{values_found}) does not match code requested (#{values})"
 
         end
       end

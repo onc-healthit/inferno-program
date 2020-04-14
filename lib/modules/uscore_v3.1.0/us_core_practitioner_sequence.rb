@@ -55,20 +55,22 @@ module Inferno
         case property
 
         when 'name'
-          value = value.downcase
-          value_found = resolve_element_from_path(resource, 'name') do |name|
-            name&.text&.start_with?(value) ||
-              name&.family&.downcase&.include?(value) ||
-              name&.given&.any? { |given| given.downcase.start_with?(value) } ||
-              name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value) } ||
-              name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value) }
+          value_downcase = value.downcase
+          values_found = resolve_path(resource, 'name')
+          match_found = values_found.any? do |name|
+            name&.text&.downcase&.start_with?(value_downcase) ||
+              name&.family&.downcase&.include?(value_downcase) ||
+              name&.given&.any? { |given| given.downcase.start_with?(value_downcase) } ||
+              name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value_downcase) } ||
+              name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value_downcase) }
           end
-          assert value_found.present?, 'name on resource does not match name requested'
+          assert match_found, "name in Practitioner/#{resource.id} (#{values_found}) does not match name requested (#{value})"
 
         when 'identifier'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'identifier.value') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'identifier on resource does not match identifier requested'
+          values_found = resolve_path(resource, 'identifier.value')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "identifier in  Practitioner/#{resource.id} (#{values_found}) does not match identifier requested (#{values})"
 
         end
       end

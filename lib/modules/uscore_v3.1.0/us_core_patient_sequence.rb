@@ -73,43 +73,50 @@ module Inferno
 
         when '_id'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'id') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, '_id on resource does not match _id requested'
+          values_found = resolve_path(resource, 'id')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "_id in  Patient/#{resource.id} (#{values_found}) does not match _id requested (#{values})"
 
         when 'birthdate'
-          value_found = resolve_element_from_path(resource, 'birthDate') { |date| validate_date_search(value, date) }
-          assert value_found.present?, 'birthdate on resource does not match birthdate requested'
+          values_found = resolve_path(resource, 'birthDate')
+          match_found = values_found.any? { |date| validate_date_search(value, date) }
+          assert match_found, "birthdate in Patient/#{resource.id} (#{values_found}) does not match birthdate requested (#{value})"
 
         when 'family'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'name.family') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'family on resource does not match family requested'
+          values_found = resolve_path(resource, 'name.family')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "family in  Patient/#{resource.id} (#{values_found}) does not match family requested (#{values})"
 
         when 'gender'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'gender') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'gender on resource does not match gender requested'
+          values_found = resolve_path(resource, 'gender')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "gender in  Patient/#{resource.id} (#{values_found}) does not match gender requested (#{values})"
 
         when 'given'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'name.given') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'given on resource does not match given requested'
+          values_found = resolve_path(resource, 'name.given')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "given in  Patient/#{resource.id} (#{values_found}) does not match given requested (#{values})"
 
         when 'identifier'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'identifier.value') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'identifier on resource does not match identifier requested'
+          values_found = resolve_path(resource, 'identifier.value')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "identifier in  Patient/#{resource.id} (#{values_found}) does not match identifier requested (#{values})"
 
         when 'name'
-          value = value.downcase
-          value_found = resolve_element_from_path(resource, 'name') do |name|
-            name&.text&.start_with?(value) ||
-              name&.family&.downcase&.include?(value) ||
-              name&.given&.any? { |given| given.downcase.start_with?(value) } ||
-              name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value) } ||
-              name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value) }
+          value_downcase = value.downcase
+          values_found = resolve_path(resource, 'name')
+          match_found = values_found.any? do |name|
+            name&.text&.downcase&.start_with?(value_downcase) ||
+              name&.family&.downcase&.include?(value_downcase) ||
+              name&.given&.any? { |given| given.downcase.start_with?(value_downcase) } ||
+              name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value_downcase) } ||
+              name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value_downcase) }
           end
-          assert value_found.present?, 'name on resource does not match name requested'
+          assert match_found, "name in Patient/#{resource.id} (#{values_found}) does not match name requested (#{value})"
 
         end
       end

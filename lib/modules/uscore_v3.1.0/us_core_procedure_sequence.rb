@@ -70,21 +70,25 @@ module Inferno
 
         when 'status'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'status on resource does not match status requested'
+          values_found = resolve_path(resource, 'status')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "status in  Procedure/#{resource.id} (#{values_found}) does not match status requested (#{values})"
 
         when 'patient'
-          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found.present?, 'patient on resource does not match patient requested'
+          references_found = resolve_path(resource, 'subject.reference')
+          match_found = references_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          assert match_found, "patient in  Procedure/#{resource.id} (#{references_found}) does not match patient requested (#{value})"
 
         when 'date'
-          value_found = resolve_element_from_path(resource, 'performed') { |date| validate_date_search(value, date) }
-          assert value_found.present?, 'date on resource does not match date requested'
+          values_found = resolve_path(resource, 'performed')
+          match_found = values_found.any? { |date| validate_date_search(value, date) }
+          assert match_found, "date in Procedure/#{resource.id} (#{values_found}) does not match date requested (#{value})"
 
         when 'code'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'code.coding.code') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'code on resource does not match code requested'
+          values_found = resolve_path(resource, 'code.coding.code')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "code in  Procedure/#{resource.id} (#{values_found}) does not match code requested (#{values})"
 
         end
       end

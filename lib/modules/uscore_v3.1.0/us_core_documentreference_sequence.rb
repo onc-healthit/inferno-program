@@ -73,36 +73,43 @@ module Inferno
 
         when '_id'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'id') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, '_id on resource does not match _id requested'
+          values_found = resolve_path(resource, 'id')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "_id in  DocumentReference/#{resource.id} (#{values_found}) does not match _id requested (#{values})"
 
         when 'status'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'status on resource does not match status requested'
+          values_found = resolve_path(resource, 'status')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "status in  DocumentReference/#{resource.id} (#{values_found}) does not match status requested (#{values})"
 
         when 'patient'
-          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found.present?, 'patient on resource does not match patient requested'
+          references_found = resolve_path(resource, 'subject.reference')
+          match_found = references_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          assert match_found, "patient in  DocumentReference/#{resource.id} (#{references_found}) does not match patient requested (#{value})"
 
         when 'category'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'category on resource does not match category requested'
+          values_found = resolve_path(resource, 'category.coding.code')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "category in  DocumentReference/#{resource.id} (#{values_found}) does not match category requested (#{values})"
 
         when 'type'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'type.coding.code') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'type on resource does not match type requested'
+          values_found = resolve_path(resource, 'type.coding.code')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "type in  DocumentReference/#{resource.id} (#{values_found}) does not match type requested (#{values})"
 
         when 'date'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'date') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'date on resource does not match date requested'
+          values_found = resolve_path(resource, 'date')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "date in  DocumentReference/#{resource.id} (#{values_found}) does not match date requested (#{values})"
 
         when 'period'
-          value_found = resolve_element_from_path(resource, 'context.period') { |date| validate_date_search(value, date) }
-          assert value_found.present?, 'period on resource does not match period requested'
+          values_found = resolve_path(resource, 'context.period')
+          match_found = values_found.any? { |date| validate_date_search(value, date) }
+          assert match_found, "period in DocumentReference/#{resource.id} (#{values_found}) does not match period requested (#{value})"
 
         end
       end

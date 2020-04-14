@@ -56,13 +56,15 @@ module Inferno
 
         when 'specialty'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'specialty.coding.code') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'specialty on resource does not match specialty requested'
+          values_found = resolve_path(resource, 'specialty.coding.code')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "specialty in  PractitionerRole/#{resource.id} (#{values_found}) does not match specialty requested (#{values})"
 
         when 'practitioner'
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'practitioner.reference') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'practitioner on resource does not match practitioner requested'
+          values_found = resolve_path(resource, 'practitioner.reference')
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found.present?, "practitioner in  PractitionerRole/#{resource.id} (#{values_found}) does not match practitioner requested (#{values})"
 
         end
       end

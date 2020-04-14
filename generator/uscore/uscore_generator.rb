@@ -1185,34 +1185,37 @@ module Inferno
           case type
           when 'Period', 'date'
             search_validators += %(
-                value_found = resolve_element_from_path(resource, '#{path_parts.join('.')}') { |date| validate_date_search(value, date) }
-                assert value_found.present?, '#{element} on resource does not match #{element} requested'
+                values_found = resolve_path(resource, '#{path_parts.join('.')}')
+                match_found = values_found.any? { |date| validate_date_search(value, date) }
+                assert match_found, "#{element} in #{sequence[:resource]}/\#{resource.id} (\#{values_found}) does not match #{element} requested (\#{value})"
       )
           when 'HumanName'
             # When a string search parameter refers to the types HumanName and Address,
             # the search covers the elements of type string, and does not cover elements such as use and period
             # https://www.hl7.org/fhir/search.html#string
             search_validators += %(
-                value = value.downcase
-                value_found = resolve_element_from_path(resource, '#{path_parts.join('.')}') do |name|
-                  name&.text&.start_with?(value) ||
-                    name&.family&.downcase&.include?(value) ||
-                    name&.given&.any? { |given| given.downcase.start_with?(value) } ||
-                    name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value) } ||
-                    name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value) }
+                value_downcase = value.downcase
+                values_found = resolve_path(resource, '#{path_parts.join('.')}')
+                match_found = values_found.any? do |name|
+                  name&.text&.downcase&.start_with?(value_downcase) ||
+                    name&.family&.downcase&.include?(value_downcase) ||
+                    name&.given&.any? { |given| given.downcase.start_with?(value_downcase) } ||
+                    name&.prefix&.any? { |prefix| prefix.downcase.start_with?(value_downcase) } ||
+                    name&.suffix&.any? { |suffix| suffix.downcase.start_with?(value_downcase) }
                 end
-                assert value_found.present?, '#{element} on resource does not match #{element} requested'
+                assert match_found, "#{element} in #{sequence[:resource]}/\#{resource.id} (\#{values_found}) does not match #{element} requested (\#{value})"
       )
           when 'Address'
             search_validators += %(
-                value_found = resolve_element_from_path(resource, '#{path_parts.join('.')}') do |address|
+                values_found = resolve_path(resource, '#{path_parts.join('.')}')
+                match_found = values_found.any? do |address|
                   address&.text&.start_with?(value) ||
-                    address&.city&.start_with?(value) ||
-                    address&.state&.start_with?(value) ||
-                    address&.postalCode&.start_with?(value) ||
-                    address&.country&.start_with?(value)
+                  address&.city&.start_with?(value) ||
+                  address&.state&.start_with?(value) ||
+                  address&.postalCode&.start_with?(value) ||
+                  address&.country&.start_with?(value)
                 end
-                assert value_found.present?, '#{element} on resource does not match #{element} requested'
+                assert match_found, "#{element} in #{sequence[:resource]}/\#{resource.id} (\#{values_found}) does not match #{element} requested (\#{value})"
             )
           else
             # searching by patient requires special case because we are searching by a resource identifier
@@ -1221,14 +1224,16 @@ module Inferno
             search_validators +=
               if ['subject', 'patient'].include? element.to_s
                 %(
-                value_found = resolve_element_from_path(resource, '#{path}') { |reference| [value, 'Patient/' + value].include? reference }
-                assert value_found.present?, '#{element} on resource does not match #{element} requested'
-      )
+                  references_found = resolve_path(resource, '#{path}')
+                  match_found = references_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+                  assert match_found, "#{element} in  #{sequence[:resource]}/\#{resource.id} (\#{references_found}) does not match #{element} requested (\#{value})"
+                )
               else
                 %(
                   values = value.split(/(?<!\\\\),/).each { |str| str.gsub!('\\,', ',') }
-                  value_found = resolve_element_from_path(resource, '#{path}') { |value_in_resource| values.include? value_in_resource }
-                  assert value_found.present?, '#{element} on resource does not match #{element} requested'
+                  values_found = resolve_path(resource, '#{path}')
+                  match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+                  assert match_found.present?, "#{element} in  #{sequence[:resource]}/\#{resource.id} (\#{values_found}) does not match #{element} requested (\#{values})"
                 )
               end
           end
