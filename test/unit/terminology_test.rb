@@ -27,23 +27,54 @@ class TerminologyTest < Minitest::Test
 
   def test_validate_code
     # Valid code, optional codesystem
-    assert Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'M', nil), 'Validate code helper should return true for a valid code with a nil codesystem'
-    assert Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'M', ADMIN_GENDER_CS), 'Validate code helper should return true for a valid code with a provided codesystem'
+    assert Inferno::Terminology.validate_code(valueset_url: BIRTH_SEX_VS,
+                                              code: 'M',
+                                              system: nil),
+           'Validate code helper should return true for a valid code with a nil codesystem'
+    assert Inferno::Terminology.validate_code(valueset_url: BIRTH_SEX_VS,
+                                              code: 'M',
+                                              system: ADMIN_GENDER_CS),
+           'Validate code helper should return true for a valid code with a provided codesystem'
 
     # Invalid code, optional codesystem
-    refute Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'R', nil), 'Validate code helper should return false for an invalid code with a nil codesystem'
-    refute Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'R', ADMIN_GENDER_CS), 'Validate code helper should return false for an invalid code with a provided codesystem'
+    refute Inferno::Terminology.validate_code(valueset_url: BIRTH_SEX_VS,
+                                              code: 'R',
+                                              system: nil),
+           'Validate code helper should return false for an invalid code with a nil codesystem'
+    refute Inferno::Terminology.validate_code(valueset_url: BIRTH_SEX_VS,
+                                              code: 'R',
+                                              system: ADMIN_GENDER_CS),
+           'Validate code helper should return false for an invalid code with a provided codesystem'
 
-    refute Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'M', NF_CS), 'Validate code helper should return false for a valid code, but the wrong codesystem from the valueset'
-    refute Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'M', 'http://fake-cs'), 'Validate code helper should return false for a valid code, but a fake codesystem'
-    refute Inferno::Terminology.validate_code(BIRTH_SEX_VS, 'R', 'http://fake-cs'), 'Validate code helper should return false for an invalid code with an invalid codesystem'
+    refute Inferno::Terminology.validate_code(valueset_url: BIRTH_SEX_VS,
+                                              code: 'M',
+                                              system: NF_CS),
+           'Validate code helper should return false for a valid code, but the wrong codesystem from the valueset'
+    refute Inferno::Terminology.validate_code(valueset_url: BIRTH_SEX_VS,
+                                              code: 'M',
+                                              system: 'http://fake-cs'),
+           'Validate code helper should return false for a valid code, but a fake codesystem'
+    refute Inferno::Terminology.validate_code(valueset_url: BIRTH_SEX_VS,
+                                              code: 'R',
+                                              system: 'http://fake-cs'),
+           'Validate code helper should return false for an invalid code with an invalid codesystem'
+    # valid code, no valueset url, codesystem URL instead
+    assert Inferno::Terminology.validate_code(valueset_url: nil,
+                                              code: 'M',
+                                              system: ADMIN_GENDER_CS),
+           'Validate code helper should return true for a valid code with a provided codesystem'
+    # invalid code, no valueset url, codesystem URL instead
+    refute Inferno::Terminology.validate_code(valueset_url: nil,
+                                              code: 'R',
+                                              system: ADMIN_GENDER_CS),
+           'Validate code helper should return false for an invalid code with a provided codesystem'
 
     # An invalid valueset should raise an error
     assert_raises Inferno::Terminology::UnknownValueSetException do
-      Inferno::Terminology.validate_code('http://a-fake-valueset', 'M', 'http://terminology.hl7.org/CodeSystem/v3-AdministrativeGender')
+      Inferno::Terminology.validate_code(valueset_url: 'http://a-fake-valueset', code: 'M', system: 'http://terminology.hl7.org/CodeSystem/v3-AdministrativeGender')
     end
     assert_raises Inferno::Terminology::UnknownValueSetException do
-      Inferno::Terminology.validate_code('http://a-fake-valueset', 'M', nil)
+      Inferno::Terminology.validate_code(valueset_url: 'http://a-fake-valueset', code: 'M', system: nil)
     end
   end
 end

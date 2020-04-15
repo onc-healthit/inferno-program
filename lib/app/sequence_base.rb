@@ -530,7 +530,7 @@ module Inferno
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.
           resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
-          assert resource_validation_errors[:errors].empty?, "Invalid #{resource.resourceType}: #{resource_validation_errors[:errors].join("<br/>\n")}"
+          assert resource_validation_errors[:errors].empty?, "Invalid #{resource.resourceType}: #{resource_validation_errors[:errors].join("\n* ")}"
 
           search_params.each do |key, value|
             validate_resource_item(resource, key.to_s, value)
@@ -626,7 +626,7 @@ module Inferno
           end
         end
 
-        assert(errors.empty?, errors.join("<br/>\n"))
+        assert(errors.empty?, "\n* " + errors.join("\n* "))
       end
 
       def test_resource_collection(resource_type, resources)
@@ -681,7 +681,7 @@ module Inferno
           validate_resource(resource_type, resource, profile, &block)
         end
 
-        assert(errors.empty?, errors.join("<br/>\n"))
+        assert(errors.empty?, "\n* " + errors.join("\n* "))
       end
 
       # Set max_resolutions in a single sequence to a large number by default
@@ -715,7 +715,7 @@ module Inferno
 
         Inferno.logger.info "Surpassed the maximum reference resolutions: #{max_resolutions}" if resolved_references.length > max_resolutions
 
-        assert(problems.empty?, problems.join("<br/>\n"))
+        assert(problems.empty?, "\n* " + problems.join("\n* "))
       end
 
       def save_delayed_sequence_references(resources)
@@ -753,7 +753,7 @@ module Inferno
           resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(entry.resource, versioned_resource_class)
           errors = resource_validation_errors[:errors]
         end
-        assert(errors.empty?, errors.join("<br/>\n"))
+        assert(errors.empty?, "\n* " + errors.join("\n* "))
       end
 
       def resolve_path(elements, path)
@@ -915,23 +915,39 @@ module Inferno
             case binding_def[:type]
             when 'CodeableConcept'
               if el.is_a? FHIR::CodeableConcept
-                el.coding.none? do |coding|
-                  Terminology.validate_code(binding_def[:system], coding.code, coding.system)
+                # If we're validating a valueset (AKA if we have a 'system' URL)
+                # We want at least one of the codes to be in the valueset
+                if binding_def[:system].present?
+                  el.coding.none? do |coding|
+                    Terminology.validate_code(valueset_url: binding_def[:system],
+                                              code: coding.code,
+                                              system: coding.system)
+                  end
+                # If we're validating a codesystem (AKA if there's no 'system' URL)
+                # We want all of the codes to be in their respective systems
+                else
+                  el.coding.any? do |coding|
+                    Terminology.validate_code(valueset_url: nil,
+                                              code: coding.code,
+                                              system: coding.system)
+                  end
                 end
               else
                 false
               end
             when 'Quantity', 'Coding'
-              !Terminology.validate_code(binding_def[:system], el.code, el.system)
+              !Terminology.validate_code(valueset_url: binding_def[:system],
+                                         code: el.code,
+                                         system: el.system)
             when 'code'
-              !Terminology.validate_code(binding_def[:system], el)
+              !Terminology.validate_code(valueset_url: binding_def[:system], code: el)
             else
               false
             end
           end
 
           { resource: resource, element: invalid_code_found } if invalid_code_found.present?
-        end.reject(&:nil?)
+        end.compact
       end
 
       def invalid_binding_message(invalid_binding, binding_def)
@@ -943,10 +959,11 @@ module Inferno
         elsif invalid_binding[:element].is_a?(FHIR::Coding) || invalid_binding[:element].is_a?(FHIR::Quantity)
           code_as_string = "#{invalid_binding[:element].system}|#{invalid_binding[:element].code}"
         end
+        binding_entity = binding_def[:system].presence || 'the declared CodeSystem'
 
         "#{invalid_binding[:resource].resourceType}/#{invalid_binding[:resource].id} " \
         "at #{invalid_binding[:resource].resourceType}.#{binding_def[:path]} with code '#{code_as_string}' " \
-        "is not in #{binding_def[:system]}"
+        "is not in #{binding_entity}"
       end
     end
 

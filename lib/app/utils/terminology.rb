@@ -64,7 +64,7 @@ module Inferno
     def self.create_validators(type: :bloom, selected_module: :all, minimum_binding_strength: 'example', include_umls: true)
       strengths = ['example', 'preferred', 'extensible', 'required'].drop_while { |s| s != minimum_binding_strength }
       validators = []
-      umls_code_systems = Set.new(Inferno::Terminology::Valueset::SAB.keys)
+      umls_code_systems = Set.new(Inferno::Terminology::ValueSet::SAB.keys)
       root_dir = "resources/terminology/validators/#{type}"
       FileUtils.mkdir_p(root_dir)
 
@@ -77,14 +77,14 @@ module Inferno
         begin
           save_to_file(vs.valueset, filename, type)
           validators << { url: k, file: name_by_type(File.basename(filename), type), count: vs.count, type: type.to_s, code_systems: vs.included_code_systems }
-        rescue Valueset::UnknownCodeSystemException, Valueset::FilterOperationException, UnknownValueSetException, URI::InvalidURIError => e
+        rescue ValueSet::UnknownCodeSystemException, ValueSet::FilterOperationException, UnknownValueSetException, URI::InvalidURIError => e
           Inferno.logger.warn "#{e.message} for ValueSet: #{k}"
           next
         end
       end
 
       code_systems = validators.flat_map { |vs| vs[:code_systems] }.uniq
-      vs = Inferno::Terminology::Valueset.new(@db)
+      vs = Inferno::Terminology::ValueSet.new(@db)
 
       code_systems.each do |cs_name|
         next if SKIP_SYS.include? cs_name
@@ -96,7 +96,7 @@ module Inferno
           filename = "#{root_dir}/#{bloom_file_name(cs_name)}"
           save_to_file(cs, filename, type)
           validators << { url: cs_name, file: name_by_type(File.basename(filename), type), count: cs.length, type: type.to_s, code_systems: cs_name }
-        rescue Valueset::UnknownCodeSystemException, Valueset::FilterOperationException, UnknownValueSetException, URI::InvalidURIError => e
+        rescue ValueSet::UnknownCodeSystemException, ValueSet::FilterOperationException, UnknownValueSetException, URI::InvalidURIError => e
           Inferno.logger.warn "#{e.message} for CodeSystem #{cs_name}"
           next
         end
@@ -177,7 +177,7 @@ module Inferno
     end
 
     def self.add_valueset_from_file(vs_file)
-      vs = Inferno::Terminology::Valueset.new(@db)
+      vs = Inferno::Terminology::ValueSet.new(@db)
       vs.read_valueset(vs_file)
       vs.vsa = self
       @known_valuesets[vs.url] = vs
@@ -233,11 +233,16 @@ module Inferno
     # @param String code the code to validate against the valueset
     # @param String system an optional codesystem to validate against. Defaults to nil
     # @return Boolean whether the code or code/system is in the valueset
-    def self.validate_code(valueset_url, code, system = nil)
+    def self.validate_code(valueset_url: nil, code:, system: nil)
       # Get the valueset from the url. Redundant if the 'system' is not nil,
       # but allows us to throw a better error if the valueset isn't known by Inferno
-      validation_fn = FHIR::StructureDefinition.vs_validators[valueset_url]
-      raise(UnknownValueSetException, valueset_url) unless validation_fn
+      if valueset_url
+        validation_fn = FHIR::StructureDefinition.vs_validators[valueset_url]
+        raise(UnknownValueSetException, valueset_url) unless validation_fn
+      else
+        validation_fn = FHIR::StructureDefinition.vs_validators[system]
+        raise(Inferno::Terminology::ValueSet::UnknownCodeSystemException, system) unless validation_fn
+      end
 
       if system
         validation_fn.call('code' => code, 'system' => system)

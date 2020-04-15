@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'sqlite3'
+require 'date'
 require_relative 'bcp_13'
 require_relative 'bcp47'
 require_relative 'codesystem'
@@ -8,9 +9,9 @@ require_relative 'fhir_package_manager'
 
 module Inferno
   class Terminology
-    class Valueset
-      # STU3 Valuesets located at: http://hl7.org/fhir/stu3/terminologies-valuesets.html
-      # STU3 Valueset Resource: http://hl7.org/fhir/stu3/valueset.html
+    class ValueSet
+      # STU3 ValueSets located at: http://hl7.org/fhir/stu3/terminologies-valuesets.html
+      # STU3 ValueSet Resource: http://hl7.org/fhir/stu3/valueset.html
       #
       # snomed in umls: https://www.nlm.nih.gov/research/umls/Snomed/snomed_represented.html
 
@@ -81,6 +82,18 @@ module Inferno
         filter_code_set(code_system)
       end
 
+      def expansion_as_fhir_valueset
+        expansion_backbone = FHIR::ValueSet::Expansion.new
+        expansion_backbone.timestamp = DateTime.now.strftime('%Y-%m-%dT%H:%M:%S%:z')
+        expansion_backbone.contains = valueset.map do |code|
+          FHIR::ValueSet::Expansion::Contains.new({ system: code[:system], code: code[:code] })
+        end
+        expansion_backbone.total = expansion_backbone.contains.length
+        expansion_valueset = @valueset_model.deep_dup # Make a copy so that the original definition is left intact
+        expansion_valueset.expansion = expansion_backbone
+        expansion_valueset
+      end
+
       # Return the url of the valueset
       def url
         @valueset_model.url
@@ -103,7 +116,7 @@ module Inferno
         if @valueset_model&.expansion&.contains
           # This is moved into a nested clause so we can tell in the debug statements which path we're taking
           if valueset_toocostly || valueset_unclosed
-            Inferno.logger.debug("Valueset too costly or unclosed: #{url}")
+            Inferno.logger.debug("ValueSet too costly or unclosed: #{url}")
             process_valueset
           else
             Inferno.logger.debug("Processing expanded valueset: #{url}")
@@ -204,7 +217,7 @@ module Inferno
       #
       # See: http://hl7.org/fhir/stu3/valueset.html#compositions
       #
-      # @param [ValueSet::Compose::Include] vscs the FHIR Valueset include or exclude
+      # @param [ValueSet::Compose::Include] vscs the FHIR ValueSet include or exclude
       def get_code_sets(vscs)
         intersection_set = nil
 

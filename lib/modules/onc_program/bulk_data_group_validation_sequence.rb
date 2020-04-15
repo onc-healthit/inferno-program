@@ -87,7 +87,10 @@ module Inferno
 
           p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
           if p && @instance.fhir_version == 'r4'
-            errors = p.validate_resource(resource)
+            errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, p.url)
+
+            # Remove warnings if using internal FHIRModelsValidator. FHIRModelsValidator has an issue with FluentPath.
+            errors = [] if errors[:errors].empty? && Inferno::RESOURCE_VALIDATOR.is_a?(Inferno::FHIRModelsValidator)
           else
             warn { assert false, 'No profiles found for this Resource' }
             errors = resource.validate
@@ -154,7 +157,9 @@ module Inferno
       end
 
       def streamed_ndjson_get(url, headers)
-        response = HTTP.headers(headers).get(url)
+        ctx = OpenSSL::SSL::SSLContext.new
+        ctx.verify_mode = OpenSSL::SSL::VERIFY_PEER # set globally to VERIFY_NONE if disable_verify_peer set
+        response = HTTP.headers(headers).get(url, ssl_context: ctx)
 
         # We need to log the request, but don't know what will be in the body
         # until later.  These serve as simple summaries to get turned into
