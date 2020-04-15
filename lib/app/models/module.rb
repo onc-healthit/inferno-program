@@ -88,7 +88,7 @@ module Inferno
 
     Dir.glob(File.join(__dir__, '..', '..', 'modules', '*_procedure.yml')).each do |file|
       this_procedure = YAML.load_file(file).deep_symbolize_keys
-      referenced_module = @modules[file.split(/\/|_procedure\.yml/).last]
+      referenced_module = @modules[file.split(%r{/|_procedure\.yml}).last]
       referenced_module.test_procedure = TestProcedure.new(this_procedure, referenced_module)
     end
   end
