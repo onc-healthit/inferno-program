@@ -199,7 +199,7 @@ module Inferno
           description: %(
             A Server SHOULD be capable of supporting the following _includes: #{sequence[:include_params].join(', ')}
             This test will perform a search for #{first_search[:names].join(' + ')} + each of the following  _includes: #{sequence[:include_params].join(', ')}
-            The test will fail unless resources for #{sequence[:include_params].join(', ')} are returned in their search. 
+            The test will fail unless resources for #{sequence[:include_params].join(', ')} are returned in their search.
           ),
           test_code: ''
         }
@@ -248,7 +248,7 @@ module Inferno
           description: %(
             A Server SHALL be capable of supporting the following _revincludes: #{sequence[:revincludes].join(', ')}.\n
             This test will perform a search for #{first_search[:names].join(' + ')} + _revIncludes: Provenance:target and will pass
-            if a Provenance resource is found in the reponse. 
+            if a Provenance resource is found in the reponse.
           ),
           test_code: %(
             skip_if_known_revinclude_not_supported('#{sequence[:resource]}', 'Provenance:target')
@@ -695,8 +695,8 @@ module Inferno
           link: sequence[:profile],
           description: %(
             This test checks if the resources returned from the first search conform to the [US Core Profile](#{sequence[:profile]}).
-            This test will check to see if the cardinality and required bindings of elements are respected. 
-            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the valueset. 
+            This test will check to see if the cardinality and required bindings of elements are respected.
+            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the valueset.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
           )
         }
