@@ -347,10 +347,10 @@ $(function(){
 
     if(testCasePart.length > 0){
       testCasePart.split(',').forEach(function(tc){
-        var testCase = $('#' + tc);
+        var testCase = $('[data-test-case='+tc+']');
         var details = $('#' + tc + '-details');
         details.collapse('show')
-        testCase.parents('.sequence-row').find('.sequence-expand-button').text("Hide Details")
+        testCase.find('.sequence-expand-button').text('Hide Details')
       })
     }
   }
