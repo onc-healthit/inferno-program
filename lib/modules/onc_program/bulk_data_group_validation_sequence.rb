@@ -159,6 +159,7 @@ module Inferno
       def streamed_ndjson_get(url, headers)
         ctx = OpenSSL::SSL::SSLContext.new
         ctx.verify_mode = OpenSSL::SSL::VERIFY_PEER # set globally to VERIFY_NONE if disable_verify_peer set
+        ctx.set_params
         response = HTTP.headers(headers).get(url, ssl_context: ctx)
 
         # We need to log the request, but don't know what will be in the body
