@@ -593,18 +593,7 @@
                     ),
                     value: instance.bulk_jwks_url_auth || "#{instance.base_url}#{base_path}/.well-known/jwks.json",
                     readonly: true
-                    })%>
-
-              <div class="form-group">
-                    
-              <label for="bulk_jwks_manual_keys">Manual Key Registration
-                <small>If the server does not support registering URLs to provide JWK Sets, you may register Inferno as a client using the following RS384 and ES384 keys.</small>
-              </label>
-
-             <textarea readonly="readonly" class="form-control" id="bulk_jwks_manual_keys" rows=4 style="overflow: hidden">
-                <%= instance.bulk_public_key_set %></textarea>
-             </div>
-             
+                    })%>             
              </div>
           </div>
           <div class="show-uris" style="display:none">
