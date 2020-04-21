@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_provenance_definitions'
 
 module Inferno
   module Sequence
     class USCore310ProvenanceSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'Provenance'
 
@@ -26,60 +28,6 @@ module Inferno
       end
 
       @resources_found = false
-
-      MUST_SUPPORTS = {
-        extensions: [],
-        slices: [
-          {
-            name: 'Provenance.agent:ProvenanceAuthor',
-            path: 'agent',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: 'type',
-              code: 'author',
-              system: 'http://terminology.hl7.org/CodeSystem/provenance-participant-type'
-            }
-          },
-          {
-            name: 'Provenance.agent:ProvenanceTransmitter',
-            path: 'agent',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: 'type',
-              code: 'transmitter',
-              system: 'http://hl7.org/fhir/us/core/CodeSystem/us-core-provenance-participant-type'
-            }
-          }
-        ],
-        elements: [
-          {
-            path: 'target'
-          },
-          {
-            path: 'recorded'
-          },
-          {
-            path: 'agent'
-          },
-          {
-            path: 'agent.type'
-          },
-          {
-            path: 'agent.who'
-          },
-          {
-            path: 'agent.onBehalfOf'
-          },
-          {
-            path: 'agent.type.coding.code',
-            fixed_value: 'author'
-          },
-          {
-            path: 'agent.type.coding.code',
-            fixed_value: 'transmitter'
-          }
-        ]
-      }.freeze
 
       test :resource_read do
         metadata do
@@ -237,15 +185,16 @@ module Inferno
         end
 
         skip_if_not_found(resource_type: 'Provenance', delayed: true)
+        must_supports = USCore310ProvenanceSequenceDefinitions::MUST_SUPPORTS
 
-        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
+        missing_slices = must_supports[:slices].reject do |slice|
           @provenance_ary&.any? do |resource|
             slice_found = find_slice(resource, slice[:path], slice[:discriminator])
             slice_found.present?
           end
         end
 
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @provenance_ary&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?

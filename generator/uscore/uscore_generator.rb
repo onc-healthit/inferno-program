@@ -24,6 +24,9 @@ module Inferno
       def generate
         metadata = extract_metadata
         metadata[:sequences].reject! { |sequence| sequence[:resource] == 'Medication' }
+        # first isolate the profiles that don't have patient searches
+        mark_delayed_sequences(metadata)
+        find_delayed_references(metadata)
         generate_tests(metadata)
         generate_search_validators(metadata)
         metadata[:sequences].each do |sequence|
@@ -51,9 +54,6 @@ module Inferno
       end
 
       def generate_tests(metadata)
-        # first isolate the profiles that don't have patient searches
-        mark_delayed_sequences(metadata)
-
         metadata[:sequences].each do |sequence|
           puts "Generating test #{sequence[:name]}"
 
@@ -106,6 +106,29 @@ module Inferno
         metadata[:non_delayed_sequences] = metadata[:sequences].reject { |seq| seq[:resource] == 'Patient' || seq[:delayed_sequence] }
       end
 
+      def find_delayed_references(metadata)
+        delayed_profiles = metadata[:sequences]
+          .select { |sequence| sequence[:delayed_sequence] }
+          .map { |sequence| sequence[:profile] }
+
+        metadata[:sequences].each do |sequence|
+          delayed_sequence_references = sequence[:references]
+            .select { |ref_def| (ref_def[:profiles] & delayed_profiles).present? }
+            .map do |ref_def|
+            delayed_resources = (ref_def[:profiles] & delayed_profiles).map do |profile|
+              profile_sequence = metadata[:sequences].find { |seq| seq[:profile] == profile }
+              profile_sequence[:resource]
+            end
+            delayed_profile_intersection = {
+              path: ref_def[:path].gsub(sequence[:resource] + '.', ''),
+              resources: delayed_resources
+            }
+            delayed_profile_intersection
+          end
+          sequence[:delayed_references_constant] = "DELAYED_REFERENCES = #{structure_to_string(delayed_sequence_references)}.freeze"
+        end
+      end
+
       def find_first_search(sequence)
         sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' } ||
           sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' }
@@ -114,9 +137,18 @@ module Inferno
       def generate_sequence(sequence)
         puts "Generating #{sequence[:name]}\n"
         file_name = sequence_out_path + '/' + sequence[:name].downcase + '_sequence.rb'
-
         template = ERB.new(File.read(File.join(__dir__, 'templates/sequence.rb.erb')))
         output =   template.result_with_hash(sequence)
+        FileUtils.mkdir_p(sequence_out_path) unless File.directory?(sequence_out_path)
+        File.write(file_name, output)
+
+        generate_profile_definition(sequence)
+      end
+
+      def generate_profile_definition(sequence)
+        file_name = sequence_out_path + '/profile_definitions/' + sequence[:name].downcase + '_definitions.rb'
+        template = ERB.new(File.read(File.join(__dir__, 'templates/sequence_definition.rb.erb')))
+        output = template.result_with_hash(sequence)
         FileUtils.mkdir_p(sequence_out_path) unless File.directory?(sequence_out_path)
         File.write(file_name, output)
       end
@@ -242,7 +274,7 @@ module Inferno
         revinclude_test[:test_code] += %(
           #{'end' unless sequence[:delayed_sequence]}
           save_resource_references(versioned_resource_class('#{resource_name}'), #{resource_variable})
-          save_delayed_sequence_references(#{resource_variable})
+          save_delayed_sequence_references(#{resource_variable}, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
           #{skip_if_could_not_resolve(first_search[:names]) if resolve_param_from_resource && !sequence[:delayed_sequence]}
           skip 'No Provenance resources were returned from this search' unless #{resource_variable}.present?
         )
@@ -564,12 +596,13 @@ module Inferno
 
         test[:test_code] += %(
           #{skip_if_not_found_code(sequence)}
+          must_supports = #{sequence[:class_name]}Definitions::MUST_SUPPORTS
         )
         resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
 
         if sequence[:must_supports][:extensions].present?
           test[:test_code] += %(
-            missing_must_support_extensions = MUST_SUPPORTS[:extensions].reject do |must_support_extension|
+            missing_must_support_extensions = must_supports[:extensions].reject do |must_support_extension|
               #{resource_array}&.any? do |resource|
                 resource.extension.any? { |extension| extension.url == must_support_extension[:url] }
               end
@@ -579,7 +612,7 @@ module Inferno
 
         if sequence[:must_supports][:slices].present?
           test[:test_code] += %(
-            missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
+            missing_slices = must_supports[:slices].reject do |slice|
               @#{sequence[:resource].underscore}_ary#{'&.values&.flatten' unless sequence[:delayed_sequence]}&.any? do |resource|
                 slice_found = find_slice(resource, slice[:path], slice[:discriminator])
                 slice_found.present?
@@ -590,7 +623,7 @@ module Inferno
 
         if sequence[:must_supports][:elements].present?
           test[:test_code] += %(
-            missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+            missing_must_support_elements = must_supports[:elements].reject do |element|
               #{resource_array}&.any? do |resource|
                 value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
                 value_found.present?
@@ -919,7 +952,7 @@ module Inferno
               .find { |resource| resource.resourceType == '#{sequence[:resource]}' }
 
             save_resource_references(#{save_resource_references_arguments})
-            save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
+            save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
             validate_reply_entries(search_result_resources, search_params)
           )
         else
@@ -959,7 +992,7 @@ module Inferno
               @resources_found = @#{sequence[:resource].underscore}.present?
 
               save_resource_references(#{save_resource_references_arguments})
-              save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient])
+              save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient], #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
               validate_reply_entries(@#{sequence[:resource].underscore}_ary[patient], search_params)
             end
 
@@ -1016,7 +1049,7 @@ module Inferno
               #{'values_found += 1' if find_two_values}
 
               save_resource_references(#{save_resource_references_arguments})
-              save_delayed_sequence_references(resources_returned)
+              save_delayed_sequence_references(resources_returned, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
               validate_reply_entries(resources_returned, search_params)
               #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
               break#{' if values_found == 2' if find_two_values}

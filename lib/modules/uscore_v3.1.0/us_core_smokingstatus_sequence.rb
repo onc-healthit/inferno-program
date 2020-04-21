@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_smokingstatus_definitions'
 
 module Inferno
   module Sequence
     class USCore310SmokingstatusSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'Smoking Status Observation'
 
@@ -88,34 +90,6 @@ module Inferno
 
       @resources_found = false
 
-      MUST_SUPPORTS = {
-        extensions: [],
-        slices: [
-          {
-            name: 'Observation.value[x]:valueCodeableConcept',
-            path: 'value',
-            discriminator: {
-              type: 'type',
-              code: 'CodeableConcept'
-            }
-          }
-        ],
-        elements: [
-          {
-            path: 'status'
-          },
-          {
-            path: 'code'
-          },
-          {
-            path: 'subject'
-          },
-          {
-            path: 'issued'
-          }
-        ]
-      }.freeze
-
       test :search_by_patient_code do
         metadata do
           id '01'
@@ -153,7 +127,7 @@ module Inferno
             @observation_ary[patient] += resources_returned
 
             save_resource_references(versioned_resource_class('Observation'), @observation_ary[patient], Inferno::ValidationUtil::US_CORE_R4_URIS[:smoking_status])
-            save_delayed_sequence_references(resources_returned)
+            save_delayed_sequence_references(resources_returned, USCore310SmokingstatusSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
 
             break
@@ -423,7 +397,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results)
+        save_delayed_sequence_references(provenance_results, USCore310SmokingstatusSequenceDefinitions::DELAYED_REFERENCES)
         skip 'Could not resolve all parameters (patient, code) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -553,15 +527,16 @@ module Inferno
         end
 
         skip_if_not_found(resource_type: 'Observation', delayed: false)
+        must_supports = USCore310SmokingstatusSequenceDefinitions::MUST_SUPPORTS
 
-        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
+        missing_slices = must_supports[:slices].reject do |slice|
           @observation_ary&.values&.flatten&.any? do |resource|
             slice_found = find_slice(resource, slice[:path], slice[:discriminator])
             slice_found.present?
           end
         end
 
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @observation_ary&.values&.flatten&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?

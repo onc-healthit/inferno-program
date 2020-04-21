@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_practitionerrole_definitions'
 
 module Inferno
   module Sequence
     class USCore310PractitionerroleSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'PractitionerRole'
 
@@ -42,40 +44,6 @@ module Inferno
       end
 
       @resources_found = false
-
-      MUST_SUPPORTS = {
-        extensions: [],
-        slices: [],
-        elements: [
-          {
-            path: 'practitioner'
-          },
-          {
-            path: 'organization'
-          },
-          {
-            path: 'code'
-          },
-          {
-            path: 'specialty'
-          },
-          {
-            path: 'location'
-          },
-          {
-            path: 'telecom'
-          },
-          {
-            path: 'telecom.system'
-          },
-          {
-            path: 'telecom.value'
-          },
-          {
-            path: 'endpoint'
-          }
-        ]
-      }.freeze
 
       test :resource_read do
         metadata do
@@ -225,8 +193,9 @@ module Inferno
         end
 
         skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
+        must_supports = USCore310PractitionerroleSequenceDefinitions::MUST_SUPPORTS
 
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @practitioner_role_ary&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?

@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_practitioner_definitions'
 
 module Inferno
   module Sequence
     class USCore310PractitionerSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'Practitioner'
 
@@ -48,38 +50,6 @@ module Inferno
       end
 
       @resources_found = false
-
-      MUST_SUPPORTS = {
-        extensions: [],
-        slices: [
-          {
-            name: 'Practitioner.identifier:NPI',
-            path: 'identifier',
-            discriminator: {
-              type: 'patternIdentifier',
-              path: '',
-              system: 'http://hl7.org/fhir/sid/us-npi'
-            }
-          }
-        ],
-        elements: [
-          {
-            path: 'identifier'
-          },
-          {
-            path: 'identifier.system'
-          },
-          {
-            path: 'identifier.value'
-          },
-          {
-            path: 'name'
-          },
-          {
-            path: 'name.family'
-          }
-        ]
-      }.freeze
 
       test :resource_read do
         metadata do
@@ -217,15 +187,16 @@ module Inferno
         end
 
         skip_if_not_found(resource_type: 'Practitioner', delayed: true)
+        must_supports = USCore310PractitionerSequenceDefinitions::MUST_SUPPORTS
 
-        missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
+        missing_slices = must_supports[:slices].reject do |slice|
           @practitioner_ary&.any? do |resource|
             slice_found = find_slice(resource, slice[:path], slice[:discriminator])
             slice_found.present?
           end
         end
 
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @practitioner_ary&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?

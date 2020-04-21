@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_location_definitions'
 
 module Inferno
   module Sequence
     class USCore310LocationSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
       title 'Location'
 
@@ -62,40 +64,6 @@ module Inferno
       end
 
       @resources_found = false
-
-      MUST_SUPPORTS = {
-        extensions: [],
-        slices: [],
-        elements: [
-          {
-            path: 'status'
-          },
-          {
-            path: 'name'
-          },
-          {
-            path: 'telecom'
-          },
-          {
-            path: 'address'
-          },
-          {
-            path: 'address.line'
-          },
-          {
-            path: 'address.city'
-          },
-          {
-            path: 'address.state'
-          },
-          {
-            path: 'address.postalCode'
-          },
-          {
-            path: 'managingOrganization'
-          }
-        ]
-      }.freeze
 
       test :resource_read do
         metadata do
@@ -257,8 +225,9 @@ module Inferno
         end
 
         skip_if_not_found(resource_type: 'Location', delayed: true)
+        must_supports = USCore310LocationSequenceDefinitions::MUST_SUPPORTS
 
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @location_ary&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?

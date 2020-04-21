@@ -718,16 +718,17 @@ module Inferno
         assert(problems.empty?, "\n* " + problems.join("\n* "))
       end
 
-      def save_delayed_sequence_references(resources)
-        delayed_resource_types = @@conformance_supports.select { |sequence, _resources| @@delayed_sequences.include? sequence }.values.flatten
+      def save_delayed_sequence_references(resources, delayed_sequence_references)
         resources.each do |resource|
-          walk_resource(resource) do |value, meta, _path|
+          walk_resource(resource) do |value, meta, path|
             next if meta['type'] != 'Reference'
 
             if value.relative?
               begin
                 resource_class = value.resource_class.name.demodulize
-                @instance.save_resource_reference_without_reloading(resource_class, value.reference.split('/').last) if delayed_resource_types.include? resource_class.to_sym
+                delayed_sequence_reference = delayed_sequence_references.find { |ref| ref[:path] == path }
+                is_delayed = delayed_sequence_reference.present? && delayed_sequence_reference[:resources].include?(resource_class)
+                @instance.save_resource_reference_without_reloading(resource_class, value.reference.split('/').last) if is_delayed
               rescue NameError
                 next
               end
