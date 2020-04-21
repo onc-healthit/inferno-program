@@ -602,13 +602,7 @@ module Inferno
           )
         end
 
-        must_supports = [
-          {
-            profile: nil,
-            must_support_info: Inferno::Sequence::USCore310LocationSequence::MUST_SUPPORTS.dup
-          }
-        ]
-        test_output_against_profile('Location', must_supports)
+        test_output_against_profile('Location')
       end
 
       test :validate_medication do
@@ -672,13 +666,7 @@ module Inferno
           )
         end
 
-        must_supports = [
-          {
-            profile: nil,
-            must_support_info: Inferno::Sequence::USCore310PractitionerroleSequence::MUST_SUPPORTS.dup
-          }
-        ]
-        test_output_against_profile('PractitionerRole', must_supports)
+        test_output_against_profile('PractitionerRole')
       end
     end
   end

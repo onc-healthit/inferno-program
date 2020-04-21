@@ -60,24 +60,25 @@ module Inferno
           # read reference if sequence contains no search sequences
           create_read_test(sequence) if sequence[:delayed_sequence]
 
-          # make tests for each SHALL and SHOULD search param, SHALL's first
-          sequence[:searches]
-            .select { |search_param| search_param[:expectation] == 'SHALL' }
-            .each { |search_param| create_search_test(sequence, search_param) }
+          unless sequence[:delayed_sequence]
+            # make tests for each SHALL and SHOULD search param, SHALL's first
+            sequence[:searches]
+              .select { |search_param| search_param[:expectation] == 'SHALL' }
+              .each { |search_param| create_search_test(sequence, search_param) }
 
-          sequence[:searches]
-            .select { |search_param| search_param[:expectation] == 'SHOULD' }
-            .each { |search_param| create_search_test(sequence, search_param) }
+            sequence[:searches]
+              .select { |search_param| search_param[:expectation] == 'SHOULD' }
+              .each { |search_param| create_search_test(sequence, search_param) }
 
-          sequence[:search_param_descriptions]
-            .select { |_, description| description[:chain].present? }
-            .each { |search_param, _| create_chained_search_test(sequence, search_param) }
+            sequence[:search_param_descriptions]
+              .select { |_, description| description[:chain].present? }
+              .each { |search_param, _| create_chained_search_test(sequence, search_param) }
 
-          # make tests for each SHALL and SHOULD interaction
-          sequence[:interactions]
-            .select { |interaction| ['SHALL', 'SHOULD'].include? interaction[:expectation] }
-            .reject { |interaction| interaction[:code] == 'search-type' }
-            .each do |interaction|
+            # make tests for each SHALL and SHOULD interaction
+            sequence[:interactions]
+              .select { |interaction| ['SHALL', 'SHOULD'].include? interaction[:expectation] }
+              .reject { |interaction| interaction[:code] == 'search-type' }
+              .each do |interaction|
               # specific edge cases
               interaction[:code] = 'history' if interaction[:code] == 'history-instance'
               next if interaction[:code] == 'read' && sequence[:delayed_sequence]
@@ -85,18 +86,21 @@ module Inferno
               create_interaction_test(sequence, interaction)
             end
 
-          create_include_test(sequence) if sequence[:include_params].any?
-          create_revinclude_test(sequence) if sequence[:revincludes].any?
+            create_include_test(sequence) if sequence[:include_params].any?
+            create_revinclude_test(sequence) if sequence[:revincludes].any?
+          end
           create_resource_profile_test(sequence)
           create_must_support_test(sequence)
-          create_multiple_or_test(sequence)
+          create_multiple_or_test(sequence) unless sequence[:delayed_sequence]
           create_references_resolved_test(sequence)
         end
       end
 
       def mark_delayed_sequences(metadata)
         metadata[:sequences].each do |sequence|
-          sequence[:delayed_sequence] = sequence[:resource] != 'Patient' && sequence[:searches].none? { |search| search[:names].include? 'patient' }
+          non_patient_search = sequence[:resource] != 'Patient' && sequence[:searches].none? { |search| search[:names].include? 'patient' }
+          non_uscdi_resources = ['Encounter', 'Location', 'Organization', 'Practitioner', 'PractitionerRole', 'Provenance']
+          sequence[:delayed_sequence] = non_patient_search || non_uscdi_resources.include?(sequence[:resource])
         end
         metadata[:delayed_sequences] = metadata[:sequences].select { |seq| seq[:delayed_sequence] }
         metadata[:non_delayed_sequences] = metadata[:sequences].reject { |seq| seq[:resource] == 'Patient' || seq[:delayed_sequence] }
