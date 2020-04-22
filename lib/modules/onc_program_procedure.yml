@@ -344,7 +344,7 @@ procedure:
         inferno_supported: 'yes'
         inferno_tests:
           - SPB-OSLS-01 - SPB-OSLS-08
-          - AVR-01 - AVR-15
+          - AVR-01 - AVR-14
       - id: AUTH-PATIENT-11
         SUT: |
           [Both] The health IT developer demonstrates the ability of Health IT Module to
@@ -492,7 +492,7 @@ procedure:
           check a full denial.
         inferno_tests:
           - RPA-OSRLS-02 - RPA-OSRLS-08
-          - AVR-01 - AVR-15
+          - AVR-01 - AVR-14
       - id: AUTH-PATIENT-17
         SUT: |
           [Standalone-Launch] The health IT developer the ability of the Health IT
@@ -846,10 +846,7 @@ procedure:
           - USCORR-02
           - USCPROC-02
           - USCCN-02
-          - USCL-02
           - USCO-02
-          - USCPR-02
-          - USCPRO-02
           - USCPROV-02
       - id: SEARCH-3
         SUT: |
@@ -966,10 +963,7 @@ procedure:
           - USCORR-02
           - USCPROC-02
           - USCCN-02
-          - USCL-02
           - USCO-02
-          - USCPR-02
-          - USCPRO-02
           - USCPROV-02
           - BDGV-01
       - id: RESPONSE-2
@@ -1019,10 +1013,7 @@ procedure:
           - USCORR-02
           - USCPROC-02
           - USCCN-02
-          - USCL-02
           - USCO-02
-          - USCPR-02
-          - USCPRO-02
           - USCPROV-02
           - BDGV-01
       - id: RESPONSE-3
@@ -1068,7 +1059,7 @@ procedure:
           - USCOHR-09
           - USCORR-09
           - USCPROC-08
-          - USCPROV-01 - USCPROV-06
+          - USCPROV-01 - USCPROV-04
           - BDGV-01
       - id: RESPONSE-4
         SUT: |
@@ -1164,10 +1155,8 @@ procedure:
           - USCORR-02
           - USCPROC-02
           - USCCN-02
-          - USCL-02
           - USCO-02
           - USCPR-02
-          - USCPRO-02
           - USCPROV-02
       - group: Response to Requests for Multiple Patients’ Data
         id: RESPONSE-8
