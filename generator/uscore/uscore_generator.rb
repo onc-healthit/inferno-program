@@ -371,7 +371,7 @@ module Inferno
       def create_search_test(sequence, search_param)
         test_key = :"search_by_#{search_param[:names].map(&:underscore).join('_')}"
         search_test = {
-          tests_that: "Server returns results from #{sequence[:resource]} search by #{search_param[:names].join('+')}",
+          tests_that: "Server returns valid results for #{sequence[:resource]} search by #{search_param[:names].join('+')}.",
           key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html',
@@ -379,7 +379,7 @@ module Inferno
           description: %(
             A server #{search_param[:expectation]} support searching by #{search_param[:names].join('+')} on the #{sequence[:resource]} resource.
             This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
-          )
+            )
         }
 
         find_comparators(search_param[:names], sequence).each do |param, comparators|
@@ -387,7 +387,7 @@ module Inferno
               This will also test support for these #{param} comparators: #{comparators.keys.join(', ')}. Comparator values are created by taking
               a #{param} value from a resource returned in the first search of this sequence and adding/subtracting a day. For example, a date
               of 05/05/2020 will create comparator values of lt2020-05-06 and gt2020-05-04
-            )
+              )
         end
 
         if sequence[:resource] == 'MedicationRequest'
@@ -395,7 +395,7 @@ module Inferno
             If any MedicationRequest resources use external references to
             Medications, the search will be repeated with
             _include=MedicationRequest:medication.
-          )
+            )
         end
 
         is_first_search = search_param == find_first_search(sequence)
@@ -689,14 +689,14 @@ module Inferno
       def create_resource_profile_test(sequence)
         test_key = :validate_resources
         test = {
-          tests_that: "#{sequence[:resource]} resources returned conform to US Core R4 profiles",
+          tests_that: "#{sequence[:resource]} resources returned from previous search conform to the #{sequence[:profile_name]}.",
           key: test_key,
           index: sequence[:tests].length + 1,
           link: sequence[:profile],
           description: %(
-            This test checks if the resources returned from the first search conform to the [US Core Profile](#{sequence[:profile]}).
-            This test will check to see if the cardinality and required bindings of elements are respected.
-            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the valueset.
+            This test verifies resources returned from the first search conform to the [US Core #{sequence[:resource]} Profile](#{sequence[:profile]}).
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
+            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
           )
         }
@@ -785,7 +785,7 @@ module Inferno
 
         if sequence[:resource] == 'MedicationRequest'
           medication_test = {
-            tests_that: 'Medication resources returned conform to US Core R4 profiles',
+            tests_that: 'Medication resources returned conform to US Core v3.1.0 profiles',
             key: :validate_medication_resources,
             index: sequence[:tests].length + 1,
             link: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest',

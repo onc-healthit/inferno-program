@@ -9,22 +9,31 @@ module Inferno
       include Inferno::DataAbsentReasonChecker  
       include Inferno::USCore310ProfileDefinitions
 
-      title '<%=title%>'
+      title '<%=title%> Tests'
 
-      description 'Verify that <%=resource%> resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify support for the server capabilities required by the <%=profile_name%>.'
 
       details %(
         # Background
 
-        The US Core #{title} sequence looks to see if the selected FHIR server is able to serve `#{title.gsub(/\s+/, '')}` resources 
-        while following the US Core Implementation Guide. 
+        The US Core #{title} sequence verifies that the system under test is able to provide correct responses
+        for <%= resource %> queries.  These queries must contain resources conforming to <%= profile_name %> as specified
+        in the US Core v3.1.0 Implementation Guide. <% if resource == 'Device' %>If the system under test contains Device
+        resources that are not implantable, and therefore do not conform to the US Core Implantable Device profile,
+        the tester should provide an Implantable Device Code to the test to ensure that only the appropriate device types
+        are validated against this profile.<% end %>
 
         # Testing Methodology
 
-        <%if delayed_sequence%>
-        Because <%=resource%> resources do not exist in USCDI, no searches are performed on this test sequence. Instead, references to
+        <% if resource == 'Provenance' %>
+        Previously run sequences store references to US Core Provenance resources that are associated with other US Core
+        resources using the appropriate `_revincludes` search.  This set of tests uses these found resources to verify
+        support for the `read` operation.  Each of these resources must conform to the US Core Provenance profile.
+        <% elsif delayed_sequence %>
+        Because <%=resource%> resources are not present o not exist in USCDI, no searches are performed on this test sequence. Instead, references to
         this profile found in other resources are used for testing. If no references can be found this way, then all the tests
         in this sequence are skipped.
+        
         <%else%>
         ## Searching
         This test sequence will first perform each required search associated with this resource. This sequence will perform searches
@@ -39,7 +48,7 @@ module Inferno
         value cannot be found this way, the search is skipped.
         
         ### Search Validation
-        Inferno will look through the first 20 bundle pages of the reply for `#{title.gsub(/\s+/, '')}` resources and save them 
+        Inferno will retrieve up to the first 20 bundle pages of the reply for <%=resource%> resources and save them 
         for subsequent tests.
         Each of these resources is then checked to see if it matches the searched parameters in accordance
         with [FHIR search guidelines](https://www.hl7.org/fhir/search.html). The test will fail, for example, if a patient search 
@@ -51,7 +60,7 @@ module Inferno
         resources found for these elements.
 
         ## Profile Validation
-        Each resource returned from the first search is expected to conform to the (US Core profile)[<%=profile%>].
+        Each resource returned from the first search is expected to conform to the [<%=profile_name%>](<%=profile%>).
         Each element is checked against teminology binding and cardinality requirements.
 
         Elements with a required binding is validated against its bound valueset. If the code/system in the element is not part

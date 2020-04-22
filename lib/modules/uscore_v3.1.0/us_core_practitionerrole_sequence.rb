@@ -9,22 +9,24 @@ module Inferno
       include Inferno::DataAbsentReasonChecker
       include Inferno::USCore310ProfileDefinitions
 
-      title 'PractitionerRole'
+      title 'PractitionerRole Tests'
 
-      description 'Verify that PractitionerRole resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify support for the server capabilities required by the US Core PractitionerRole Profile.'
 
       details %(
         # Background
 
-        The US Core #{title} sequence looks to see if the selected FHIR server is able to serve `#{title.gsub(/\s+/, '')}` resources
-        while following the US Core Implementation Guide.
+        The US Core #{title} sequence verifies that the system under test is able to provide correct responses
+        for PractitionerRole queries.  These queries must contain resources conforming to US Core PractitionerRole Profile as specified
+        in the US Core v3.1.0 Implementation Guide.
 
         # Testing Methodology
 
 
-        Because PractitionerRole resources do not exist in USCDI, no searches are performed on this test sequence. Instead, references to
+        Because PractitionerRole resources are not present o not exist in USCDI, no searches are performed on this test sequence. Instead, references to
         this profile found in other resources are used for testing. If no references can be found this way, then all the tests
         in this sequence are skipped.
+
 
         ## Must Support
         Each profile has a list of elements marked as "must support". This test sequence expects to see each of these elements
@@ -32,7 +34,7 @@ module Inferno
         resources found for these elements.
 
         ## Profile Validation
-        Each resource returned from the first search is expected to conform to the (US Core profile)[http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole].
+        Each resource returned from the first search is expected to conform to the [US Core PractitionerRole Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole).
         Each element is checked against teminology binding and cardinality requirements.
 
         Elements with a required binding is validated against its bound valueset. If the code/system in the element is not part
@@ -101,13 +103,13 @@ module Inferno
       test :validate_resources do
         metadata do
           id '02'
-          name 'PractitionerRole resources returned conform to US Core R4 profiles'
+          name 'PractitionerRole resources returned from previous search conform to the US Core PractitionerRole Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'
           description %(
 
-            This test checks if the resources returned from the first search conform to the [US Core Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole).
-            This test will check to see if the cardinality and required bindings of elements are respected.
-            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the valueset.
+            This test verifies resources returned from the first search conform to the [US Core PractitionerRole Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole).
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
+            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
           )

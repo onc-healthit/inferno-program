@@ -9,15 +9,16 @@ module Inferno
       include Inferno::DataAbsentReasonChecker
       include Inferno::USCore310ProfileDefinitions
 
-      title 'CareTeam'
+      title 'CareTeam Tests'
 
-      description 'Verify that CareTeam resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify support for the server capabilities required by the US Core CareTeam Profile.'
 
       details %(
         # Background
 
-        The US Core #{title} sequence looks to see if the selected FHIR server is able to serve `#{title.gsub(/\s+/, '')}` resources
-        while following the US Core Implementation Guide.
+        The US Core #{title} sequence verifies that the system under test is able to provide correct responses
+        for CareTeam queries.  These queries must contain resources conforming to US Core CareTeam Profile as specified
+        in the US Core v3.1.0 Implementation Guide.
 
         # Testing Methodology
 
@@ -35,7 +36,7 @@ module Inferno
         value cannot be found this way, the search is skipped.
 
         ### Search Validation
-        Inferno will look through the first 20 bundle pages of the reply for `#{title.gsub(/\s+/, '')}` resources and save them
+        Inferno will retrieve up to the first 20 bundle pages of the reply for CareTeam resources and save them
         for subsequent tests.
         Each of these resources is then checked to see if it matches the searched parameters in accordance
         with [FHIR search guidelines](https://www.hl7.org/fhir/search.html). The test will fail, for example, if a patient search
@@ -47,7 +48,7 @@ module Inferno
         resources found for these elements.
 
         ## Profile Validation
-        Each resource returned from the first search is expected to conform to the (US Core profile)[http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam].
+        Each resource returned from the first search is expected to conform to the [US Core CareTeam Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam).
         Each element is checked against teminology binding and cardinality requirements.
 
         Elements with a required binding is validated against its bound valueset. If the code/system in the element is not part
@@ -120,13 +121,13 @@ module Inferno
       test :search_by_patient_status do
         metadata do
           id '01'
-          name 'Server returns results from CareTeam search by patient+status'
+          name 'Server returns valid results for CareTeam search by patient+status.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
             A server SHALL support searching by patient+status on the CareTeam resource.
             This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
-          Because this is the first search of the sequence, resources in the response will be used for subsequent tests.
+            Because this is the first search of the sequence, resources in the response will be used for subsequent tests.
           )
           versions :r4
         end
@@ -264,13 +265,13 @@ module Inferno
       test :validate_resources do
         metadata do
           id '06'
-          name 'CareTeam resources returned conform to US Core R4 profiles'
+          name 'CareTeam resources returned from previous search conform to the US Core CareTeam Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
 
-            This test checks if the resources returned from the first search conform to the [US Core Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam).
-            This test will check to see if the cardinality and required bindings of elements are respected.
-            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the valueset.
+            This test verifies resources returned from the first search conform to the [US Core CareTeam Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam).
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
+            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
           )

@@ -75,6 +75,7 @@ module Inferno
           test_id_prefix: test_id_prefix,
           resource: resource['type'],
           profile: profile,
+          profile_name: profile_json['title'],
           title: profile_title,
           interactions: [],
           operations: [],
