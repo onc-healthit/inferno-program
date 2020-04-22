@@ -72,10 +72,27 @@ module Inferno
         @patient_ids_seen = Set.new if klass == 'Patient'
 
         line_count = 0
+        error_collection = {}
+        line_collection = []
+
+        request_for_log = {
+          method: 'GET',
+          url: file['url'],
+          headers: headers
+        }
+
+        response_for_log = {
+          body: String.new
+        }
+
         streamed_ndjson_get(file['url'], headers) do |response, resource|
           assert response.headers['Content-Type'] == 'application/fhir+ndjson', "Content type must be 'application/fhir+ndjson' but is '#{response.headers['Content-type']}"
 
           break if !validate_all && line_count >= lines_to_validate && (klass != 'Patient' || @has_min_patient_count)
+
+          response_for_log[:code] = response.code unless response_for_log.key?(:code)
+          response_for_log[:headers] = response.headers unless response_for_log.key?(:headers)
+          line_collection << resource if line_count < MAX_RECENT_LINE_SIZE
 
           line_count += 1
 
@@ -120,7 +137,16 @@ module Inferno
               end
             end
           end
-          assert errors.empty?, "Failed Profile validation for resource #{line_count}: #{errors}"
+
+          error_collection[line_count] = errors unless errors.empty?
+        end
+
+        unless error_collection.empty?
+          response_for_log[:body] = line_collection.join
+          LoggedRestClient.record_response(request_for_log, response_for_log)
+
+          index, errors = error_collection.first
+          assert false, "#{error_collection.size} / #{line_count} #{klass} resources failed profile validation. The first failed is #{klass} ##{index}: #{errors}"
         end
 
         assert_must_supports_found(must_supports) if validate_all || lines_to_validate.positive?
