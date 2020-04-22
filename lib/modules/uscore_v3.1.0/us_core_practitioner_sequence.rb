@@ -55,8 +55,8 @@ module Inferno
         case property
 
         when 'name'
-          value_downcase = value.downcase
           values_found = resolve_path(resource, 'name')
+          value_downcase = value.downcase
           match_found = values_found.any? do |name|
             name&.text&.downcase&.start_with?(value_downcase) ||
               name&.family&.downcase&.include?(value_downcase) ||
@@ -67,10 +67,10 @@ module Inferno
           assert match_found, "name in Practitioner/#{resource.id} (#{values_found}) does not match name requested (#{value})"
 
         when 'identifier'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'identifier.value')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "identifier in  Practitioner/#{resource.id} (#{values_found}) does not match identifier requested (#{values})"
+          assert match_found, "identifier in Practitioner/#{resource.id} (#{values_found}) does not match identifier requested (#{value})"
 
         end
       end

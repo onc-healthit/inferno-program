@@ -72,39 +72,39 @@ module Inferno
         case property
 
         when '_id'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'id')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "_id in  DocumentReference/#{resource.id} (#{values_found}) does not match _id requested (#{values})"
+          assert match_found, "_id in DocumentReference/#{resource.id} (#{values_found}) does not match _id requested (#{value})"
 
         when 'status'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'status')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "status in  DocumentReference/#{resource.id} (#{values_found}) does not match status requested (#{values})"
+          assert match_found, "status in DocumentReference/#{resource.id} (#{values_found}) does not match status requested (#{value})"
 
         when 'patient'
-          references_found = resolve_path(resource, 'subject.reference')
-          match_found = references_found.any? { |reference| [value, 'Patient/' + value].include? reference }
-          assert match_found, "patient in  DocumentReference/#{resource.id} (#{references_found}) does not match patient requested (#{value})"
+          values_found = resolve_path(resource, 'subject.reference')
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          assert match_found, "patient in DocumentReference/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'category'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'category.coding.code')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "category in  DocumentReference/#{resource.id} (#{values_found}) does not match category requested (#{values})"
+          assert match_found, "category in DocumentReference/#{resource.id} (#{values_found}) does not match category requested (#{value})"
 
         when 'type'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'type.coding.code')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "type in  DocumentReference/#{resource.id} (#{values_found}) does not match type requested (#{values})"
+          assert match_found, "type in DocumentReference/#{resource.id} (#{values_found}) does not match type requested (#{value})"
 
         when 'date'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'date')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "date in  DocumentReference/#{resource.id} (#{values_found}) does not match date requested (#{values})"
+          assert match_found, "date in DocumentReference/#{resource.id} (#{values_found}) does not match date requested (#{value})"
 
         when 'period'
           values_found = resolve_path(resource, 'context.period')

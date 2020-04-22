@@ -71,15 +71,15 @@ module Inferno
         case property
 
         when 'patient'
-          references_found = resolve_path(resource, 'patient.reference')
-          match_found = references_found.any? { |reference| [value, 'Patient/' + value].include? reference }
-          assert match_found, "patient in  Device/#{resource.id} (#{references_found}) does not match patient requested (#{value})"
+          values_found = resolve_path(resource, 'patient.reference')
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          assert match_found, "patient in Device/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'type'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'type.coding.code')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "type in  Device/#{resource.id} (#{values_found}) does not match type requested (#{values})"
+          assert match_found, "type in Device/#{resource.id} (#{values_found}) does not match type requested (#{value})"
 
         end
       end

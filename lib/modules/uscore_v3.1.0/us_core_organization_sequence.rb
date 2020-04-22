@@ -55,10 +55,10 @@ module Inferno
         case property
 
         when 'name'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'name')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "name in  Organization/#{resource.id} (#{values_found}) does not match name requested (#{values})"
+          assert match_found, "name in Organization/#{resource.id} (#{values_found}) does not match name requested (#{value})"
 
         when 'address'
           values_found = resolve_path(resource, 'address')

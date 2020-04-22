@@ -55,16 +55,16 @@ module Inferno
         case property
 
         when 'specialty'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'specialty.coding.code')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "specialty in  PractitionerRole/#{resource.id} (#{values_found}) does not match specialty requested (#{values})"
+          assert match_found, "specialty in PractitionerRole/#{resource.id} (#{values_found}) does not match specialty requested (#{value})"
 
         when 'practitioner'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'practitioner.reference')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "practitioner in  PractitionerRole/#{resource.id} (#{values_found}) does not match practitioner requested (#{values})"
+          assert match_found, "practitioner in PractitionerRole/#{resource.id} (#{values_found}) does not match practitioner requested (#{value})"
 
         end
       end

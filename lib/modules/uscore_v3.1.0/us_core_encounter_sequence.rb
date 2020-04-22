@@ -55,16 +55,16 @@ module Inferno
         case property
 
         when '_id'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'id')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "_id in  Encounter/#{resource.id} (#{values_found}) does not match _id requested (#{values})"
+          assert match_found, "_id in Encounter/#{resource.id} (#{values_found}) does not match _id requested (#{value})"
 
         when 'class'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'local_class.code')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "class in  Encounter/#{resource.id} (#{values_found}) does not match class requested (#{values})"
+          assert match_found, "class in Encounter/#{resource.id} (#{values_found}) does not match class requested (#{value})"
 
         when 'date'
           values_found = resolve_path(resource, 'period')
@@ -72,27 +72,27 @@ module Inferno
           assert match_found, "date in Encounter/#{resource.id} (#{values_found}) does not match date requested (#{value})"
 
         when 'identifier'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'identifier.value')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "identifier in  Encounter/#{resource.id} (#{values_found}) does not match identifier requested (#{values})"
+          assert match_found, "identifier in Encounter/#{resource.id} (#{values_found}) does not match identifier requested (#{value})"
 
         when 'patient'
-          references_found = resolve_path(resource, 'subject.reference')
-          match_found = references_found.any? { |reference| [value, 'Patient/' + value].include? reference }
-          assert match_found, "patient in  Encounter/#{resource.id} (#{references_found}) does not match patient requested (#{value})"
+          values_found = resolve_path(resource, 'subject.reference')
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          assert match_found, "patient in Encounter/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'status'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'status')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "status in  Encounter/#{resource.id} (#{values_found}) does not match status requested (#{values})"
+          assert match_found, "status in Encounter/#{resource.id} (#{values_found}) does not match status requested (#{value})"
 
         when 'type'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'type.coding.code')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "type in  Encounter/#{resource.id} (#{values_found}) does not match type requested (#{values})"
+          assert match_found, "type in Encounter/#{resource.id} (#{values_found}) does not match type requested (#{value})"
 
         end
       end

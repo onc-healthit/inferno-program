@@ -68,15 +68,15 @@ module Inferno
         case property
 
         when 'lifecycle-status'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'lifecycleStatus')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "lifecycle-status in  Goal/#{resource.id} (#{values_found}) does not match lifecycle-status requested (#{values})"
+          assert match_found, "lifecycle-status in Goal/#{resource.id} (#{values_found}) does not match lifecycle-status requested (#{value})"
 
         when 'patient'
-          references_found = resolve_path(resource, 'subject.reference')
-          match_found = references_found.any? { |reference| [value, 'Patient/' + value].include? reference }
-          assert match_found, "patient in  Goal/#{resource.id} (#{references_found}) does not match patient requested (#{value})"
+          values_found = resolve_path(resource, 'subject.reference')
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          assert match_found, "patient in Goal/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'target-date'
           values_found = resolve_path(resource, 'target.dueDate')

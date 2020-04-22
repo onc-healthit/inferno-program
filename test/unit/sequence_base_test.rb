@@ -56,7 +56,7 @@ class SequenceBaseTest < MiniTest::Test
           @sequence.validate_resource_item(@allergy_intolerance_resource, key.to_s, value)
         end
       end
-      expected_error_msg = 'clinical-status in  AllergyIntolerance/SMART-AllergyIntolerance-28 (["active"]) does not match clinical-status requested (["inactive"])'
+      expected_error_msg = 'clinical-status in AllergyIntolerance/SMART-AllergyIntolerance-28 (["active"]) does not match clinical-status requested (inactive)'
       assert error.message == expected_error_msg, "expected: #{expected_error_msg}, actual: #{error.message}"
     end
   end

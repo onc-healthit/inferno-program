@@ -70,22 +70,22 @@ module Inferno
         case property
 
         when 'status'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'status')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "status in  Observation/#{resource.id} (#{values_found}) does not match status requested (#{values})"
+          assert match_found, "status in Observation/#{resource.id} (#{values_found}) does not match status requested (#{value})"
 
         when 'category'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'category.coding.code')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "category in  Observation/#{resource.id} (#{values_found}) does not match category requested (#{values})"
+          assert match_found, "category in Observation/#{resource.id} (#{values_found}) does not match category requested (#{value})"
 
         when 'code'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'code.coding.code')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "code in  Observation/#{resource.id} (#{values_found}) does not match code requested (#{values})"
+          assert match_found, "code in Observation/#{resource.id} (#{values_found}) does not match code requested (#{value})"
 
         when 'date'
           values_found = resolve_path(resource, 'effective')
@@ -93,9 +93,9 @@ module Inferno
           assert match_found, "date in Observation/#{resource.id} (#{values_found}) does not match date requested (#{value})"
 
         when 'patient'
-          references_found = resolve_path(resource, 'subject.reference')
-          match_found = references_found.any? { |reference| [value, 'Patient/' + value].include? reference }
-          assert match_found, "patient in  Observation/#{resource.id} (#{references_found}) does not match patient requested (#{value})"
+          values_found = resolve_path(resource, 'subject.reference')
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          assert match_found, "patient in Observation/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         end
       end

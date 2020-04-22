@@ -68,21 +68,21 @@ module Inferno
         case property
 
         when 'category'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'category.coding.code')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "category in  Condition/#{resource.id} (#{values_found}) does not match category requested (#{values})"
+          assert match_found, "category in Condition/#{resource.id} (#{values_found}) does not match category requested (#{value})"
 
         when 'clinical-status'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'clinicalStatus.coding.code')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "clinical-status in  Condition/#{resource.id} (#{values_found}) does not match clinical-status requested (#{values})"
+          assert match_found, "clinical-status in Condition/#{resource.id} (#{values_found}) does not match clinical-status requested (#{value})"
 
         when 'patient'
-          references_found = resolve_path(resource, 'subject.reference')
-          match_found = references_found.any? { |reference| [value, 'Patient/' + value].include? reference }
-          assert match_found, "patient in  Condition/#{resource.id} (#{references_found}) does not match patient requested (#{value})"
+          values_found = resolve_path(resource, 'subject.reference')
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          assert match_found, "patient in Condition/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'onset-date'
           values_found = resolve_path(resource, 'onsetDateTime')
@@ -90,10 +90,10 @@ module Inferno
           assert match_found, "onset-date in Condition/#{resource.id} (#{values_found}) does not match onset-date requested (#{value})"
 
         when 'code'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'code.coding.code')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "code in  Condition/#{resource.id} (#{values_found}) does not match code requested (#{values})"
+          assert match_found, "code in Condition/#{resource.id} (#{values_found}) does not match code requested (#{value})"
 
         end
       end

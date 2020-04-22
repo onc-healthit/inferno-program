@@ -72,10 +72,10 @@ module Inferno
         case property
 
         when '_id'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'id')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "_id in  Patient/#{resource.id} (#{values_found}) does not match _id requested (#{values})"
+          assert match_found, "_id in Patient/#{resource.id} (#{values_found}) does not match _id requested (#{value})"
 
         when 'birthdate'
           values_found = resolve_path(resource, 'birthDate')
@@ -83,32 +83,32 @@ module Inferno
           assert match_found, "birthdate in Patient/#{resource.id} (#{values_found}) does not match birthdate requested (#{value})"
 
         when 'family'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'name.family')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "family in  Patient/#{resource.id} (#{values_found}) does not match family requested (#{values})"
+          assert match_found, "family in Patient/#{resource.id} (#{values_found}) does not match family requested (#{value})"
 
         when 'gender'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'gender')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "gender in  Patient/#{resource.id} (#{values_found}) does not match gender requested (#{values})"
+          assert match_found, "gender in Patient/#{resource.id} (#{values_found}) does not match gender requested (#{value})"
 
         when 'given'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'name.given')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "given in  Patient/#{resource.id} (#{values_found}) does not match given requested (#{values})"
+          assert match_found, "given in Patient/#{resource.id} (#{values_found}) does not match given requested (#{value})"
 
         when 'identifier'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'identifier.value')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "identifier in  Patient/#{resource.id} (#{values_found}) does not match identifier requested (#{values})"
+          assert match_found, "identifier in Patient/#{resource.id} (#{values_found}) does not match identifier requested (#{value})"
 
         when 'name'
-          value_downcase = value.downcase
           values_found = resolve_path(resource, 'name')
+          value_downcase = value.downcase
           match_found = values_found.any? do |name|
             name&.text&.downcase&.start_with?(value_downcase) ||
               name&.family&.downcase&.include?(value_downcase) ||

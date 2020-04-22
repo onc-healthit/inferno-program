@@ -68,10 +68,10 @@ module Inferno
         case property
 
         when 'category'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'category.coding.code')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "category in  CarePlan/#{resource.id} (#{values_found}) does not match category requested (#{values})"
+          assert match_found, "category in CarePlan/#{resource.id} (#{values_found}) does not match category requested (#{value})"
 
         when 'date'
           values_found = resolve_path(resource, 'period')
@@ -79,15 +79,15 @@ module Inferno
           assert match_found, "date in CarePlan/#{resource.id} (#{values_found}) does not match date requested (#{value})"
 
         when 'patient'
-          references_found = resolve_path(resource, 'subject.reference')
-          match_found = references_found.any? { |reference| [value, 'Patient/' + value].include? reference }
-          assert match_found, "patient in  CarePlan/#{resource.id} (#{references_found}) does not match patient requested (#{value})"
+          values_found = resolve_path(resource, 'subject.reference')
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          assert match_found, "patient in CarePlan/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'status'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'status')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "status in  CarePlan/#{resource.id} (#{values_found}) does not match status requested (#{values})"
+          assert match_found, "status in CarePlan/#{resource.id} (#{values_found}) does not match status requested (#{value})"
 
         end
       end

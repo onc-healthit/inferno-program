@@ -55,10 +55,10 @@ module Inferno
         case property
 
         when 'name'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'name')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "name in  Location/#{resource.id} (#{values_found}) does not match name requested (#{values})"
+          assert match_found, "name in Location/#{resource.id} (#{values_found}) does not match name requested (#{value})"
 
         when 'address'
           values_found = resolve_path(resource, 'address')
@@ -72,22 +72,22 @@ module Inferno
           assert match_found, "address in Location/#{resource.id} (#{values_found}) does not match address requested (#{value})"
 
         when 'address-city'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'address.city')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "address-city in  Location/#{resource.id} (#{values_found}) does not match address-city requested (#{values})"
+          assert match_found, "address-city in Location/#{resource.id} (#{values_found}) does not match address-city requested (#{value})"
 
         when 'address-state'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'address.state')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "address-state in  Location/#{resource.id} (#{values_found}) does not match address-state requested (#{values})"
+          assert match_found, "address-state in Location/#{resource.id} (#{values_found}) does not match address-state requested (#{value})"
 
         when 'address-postalcode'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'address.postalCode')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "address-postalcode in  Location/#{resource.id} (#{values_found}) does not match address-postalcode requested (#{values})"
+          assert match_found, "address-postalcode in Location/#{resource.id} (#{values_found}) does not match address-postalcode requested (#{value})"
 
         end
       end

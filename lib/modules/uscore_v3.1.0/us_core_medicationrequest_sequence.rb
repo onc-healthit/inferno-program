@@ -69,33 +69,33 @@ module Inferno
         case property
 
         when 'status'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'status')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "status in  MedicationRequest/#{resource.id} (#{values_found}) does not match status requested (#{values})"
+          assert match_found, "status in MedicationRequest/#{resource.id} (#{values_found}) does not match status requested (#{value})"
 
         when 'intent'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'intent')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "intent in  MedicationRequest/#{resource.id} (#{values_found}) does not match intent requested (#{values})"
+          assert match_found, "intent in MedicationRequest/#{resource.id} (#{values_found}) does not match intent requested (#{value})"
 
         when 'patient'
-          references_found = resolve_path(resource, 'subject.reference')
-          match_found = references_found.any? { |reference| [value, 'Patient/' + value].include? reference }
-          assert match_found, "patient in  MedicationRequest/#{resource.id} (#{references_found}) does not match patient requested (#{value})"
+          values_found = resolve_path(resource, 'subject.reference')
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          assert match_found, "patient in MedicationRequest/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'encounter'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'encounter.reference')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "encounter in  MedicationRequest/#{resource.id} (#{values_found}) does not match encounter requested (#{values})"
+          assert match_found, "encounter in MedicationRequest/#{resource.id} (#{values_found}) does not match encounter requested (#{value})"
 
         when 'authoredon'
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           values_found = resolve_path(resource, 'authoredOn')
+          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
-          assert match_found.present?, "authoredon in  MedicationRequest/#{resource.id} (#{values_found}) does not match authoredon requested (#{values})"
+          assert match_found, "authoredon in MedicationRequest/#{resource.id} (#{values_found}) does not match authoredon requested (#{value})"
 
         end
       end
