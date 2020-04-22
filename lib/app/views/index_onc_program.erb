@@ -201,6 +201,19 @@ For alternate installation options, please visit <a href='https://github.com/onc
   </div>
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v0.9.4</div>
+    <p>
+      <ul>
+        <li>Updated skipped tests results to expand by default, in the same way that failed tests are expanded by default.</li>
+        <li>Fixed issue where Authorization header was incorrectly included in queries to SMART Well Known endpoints in certain situations.</li>
+        <li>Updated test names and descriptions in US Core tests to provide more detailed information and to be more precise.</li>
+        <li>Removed search queries for non-USCDI resources that have US Core v3.1 Profiles (e.g. US Core PractitionerRole).  Non-USCDI resources referenced by USCDI resources are still validated against US Core profiles when necessary.</li>
+        <li>Relaxed overly strict SSL requirements for certain Bulk Data HTTP requests.</li>
+      </ul>
+
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_0_9_4.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure. 
+    </p>
     <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v0.9.3</div>
     <p>
       <ul>
