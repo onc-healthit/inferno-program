@@ -24,6 +24,9 @@ module Inferno
       def generate
         metadata = extract_metadata
         metadata[:sequences].reject! { |sequence| sequence[:resource] == 'Medication' }
+        # first isolate the profiles that don't have patient searches
+        mark_delayed_sequences(metadata)
+        find_delayed_references(metadata)
         generate_tests(metadata)
         generate_search_validators(metadata)
         metadata[:sequences].each do |sequence|
@@ -51,33 +54,31 @@ module Inferno
       end
 
       def generate_tests(metadata)
-        # first isolate the profiles that don't have patient searches
-        mark_delayed_sequences(metadata)
-
         metadata[:sequences].each do |sequence|
           puts "Generating test #{sequence[:name]}"
 
           # read reference if sequence contains no search sequences
           create_read_test(sequence) if sequence[:delayed_sequence]
 
-          # make tests for each SHALL and SHOULD search param, SHALL's first
-          sequence[:searches]
-            .select { |search_param| search_param[:expectation] == 'SHALL' }
-            .each { |search_param| create_search_test(sequence, search_param) }
+          unless sequence[:delayed_sequence]
+            # make tests for each SHALL and SHOULD search param, SHALL's first
+            sequence[:searches]
+              .select { |search_param| search_param[:expectation] == 'SHALL' }
+              .each { |search_param| create_search_test(sequence, search_param) }
 
-          sequence[:searches]
-            .select { |search_param| search_param[:expectation] == 'SHOULD' }
-            .each { |search_param| create_search_test(sequence, search_param) }
+            sequence[:searches]
+              .select { |search_param| search_param[:expectation] == 'SHOULD' }
+              .each { |search_param| create_search_test(sequence, search_param) }
 
-          sequence[:search_param_descriptions]
-            .select { |_, description| description[:chain].present? }
-            .each { |search_param, _| create_chained_search_test(sequence, search_param) }
+            sequence[:search_param_descriptions]
+              .select { |_, description| description[:chain].present? }
+              .each { |search_param, _| create_chained_search_test(sequence, search_param) }
 
-          # make tests for each SHALL and SHOULD interaction
-          sequence[:interactions]
-            .select { |interaction| ['SHALL', 'SHOULD'].include? interaction[:expectation] }
-            .reject { |interaction| interaction[:code] == 'search-type' }
-            .each do |interaction|
+            # make tests for each SHALL and SHOULD interaction
+            sequence[:interactions]
+              .select { |interaction| ['SHALL', 'SHOULD'].include? interaction[:expectation] }
+              .reject { |interaction| interaction[:code] == 'search-type' }
+              .each do |interaction|
               # specific edge cases
               interaction[:code] = 'history' if interaction[:code] == 'history-instance'
               next if interaction[:code] == 'read' && sequence[:delayed_sequence]
@@ -85,21 +86,47 @@ module Inferno
               create_interaction_test(sequence, interaction)
             end
 
-          create_include_test(sequence) if sequence[:include_params].any?
-          create_revinclude_test(sequence) if sequence[:revincludes].any?
+            create_include_test(sequence) if sequence[:include_params].any?
+            create_revinclude_test(sequence) if sequence[:revincludes].any?
+          end
           create_resource_profile_test(sequence)
           create_must_support_test(sequence)
-          create_multiple_or_test(sequence)
+          create_multiple_or_test(sequence) unless sequence[:delayed_sequence]
           create_references_resolved_test(sequence)
         end
       end
 
       def mark_delayed_sequences(metadata)
         metadata[:sequences].each do |sequence|
-          sequence[:delayed_sequence] = sequence[:resource] != 'Patient' && sequence[:searches].none? { |search| search[:names].include? 'patient' }
+          non_patient_search = sequence[:resource] != 'Patient' && sequence[:searches].none? { |search| search[:names].include? 'patient' }
+          non_uscdi_resources = ['Encounter', 'Location', 'Organization', 'Practitioner', 'PractitionerRole', 'Provenance']
+          sequence[:delayed_sequence] = non_patient_search || non_uscdi_resources.include?(sequence[:resource])
         end
         metadata[:delayed_sequences] = metadata[:sequences].select { |seq| seq[:delayed_sequence] }
         metadata[:non_delayed_sequences] = metadata[:sequences].reject { |seq| seq[:resource] == 'Patient' || seq[:delayed_sequence] }
+      end
+
+      def find_delayed_references(metadata)
+        delayed_profiles = metadata[:sequences]
+          .select { |sequence| sequence[:delayed_sequence] }
+          .map { |sequence| sequence[:profile] }
+
+        metadata[:sequences].each do |sequence|
+          delayed_sequence_references = sequence[:references]
+            .select { |ref_def| (ref_def[:profiles] & delayed_profiles).present? }
+            .map do |ref_def|
+            delayed_resources = (ref_def[:profiles] & delayed_profiles).map do |profile|
+              profile_sequence = metadata[:sequences].find { |seq| seq[:profile] == profile }
+              profile_sequence[:resource]
+            end
+            delayed_profile_intersection = {
+              path: ref_def[:path].gsub(sequence[:resource] + '.', ''),
+              resources: delayed_resources
+            }
+            delayed_profile_intersection
+          end
+          sequence[:delayed_references_constant] = "DELAYED_REFERENCES = #{structure_to_string(delayed_sequence_references)}.freeze"
+        end
       end
 
       def find_first_search(sequence)
@@ -110,9 +137,18 @@ module Inferno
       def generate_sequence(sequence)
         puts "Generating #{sequence[:name]}\n"
         file_name = sequence_out_path + '/' + sequence[:name].downcase + '_sequence.rb'
-
         template = ERB.new(File.read(File.join(__dir__, 'templates/sequence.rb.erb')))
         output =   template.result_with_hash(sequence)
+        FileUtils.mkdir_p(sequence_out_path) unless File.directory?(sequence_out_path)
+        File.write(file_name, output)
+
+        generate_profile_definition(sequence)
+      end
+
+      def generate_profile_definition(sequence)
+        file_name = sequence_out_path + '/profile_definitions/' + sequence[:name].downcase + '_definitions.rb'
+        template = ERB.new(File.read(File.join(__dir__, 'templates/sequence_definition.rb.erb')))
+        output = template.result_with_hash(sequence)
         FileUtils.mkdir_p(sequence_out_path) unless File.directory?(sequence_out_path)
         File.write(file_name, output)
       end
@@ -124,7 +160,7 @@ module Inferno
           key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html',
-          description: "Reference to #{sequence[:resource]} can be resolved and read."
+          description: "This test will attempt to Reference to #{sequence[:resource]} can be resolved and read."
         }
 
         read_test[:test_code] = %(
@@ -152,15 +188,21 @@ module Inferno
       end
 
       def create_include_test(sequence)
+        first_search = find_first_search(sequence)
+        return if first_search.blank?
+
         include_test = {
-          tests_that: "Server returns the appropriate resource from the following _includes: #{sequence[:include_params].join(', ')}",
+          tests_that: "Server returns the appropriate resource from the following #{first_search[:names].join(' + ')} +  _includes: #{sequence[:include_params].join(', ')}",
           index: sequence[:tests].length + 1,
           optional: true,
           link: 'https://www.hl7.org/fhir/search.html#include',
-          description: "A Server SHOULD be capable of supporting the following _includes: #{sequence[:include_params].join(', ')}",
+          description: %(
+            A Server SHOULD be capable of supporting the following _includes: #{sequence[:include_params].join(', ')}
+            This test will perform a search for #{first_search[:names].join(' + ')} + each of the following  _includes: #{sequence[:include_params].join(', ')}
+            The test will fail unless resources for #{sequence[:include_params].join(', ')} are returned in their search.
+          ),
           test_code: ''
         }
-        first_search = find_first_search(sequence)
         search_params = first_search.nil? ? 'search_params = {}' : get_search_params(first_search[:names], sequence)
         resolve_param_from_resource = search_params.include? 'get_value_for_search_param'
         if resolve_param_from_resource && !sequence[:delayed_sequence]
@@ -203,7 +245,11 @@ module Inferno
           tests_that: "Server returns Provenance resources from #{sequence[:resource]} search by #{first_search[:names].join(' + ')} + _revIncludes: Provenance:target",
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/search.html#revinclude',
-          description: "A Server SHALL be capable of supporting the following _revincludes: #{sequence[:revincludes].join(', ')}",
+          description: %(
+            A Server SHALL be capable of supporting the following _revincludes: #{sequence[:revincludes].join(', ')}.\n
+            This test will perform a search for #{first_search[:names].join(' + ')} + _revIncludes: Provenance:target and will pass
+            if a Provenance resource is found in the reponse.
+          ),
           test_code: %(
             skip_if_known_revinclude_not_supported('#{sequence[:resource]}', 'Provenance:target')
             #{skip_if_not_found_code(sequence)}
@@ -238,7 +284,7 @@ module Inferno
         revinclude_test[:test_code] += %(
           #{'end' unless sequence[:delayed_sequence]}
           save_resource_references(versioned_resource_class('#{resource_name}'), #{resource_variable})
-          save_delayed_sequence_references(#{resource_variable})
+          save_delayed_sequence_references(#{resource_variable}, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
           #{skip_if_could_not_resolve(first_search[:names]) if resolve_param_from_resource && !sequence[:delayed_sequence]}
           skip 'No Provenance resources were returned from this search' unless #{resource_variable}.present?
         )
@@ -325,19 +371,23 @@ module Inferno
       def create_search_test(sequence, search_param)
         test_key = :"search_by_#{search_param[:names].map(&:underscore).join('_')}"
         search_test = {
-          tests_that: "Server returns expected results from #{sequence[:resource]} search by #{search_param[:names].join('+')}",
+          tests_that: "Server returns valid results for #{sequence[:resource]} search by #{search_param[:names].join('+')}.",
           key: test_key,
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html',
           optional: search_param[:expectation] != 'SHALL',
           description: %(
-            A server #{search_param[:expectation]} support searching by #{search_param[:names].join('+')} on the #{sequence[:resource]} resource
-          )
+            A server #{search_param[:expectation]} support searching by #{search_param[:names].join('+')} on the #{sequence[:resource]} resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
+            )
         }
 
         find_comparators(search_param[:names], sequence).each do |param, comparators|
           search_test[:description] += %(
-              including support for these #{param} comparators: #{comparators.keys.join(', ')})
+              This will also test support for these #{param} comparators: #{comparators.keys.join(', ')}. Comparator values are created by taking
+              a #{param} value from a resource returned in the first search of this sequence and adding/subtracting a day. For example, a date
+              of 05/05/2020 will create comparator values of lt2020-05-06 and gt2020-05-04
+              )
         end
 
         if sequence[:resource] == 'MedicationRequest'
@@ -345,11 +395,12 @@ module Inferno
             If any MedicationRequest resources use external references to
             Medications, the search will be repeated with
             _include=MedicationRequest:medication.
-          )
+            )
         end
 
         is_first_search = search_param == find_first_search(sequence)
 
+        search_test[:description] += 'Because this is the first search of the sequence, resources in the response will be used for subsequent tests.' if is_first_search
         comparator_search_code = get_comparator_searches(search_param[:names], sequence)
 
         search_test[:test_code] =
@@ -527,14 +578,13 @@ module Inferno
           test_code: '',
           description: %(
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all #{sequence[:resource]} resources returned from prior searches to see if any of them provide the following must support elements:
+            This will look through the #{sequence[:resource]} resources found previously for the following must support elements:
           )
         }
 
         sequence[:must_supports][:elements].each do |element|
           test[:description] += %(
-            #{element[:path]}
-          )
+            * #{element[:path]})
           # class is mapped to local_class in fhir_models. Update this after it
           # has been added to the description so that the description contains
           # the original path
@@ -544,15 +594,13 @@ module Inferno
         must_support_extensions = sequence[:must_supports][:extensions]
         must_support_extensions.each do |extension|
           test[:description] += %(
-            #{extension[:id]}
-          )
+            * #{extension[:id]})
         end
 
         must_support_slices = sequence[:must_supports][:slices]
         must_support_slices.each do |slice|
           test[:description] += %(
-            #{slice[:name]}
-          )
+            * #{slice[:name]})
         end
 
         sequence[:must_supports][:elements].each { |must_support| must_support[:path]&.gsub!('[x]', '') }
@@ -560,12 +608,13 @@ module Inferno
 
         test[:test_code] += %(
           #{skip_if_not_found_code(sequence)}
+          must_supports = #{sequence[:class_name]}Definitions::MUST_SUPPORTS
         )
         resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
 
         if sequence[:must_supports][:extensions].present?
           test[:test_code] += %(
-            missing_must_support_extensions = MUST_SUPPORTS[:extensions].reject do |must_support_extension|
+            missing_must_support_extensions = must_supports[:extensions].reject do |must_support_extension|
               #{resource_array}&.any? do |resource|
                 resource.extension.any? { |extension| extension.url == must_support_extension[:url] }
               end
@@ -575,7 +624,7 @@ module Inferno
 
         if sequence[:must_supports][:slices].present?
           test[:test_code] += %(
-            missing_slices = MUST_SUPPORTS[:slices].reject do |slice|
+            missing_slices = must_supports[:slices].reject do |slice|
               @#{sequence[:resource].underscore}_ary#{'&.values&.flatten' unless sequence[:delayed_sequence]}&.any? do |resource|
                 slice_found = find_slice(resource, slice[:path], slice[:discriminator])
                 slice_found.present?
@@ -586,7 +635,7 @@ module Inferno
 
         if sequence[:must_supports][:elements].present?
           test[:test_code] += %(
-            missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+            missing_must_support_elements = must_supports[:elements].reject do |element|
               #{resource_array}&.any? do |resource|
                 value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
                 value_found.present?
@@ -640,13 +689,15 @@ module Inferno
       def create_resource_profile_test(sequence)
         test_key = :validate_resources
         test = {
-          tests_that: "#{sequence[:resource]} resources returned conform to US Core R4 profiles",
+          tests_that: "#{sequence[:resource]} resources returned from previous search conform to the #{sequence[:profile_name]}.",
           key: test_key,
           index: sequence[:tests].length + 1,
           link: sequence[:profile],
           description: %(
-            This test checks if the resources returned from prior searches conform to the US Core profiles.
-            This includes checking for missing data elements and valueset verification.
+            This test verifies resources returned from the first search conform to the [US Core #{sequence[:resource]} Profile](#{sequence[:profile]}).
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
+            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
+            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
           )
         }
         profile_uri = validation_profile_uri(sequence)
@@ -734,7 +785,7 @@ module Inferno
 
         if sequence[:resource] == 'MedicationRequest'
           medication_test = {
-            tests_that: 'Medication resources returned conform to US Core R4 profiles',
+            tests_that: 'Medication resources returned conform to US Core v3.1.0 profiles',
             key: :validate_medication_resources,
             index: sequence[:tests].length + 1,
             link: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest',
@@ -769,14 +820,23 @@ module Inferno
 
       def create_multiple_or_test(sequence)
         test = {
-          tests_that: 'The server returns expected results when parameters use composite-or',
+          tests_that: 'The server returns results when parameters use composite-or',
           index: sequence[:tests].length + 1,
           link: sequence[:profile],
-          test_code: ''
+          test_code: '',
+          description: %(
+            This test will check if the server is capable of returning results for composite search parameters.
+            The test will look through the resources returned from the first search to identify two different values
+            to use for the parameter being tested. If no two different values can be found, then the test is skipped.
+            [FHIR Composite Search Guideline](https://www.hl7.org/fhir/search.html#combining)
+          )
         }
 
         multiple_or_params = get_multiple_or_params(sequence)
 
+        test[:description] += %(
+          Parameters being tested: #{multiple_or_params.join(', ')}
+        )
         multiple_or_params.each do |param|
           multiple_or_search = sequence[:searches].find { |search| (search[:names].include? param) && search[:expectation] == 'SHALL' }
           next if multiple_or_search.blank?
@@ -824,10 +884,13 @@ module Inferno
 
       def create_references_resolved_test(sequence)
         test = {
-          tests_that: "Every reference within #{sequence[:resource]} resource is valid and can be read.",
+          tests_that: "Every reference within #{sequence[:resource]} resources can be read.",
           index: sequence[:tests].length + 1,
           link: 'http://hl7.org/fhir/references.html',
-          description: 'This test checks if references found in resources from prior searches can be resolved.'
+          description: %(
+            This test will attempt to read the first 50 reference found in the resources from the first search.
+            The test will fail if Inferno fails to read any of those references.
+          )
         }
 
         resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
@@ -915,7 +978,7 @@ module Inferno
               .find { |resource| resource.resourceType == '#{sequence[:resource]}' }
 
             save_resource_references(#{save_resource_references_arguments})
-            save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary)
+            save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
             validate_reply_entries(search_result_resources, search_params)
           )
         else
@@ -955,7 +1018,7 @@ module Inferno
               @resources_found = @#{sequence[:resource].underscore}.present?
 
               save_resource_references(#{save_resource_references_arguments})
-              save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient])
+              save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient], #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
               validate_reply_entries(@#{sequence[:resource].underscore}_ary[patient], search_params)
             end
 
@@ -1012,7 +1075,7 @@ module Inferno
               #{'values_found += 1' if find_two_values}
 
               save_resource_references(#{save_resource_references_arguments})
-              save_delayed_sequence_references(resources_returned)
+              save_delayed_sequence_references(resources_returned, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
               validate_reply_entries(resources_returned, search_params)
               #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
               break#{' if values_found == 2' if find_two_values}

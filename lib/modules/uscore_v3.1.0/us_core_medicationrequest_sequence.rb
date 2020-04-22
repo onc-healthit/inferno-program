@@ -1,15 +1,64 @@
 # frozen_string_literal: true
 
 require_relative './data_absent_reason_checker'
+require_relative './profile_definitions/us_core_medicationrequest_definitions'
 
 module Inferno
   module Sequence
     class USCore310MedicationrequestSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::USCore310ProfileDefinitions
 
-      title 'MedicationRequest'
+      title 'MedicationRequest Tests'
 
-      description 'Verify that MedicationRequest resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify support for the server capabilities required by the US Core MedicationRequest Profile.'
+
+      details %(
+        # Background
+
+        The US Core #{title} sequence verifies that the system under test is able to provide correct responses
+        for MedicationRequest queries.  These queries must contain resources conforming to US Core MedicationRequest Profile as specified
+        in the US Core v3.1.0 Implementation Guide.
+
+        # Testing Methodology
+
+
+        ## Searching
+        This test sequence will first perform each required search associated with this resource. This sequence will perform searches
+        with the following parameters:
+
+          * patient, intent
+          * patient, intent, status
+
+        ### Search Parameters
+        The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
+        parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is
+        performed by looking for an existing `Patient.identifier` from any of the resources returned in the `_id` search. If a
+        value cannot be found this way, the search is skipped.
+
+        ### Search Validation
+        Inferno will retrieve up to the first 20 bundle pages of the reply for MedicationRequest resources and save them
+        for subsequent tests.
+        Each of these resources is then checked to see if it matches the searched parameters in accordance
+        with [FHIR search guidelines](https://www.hl7.org/fhir/search.html). The test will fail, for example, if a patient search
+        for gender=male returns a female patient.
+
+        ## Must Support
+        Each profile has a list of elements marked as "must support". This test sequence expects to see each of these elements
+        at least once. If at least one cannot be found, the test will fail. The test will look through the `#{title.gsub(/\s+/, '')}`
+        resources found for these elements.
+
+        ## Profile Validation
+        Each resource returned from the first search is expected to conform to the [US Core MedicationRequest Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest).
+        Each element is checked against teminology binding and cardinality requirements.
+
+        Elements with a required binding is validated against its bound valueset. If the code/system in the element is not part
+        of the valueset, then the test will fail.
+
+        ## Reference Validation
+        Each reference within the resources found from the first search must resolve. The test will attempt to read each reference found
+        and will fail if any attempted read fails.
+      )
 
       test_id_prefix 'USCMR'
 
@@ -109,66 +158,26 @@ module Inferno
         reply
       end
 
-      details %(
-        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-      )
-
       def patient_ids
         @instance.patient_ids.split(',').map(&:strip)
       end
 
       @resources_found = false
 
-      MUST_SUPPORTS = {
-        extensions: [],
-        slices: [],
-        elements: [
-          {
-            path: 'status'
-          },
-          {
-            path: 'intent'
-          },
-          {
-            path: 'reported'
-          },
-          {
-            path: 'medication'
-          },
-          {
-            path: 'subject'
-          },
-          {
-            path: 'encounter'
-          },
-          {
-            path: 'authoredOn'
-          },
-          {
-            path: 'requester'
-          },
-          {
-            path: 'dosageInstruction'
-          },
-          {
-            path: 'dosageInstruction.text'
-          }
-        ]
-      }.freeze
-
       test :search_by_patient_intent do
         metadata do
           id '01'
-          name 'Server returns expected results from MedicationRequest search by patient+intent'
+          name 'Server returns valid results for MedicationRequest search by patient+intent.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
-            A server SHALL support searching by patient+intent on the MedicationRequest resource
+            A server SHALL support searching by patient+intent on the MedicationRequest resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
             If any MedicationRequest resources use external references to
             Medications, the search will be repeated with
             _include=MedicationRequest:medication.
-
+            Because this is the first search of the sequence, resources in the response will be used for subsequent tests.
           )
           versions :r4
         end
@@ -197,7 +206,7 @@ module Inferno
             @medication_request_ary[patient] += resources_returned
 
             save_resource_references(versioned_resource_class('MedicationRequest'), @medication_request_ary[patient])
-            save_delayed_sequence_references(resources_returned)
+            save_delayed_sequence_references(resources_returned, USCore310MedicationrequestSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
             test_medication_inclusion(@medication_request_ary[patient], search_params)
             break
@@ -209,11 +218,12 @@ module Inferno
       test :search_by_patient_intent_status do
         metadata do
           id '02'
-          name 'Server returns expected results from MedicationRequest search by patient+intent+status'
+          name 'Server returns valid results for MedicationRequest search by patient+intent+status.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
-            A server SHALL support searching by patient+intent+status on the MedicationRequest resource
+            A server SHALL support searching by patient+intent+status on the MedicationRequest resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
             If any MedicationRequest resources use external references to
             Medications, the search will be repeated with
@@ -251,12 +261,13 @@ module Inferno
       test :search_by_patient_intent_encounter do
         metadata do
           id '03'
-          name 'Server returns expected results from MedicationRequest search by patient+intent+encounter'
+          name 'Server returns valid results for MedicationRequest search by patient+intent+encounter.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD support searching by patient+intent+encounter on the MedicationRequest resource
+            A server SHOULD support searching by patient+intent+encounter on the MedicationRequest resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
             If any MedicationRequest resources use external references to
             Medications, the search will be repeated with
@@ -296,14 +307,18 @@ module Inferno
       test :search_by_patient_intent_authoredon do
         metadata do
           id '04'
-          name 'Server returns expected results from MedicationRequest search by patient+intent+authoredon'
+          name 'Server returns valid results for MedicationRequest search by patient+intent+authoredon.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD support searching by patient+intent+authoredon on the MedicationRequest resource
+            A server SHOULD support searching by patient+intent+authoredon on the MedicationRequest resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
-              including support for these authoredon comparators: gt, lt, le, ge
+              This will also test support for these authoredon comparators: gt, lt, le, ge. Comparator values are created by taking
+              a authoredon value from a resource returned in the first search of this sequence and adding/subtracting a day. For example, a date
+              of 05/05/2020 will create comparator values of lt2020-05-06 and gt2020-05-04
+
             If any MedicationRequest resources use external references to
             Medications, the search will be repeated with
             _include=MedicationRequest:medication.
@@ -392,13 +407,17 @@ module Inferno
         validate_history_reply(@medication_request, versioned_resource_class('MedicationRequest'))
       end
 
-      test 'Server returns the appropriate resource from the following _includes: MedicationRequest:medication' do
+      test 'Server returns the appropriate resource from the following patient + intent +  _includes: MedicationRequest:medication' do
         metadata do
           id '08'
           link 'https://www.hl7.org/fhir/search.html#include'
           optional
           description %(
+
             A Server SHOULD be capable of supporting the following _includes: MedicationRequest:medication
+            This test will perform a search for patient + intent + each of the following  _includes: MedicationRequest:medication
+            The test will fail unless resources for MedicationRequest:medication are returned in their search.
+
           )
           versions :r4
         end
@@ -431,7 +450,12 @@ module Inferno
           id '09'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
-            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
+
+            A Server SHALL be capable of supporting the following _revincludes: Provenance:target.
+
+            This test will perform a search for patient + intent + _revIncludes: Provenance:target and will pass
+            if a Provenance resource is found in the reponse.
+
           )
           versions :r4
         end
@@ -463,7 +487,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results)
+        save_delayed_sequence_references(provenance_results, USCore310MedicationrequestSequenceDefinitions::DELAYED_REFERENCES)
         skip 'Could not resolve all parameters (patient, intent) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -471,12 +495,14 @@ module Inferno
       test :validate_resources do
         metadata do
           id '10'
-          name 'MedicationRequest resources returned conform to US Core R4 profiles'
+          name 'MedicationRequest resources returned from previous search conform to the US Core MedicationRequest Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
 
-            This test checks if the resources returned from prior searches conform to the US Core profiles.
-            This includes checking for missing data elements and valueset verification.
+            This test verifies resources returned from the first search conform to the [US Core MedicationRequest Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest).
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
+            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
+            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
           )
           versions :r4
@@ -554,7 +580,7 @@ module Inferno
       test :validate_medication_resources do
         metadata do
           id '11'
-          name 'Medication resources returned conform to US Core R4 profiles'
+          name 'Medication resources returned conform to US Core v3.1.0 profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
 
@@ -579,35 +605,26 @@ module Inferno
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all MedicationRequest resources returned from prior searches to see if any of them provide the following must support elements:
+            This will look through the MedicationRequest resources found previously for the following must support elements:
 
-            status
-
-            intent
-
-            reported[x]
-
-            medication[x]
-
-            subject
-
-            encounter
-
-            authoredOn
-
-            requester
-
-            dosageInstruction
-
-            dosageInstruction.text
-
+            * status
+            * intent
+            * reported[x]
+            * medication[x]
+            * subject
+            * encounter
+            * authoredOn
+            * requester
+            * dosageInstruction
+            * dosageInstruction.text
           )
           versions :r4
         end
 
         skip_if_not_found(resource_type: 'MedicationRequest', delayed: false)
+        must_supports = USCore310MedicationrequestSequenceDefinitions::MUST_SUPPORTS
 
-        missing_must_support_elements = MUST_SUPPORTS[:elements].reject do |element|
+        missing_must_support_elements = must_supports[:elements].reject do |element|
           @medication_request_ary&.values&.flatten&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
             value_found.present?
@@ -620,11 +637,18 @@ module Inferno
         @instance.save!
       end
 
-      test 'The server returns expected results when parameters use composite-or' do
+      test 'The server returns results when parameters use composite-or' do
         metadata do
           id '13'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
+
+            This test will check if the server is capable of returning results for composite search parameters.
+            The test will look through the resources returned from the first search to identify two different values
+            to use for the parameter being tested. If no two different values can be found, then the test is skipped.
+            [FHIR Composite Search Guideline](https://www.hl7.org/fhir/search.html#combining)
+
+          Parameters being tested: status
 
           )
           versions :r4
@@ -663,12 +687,15 @@ module Inferno
         skip 'Cannot find second value for status to perform a multipleOr search' unless found_second_val
       end
 
-      test 'Every reference within MedicationRequest resource is valid and can be read.' do
+      test 'Every reference within MedicationRequest resources can be read.' do
         metadata do
           id '14'
           link 'http://hl7.org/fhir/references.html'
           description %(
-            This test checks if references found in resources from prior searches can be resolved.
+
+            This test will attempt to read the first 50 reference found in the resources from the first search.
+            The test will fail if Inferno fails to read any of those references.
+
           )
           versions :r4
         end

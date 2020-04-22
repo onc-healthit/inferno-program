@@ -39,10 +39,9 @@ test_sets:
           - ONCAccessVerifyUnrestrictedSequence
       - name: Limited Scope App
         overview: |
-          This scenario demonstrates the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
-          refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
-          on the patient in context.  The access token is then refreshed, and the Patient resource is read using the new
-          access token to ensure that the refresh was successful.  Finally, the authentication information provided by OpenID Connect is decoded and validated.
+          This scenario demonstrates the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client 
+          with limited access granted to the application.  The tester is expected to grant the application access to a subset of the relevant resource
+          types, and Inferno verifies that the application is granted access consistent with that subset.
         input_instructions: |
           The purpose of this test is to demonstrate that an app can be restricted to a subset of scopes.  This can either be done by having the app
           request a subset of resource type scopes to be read, or by having the user select a subset of resources to grant an app access to during launch.
@@ -112,7 +111,6 @@ test_sets:
           - USCore310DiagnosticreportNoteSequence
           - USCore310DiagnosticreportLabSequence
           - USCore310DocumentreferenceSequence
-          - USCore310EncounterSequence
           - USCore310GoalSequence
           - USCore310ImmunizationSequence
           - USCore310MedicationrequestSequence
@@ -130,10 +128,9 @@ test_sets:
           - USCore310ResprateSequence
           - USCore310ProcedureSequence
           - USCoreR4ClinicalNotesSequence
-          - USCore310LocationSequence
+          - USCore310EncounterSequence
           - USCore310OrganizationSequence
           - USCore310PractitionerSequence
-          - USCore310PractitionerroleSequence
           - USCore310ProvenanceSequence
           - USCoreR4DataAbsentReasonSequence
       - name: Multi-Patient Query

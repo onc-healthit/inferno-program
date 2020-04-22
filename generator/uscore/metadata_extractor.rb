@@ -75,12 +75,13 @@ module Inferno
           test_id_prefix: test_id_prefix,
           resource: resource['type'],
           profile: profile,
+          profile_name: profile_json['title'],
           title: profile_title,
           interactions: [],
           operations: [],
           searches: [],
           search_param_descriptions: {},
-          element_descriptions: {},
+          references: [],
           must_supports: {
             extensions: [],
             slices: [],
@@ -113,7 +114,7 @@ module Inferno
             add_must_support_elements(profile_definition, new_sequence)
             add_terminology_bindings(profile_definition, new_sequence)
             add_search_param_descriptions(profile_definition, new_sequence)
-            add_element_definitions(profile_definition, new_sequence)
+            add_references(profile_definition, new_sequence)
 
             metadata[:sequences] << new_sequence
           end
@@ -440,18 +441,13 @@ module Inferno
         param_metadata[:values] = fhir_metadata['valid_codes'].values.flatten if use_valid_codes
       end
 
-      def add_element_definitions(profile_definition, sequence)
-        profile_definition['snapshot']['element'].each do |element|
-          next if element['type'].nil? # base profile
-
-          path = element['id']
-          if path.include? '[x]'
-            element['type'].each do |type|
-              sequence[:element_descriptions][path.gsub('[x]', type['code']).downcase.to_sym] = { type: type['code'], contains_multiple: element['max'] == '*' }
-            end
-          else
-            sequence[:element_descriptions][path.downcase.to_sym] = { type: element['type'].first['code'], contains_multiple: element['max'] == '*' }
-          end
+      def add_references(profile_definition, sequence)
+        references = profile_definition['snapshot']['element'].select { |el| el['type'].present? && el['type'].first['code'] == 'Reference' }
+        sequence[:references] = references.map do |ref_def|
+          {
+            path: ref_def['path'],
+            profiles: ref_def['type'].first['targetProfile']
+          }
         end
       end
 
