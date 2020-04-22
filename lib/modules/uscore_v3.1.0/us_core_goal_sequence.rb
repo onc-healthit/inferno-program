@@ -9,9 +9,55 @@ module Inferno
       include Inferno::DataAbsentReasonChecker
       include Inferno::USCore310ProfileDefinitions
 
-      title 'Goal'
+      title 'Goal Tests'
 
-      description 'Verify that Goal resources on the FHIR server follow the US Core Implementation Guide'
+      description 'Verify support for the server capabilities required by the US Core Goal Profile.'
+
+      details %(
+        # Background
+
+        The US Core #{title} sequence verifies that the system under test is able to provide correct responses
+        for Goal queries.  These queries must contain resources conforming to US Core Goal Profile as specified
+        in the US Core v3.1.0 Implementation Guide.
+
+        # Testing Methodology
+
+
+        ## Searching
+        This test sequence will first perform each required search associated with this resource. This sequence will perform searches
+        with the following parameters:
+
+          * patient
+
+        ### Search Parameters
+        The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
+        parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is
+        performed by looking for an existing `Patient.identifier` from any of the resources returned in the `_id` search. If a
+        value cannot be found this way, the search is skipped.
+
+        ### Search Validation
+        Inferno will retrieve up to the first 20 bundle pages of the reply for Goal resources and save them
+        for subsequent tests.
+        Each of these resources is then checked to see if it matches the searched parameters in accordance
+        with [FHIR search guidelines](https://www.hl7.org/fhir/search.html). The test will fail, for example, if a patient search
+        for gender=male returns a female patient.
+
+        ## Must Support
+        Each profile has a list of elements marked as "must support". This test sequence expects to see each of these elements
+        at least once. If at least one cannot be found, the test will fail. The test will look through the `#{title.gsub(/\s+/, '')}`
+        resources found for these elements.
+
+        ## Profile Validation
+        Each resource returned from the first search is expected to conform to the [US Core Goal Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal).
+        Each element is checked against teminology binding and cardinality requirements.
+
+        Elements with a required binding is validated against its bound valueset. If the code/system in the element is not part
+        of the valueset, then the test will fail.
+
+        ## Reference Validation
+        Each reference within the resources found from the first search must resolve. The test will attempt to read each reference found
+        and will fail if any attempted read fails.
+      )
 
       test_id_prefix 'USCG'
 
@@ -70,10 +116,6 @@ module Inferno
         reply
       end
 
-      details %(
-        The #{title} Sequence tests `#{title.gsub(/\s+/, '')}` resources associated with the provided patient.
-      )
-
       def patient_ids
         @instance.patient_ids.split(',').map(&:strip)
       end
@@ -83,12 +125,13 @@ module Inferno
       test :search_by_patient do
         metadata do
           id '01'
-          name 'Server returns expected results from Goal search by patient'
+          name 'Server returns valid results for Goal search by patient.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
 
-            A server SHALL support searching by patient on the Goal resource
-
+            A server SHALL support searching by patient on the Goal resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
+            Because this is the first search of the sequence, resources in the response will be used for subsequent tests.
           )
           versions :r4
         end
@@ -128,14 +171,18 @@ module Inferno
       test :search_by_patient_target_date do
         metadata do
           id '02'
-          name 'Server returns expected results from Goal search by patient+target-date'
+          name 'Server returns valid results for Goal search by patient+target-date.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD support searching by patient+target-date on the Goal resource
+            A server SHOULD support searching by patient+target-date on the Goal resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
-              including support for these target-date comparators: gt, lt, le, ge
+              This will also test support for these target-date comparators: gt, lt, le, ge. Comparator values are created by taking
+              a target-date value from a resource returned in the first search of this sequence and adding/subtracting a day. For example, a date
+              of 05/05/2020 will create comparator values of lt2020-05-06 and gt2020-05-04
+
           )
           versions :r4
         end
@@ -175,12 +222,13 @@ module Inferno
       test :search_by_patient_lifecycle_status do
         metadata do
           id '03'
-          name 'Server returns expected results from Goal search by patient+lifecycle-status'
+          name 'Server returns valid results for Goal search by patient+lifecycle-status.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
-            A server SHOULD support searching by patient+lifecycle-status on the Goal resource
+            A server SHOULD support searching by patient+lifecycle-status on the Goal resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
           )
           versions :r4
@@ -267,7 +315,12 @@ module Inferno
           id '07'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
-            A Server SHALL be capable of supporting the following _revincludes: Provenance:target
+
+            A Server SHALL be capable of supporting the following _revincludes: Provenance:target.
+
+            This test will perform a search for patient + _revIncludes: Provenance:target and will pass
+            if a Provenance resource is found in the reponse.
+
           )
           versions :r4
         end
@@ -300,12 +353,14 @@ module Inferno
       test :validate_resources do
         metadata do
           id '08'
-          name 'Goal resources returned conform to US Core R4 profiles'
+          name 'Goal resources returned from previous search conform to the US Core Goal Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal'
           description %(
 
-            This test checks if the resources returned from prior searches conform to the US Core profiles.
-            This includes checking for missing data elements and valueset verification.
+            This test verifies resources returned from the first search conform to the [US Core Goal Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal).
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
+            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
+            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
 
           )
           versions :r4
@@ -369,18 +424,13 @@ module Inferno
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
-            This will look through all Goal resources returned from prior searches to see if any of them provide the following must support elements:
+            This will look through the Goal resources found previously for the following must support elements:
 
-            lifecycleStatus
-
-            description
-
-            subject
-
-            target
-
-            Goal.target.due[x]:dueDate
-
+            * lifecycleStatus
+            * description
+            * subject
+            * target
+            * Goal.target.due[x]:dueDate
           )
           versions :r4
         end
@@ -410,12 +460,15 @@ module Inferno
         @instance.save!
       end
 
-      test 'Every reference within Goal resource is valid and can be read.' do
+      test 'Every reference within Goal resources can be read.' do
         metadata do
           id '10'
           link 'http://hl7.org/fhir/references.html'
           description %(
-            This test checks if references found in resources from prior searches can be resolved.
+
+            This test will attempt to read the first 50 reference found in the resources from the first search.
+            The test will fail if Inferno fails to read any of those references.
+
           )
           versions :r4
         end
