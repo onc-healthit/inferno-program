@@ -146,7 +146,7 @@ module Inferno
           LoggedRestClient.record_response(request_for_log, response_for_log)
 
           index, errors = error_collection.first
-          assert false, "#{error_collection.size} / #{line_count} #{klass} resources failed profile validation. The first failed is #{klass} ##{index}: #{errors}"
+          assert false, "#{error_collection.size} / #{line_count} #{klass} resources failed profile validation. The first failed resource is #{klass} ##{index}: \n\n#{errors[:errors].join("\n")}"
         end
 
         assert_must_supports_found(must_supports) if validate_all || lines_to_validate.positive?
