@@ -68,13 +68,15 @@ module Inferno
         case property
 
         when 'clinical-status'
+          values_found = resolve_path(resource, 'clinicalStatus.coding.code')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'clinicalStatus.coding.code') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'clinical-status on resource does not match clinical-status requested'
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found, "clinical-status in AllergyIntolerance/#{resource.id} (#{values_found}) does not match clinical-status requested (#{value})"
 
         when 'patient'
-          value_found = resolve_element_from_path(resource, 'patient.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found.present?, 'patient on resource does not match patient requested'
+          values_found = resolve_path(resource, 'patient.reference')
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          assert match_found, "patient in AllergyIntolerance/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         end
       end

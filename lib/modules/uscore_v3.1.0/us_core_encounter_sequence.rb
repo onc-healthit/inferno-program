@@ -55,37 +55,44 @@ module Inferno
         case property
 
         when '_id'
+          values_found = resolve_path(resource, 'id')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'id') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, '_id on resource does not match _id requested'
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found, "_id in Encounter/#{resource.id} (#{values_found}) does not match _id requested (#{value})"
 
         when 'class'
+          values_found = resolve_path(resource, 'local_class.code')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'local_class.code') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'class on resource does not match class requested'
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found, "class in Encounter/#{resource.id} (#{values_found}) does not match class requested (#{value})"
 
         when 'date'
-          value_found = resolve_element_from_path(resource, 'period') { |date| validate_date_search(value, date) }
-          assert value_found.present?, 'date on resource does not match date requested'
+          values_found = resolve_path(resource, 'period')
+          match_found = values_found.any? { |date| validate_date_search(value, date) }
+          assert match_found, "date in Encounter/#{resource.id} (#{values_found}) does not match date requested (#{value})"
 
         when 'identifier'
+          values_found = resolve_path(resource, 'identifier.value')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'identifier.value') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'identifier on resource does not match identifier requested'
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found, "identifier in Encounter/#{resource.id} (#{values_found}) does not match identifier requested (#{value})"
 
         when 'patient'
-          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found.present?, 'patient on resource does not match patient requested'
+          values_found = resolve_path(resource, 'subject.reference')
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          assert match_found, "patient in Encounter/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'status'
+          values_found = resolve_path(resource, 'status')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'status on resource does not match status requested'
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found, "status in Encounter/#{resource.id} (#{values_found}) does not match status requested (#{value})"
 
         when 'type'
+          values_found = resolve_path(resource, 'type.coding.code')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'type.coding.code') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'type on resource does not match type requested'
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found, "type in Encounter/#{resource.id} (#{values_found}) does not match type requested (#{value})"
 
         end
       end

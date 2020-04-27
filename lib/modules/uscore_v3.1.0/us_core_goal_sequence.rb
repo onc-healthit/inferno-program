@@ -68,17 +68,20 @@ module Inferno
         case property
 
         when 'lifecycle-status'
+          values_found = resolve_path(resource, 'lifecycleStatus')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'lifecycleStatus') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'lifecycle-status on resource does not match lifecycle-status requested'
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found, "lifecycle-status in Goal/#{resource.id} (#{values_found}) does not match lifecycle-status requested (#{value})"
 
         when 'patient'
-          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found.present?, 'patient on resource does not match patient requested'
+          values_found = resolve_path(resource, 'subject.reference')
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          assert match_found, "patient in Goal/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'target-date'
-          value_found = resolve_element_from_path(resource, 'target.dueDate') { |date| validate_date_search(value, date) }
-          assert value_found.present?, 'target-date on resource does not match target-date requested'
+          values_found = resolve_path(resource, 'target.dueDate')
+          match_found = values_found.any? { |date| validate_date_search(value, date) }
+          assert match_found, "target-date in Goal/#{resource.id} (#{values_found}) does not match target-date requested (#{value})"
 
         end
       end

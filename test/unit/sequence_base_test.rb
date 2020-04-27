@@ -27,6 +27,40 @@ class SequenceBaseTest < MiniTest::Test
     @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
   end
 
+  describe '#validate_reply_entries' do
+    before do
+      @instance = Inferno::Models::TestingInstance.create
+      client = FHIR::Client.new('')
+      @sequence = Inferno::Sequence::USCore310AllergyintoleranceSequence.new(@instance, client, true)
+      allergy_intolerance_bundle = FHIR.from_contents(load_fixture(:us_core_r4_allergy_intolerance))
+      @allergy_intolerance_resource = allergy_intolerance_bundle.entry.first.resource
+    end
+
+    it 'passes if results match search params' do
+      search_params = {
+        'patient': '1234',
+        'clinical-status': 'active'
+      }
+      search_params.each do |key, value|
+        @sequence.validate_resource_item(@allergy_intolerance_resource, key.to_s, value)
+      end
+    end
+
+    it 'fails when results do not match search params' do
+      search_params = {
+        'patient': '1234',
+        'clinical-status': 'inactive'
+      }
+      error = assert_raises(Inferno::AssertionException) do
+        search_params.each do |key, value|
+          @sequence.validate_resource_item(@allergy_intolerance_resource, key.to_s, value)
+        end
+      end
+      expected_error_msg = 'clinical-status in AllergyIntolerance/SMART-AllergyIntolerance-28 (["active"]) does not match clinical-status requested (inactive)'
+      assert error.message == expected_error_msg, "expected: #{expected_error_msg}, actual: #{error.message}"
+    end
+  end
+
   describe '#save_delayed_sequence_references' do
     before do
       @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
