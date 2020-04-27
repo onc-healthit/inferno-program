@@ -584,12 +584,11 @@
              <div class="prerequisite-group-box">
 
              <%= erb(:prerequisite_field,{},{prerequisite: :bulk_jwks_url_auth,
-                    label: 'JWK Set URL (recommended)',
+                    label: 'JWK Set URL',
                     instance: instance,
                     description: %(
                       Register Inferno using this JWK Set URL to communicate keys if supported by the server.  Note that the
-                      server must be able to resolve the URL in order for this to function properly.  If the server does not
-                      support this method you may register Inferno using the JWK Set directly instead.
+                      server must be able to resolve the URL in order for this to function properly.
                     ),
                     value: instance.bulk_jwks_url_auth || "#{instance.base_url}#{base_path}/.well-known/jwks.json",
                     readonly: true
