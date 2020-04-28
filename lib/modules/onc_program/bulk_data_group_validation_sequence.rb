@@ -146,10 +146,12 @@ module Inferno
           validation_error_collection[line_count] = resource_validation_errors unless resource_validation_errors.empty?
         end
 
-        response_for_log[:body] = line_collection.join
-        LoggedRestClient.record_response(request_for_log, response_for_log)
+        unless validate_all
+          response_for_log[:body] = line_collection.join
+          LoggedRestClient.record_response(request_for_log, response_for_log)
+        end
 
-        prorcess_validation_errors(validation_error_collection, line_count, klass)
+        process_validation_errors(validation_error_collection, line_count, klass)
 
         assert_must_supports_found(must_supports) if validate_all || lines_to_validate.positive?
 
@@ -162,7 +164,7 @@ module Inferno
         line_count
       end
 
-      def prorcess_validation_errors(validation_error_collection, line_count, klass)
+      def process_validation_errors(validation_error_collection, line_count, klass)
         error_count = 0
         first_error = ''
         validation_error_collection.each do |line_number, resource_validation_errors|
