@@ -177,7 +177,7 @@ module Inferno
           @information_messages.concat(resource_validation_errors[:information].map { |e| "Line ##{line_number}: #{e}" })
         end
 
-        assert error_count.zero?, "#{error_count} / #{line_count} #{klass} resources failed profile validation. #{first_error}}"
+        assert error_count.zero?, "#{error_count} / #{line_count} #{klass} resources failed profile validation. #{first_error}"
       end
 
       def assert_must_supports_found(must_supports)
