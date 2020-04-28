@@ -237,20 +237,18 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       assert result[:lines_to_validate].zero?
     end
 
-    it 'get 0 when input is empty' do
+    it 'get validate_all when input is empty' do
       result = @sequence.get_lines_to_validate('')
-      assert !result[:validate_all]
-      assert result[:lines_to_validate].zero?
+      assert result[:validate_all]
     end
 
-    it 'get 0 when input is nil' do
+    it 'get validate_all when input is nil' do
       result = @sequence.get_lines_to_validate(nil)
-      assert !result[:validate_all]
-      assert result[:lines_to_validate].zero?
+      assert result[:validate_all]
     end
 
-    it 'get validate_all when input is *' do
-      result = @sequence.get_lines_to_validate('*')
+    it 'get validate_all when input is blank' do
+      result = @sequence.get_lines_to_validate('  ')
       assert result[:validate_all]
     end
   end

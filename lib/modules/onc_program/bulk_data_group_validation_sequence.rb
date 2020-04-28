@@ -41,19 +41,24 @@ module Inferno
                                       bulk_lines_to_validate = @instance.bulk_lines_to_validate)
         skip 'Bulk Data Server response does not have output data' unless output.present?
 
-        lines_to_validate = get_lines_to_validate(bulk_lines_to_validate)
+        lines_to_validate_parameter = get_lines_to_validate(bulk_lines_to_validate)
 
         file = output.find { |item| item['type'] == klass }
 
         skip "Bulk Data Server export does not have #{klass} data" if file.nil?
 
-        success_count = check_file_request(file, klass, lines_to_validate[:validate_all], lines_to_validate[:lines_to_validate], must_supports)
+        validate_all = lines_to_validate_parameter[:validate_all]
+        lines_to_validate = lines_to_validate_parameter[:lines_to_validate]
+
+        omit 'Validate has been omitted because line_to_validate is 0' if !validate_all && lines_to_validate.zero? && klass != 'Patient'
+
+        success_count = check_file_request(file, klass, validate_all, lines_to_validate, must_supports)
 
         pass "Successfully validated #{success_count} resource(s)."
       end
 
       def get_lines_to_validate(input)
-        if input.present? && input == '*'
+        if input.nil? || input.strip.empty?
           validate_all = true
         else
           lines_to_validate = input.to_i
@@ -72,7 +77,7 @@ module Inferno
         @patient_ids_seen = Set.new if klass == 'Patient'
 
         line_count = 0
-        error_collection = {}
+        validation_error_collection = {}
         line_collection = []
 
         request_for_log = {
@@ -106,13 +111,13 @@ module Inferno
 
           p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
           if p && @instance.fhir_version == 'r4'
-            errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, p.url)
+            resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, p.url)
 
             # Remove warnings if using internal FHIRModelsValidator. FHIRModelsValidator has an issue with FluentPath.
-            errors = [] if errors[:errors].empty? && Inferno::RESOURCE_VALIDATOR.is_a?(Inferno::FHIRModelsValidator)
+            resource_validation_errors = [] if resource_validation_errors[:errors].empty? && Inferno::RESOURCE_VALIDATOR.is_a?(Inferno::FHIRModelsValidator)
           else
             warn { assert false, 'No profiles found for this Resource' }
-            errors = resource.validate
+            resource_validation_errors = resource.validate
           end
 
           if must_supports.present?
@@ -138,16 +143,13 @@ module Inferno
             end
           end
 
-          error_collection[line_count] = errors unless errors.empty?
+          validation_error_collection[line_count] = resource_validation_errors unless resource_validation_errors.empty?
         end
 
-        unless error_collection.empty?
-          response_for_log[:body] = line_collection.join
-          LoggedRestClient.record_response(request_for_log, response_for_log)
+        response_for_log[:body] = line_collection.join
+        LoggedRestClient.record_response(request_for_log, response_for_log)
 
-          index, errors = error_collection.first
-          assert false, "#{error_collection.size} / #{line_count} #{klass} resources failed profile validation. The first failed is #{klass} ##{index}: #{errors}"
-        end
+        prorcess_validation_errors(validation_error_collection, line_count, klass)
 
         assert_must_supports_found(must_supports) if validate_all || lines_to_validate.positive?
 
@@ -158,6 +160,22 @@ module Inferno
         end
 
         line_count
+      end
+
+      def prorcess_validation_errors(validation_error_collection, line_count, klass)
+        error_count = 0
+        first_error = ''
+        validation_error_collection.each do |line_number, resource_validation_errors|
+          unless resource_validation_errors[:errors].empty?
+            error_count += 1
+            first_error = "The first failed is line ##{line_number}: #{resource_validation_errors[:errors]}" if first_error.empty?
+          end
+
+          @test_warnings.concat(resource_validation_errors[:warnings].map { |e| "Line ##{line_number}: #{e}" })
+          @information_messages.concat(resource_validation_errors[:information].map { |e| "Line ##{line_number}: #{e}" })
+        end
+
+        assert error_count.zero?, "#{error_count} / #{line_count} #{klass} resources failed profile validation. #{first_error}}"
       end
 
       def assert_must_supports_found(must_supports)
