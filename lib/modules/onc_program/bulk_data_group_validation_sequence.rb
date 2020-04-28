@@ -168,7 +168,7 @@ module Inferno
         validation_error_collection.each do |line_number, resource_validation_errors|
           unless resource_validation_errors[:errors].empty?
             error_count += 1
-            first_error = "The first failed is line ##{line_number}: #{resource_validation_errors[:errors]}" if first_error.empty?
+            first_error = "The first failed is line ##{line_number}:\n\n#{resource_validation_errors[:errors].join("\n")}" if first_error.empty?
           end
 
           @test_warnings.concat(resource_validation_errors[:warnings].map { |e| "Line ##{line_number}: #{e}" })
