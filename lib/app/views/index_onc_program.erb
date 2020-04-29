@@ -201,8 +201,23 @@ For alternate installation options, please visit <a href='https://github.com/onc
   </div>
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
-    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v0.9.4</div>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v0.9.5</div>
+      <ul>
+        <li>Improved resource validation messages in Bulk Data Group Validation.</li>
+        <li>Fixed issue where 'warning' and 'info' messages were reported as 'errors' in Bulk Data Group Validation.</li>
+        <li>Fixed logging issue resulting in 'frozen literal' error in Bulk Data Group Validation.</li>
+        <li>Removed option to register application with Backend Services using JWK sets directly.  URL JWK Set registration is required.</li>
+        <li>Refined behavior allowing users to limit the number of resources validated for large bulk data sets.</li>
+        <li>Improved error messages to be more descriptive when incorrect search results returned during US Core queries.</li>
+        <li>Fixed issue where test results expanded by default incorrectly labeled the 'Show'/'Hide' button.</li>
+        <li>Improved code sharing for US Core profile validation between Bulk Data and Single Patient Queries.</li>
+      </ul>
+
     <p>
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_0_9_5.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure.
+    </p>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v0.9.4</div>
       <ul>
         <li>Updated skipped tests results to expand by default, in the same way that failed tests are expanded by default.</li>
         <li>Fixed issue where Authorization header was incorrectly included in queries to SMART Well Known endpoints in certain situations.</li>
@@ -211,6 +226,7 @@ For alternate installation options, please visit <a href='https://github.com/onc
         <li>Relaxed overly strict SSL requirements for certain Bulk Data HTTP requests.</li>
       </ul>
 
+    <p>
       Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_0_9_4.xlsx'>Test Procedure Matrix</a> to view a mapping
       between Inferno Tests and the 2015 Cures Update Test Procedure. 
     </p>
