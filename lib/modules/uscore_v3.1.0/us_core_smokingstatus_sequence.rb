@@ -70,27 +70,32 @@ module Inferno
         case property
 
         when 'status'
+          values_found = resolve_path(resource, 'status')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'status') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'status on resource does not match status requested'
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found, "status in Observation/#{resource.id} (#{values_found}) does not match status requested (#{value})"
 
         when 'category'
+          values_found = resolve_path(resource, 'category.coding.code')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'category.coding.code') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'category on resource does not match category requested'
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found, "category in Observation/#{resource.id} (#{values_found}) does not match category requested (#{value})"
 
         when 'code'
+          values_found = resolve_path(resource, 'code.coding.code')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          value_found = resolve_element_from_path(resource, 'code.coding.code') { |value_in_resource| values.include? value_in_resource }
-          assert value_found.present?, 'code on resource does not match code requested'
+          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          assert match_found, "code in Observation/#{resource.id} (#{values_found}) does not match code requested (#{value})"
 
         when 'date'
-          value_found = resolve_element_from_path(resource, 'effective') { |date| validate_date_search(value, date) }
-          assert value_found.present?, 'date on resource does not match date requested'
+          values_found = resolve_path(resource, 'effective')
+          match_found = values_found.any? { |date| validate_date_search(value, date) }
+          assert match_found, "date in Observation/#{resource.id} (#{values_found}) does not match date requested (#{value})"
 
         when 'patient'
-          value_found = resolve_element_from_path(resource, 'subject.reference') { |reference| [value, 'Patient/' + value].include? reference }
-          assert value_found.present?, 'patient on resource does not match patient requested'
+          values_found = resolve_path(resource, 'subject.reference')
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          assert match_found, "patient in Observation/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         end
       end

@@ -237,20 +237,18 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       assert result[:lines_to_validate].zero?
     end
 
-    it 'get 0 when input is empty' do
+    it 'get validate_all when input is empty' do
       result = @sequence.get_lines_to_validate('')
-      assert !result[:validate_all]
-      assert result[:lines_to_validate].zero?
+      assert result[:validate_all]
     end
 
-    it 'get 0 when input is nil' do
+    it 'get validate_all when input is nil' do
       result = @sequence.get_lines_to_validate(nil)
-      assert !result[:validate_all]
-      assert result[:lines_to_validate].zero?
+      assert result[:validate_all]
     end
 
-    it 'get validate_all when input is *' do
-      result = @sequence.get_lines_to_validate('*')
+    it 'get validate_all when input is blank' do
+      result = @sequence.get_lines_to_validate('  ')
       assert result[:validate_all]
     end
   end
@@ -426,7 +424,8 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       assert_match(/invalid code '001'/, error.message)
     end
 
-    it 'succeeds when validate first line in output file having invalid resource' do
+    it 'succeeds when validate only first two lines in output file' do
+      # this male patient is on the 3rd place
       invalid_patient_export = @patient_export.sub('"male"', '"001"')
       stub_request(:get, 'https://www.example.com/wrong_patient_export.json')
         .with(headers: @file_request_headers)
@@ -438,7 +437,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
 
       file = @output.find { |line| line['type'] == 'Patient' }
       file['url'] = 'https://www.example.com/wrong_patient_export.json'
-      @sequence.check_file_request(file, 'Patient', false, 1, [])
+      @sequence.check_file_request(file, 'Patient', false, 2, [])
     end
 
     it 'succeeds when NDJSON is valid and has at least two patients' do
@@ -463,6 +462,46 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       file['url'] = 'https://www.example.com/single_patient_export.json'
       @sequence.check_file_request(file, 'Patient', false, 0, [])
       assert !@sequence.has_min_patient_count
+    end
+
+    it 'tests two patients when one of patient is invalid' do
+      # the first two patients are female
+      invalid_patient_export = @patient_export.sub('"female"', '"001"')
+      stub_request(:get, 'https://www.example.com/wrong_patient_export.json')
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: invalid_patient_export
+        )
+
+      error = assert_raises(Inferno::AssertionException) do
+        file = @output.find { |line| line['type'] == 'Patient' }
+        file['url'] = 'https://www.example.com/wrong_patient_export.json'
+        @sequence.check_file_request(file, 'Patient', false, 1, [])
+      end
+
+      assert_match(%r{^1 / 2}, error.message)
+    end
+
+    it 'tests at least two patients when two patients are invalid' do
+      # the first two patients are female
+      invalid_patient_export = @patient_export.gsub('"female"', '"001"')
+      stub_request(:get, 'https://www.example.com/wrong_patient_export.json')
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: invalid_patient_export
+        )
+
+      error = assert_raises(Inferno::AssertionException) do
+        file = @output.find { |line| line['type'] == 'Patient' }
+        file['url'] = 'https://www.example.com/wrong_patient_export.json'
+        @sequence.check_file_request(file, 'Patient', false, 1, [])
+      end
+
+      assert_match(%r{^2 / 2}, error.message)
     end
 
     it 'warns when count does not match number of resources' do
