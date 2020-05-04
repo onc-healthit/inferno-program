@@ -68,15 +68,29 @@ module Inferno
         case property
 
         when 'category'
-          values_found = resolve_path(resource, 'category.coding.code')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values_found = resolve_path(resource, 'category')
+          coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+          coding_value = value.split('|').last
+          match_found = values_found.any? do |codeable_concept|
+            if value.include? '|'
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+            else
+              codeable_concept.coding.any? { |coding| coding.code == value }
+            end
+          end
           assert match_found, "category in Condition/#{resource.id} (#{values_found}) does not match category requested (#{value})"
 
         when 'clinical-status'
-          values_found = resolve_path(resource, 'clinicalStatus.coding.code')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values_found = resolve_path(resource, 'clinicalStatus')
+          coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+          coding_value = value.split('|').last
+          match_found = values_found.any? do |codeable_concept|
+            if value.include? '|'
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+            else
+              codeable_concept.coding.any? { |coding| coding.code == value }
+            end
+          end
           assert match_found, "clinical-status in Condition/#{resource.id} (#{values_found}) does not match clinical-status requested (#{value})"
 
         when 'patient'
@@ -90,9 +104,16 @@ module Inferno
           assert match_found, "onset-date in Condition/#{resource.id} (#{values_found}) does not match onset-date requested (#{value})"
 
         when 'code'
-          values_found = resolve_path(resource, 'code.coding.code')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values_found = resolve_path(resource, 'code')
+          coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+          coding_value = value.split('|').last
+          match_found = values_found.any? do |codeable_concept|
+            if value.include? '|'
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+            else
+              codeable_concept.coding.any? { |coding| coding.code == value }
+            end
+          end
           assert match_found, "code in Condition/#{resource.id} (#{values_found}) does not match code requested (#{value})"
 
         end
@@ -218,6 +239,11 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'category'), true)
+          token_with_system_search_params = search_params.merge('category': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('Condition'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('Condition'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, category) in any resource.' unless resolved_one
@@ -307,6 +333,11 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
 
           validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'clinicalStatus'), true)
+          token_with_system_search_params = search_params.merge('clinical-status': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('Condition'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('Condition'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, clinical-status) in any resource.' unless resolved_one
@@ -347,6 +378,11 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'code'), true)
+          token_with_system_search_params = search_params.merge('code': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('Condition'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('Condition'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, code) in any resource.' unless resolved_one

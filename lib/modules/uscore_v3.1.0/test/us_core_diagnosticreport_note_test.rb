@@ -30,6 +30,11 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
         'patient': @sequence.patient_ids.first,
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'category'))
       }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'category'), true)
+      }
     end
 
     it 'skips if the search params are not supported' do
@@ -125,6 +130,10 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
           .to_return(status: 200, body: body)
       end
 
+      stub_request(:get, "#{@base_url}/DiagnosticReport")
+        .with(query: @query_with_system, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@diagnostic_report_ary.values.flatten).to_json)
+
       @sequence.run_test(@test)
     end
 
@@ -216,6 +225,10 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
             .with(query: query_params.merge('status': ['registered,partial,preliminary,final,amended,corrected,appended,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
             .to_return(status: 200, body: wrap_resources_in_bundle([@diagnostic_report]).to_json)
         end
+
+        stub_request(:get, "#{@base_url}/DiagnosticReport")
+          .with(query: @query_with_system.merge('status': ['registered,partial,preliminary,final,amended,corrected,appended,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@diagnostic_report]).to_json)
 
         @sequence.run_test(@test)
       end
@@ -375,6 +388,11 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
         'patient': @sequence.patient_ids.first,
         'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'code'))
       }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'code'), true)
+      }
     end
 
     it 'skips if the search params are not supported' do
@@ -440,6 +458,10 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
         .with(query: @query, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@diagnostic_report_ary.values.flatten).to_json)
 
+      stub_request(:get, "#{@base_url}/DiagnosticReport")
+        .with(query: @query_with_system, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@diagnostic_report_ary.values.flatten).to_json)
+
       @sequence.run_test(@test)
     end
 
@@ -502,6 +524,10 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
           .with(query: @query.merge('status': ['registered,partial,preliminary,final,amended,corrected,appended,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@diagnostic_report]).to_json)
 
+        stub_request(:get, "#{@base_url}/DiagnosticReport")
+          .with(query: @query_with_system.merge('status': ['registered,partial,preliminary,final,amended,corrected,appended,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@diagnostic_report]).to_json)
+
         @sequence.run_test(@test)
       end
     end
@@ -521,6 +547,12 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       @query = {
         'patient': @sequence.patient_ids.first,
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'effective'))
+      }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'category'), true),
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'effective'))
       }
     end
@@ -734,6 +766,12 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
       @query = {
         'patient': @sequence.patient_ids.first,
         'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'code')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'effective'))
+      }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'code'), true),
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@diagnostic_report_ary[@sequence.patient_ids.first], 'effective'))
       }
     end

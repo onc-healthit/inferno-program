@@ -76,9 +76,16 @@ module Inferno
           assert match_found, "patient in Device/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'type'
-          values_found = resolve_path(resource, 'type.coding.code')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values_found = resolve_path(resource, 'type')
+          coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+          coding_value = value.split('|').last
+          match_found = values_found.any? do |codeable_concept|
+            if value.include? '|'
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+            else
+              codeable_concept.coding.any? { |coding| coding.code == value }
+            end
+          end
           assert match_found, "type in Device/#{resource.id} (#{values_found}) does not match type requested (#{value})"
 
         end
@@ -176,6 +183,11 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
 
           validate_search_reply(versioned_resource_class('Device'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@device_ary[patient], 'type'), true)
+          token_with_system_search_params = search_params.merge('type': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('Device'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('Device'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, type) in any resource.' unless resolved_one

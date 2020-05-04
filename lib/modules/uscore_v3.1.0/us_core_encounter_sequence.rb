@@ -61,7 +61,7 @@ module Inferno
           assert match_found, "_id in Encounter/#{resource.id} (#{values_found}) does not match _id requested (#{value})"
 
         when 'class'
-          values_found = resolve_path(resource, 'local_class.code')
+          values_found = resolve_path(resource, 'local_class')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "class in Encounter/#{resource.id} (#{values_found}) does not match class requested (#{value})"
@@ -72,9 +72,12 @@ module Inferno
           assert match_found, "date in Encounter/#{resource.id} (#{values_found}) does not match date requested (#{value})"
 
         when 'identifier'
-          values_found = resolve_path(resource, 'identifier.value')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values_found = resolve_path(resource, 'identifier')
+          identifier_system = value.split('|').first.empty? ? nil : value.split('|').first
+          identifier_value = value.split('|').last
+          match_found = values_found.any? do |identifier|
+            identifier.value == identifier_value && (!value.include?('|') || identifier.system == identifier_system)
+          end
           assert match_found, "identifier in Encounter/#{resource.id} (#{values_found}) does not match identifier requested (#{value})"
 
         when 'patient'
@@ -89,9 +92,16 @@ module Inferno
           assert match_found, "status in Encounter/#{resource.id} (#{values_found}) does not match status requested (#{value})"
 
         when 'type'
-          values_found = resolve_path(resource, 'type.coding.code')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values_found = resolve_path(resource, 'type')
+          coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+          coding_value = value.split('|').last
+          match_found = values_found.any? do |codeable_concept|
+            if value.include? '|'
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+            else
+              codeable_concept.coding.any? { |coding| coding.code == value }
+            end
+          end
           assert match_found, "type in Encounter/#{resource.id} (#{values_found}) does not match type requested (#{value})"
 
         end

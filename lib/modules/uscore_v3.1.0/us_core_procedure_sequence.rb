@@ -85,9 +85,16 @@ module Inferno
           assert match_found, "date in Procedure/#{resource.id} (#{values_found}) does not match date requested (#{value})"
 
         when 'code'
-          values_found = resolve_path(resource, 'code.coding.code')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values_found = resolve_path(resource, 'code')
+          coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+          coding_value = value.split('|').last
+          match_found = values_found.any? do |codeable_concept|
+            if value.include? '|'
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+            else
+              codeable_concept.coding.any? { |coding| coding.code == value }
+            end
+          end
           assert match_found, "code in Procedure/#{resource.id} (#{values_found}) does not match code requested (#{value})"
 
         end
@@ -275,6 +282,11 @@ module Inferno
             reply = get_resource_by_params(versioned_resource_class('Procedure'), comparator_search_params)
             validate_search_reply(versioned_resource_class('Procedure'), reply, comparator_search_params)
           end
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@procedure_ary[patient], 'code'), true)
+          token_with_system_search_params = search_params.merge('code': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('Procedure'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('Procedure'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, code, date) in any resource.' unless resolved_one

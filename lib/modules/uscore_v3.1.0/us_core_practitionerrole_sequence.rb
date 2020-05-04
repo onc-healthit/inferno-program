@@ -55,9 +55,16 @@ module Inferno
         case property
 
         when 'specialty'
-          values_found = resolve_path(resource, 'specialty.coding.code')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values_found = resolve_path(resource, 'specialty')
+          coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+          coding_value = value.split('|').last
+          match_found = values_found.any? do |codeable_concept|
+            if value.include? '|'
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+            else
+              codeable_concept.coding.any? { |coding| coding.code == value }
+            end
+          end
           assert match_found, "specialty in PractitionerRole/#{resource.id} (#{values_found}) does not match specialty requested (#{value})"
 
         when 'practitioner'

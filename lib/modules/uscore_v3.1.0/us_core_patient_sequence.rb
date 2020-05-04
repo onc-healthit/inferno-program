@@ -101,9 +101,12 @@ module Inferno
           assert match_found, "given in Patient/#{resource.id} (#{values_found}) does not match given requested (#{value})"
 
         when 'identifier'
-          values_found = resolve_path(resource, 'identifier.value')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values_found = resolve_path(resource, 'identifier')
+          identifier_system = value.split('|').first.empty? ? nil : value.split('|').first
+          identifier_value = value.split('|').last
+          match_found = values_found.any? do |identifier|
+            identifier.value == identifier_value && (!value.include?('|') || identifier.system == identifier_system)
+          end
           assert match_found, "identifier in Patient/#{resource.id} (#{values_found}) does not match identifier requested (#{value})"
 
         when 'name'
@@ -202,6 +205,11 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
 
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'identifier'), true)
+          token_with_system_search_params = search_params.merge('identifier': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('Patient'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('Patient'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (identifier) in any resource.' unless resolved_one
