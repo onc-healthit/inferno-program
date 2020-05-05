@@ -36,6 +36,10 @@
               </div>
             </div>
           <% end %>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#instructionsModal">
+            <span class="oi oi-list" aria-hidden="true"></span>
+            <span id="client-status-button-text">Instructions</span>
+          </button>
 
           <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#stateModal">
             <span class="oi oi-list" aria-hidden="true"></span>
@@ -717,6 +721,23 @@
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="instructionsModal" tabindex="-1" role="dialog" aria-labelledby="instructionsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="instructionsModalLabel">Instructions</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      put in the config instuctions here.
+      </div>
+    </div>
+  </div>
+</div>
+
 
 
 <div class="modal fade" data-backdrop="static" data-keyboard="false" id="testsRunningModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
