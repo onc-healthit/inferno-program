@@ -15,7 +15,8 @@ procedure:
           access for single patients, including support for application
           registration functions to enable authentication and authorization in §
           170.315(g)(10)(v).
-        inferno_supported: 'no' inferno_notes: |
+        inferno_supported: 'no'
+        inferno_notes: |
           Application registration is currently out of scope for automated
           testing within Inferno Program Edition because there is no standard
           being required.
@@ -45,7 +46,8 @@ procedure:
           access for multiple patients including support for application
           registration functions to enable authentication and authorization in §
           170.315(g)(10)(v).
-        inferno_supported: 'no' inferno_notes: |
+        inferno_supported: 'no'
+        inferno_notes: |
           Application registration is considered out of scope for Inferno
           Program Edition because there are no requirements on how registration
           can occur.
@@ -227,7 +229,7 @@ procedure:
         inferno_supported: 'yes'
         inferno_tests:
           - SPA-OSD-04 - SPA-OSD-05
-          - EHA-OSD-04 - SPA-OSD-05
+          - EHA-OSD-04 - EHA-OSD-05
         inferno_notes: |
           Inferno additionally checks that the "authorization endpoint" and the
           "token endpoint" are consistent between the Capability Statement and
