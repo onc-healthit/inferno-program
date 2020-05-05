@@ -449,7 +449,7 @@ namespace :inferno do |_argv|
         cell = tp_worksheet.add_cell(row, 1, group_name)
         row += 1
         steps.each do |step|
-          longest_line = [step.s_u_t, step.t_l_v, step.inferno_notes].map{|text| text&.lines&.count || 0}.max
+          longest_line = [step.s_u_t, step.t_l_v, step.inferno_notes, step.alternate_test].map{|text| text&.lines&.count || 0}.max
           tp_worksheet.change_row_height(row, longest_line * 10 + 10)
           tp_worksheet.change_row_vertical_alignment(row, 'top')
           cell = tp_worksheet.add_cell(row, 2, "#{step.id.upcase} ")
