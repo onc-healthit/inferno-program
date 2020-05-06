@@ -516,8 +516,8 @@ procedure:
           * “smart_style_url” (to support “context-style” “SMART on FHIR Core Capability” for EHR-Launch mode only).
         inferno_supported: 'yes'
         inferno_tests: 
-          - SPB-OSLS-08
-          - EHB-OELS-10
+          - SPB-OSLS-08 - SPB-OSLS-09
+          - EHB-OELS-10 - EHB-OELS-10
       - id: AUTH-PATIENT-16
         SUT: |
           [Both] The health IT developer demonstrates the ability of the
@@ -1029,7 +1029,7 @@ procedure:
           * All data elements with required “ValueSet” bindings contain codes within the bound “ValueSet”;
           * All information is accurate and without omission; and
           * All references within the resources can be resolved and validated, as applicable, according to steps 2-6 of this section
-        inferno_supported: 'yes'
+        inferno_supported: 'partial'
         inferno_tests:
           - USCP-02
           - USCAI-02
@@ -1060,6 +1060,15 @@ procedure:
           - USCO-02
           - USCPROV-02
           - BDGV-01
+        inferno_notes: |
+          The requirement "all information is accurate and without omission" cannot be verified automatically by Inferno,
+          as Inferno only has visibility into the data being returned in the API.  Inferno also does not require
+          a specific set of data to be loaded.  Because of this, omissions are not possible to detect.
+        alternate_test: |
+          Inferno provides full logs of responses provided by the server.  Through this, the tester can manually
+          'spot check' data that is returned to match it up with the information on display in the EHR interface.
+          Future versions of Inferno could improve this experience, by adding search capabilities or automated matching
+          based on expected output.
       - id: RESPONSE-3
         SUT: |
           The health IT developer demonstrates the ability of the Health IT
