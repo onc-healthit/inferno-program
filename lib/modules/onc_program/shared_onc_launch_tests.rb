@@ -295,7 +295,7 @@ module Inferno
           test :token_response_contents do
             metadata do
               id index
-              name 'Token exchange response body contains required information encoded in JSON'
+              name 'OAuth token exchange response body contains required information encoded in JSON'
               link 'http://www.hl7.org/fhir/smart-app-launch/'
               description %(
                 The EHR authorization server shall return a JSON structure that
@@ -317,7 +317,7 @@ module Inferno
           test :token_response_headers do
             metadata do
               id index
-              name 'Response includes correct HTTP Cache-Control and Pragma headers'
+              name 'OAuth Token exchange response includes correct HTTP Cache-Control and Pragma headers'
               link 'http://www.hl7.org/fhir/smart-app-launch/'
               description %(
                 The authorization servers response must include the HTTP
@@ -341,7 +341,8 @@ module Inferno
               name "#{patient_or_user.capitalize}-level access with OpenID Connect and Refresh Token scopes used."
               link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#quick-start'
               description %(
-                The scopes being input must follow the guidelines specified in the smart-app-launch guide
+                The scopes being input must follow the guidelines specified in the smart-app-launch guide.
+                All scopes requested are expected to be granted.
               )
             end
 
@@ -395,7 +396,7 @@ module Inferno
           test :patient_context do
             metadata do
               id index
-              name 'Patient context provided during token exchange and patient resource can be retrieved'
+              name 'OAuth token exchange response body contains patient context and patient resource can be retrieved'
               link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#scopes-for-requesting-context-data'
               description %(
                 The `patient` field is a String value with a patient id,

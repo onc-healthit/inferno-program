@@ -39,10 +39,14 @@ module Inferno
 
       )
 
-      requires :onc_sl_url, :token, :patient_id, :received_scopes
+      requires :onc_sl_url, :token, :patient_id, :received_scopes, :onc_sl_expected_resources
 
       def scopes
-        @instance.received_scopes || @instance.onc_sl_restricted_scopes
+        @instance.received_scopes || @instance.onc_sl_scopes
+      end
+
+      def resource_access_as_scope
+        @instance.onc_sl_expected_resources&.split(',')&.map { |resource| "patient/#{resource.strip}.read" }&.join(' ')
       end
 
       def url_property
@@ -58,11 +62,12 @@ module Inferno
       test :validate_right_scopes do
         metadata do
           id '01'
-          name 'Verify scope provided do not contain all resource types'
+          name 'Scope granted is limited to those chosen by user during authorization.'
 
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
           description %(
-            This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
+            This test confirms that the scopes received during authorization match those that
+            expected for this launch.
           )
         end
 
@@ -80,13 +85,17 @@ module Inferno
           'Immunization',
           'MedicationRequest',
           'Observation',
-          'Procedure'
+          'Procedure',
+          'Patient'
         ]
 
-        allowed_resources = all_resources.select { |resource| scope_granting_access(resource, scopes).present? }
+        allowed_resources = all_resources.select { |resource| scope_granting_access(resource, resource_access_as_scope) }
         denied_resources = all_resources - allowed_resources
 
-        assert denied_resources.present?, "This test requires at least one resource to be denied, but the received scope '#{@instance.received_scopes}' grants access to all resource types."
+        assert denied_resources.present?, "This test requires at least one resource to be denied, but the provided scope '#{@instance.received_scopes}' grants access to all resource types."
+        received_scope_resources = all_resources.select { |resource| scope_granting_access(resource, @instance.received_scopes) }
+        unexpected_resources = received_scope_resources - allowed_resources
+        assert unexpected_resources.empty?, "This test expected the user to deny access to the following resources that are present in scopes received during token exchange response: #{unexpected_resources.join(', ')}"
         pass "Resources to be denied: #{denied_resources.join(',')}"
       end
 
@@ -108,11 +117,11 @@ module Inferno
 
         reply = @client.read(FHIR::Patient, @instance.patient_id)
 
-        access_allowed_scope = scope_granting_access('Patient', scopes)
+        access_allowed_scope = scope_granting_access('Patient', resource_access_as_scope)
 
         if access_allowed_scope.present?
           assert_response_ok reply
-          pass "Access granted by scope #{access_allowed_scope} and request properly returned #{reply&.response&.dig(:code)}"
+          pass "Access expcted to be granted and request properly returned #{reply&.response&.dig(:code)}"
         else
           assert_response_unauthorized reply
         end
@@ -142,7 +151,7 @@ module Inferno
           }
         }
         reply = @client.search('AllergyIntolerance', options)
-        access_allowed_scope = scope_granting_access('AllergyIntolerance', scopes)
+        access_allowed_scope = scope_granting_access('AllergyIntolerance', resource_access_as_scope)
 
         if access_allowed_scope.present?
 
@@ -161,7 +170,7 @@ module Inferno
           end
 
           assert_response_ok reply
-          pass "Access granted by scope #{access_allowed_scope} and request properly returned #{reply&.response&.dig(:code)}"
+          pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
           assert_response_unauthorized reply
@@ -193,7 +202,7 @@ module Inferno
           }
         }
         reply = @client.search('CarePlan', options)
-        access_allowed_scope = scope_granting_access('CarePlan', scopes)
+        access_allowed_scope = scope_granting_access('CarePlan', resource_access_as_scope)
 
         if access_allowed_scope.present?
 
@@ -212,7 +221,7 @@ module Inferno
           end
 
           assert_response_ok reply
-          pass "Access granted by scope #{access_allowed_scope} and request properly returned #{reply&.response&.dig(:code)}"
+          pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
           assert_response_unauthorized reply
@@ -244,7 +253,7 @@ module Inferno
           }
         }
         reply = @client.search('CareTeam', options)
-        access_allowed_scope = scope_granting_access('CareTeam', scopes)
+        access_allowed_scope = scope_granting_access('CareTeam', resource_access_as_scope)
 
         if access_allowed_scope.present?
 
@@ -263,7 +272,7 @@ module Inferno
           end
 
           assert_response_ok reply
-          pass "Access granted by scope #{access_allowed_scope} and request properly returned #{reply&.response&.dig(:code)}"
+          pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
           assert_response_unauthorized reply
@@ -294,7 +303,7 @@ module Inferno
           }
         }
         reply = @client.search('Condition', options)
-        access_allowed_scope = scope_granting_access('Condition', scopes)
+        access_allowed_scope = scope_granting_access('Condition', resource_access_as_scope)
 
         if access_allowed_scope.present?
 
@@ -313,7 +322,7 @@ module Inferno
           end
 
           assert_response_ok reply
-          pass "Access granted by scope #{access_allowed_scope} and request properly returned #{reply&.response&.dig(:code)}"
+          pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
           assert_response_unauthorized reply
@@ -344,12 +353,12 @@ module Inferno
           }
         }
         reply = @client.search('Device', options)
-        access_allowed_scope = scope_granting_access('Device', scopes)
+        access_allowed_scope = scope_granting_access('Device', resource_access_as_scope)
 
         if access_allowed_scope.present?
 
           assert_response_ok reply
-          pass "Access granted by scope #{access_allowed_scope} and request properly returned #{reply&.response&.dig(:code)}"
+          pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
           assert_response_unauthorized reply
@@ -381,7 +390,7 @@ module Inferno
           }
         }
         reply = @client.search('DiagnosticReport', options)
-        access_allowed_scope = scope_granting_access('DiagnosticReport', scopes)
+        access_allowed_scope = scope_granting_access('DiagnosticReport', resource_access_as_scope)
 
         if access_allowed_scope.present?
 
@@ -400,7 +409,7 @@ module Inferno
           end
 
           assert_response_ok reply
-          pass "Access granted by scope #{access_allowed_scope} and request properly returned #{reply&.response&.dig(:code)}"
+          pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
           assert_response_unauthorized reply
@@ -431,7 +440,7 @@ module Inferno
           }
         }
         reply = @client.search('DocumentReference', options)
-        access_allowed_scope = scope_granting_access('DocumentReference', scopes)
+        access_allowed_scope = scope_granting_access('DocumentReference', resource_access_as_scope)
 
         if access_allowed_scope.present?
 
@@ -450,7 +459,7 @@ module Inferno
           end
 
           assert_response_ok reply
-          pass "Access granted by scope #{access_allowed_scope} and request properly returned #{reply&.response&.dig(:code)}"
+          pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
           assert_response_unauthorized reply
@@ -481,7 +490,7 @@ module Inferno
           }
         }
         reply = @client.search('Goal', options)
-        access_allowed_scope = scope_granting_access('Goal', scopes)
+        access_allowed_scope = scope_granting_access('Goal', resource_access_as_scope)
 
         if access_allowed_scope.present?
 
@@ -500,7 +509,7 @@ module Inferno
           end
 
           assert_response_ok reply
-          pass "Access granted by scope #{access_allowed_scope} and request properly returned #{reply&.response&.dig(:code)}"
+          pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
           assert_response_unauthorized reply
@@ -531,7 +540,7 @@ module Inferno
           }
         }
         reply = @client.search('Immunization', options)
-        access_allowed_scope = scope_granting_access('Immunization', scopes)
+        access_allowed_scope = scope_granting_access('Immunization', resource_access_as_scope)
 
         if access_allowed_scope.present?
 
@@ -550,7 +559,7 @@ module Inferno
           end
 
           assert_response_ok reply
-          pass "Access granted by scope #{access_allowed_scope} and request properly returned #{reply&.response&.dig(:code)}"
+          pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
           assert_response_unauthorized reply
@@ -582,7 +591,7 @@ module Inferno
           }
         }
         reply = @client.search('MedicationRequest', options)
-        access_allowed_scope = scope_granting_access('MedicationRequest', scopes)
+        access_allowed_scope = scope_granting_access('MedicationRequest', resource_access_as_scope)
 
         if access_allowed_scope.present?
 
@@ -601,7 +610,7 @@ module Inferno
           end
 
           assert_response_ok reply
-          pass "Access granted by scope #{access_allowed_scope} and request properly returned #{reply&.response&.dig(:code)}"
+          pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
           assert_response_unauthorized reply
@@ -633,7 +642,7 @@ module Inferno
           }
         }
         reply = @client.search('Observation', options)
-        access_allowed_scope = scope_granting_access('Observation', scopes)
+        access_allowed_scope = scope_granting_access('Observation', resource_access_as_scope)
 
         if access_allowed_scope.present?
 
@@ -652,7 +661,7 @@ module Inferno
           end
 
           assert_response_ok reply
-          pass "Access granted by scope #{access_allowed_scope} and request properly returned #{reply&.response&.dig(:code)}"
+          pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
           assert_response_unauthorized reply
@@ -683,7 +692,7 @@ module Inferno
           }
         }
         reply = @client.search('Procedure', options)
-        access_allowed_scope = scope_granting_access('Procedure', scopes)
+        access_allowed_scope = scope_granting_access('Procedure', resource_access_as_scope)
 
         if access_allowed_scope.present?
 
@@ -702,7 +711,7 @@ module Inferno
           end
 
           assert_response_ok reply
-          pass "Access granted by scope #{access_allowed_scope} and request properly returned #{reply&.response&.dig(:code)}"
+          pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
           assert_response_unauthorized reply
