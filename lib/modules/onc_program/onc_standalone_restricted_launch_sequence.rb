@@ -214,7 +214,6 @@ module Inferno
         assert improperly_granted_resources.empty?, "User expected to deny the following resources that were granted: #{improperly_granted_resources.join(', ')}"
 
         assert !received_scopes.split(' ').include?('offline_access'), 'Scopes returned in access token response contained offline_access.  User must deny this scope to pass this test.'
-
       end
     end
   end
