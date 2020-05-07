@@ -9,6 +9,7 @@ test_sets:
     view: onc_program
     tests:
       - name: Standalone Patient App
+        run_all: true
         overview: |
           This scenario demonstrates the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
           refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
@@ -37,7 +38,8 @@ test_sets:
             prefix: SPD
             description: Use refresh token to get new access token and verify it can access resources.
           - ONCAccessVerifyUnrestrictedSequence
-      - name: Limited Scope App
+      - name: Limited App
+        run_all: true
         overview: |
           This scenario demonstrates the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client 
           with limited access granted to the application.  The tester is expected to grant the application access to a subset of the relevant resource
@@ -61,6 +63,7 @@ test_sets:
             description: Perform Standalone SMART launch expecting limited scope access.
           - ONCAccessVerifyRestrictedSequence
       - name: EHR Practitioner App
+        run_all: true
         overview: |
           Demonstrate the ability to perform an EHR launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
           refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
@@ -149,3 +152,14 @@ test_sets:
           - BulkDataAuthorizationSequence
           - BulkDataGroupExportSequence
           - BulkDataGroupExportValidationSequence
+      - name: Extras
+        run_all: false
+        run_skipped: false
+        overview: >
+          Perform a variety of tests that do not fit in previous scenarios.  Each of these tests need to be run independently.  Please read the
+          instructions for each, as they require special attention on the part of the tester.
+        sequences:
+          - SMARTInvalidAud
+          - SMARTInvalidLaunch
+          - TokenRevocation
+          - BulkCacheCheck
