@@ -136,7 +136,7 @@ module Inferno
 
         process_validation_errors(validation_error_collection, line_count, klass)
 
-        assert_must_supports_found(must_supports) if validate_all || lines_to_validate.positive?
+        assert_must_supports_found(must_supports) if line_count.positive?
 
         if file.key?('count') && validate_all
           warning do
@@ -251,12 +251,13 @@ module Inferno
           # Skip process the last line since the it may not complete (still appending from stream)
           last_line = resource_list.pop
           # Skip if the last_line is empty
-          next_block = String.new last_line unless last_line.nil?
+          # Cannot use .blank? since dock-compose complains "invalid byte sequence in US-ASCII" during unit test
+          next_block = String.new last_line unless last_line.nil? || last_line.strip.empty?
 
           resource_list.each do |resource|
             # NDJSON does not specify empty line is NOT allowed.
             # So just skip an empty line.
-            next if resource.blank?
+            next if resource.nil? || resource.strip.empty?
 
             recent_lines << resource if line_count < MAX_RECENT_LINE_SIZE
             line_count += 1
@@ -270,7 +271,7 @@ module Inferno
 
         # NDJSON does not specify empty line is NOT allowed.
         # So just skip if last line is empty.
-        unless next_block.blank?
+        unless next_block.nil? || next_block.strip.empty?
           recent_lines << next_block if line_count < MAX_RECENT_LINE_SIZE
           line_count += 1
           response_for_log[:body] = recent_lines.join
