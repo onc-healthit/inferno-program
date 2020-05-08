@@ -75,7 +75,8 @@ module Inferno
       head_circumference: 'http://hl7.org/fhir/StructureDefinition/headcircum',
       body_weight: 'http://hl7.org/fhir/StructureDefinition/bodyweight',
       bmi: 'http://hl7.org/fhir/StructureDefinition/bmi',
-      blood_pressure: 'http://hl7.org/fhir/StructureDefinition/bp'
+      blood_pressure: 'http://hl7.org/fhir/StructureDefinition/bp',
+      vital_signs: 'http://hl7.org/fhir/StructureDefinition/vitalsigns'
     }.freeze
 
     def self.guess_profile(resource, version)
@@ -177,6 +178,11 @@ module Inferno
         return DEFINITIONS[US_CORE_R4_URIS[:heart_rate]] if observation_contains_code(resource, '8867-4')
 
         return DEFINITIONS[US_CORE_R4_URIS[:body_temperature]] if observation_contains_code(resource, '8310-5')
+
+        return DEFINITIONS[US_CORE_R4_URIS[:vital_signs]] if resource&.category&.first&.coding&.any? { |coding| coding&.code == 'vital-signs' }
+
+        return nil
+
       elsif resource.resourceType == 'DiagnosticReport'
         return DEFINITIONS[US_CORE_R4_URIS[:diagnostic_report_lab]] if resource&.category&.first&.coding&.any? { |coding| coding&.code == 'LAB' }
 

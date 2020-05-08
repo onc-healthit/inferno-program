@@ -114,15 +114,15 @@ module Inferno
           p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
           if p && @instance.fhir_version == 'r4'
             resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, p.url)
-
-            # Remove warnings if using internal FHIRModelsValidator. FHIRModelsValidator has an issue with FluentPath.
-            resource_validation_errors = [] if resource_validation_errors[:errors].empty? &&
-                                               (Inferno::RESOURCE_VALIDATOR.is_a?(Inferno::FHIRModelsValidator) ||
-                                               (resource_validation_errors[:warnings].empty? && resource_validation_errors[:information].empty?))
           else
             warn { assert false, 'No profiles found for this Resource' }
-            resource_validation_errors = resource.validate
+            resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
           end
+
+          # Remove warnings if using internal FHIRModelsValidator. FHIRModelsValidator has an issue with FluentPath.
+          resource_validation_errors = [] if resource_validation_errors[:errors].empty? &&
+                                             (Inferno::RESOURCE_VALIDATOR.is_a?(Inferno::FHIRModelsValidator) ||
+                                             (resource_validation_errors[:warnings].empty? && resource_validation_errors[:information].empty?))
 
           process_must_support(must_supports, p, resource)
 
