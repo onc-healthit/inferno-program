@@ -54,6 +54,8 @@ module Inferno
 
         success_count = check_file_request(file, klass, validate_all, lines_to_validate, must_supports)
 
+        skip "Bulk Data Server export for #{klass} is empty" if success_count.zero? && (validate_all || lines_to_validate.positive?)
+
         pass "Successfully validated #{success_count} resource(s)."
       end
 
@@ -114,34 +116,15 @@ module Inferno
             resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, p.url)
 
             # Remove warnings if using internal FHIRModelsValidator. FHIRModelsValidator has an issue with FluentPath.
-            resource_validation_errors = [] if resource_validation_errors[:errors].empty? && Inferno::RESOURCE_VALIDATOR.is_a?(Inferno::FHIRModelsValidator)
+            resource_validation_errors = [] if resource_validation_errors[:errors].empty? &&
+                                               (Inferno::RESOURCE_VALIDATOR.is_a?(Inferno::FHIRModelsValidator) ||
+                                               (resource_validation_errors[:warnings].empty? && resource_validation_errors[:information].empty?))
           else
             warn { assert false, 'No profiles found for this Resource' }
             resource_validation_errors = resource.validate
           end
 
-          if must_supports.present?
-            if must_supports.length > 1 && p
-              profile_must_support = must_supports.find { |must_support| must_support[:profile] == p.url }
-              must_support_info = profile_must_support.present? ? profile_must_support[:must_support_info] : nil
-            else
-              must_support_info = must_supports.first[:must_support_info]
-            end
-
-            if must_support_info.present?
-              must_support_info[:elements].reject! do |ms_element|
-                resolve_element_from_path(resource, ms_element[:path]) { |value| ms_element[:fixed_value].blank? || value == ms_element[:fixed_value] }
-              end
-
-              must_support_info[:extensions].reject! do |ms_extension|
-                resource.extension.any? { |extension| extension.url == ms_extension[:url] }
-              end
-
-              must_support_info[:slices].reject! do |ms_slice|
-                find_slice(resource, ms_slice[:path], ms_slice[:discriminator])
-              end
-            end
-          end
+          process_must_support(must_supports, p, resource)
 
           validation_error_collection[line_count] = resource_validation_errors unless resource_validation_errors.empty?
         end
@@ -162,6 +145,31 @@ module Inferno
         end
 
         line_count
+      end
+
+      def process_must_support(must_supports, profile, resource)
+        return unless must_supports.present?
+
+        if must_supports.length > 1 && profile
+          profile_must_support = must_supports.find { |must_support| must_support[:profile] == profile.url }
+          must_support_info = profile_must_support.present? ? profile_must_support[:must_support_info] : nil
+        else
+          must_support_info = must_supports.first[:must_support_info]
+        end
+
+        return unless must_support_info.present?
+
+        must_support_info[:elements].reject! do |ms_element|
+          resolve_element_from_path(resource, ms_element[:path]) { |value| ms_element[:fixed_value].blank? || value == ms_element[:fixed_value] }
+        end
+
+        must_support_info[:extensions].reject! do |ms_extension|
+          resource.extension.any? { |extension| extension.url == ms_extension[:url] }
+        end
+
+        must_support_info[:slices].reject! do |ms_slice|
+          find_slice(resource, ms_slice[:path], ms_slice[:discriminator])
+        end
       end
 
       def process_validation_errors(validation_error_collection, line_count, klass)
@@ -239,11 +247,19 @@ module Inferno
         until (chunk = body.readpartial).nil?
           next_block << chunk
           resource_list = next_block.lines
-          next_block = String.new resource_list.pop
+
+          # Skip process the last line since the it may not complete (still appending from stream)
+          last_line = resource_list.pop
+          # Skip if the last_line is empty
+          next_block = String.new last_line unless last_line.blank?
+
           resource_list.each do |resource|
-            recent_lines << resource
+            # NDJSON does not specify empty line is NOT allowed.
+            # So just skip an empty line.
+            next if resource.blank?
+
+            recent_lines << resource if line_count < MAX_RECENT_LINE_SIZE
             line_count += 1
-            recent_lines.shift if line_count > MAX_RECENT_LINE_SIZE
 
             response_for_log[:body] = recent_lines.join
             log_and_reraise_if_error(request_for_log, response_for_log, line_count > MAX_RECENT_LINE_SIZE) do
@@ -252,13 +268,16 @@ module Inferno
           end
         end
 
-        recent_lines << next_block
-        line_count += 1
-        recent_lines.shift if line_count > MAX_RECENT_LINE_SIZE
-        response_for_log[:body] = recent_lines.join
+        # NDJSON does not specify empty line is NOT allowed.
+        # So just skip if last line is empty.
+        unless next_block.blank?
+          recent_lines << next_block if line_count < MAX_RECENT_LINE_SIZE
+          line_count += 1
+          response_for_log[:body] = recent_lines.join
 
-        log_and_reraise_if_error(request_for_log, response_for_log, line_count > MAX_RECENT_LINE_SIZE) do
-          yield(response, next_block)
+          log_and_reraise_if_error(request_for_log, response_for_log, line_count > MAX_RECENT_LINE_SIZE) do
+            yield(response, next_block)
+          end
         end
 
         if line_count > MAX_RECENT_LINE_SIZE
