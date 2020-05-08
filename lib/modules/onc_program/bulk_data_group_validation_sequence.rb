@@ -148,7 +148,7 @@ module Inferno
       end
 
       def process_must_support(must_supports, profile, resource)
-        return unless must_supports.present?
+        return unless profile.present? && must_supports.present?
 
         if must_supports.length > 1 && profile
           profile_must_support = must_supports.find { |must_support| must_support[:profile] == profile.url }
@@ -625,7 +625,7 @@ module Inferno
             must_support_info: USCore310PediatricWeightForHeightSequenceDefinitions::MUST_SUPPORTS.dup
           },
           {
-            profile: US_CORE_R4_URIS[:USCore310PulseOximetrySequence],
+            profile: US_CORE_R4_URIS[:pulse_oximetry],
             must_support_info: USCore310PulseOximetrySequenceDefinitions::MUST_SUPPORTS.dup
           },
           {
