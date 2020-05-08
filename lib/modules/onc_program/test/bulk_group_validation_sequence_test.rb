@@ -574,4 +574,27 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       assert line_count == @file['count'] - 1
     end
   end
+
+  describe 'read Observation file tests' do
+    before do
+      @observation_file_location = 'https://www.example.com/observation_export.ndjson'
+      @observation_export = load_fixture_with_extension('bulk_data_observation.ndjson')
+      @sequence = @sequence_class.new(@instance, @client)
+      @headers = { accept: 'application/fhir+ndjson' }
+      @headers['Authorization'] = "Bearer #{@instance.bulk_access_token}"
+      @file = { 'type' => 'Observation', 'url' => @observation_file_location, 'count' => @observation_export.lines.count }
+
+      stub_request(:get, @observation_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: @observation_export
+        )
+    end
+
+    it 'succeeds with vital-signs observation' do
+      @sequence.check_file_request(@file, 'Observation', true, 1, [])
+    end
+  end
 end
