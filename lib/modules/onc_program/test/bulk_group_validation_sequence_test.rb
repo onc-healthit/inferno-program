@@ -594,7 +594,9 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
     end
 
     it 'succeeds with vital-signs observation' do
-      @sequence.check_file_request(@file, 'Observation', true, 1, [])
+      must_supports = []
+
+      @sequence.check_file_request(@file, 'Observation', true, 1, must_supports)
     end
   end
 end
