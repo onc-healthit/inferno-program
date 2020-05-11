@@ -207,7 +207,7 @@ module Inferno
       def log_and_reraise_if_error(request, response, truncated)
         yield
       rescue StandardError
-        response[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS MOST RECENT #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response[:body]}" if truncated
+        response[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS FIRST #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response[:body]}" if truncated
         LoggedRestClient.record_response(request, response)
         raise
       end
@@ -282,7 +282,7 @@ module Inferno
         end
 
         if line_count > MAX_RECENT_LINE_SIZE
-          response_for_log[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS MOST RECENT #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response_for_log[:body]}"
+          response_for_log[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS FHIRST #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response_for_log[:body]}"
         end
         LoggedRestClient.record_response(request_for_log, response_for_log)
 
@@ -660,28 +660,9 @@ module Inferno
         test_output_against_profile('Procedure', must_supports)
       end
 
-      test :validate_location do
-        metadata do
-          id '19'
-          name 'Location resources on the FHIR server follow the US Core Implementation Guide'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'
-          description %(
-            This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
-          )
-        end
-
-        must_supports = [
-          {
-            profile: nil,
-            must_support_info: USCore310LocationSequenceDefinitions::MUST_SUPPORTS.dup
-          }
-        ]
-        test_output_against_profile('Location', must_supports)
-      end
-
       test :validate_medication do
         metadata do
-          id '20'
+          id '19'
           name 'Medication resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
           description %(
@@ -692,28 +673,9 @@ module Inferno
         test_output_against_profile('Medication')
       end
 
-      test :validate_organization do
-        metadata do
-          id '21'
-          name 'Organization resources on the FHIR server follow the US Core Implementation Guide'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
-          description %(
-            This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
-          )
-        end
-
-        must_supports = [
-          {
-            profile: nil,
-            must_support_info: USCore310OrganizationSequenceDefinitions::MUST_SUPPORTS.dup
-          }
-        ]
-        test_output_against_profile('Organization', must_supports)
-      end
-
       test :validate_practitioner do
         metadata do
-          id '22'
+          id '20'
           name 'Practitioner resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
           description %(
@@ -730,11 +692,11 @@ module Inferno
         test_output_against_profile('Practitioner', must_supports)
       end
 
-      test :validate_practitionerrole do
+      test :validate_provenance do
         metadata do
-          id '23'
-          name 'PractitionerRole resources on the FHIR server follow the US Core Implementation Guide'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'
+          id '21'
+          name 'Provenance resources on the FHIR server follow the US Core Implementation Guide'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
           description %(
             This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
           )
@@ -743,10 +705,10 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: USCore310PractitionerroleSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310ProvenanceSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('PractitionerRole', must_supports)
+        test_output_against_profile('Provenance', must_supports)
       end
     end
   end
