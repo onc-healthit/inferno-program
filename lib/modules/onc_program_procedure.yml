@@ -4,47 +4,67 @@ procedure:
       - group: Application Registration
         id: APP-REGISTRATION-1
         SUT: |
-          The health IT developer demonstrates the Health IT Module
-          supports application registration with an authorization server for
-          the purposes of Electronic Health Information (EHI) access for
-          single patients, including support for application registration
-          functions to enable authentication and authorization in §
-          170.315(g)(10)(v).
+          The health IT developer demonstrates the Health IT Module supports
+          application registration with an authorization server for the purposes
+          of Electronic Health Information (EHI) access for single patients,
+          including support for application registration functions to enable
+          authentication and authorization in § 170.315(g)(10)(v).
         TLV: |
           The tester verifies the Health IT Module supports application
           registration with an authorization server for the purposes of EHI
           access for single patients, including support for application
-          registration functions to enable authentication and authorization in
-          § 170.315(g)(10)(v).
+          registration functions to enable authentication and authorization in §
+          170.315(g)(10)(v).
         inferno_supported: 'no'
         inferno_notes: |
-          Application registration is considered out of scope for Inferno
-          Program Edition because it cannot be done in an automated fashion.
-          Inferno Program Edition may in the future include Dynamic Registration
-          functionality for those systems that support that standard.  It may
-          also include an input field to allow the tester to document that this
-          has been performed.
+          Application registration is currently out of scope for automated
+          testing within Inferno Program Edition because there is no standard
+          being required.
+        alternate_test: |
+          Prior to executing the single patient tests, the health IT developer
+          must demonstrate the steps involved in registering Inferno as a client
+          application using registration information provided within the Inferno
+          interface (e.g. redirect url). During this process, the system under
+          test developer provides a client ID, client secret, and a list of
+          authorized scopes to Inferno.  By inputting this information into
+          Inferno, the tester verifies that a new client application can be
+          registered within the system under test. All tests within "Standalone
+          Patient App", "Limited Scope App", and "EHR Practitioner App" must use
+          clients registered at the time of testing.  Note that the "Standalone
+          Patient App" and "EHR Practioner App" can use separate client
+          registrations if necessary.
       - id: APP-REGISTRATION-2
         SUT: |
-          The health IT developer demonstrates the Health IT Module
-          supports application registration with an authorization server for
-          the purposes of EHI access for multiple patients, including support
-          for application registration functions to enable authentication and
-          authorization in § 170.315(g)(10)(v).
+          The health IT developer demonstrates the Health IT Module supports
+          application registration with an authorization server for the purposes
+          of EHI access for multiple patients, including support for application
+          registration functions to enable authentication and authorization in §
+          170.315(g)(10)(v).
         TLV: |
           The tester verifies the Health IT Module supports application
           registration with an authorization server for the purposes of EHI
           access for multiple patients including support for application
-          registration functions to enable authentication and authorization in
-          § 170.315(g)(10)(v).
+          registration functions to enable authentication and authorization in §
+          170.315(g)(10)(v).
         inferno_supported: 'no'
         inferno_notes: |
           Application registration is considered out of scope for Inferno
-          Program Edition because it cannot be accomplished using automation.
-          Inferno Program Edition may in the future include OAuth Dynamic Registration
-          functionality for those systems that support that standard.  It may
-          also include an input field to allow the tester to document that this
-          has been performed.
+          Program Edition because there are no requirements on how registration
+          can occur.
+        alternate_test: |
+          Prior to executing the 'Multi-Patient Data Query' tests, the health IT
+          developer must demonstrate the steps involved in registering Inferno
+          as a bulk client application using the JWKS URL provided within the
+          Inferno interface.  During this process, the health IT developer
+          provides a backend serives token endpoint, a bulk client ID, and a
+          list of authorized scopes for the application.  By inputting this
+          information into Inferno, the tester verifies that a new client
+          application can be registered within the system under test.
+          Registering client applications using the JWKS URL is strongly
+          recommended in the specification, but if this is not possible, the
+          tester can provide the keys directly by manually visiting Inferno's
+          JWKS URL and providing that to the health IT developer.
+          
   - section: Paragraph (g)(10)(iv) – Secure connection
     steps:
       - group: Secure connection
@@ -59,7 +79,7 @@ procedure:
           * Conformance to FHIR Communications Security requirements.
         TLV: |
           For all transmissions between the Health IT Module and the
-          application, the tester verifiesthe use of a secure and trusted
+          application, the tester verifies the use of a secure and trusted
           connection in accordance with the implementation specifications
           adopted in § 170.215(a)(2) and § 170.215(a)(3), including:
           * Using TLS version 1.2 or higher; and
@@ -71,9 +91,20 @@ procedure:
           - RPA-OSRLS-01
           - RPA-OSRLS-04
           - EHB-OELS-03
+          - EHB-OELS-06
           - USCCAP-01
           - BDA-01
           - BDE-01
+          - BDGV-01
+        inferno_notes: |
+          Inferno tests that all endpoints provided support at least TLS
+          version 1.2, and rejects all requests for TLS version 1.1 or below.
+          This includes all FHIR endpoints (if more than one is provided), as
+          well as authorization endpoints required by SMART. Inferno can be
+          configured to disable TLS testing if configuring TLS within a
+          lab environment is not possible.  Note that there are no SHALL
+          requirements within the "FHIR Communications Security Requirements" in
+          FHIR R4, and therefore there are no tests based on this requirement.
   - section: Paragraph (g)(10)(v)(A) – Authentication and authorization for patient and user scopes
     steps:
       - group: Authentication and Authorization for Patient and User Scopes
@@ -91,7 +122,7 @@ procedure:
           implementation specification adopted in § 170.215(a)(3).
         inferno_supported: 'yes'
         inferno_tests:
-          - SPA-OSD-01
+          - EHB-OELS-01 - EHB-OELS-02
           - SPB-OSLS-01
           - EHA-OSD-01
           - EHB-OELS-01
@@ -115,6 +146,7 @@ procedure:
         inferno_supported: 'yes'
         inferno_tests:
           - EHB-OELS-01 - EHB-OELS-02
+          - EHB-OELS-04
       - id: AUTH-PATIENT-3
         SUT: |
           [Standalone-Launch] The health IT developer demonstrates the
@@ -129,7 +161,7 @@ procedure:
           implementation specification adopted in § 170.215(a)(3).
         inferno_supported: 'yes'
         inferno_tests:
-          - SPB-OSLS-01 - SPB-OSLS-09
+          - SPB-OSLS-02
       - id: AUTH-PATIENT-4
         SUT: |
           [Both] The health IT developer demonstrates the ability of the
@@ -148,7 +180,9 @@ procedure:
         inferno_supported: 'yes'
         inferno_tests:
           - SPA-OSD-01 - SPA-OSD-02
+          - SPA-OSD-04
           - EHA-OSD-01 - EHA-OSD-02
+          - EHA-OSD-04
       - id: AUTH-PATIENT-5
         SUT: |
           [Both] The health IT developer demonstrates the ability of the
@@ -167,8 +201,14 @@ procedure:
           * “capabilities” (including support for all the “SMART on FHIR Core Capabilities”).
         inferno_supported: 'yes'
         inferno_tests:
-          - SPA-OSD-06
-          - EHA-OSD-06
+          - SPA-OSD-02
+          - SPA-OSD-05 - SPA-OSD-06
+          - EHA-OSD-02
+          - EHA-OSD-05 - EHA-OSD-06
+        inferno_notes: |
+          Inferno additionally checks that the "authorization endpoint" and the
+          "token endpoint" are consistent between the Capability Statement and
+          the well-known endpoint.
       - id: AUTH-PATIENT-6
         SUT: |
           [Both] The health IT developer demonstrates the ability of the
@@ -188,8 +228,12 @@ procedure:
           * “token”.
         inferno_supported: 'yes'
         inferno_tests:
-          - SPA-OSD-04
-          - EHA-OSD-04
+          - SPA-OSD-04 - SPA-OSD-05
+          - EHA-OSD-04 - EHA-OSD-05
+        inferno_notes: |
+          Inferno additionally checks that the "authorization endpoint" and the
+          "token endpoint" are consistent between the Capability Statement and
+          the well-known endpoint.
       - id: AUTH-PATIENT-7
         SUT: |
           [Both] The health IT developer demonstrates the ability of the
@@ -258,7 +302,7 @@ procedure:
           - EHB-OELS-09 - EHB-OELS-10
           - EHB-OELS-12
           - EHB-OELS-14 - EHB-OELS-16
-      - id: auth-patient-9
+      - id: AUTH-PATIENT-9
         SUT: |
           [Both] The health IT developer demonstrates the ability of the
           Health IT Module to evaluate the authorization request and
@@ -472,8 +516,8 @@ procedure:
           * “smart_style_url” (to support “context-style” “SMART on FHIR Core Capability” for EHR-Launch mode only).
         inferno_supported: 'yes'
         inferno_tests: 
-          - SPB-OSLS-08
-          - EHB-OELS-10
+          - SPB-OSLS-08 - SPB-OSLS-09
+          - EHB-OELS-10 - EHB-OELS-10
       - id: AUTH-PATIENT-16
         SUT: |
           [Both] The health IT developer demonstrates the ability of the
@@ -985,7 +1029,7 @@ procedure:
           * All data elements with required “ValueSet” bindings contain codes within the bound “ValueSet”;
           * All information is accurate and without omission; and
           * All references within the resources can be resolved and validated, as applicable, according to steps 2-6 of this section
-        inferno_supported: 'yes'
+        inferno_supported: 'partial'
         inferno_tests:
           - USCP-02
           - USCAI-02
@@ -1016,6 +1060,15 @@ procedure:
           - USCO-02
           - USCPROV-02
           - BDGV-01
+        inferno_notes: |
+          The requirement "all information is accurate and without omission" cannot be verified automatically by Inferno,
+          as Inferno only has visibility into the data being returned in the API.  Inferno also does not require
+          a specific set of data to be loaded.  Because of this, omissions are not possible to detect.
+        alternate_test: |
+          Inferno provides full logs of responses provided by the server.  Through this, the tester can manually
+          'spot check' data that is returned to match it up with the information on display in the EHR interface.
+          Future versions of Inferno could improve this experience, by adding search capabilities or automated matching
+          based on expected output.
       - id: RESPONSE-3
         SUT: |
           The health IT developer demonstrates the ability of the Health IT
