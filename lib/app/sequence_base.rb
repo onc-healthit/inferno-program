@@ -794,7 +794,7 @@ module Inferno
         nil
       end
 
-      def get_value_for_search_param(element)
+      def get_value_for_search_param(element, include_system = false)
         search_value = case element
                        when FHIR::Period
                          if element.start.present?
@@ -805,11 +805,24 @@ module Inferno
                        when FHIR::Reference
                          element.reference
                        when FHIR::CodeableConcept
-                         resolve_element_from_path(element, 'coding.code')
+                         if include_system
+                           coding_with_code = resolve_element_from_path(element, 'coding') { |coding| coding.code.present? }
+                           "#{coding_with_code.system}|#{coding_with_code.code}"
+                         else
+                           resolve_element_from_path(element, 'coding.code')
+                         end
                        when FHIR::Identifier
-                         element.value
+                         if include_system
+                           "#{element.system}|#{element.value}"
+                         else
+                           element.value
+                         end
                        when FHIR::Coding
-                         element.code
+                         if include_system
+                           "#{element.system}|#{element.code}"
+                         else
+                           element.code
+                         end
                        when FHIR::HumanName
                          element.family || element.given&.first || element.text
                        when FHIR::Address

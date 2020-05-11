@@ -67,9 +67,12 @@ module Inferno
           assert match_found, "name in Practitioner/#{resource.id} (#{values_found}) does not match name requested (#{value})"
 
         when 'identifier'
-          values_found = resolve_path(resource, 'identifier.value')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values_found = resolve_path(resource, 'identifier')
+          identifier_system = value.split('|').first.empty? ? nil : value.split('|').first
+          identifier_value = value.split('|').last
+          match_found = values_found.any? do |identifier|
+            identifier.value == identifier_value && (!value.include?('|') || identifier.system == identifier_system)
+          end
           assert match_found, "identifier in Practitioner/#{resource.id} (#{values_found}) does not match identifier requested (#{value})"
 
         end

@@ -170,6 +170,11 @@ describe Inferno::Sequence::USCore310ConditionSequence do
         'patient': @sequence.patient_ids.first,
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@condition_ary[@sequence.patient_ids.first], 'category'))
       }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@condition_ary[@sequence.patient_ids.first], 'category'), true)
+      }
     end
 
     it 'skips if the search params are not supported' do
@@ -235,6 +240,10 @@ describe Inferno::Sequence::USCore310ConditionSequence do
         .with(query: @query, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@condition_ary.values.flatten).to_json)
 
+      stub_request(:get, "#{@base_url}/Condition")
+        .with(query: @query_with_system, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@condition_ary.values.flatten).to_json)
+
       @sequence.run_test(@test)
     end
 
@@ -295,6 +304,10 @@ describe Inferno::Sequence::USCore310ConditionSequence do
           .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
         stub_request(:get, "#{@base_url}/Condition")
           .with(query: @query.merge('clinical-status': ['active', 'recurrence', 'relapse', 'inactive', 'remission', 'resolved'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@condition]).to_json)
+
+        stub_request(:get, "#{@base_url}/Condition")
+          .with(query: @query_with_system.merge('clinical-status': ['active', 'recurrence', 'relapse', 'inactive', 'remission', 'resolved'].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@condition]).to_json)
 
         @sequence.run_test(@test)
@@ -445,89 +458,10 @@ describe Inferno::Sequence::USCore310ConditionSequence do
         'patient': @sequence.patient_ids.first,
         'clinical-status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@condition_ary[@sequence.patient_ids.first], 'clinicalStatus'))
       }
-    end
 
-    it 'skips if the search params are not supported' do
-      capabilities = Inferno::Models::ServerCapabilities.new
-      def capabilities.supported_search_params(_)
-        ['patient']
-      end
-      @instance.server_capabilities = capabilities
-
-      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
-
-      assert_match(/The server doesn't support the search parameters:/, exception.message)
-    end
-
-    it 'skips if no Condition resources have been found' do
-      @sequence.instance_variable_set(:'@resources_found', false)
-
-      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
-
-      assert_equal 'No Condition resources appear to be available. Please use patients with more information.', exception.message
-    end
-
-    it 'skips if a value for one of the search parameters cannot be found' do
-      @sequence.instance_variable_set(:'@condition_ary', @sequence.patient_ids.first => FHIR::Condition.new)
-
-      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
-
-      assert_match(/Could not resolve .* in any resource\./, exception.message)
-    end
-
-    it 'fails if a non-success response code is received' do
-      stub_request(:get, "#{@base_url}/Condition")
-        .with(query: @query, headers: @auth_header)
-        .to_return(status: 401)
-
-      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
-
-      assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
-    end
-
-    it 'fails if a Bundle is not received' do
-      stub_request(:get, "#{@base_url}/Condition")
-        .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: FHIR::Condition.new.to_json)
-
-      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
-
-      assert_equal 'Expected FHIR Bundle but found: Condition', exception.message
-    end
-
-    it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
-      stub_request(:get, "#{@base_url}/Condition")
-        .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Condition.new(id: '!@#$%')).to_json)
-
-      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
-
-      assert_match(/Invalid \w+:/, exception.message)
-    end
-
-    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
-      stub_request(:get, "#{@base_url}/Condition")
-        .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@condition_ary.values.flatten).to_json)
-
-      @sequence.run_test(@test)
-    end
-  end
-
-  describe 'Condition search by patient+code test' do
-    before do
-      @test = @sequence_class[:search_by_patient_code]
-      @sequence = @sequence_class.new(@instance, @client)
-      @condition = FHIR.from_contents(load_fixture(:us_core_condition))
-      @condition_ary = { @sequence.patient_ids.first => @condition }
-      @sequence.instance_variable_set(:'@condition', @condition)
-      @sequence.instance_variable_set(:'@condition_ary', @condition_ary)
-
-      @sequence.instance_variable_set(:'@resources_found', true)
-
-      @query = {
+      @query_with_system = {
         'patient': @sequence.patient_ids.first,
-        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@condition_ary[@sequence.patient_ids.first], 'code'))
+        'clinical-status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@condition_ary[@sequence.patient_ids.first], 'clinicalStatus'), true)
       }
     end
 
@@ -594,6 +528,103 @@ describe Inferno::Sequence::USCore310ConditionSequence do
         .with(query: @query, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@condition_ary.values.flatten).to_json)
 
+      stub_request(:get, "#{@base_url}/Condition")
+        .with(query: @query_with_system, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@condition_ary.values.flatten).to_json)
+
+      @sequence.run_test(@test)
+    end
+  end
+
+  describe 'Condition search by patient+code test' do
+    before do
+      @test = @sequence_class[:search_by_patient_code]
+      @sequence = @sequence_class.new(@instance, @client)
+      @condition = FHIR.from_contents(load_fixture(:us_core_condition))
+      @condition_ary = { @sequence.patient_ids.first => @condition }
+      @sequence.instance_variable_set(:'@condition', @condition)
+      @sequence.instance_variable_set(:'@condition_ary', @condition_ary)
+
+      @sequence.instance_variable_set(:'@resources_found', true)
+
+      @query = {
+        'patient': @sequence.patient_ids.first,
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@condition_ary[@sequence.patient_ids.first], 'code'))
+      }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@condition_ary[@sequence.patient_ids.first], 'code'), true)
+      }
+    end
+
+    it 'skips if the search params are not supported' do
+      capabilities = Inferno::Models::ServerCapabilities.new
+      def capabilities.supported_search_params(_)
+        ['patient']
+      end
+      @instance.server_capabilities = capabilities
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/The server doesn't support the search parameters:/, exception.message)
+    end
+
+    it 'skips if no Condition resources have been found' do
+      @sequence.instance_variable_set(:'@resources_found', false)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_equal 'No Condition resources appear to be available. Please use patients with more information.', exception.message
+    end
+
+    it 'skips if a value for one of the search parameters cannot be found' do
+      @sequence.instance_variable_set(:'@condition_ary', @sequence.patient_ids.first => FHIR::Condition.new)
+
+      exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+
+      assert_match(/Could not resolve .* in any resource\./, exception.message)
+    end
+
+    it 'fails if a non-success response code is received' do
+      stub_request(:get, "#{@base_url}/Condition")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 401)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Bad response code: expected 200, 201, but found 401. ', exception.message
+    end
+
+    it 'fails if a Bundle is not received' do
+      stub_request(:get, "#{@base_url}/Condition")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: FHIR::Condition.new.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'Expected FHIR Bundle but found: Condition', exception.message
+    end
+
+    it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
+      stub_request(:get, "#{@base_url}/Condition")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(FHIR::Condition.new(id: '!@#$%')).to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_match(/Invalid \w+:/, exception.message)
+    end
+
+    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      stub_request(:get, "#{@base_url}/Condition")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@condition_ary.values.flatten).to_json)
+
+      stub_request(:get, "#{@base_url}/Condition")
+        .with(query: @query_with_system, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@condition_ary.values.flatten).to_json)
+
       @sequence.run_test(@test)
     end
 
@@ -654,6 +685,10 @@ describe Inferno::Sequence::USCore310ConditionSequence do
           .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
         stub_request(:get, "#{@base_url}/Condition")
           .with(query: @query.merge('clinical-status': ['active', 'recurrence', 'relapse', 'inactive', 'remission', 'resolved'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@condition]).to_json)
+
+        stub_request(:get, "#{@base_url}/Condition")
+          .with(query: @query_with_system.merge('clinical-status': ['active', 'recurrence', 'relapse', 'inactive', 'remission', 'resolved'].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@condition]).to_json)
 
         @sequence.run_test(@test)

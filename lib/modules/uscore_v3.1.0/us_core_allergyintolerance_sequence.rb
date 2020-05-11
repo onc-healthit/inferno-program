@@ -68,9 +68,16 @@ module Inferno
         case property
 
         when 'clinical-status'
-          values_found = resolve_path(resource, 'clinicalStatus.coding.code')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values_found = resolve_path(resource, 'clinicalStatus')
+          coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+          coding_value = value.split('|').last
+          match_found = values_found.any? do |codeable_concept|
+            if value.include? '|'
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+            else
+              codeable_concept.coding.any? { |coding| coding.code == value }
+            end
+          end
           assert match_found, "clinical-status in AllergyIntolerance/#{resource.id} (#{values_found}) does not match clinical-status requested (#{value})"
 
         when 'patient'
@@ -199,6 +206,11 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
 
           validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@allergy_intolerance_ary[patient], 'clinicalStatus'), true)
+          token_with_system_search_params = search_params.merge('clinical-status': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, clinical-status) in any resource.' unless resolved_one

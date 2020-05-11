@@ -89,15 +89,29 @@ module Inferno
           assert match_found, "patient in DocumentReference/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'category'
-          values_found = resolve_path(resource, 'category.coding.code')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values_found = resolve_path(resource, 'category')
+          coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+          coding_value = value.split('|').last
+          match_found = values_found.any? do |codeable_concept|
+            if value.include? '|'
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+            else
+              codeable_concept.coding.any? { |coding| coding.code == value }
+            end
+          end
           assert match_found, "category in DocumentReference/#{resource.id} (#{values_found}) does not match category requested (#{value})"
 
         when 'type'
-          values_found = resolve_path(resource, 'type.coding.code')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values_found = resolve_path(resource, 'type')
+          coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+          coding_value = value.split('|').last
+          match_found = values_found.any? do |codeable_concept|
+            if value.include? '|'
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+            else
+              codeable_concept.coding.any? { |coding| coding.code == value }
+            end
+          end
           assert match_found, "type in DocumentReference/#{resource.id} (#{values_found}) does not match type requested (#{value})"
 
         when 'date'
@@ -271,6 +285,11 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'type'), true)
+          token_with_system_search_params = search_params.merge('type': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, type) in any resource.' unless resolved_one
@@ -315,6 +334,11 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'category'), true)
+          token_with_system_search_params = search_params.merge('category': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, category, date) in any resource.' unless resolved_one
@@ -354,6 +378,11 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'category'), true)
+          token_with_system_search_params = search_params.merge('category': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, category) in any resource.' unless resolved_one
@@ -406,6 +435,11 @@ module Inferno
             reply = get_resource_by_params(versioned_resource_class('DocumentReference'), comparator_search_params)
             validate_search_reply(versioned_resource_class('DocumentReference'), reply, comparator_search_params)
           end
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'type'), true)
+          token_with_system_search_params = search_params.merge('type': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('DocumentReference'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, type, period) in any resource.' unless resolved_one

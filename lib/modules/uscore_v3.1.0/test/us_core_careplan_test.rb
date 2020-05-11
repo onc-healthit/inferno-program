@@ -30,6 +30,11 @@ describe Inferno::Sequence::USCore310CareplanSequence do
         'patient': @sequence.patient_ids.first,
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'category'))
       }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'category'), true)
+      }
     end
 
     it 'skips if the search params are not supported' do
@@ -125,6 +130,10 @@ describe Inferno::Sequence::USCore310CareplanSequence do
           .to_return(status: 200, body: body)
       end
 
+      stub_request(:get, "#{@base_url}/CarePlan")
+        .with(query: @query_with_system, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@care_plan_ary.values.flatten).to_json)
+
       @sequence.run_test(@test)
     end
 
@@ -217,6 +226,10 @@ describe Inferno::Sequence::USCore310CareplanSequence do
             .to_return(status: 200, body: wrap_resources_in_bundle([@care_plan]).to_json)
         end
 
+        stub_request(:get, "#{@base_url}/CarePlan")
+          .with(query: @query_with_system.merge('status': ['draft,active,on-hold,revoked,completed,entered-in-error,unknown'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@care_plan]).to_json)
+
         @sequence.run_test(@test)
       end
     end
@@ -236,6 +249,12 @@ describe Inferno::Sequence::USCore310CareplanSequence do
       @query = {
         'patient': @sequence.patient_ids.first,
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'period'))
+      }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'category'), true),
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'period'))
       }
     end
@@ -368,6 +387,13 @@ describe Inferno::Sequence::USCore310CareplanSequence do
         'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'status')),
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'period'))
       }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'category'), true),
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'status')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'period'))
+      }
     end
 
     it 'skips if the search params are not supported' do
@@ -445,6 +471,12 @@ describe Inferno::Sequence::USCore310CareplanSequence do
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'category')),
         'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'status'))
       }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'category'), true),
+        'status': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@care_plan_ary[@sequence.patient_ids.first], 'status'))
+      }
     end
 
     it 'skips if the search params are not supported' do
@@ -508,6 +540,10 @@ describe Inferno::Sequence::USCore310CareplanSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/CarePlan")
         .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@care_plan_ary.values.flatten).to_json)
+
+      stub_request(:get, "#{@base_url}/CarePlan")
+        .with(query: @query_with_system, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@care_plan_ary.values.flatten).to_json)
 
       @sequence.run_test(@test)

@@ -107,6 +107,11 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
         'patient': @sequence.patient_ids.first,
         'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@device_ary[@sequence.patient_ids.first], 'type'))
       }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@device_ary[@sequence.patient_ids.first], 'type'), true)
+      }
     end
 
     it 'skips if the search params are not supported' do
@@ -170,6 +175,10 @@ describe Inferno::Sequence::USCore310ImplantableDeviceSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Device")
         .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@device_ary.values.flatten).to_json)
+
+      stub_request(:get, "#{@base_url}/Device")
+        .with(query: @query_with_system, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@device_ary.values.flatten).to_json)
 
       @sequence.run_test(@test)

@@ -299,6 +299,12 @@ describe Inferno::Sequence::USCore310ProcedureSequence do
         'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@procedure_ary[@sequence.patient_ids.first], 'code')),
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@procedure_ary[@sequence.patient_ids.first], 'performed'))
       }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@procedure_ary[@sequence.patient_ids.first], 'code'), true),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@procedure_ary[@sequence.patient_ids.first], 'performed'))
+      }
     end
 
     it 'skips if the search params are not supported' do

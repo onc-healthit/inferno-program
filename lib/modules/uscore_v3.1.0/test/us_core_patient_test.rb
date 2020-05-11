@@ -106,6 +106,10 @@ describe Inferno::Sequence::USCore310PatientSequence do
       @query = {
         'identifier': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@patient_ary[@sequence.patient_ids.first], 'identifier'))
       }
+
+      @query_with_system = {
+        'identifier': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@patient_ary[@sequence.patient_ids.first], 'identifier'), true)
+      }
     end
 
     it 'skips if the search params are not supported' do
@@ -169,6 +173,10 @@ describe Inferno::Sequence::USCore310PatientSequence do
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
       stub_request(:get, "#{@base_url}/Patient")
         .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@patient_ary.values.flatten).to_json)
+
+      stub_request(:get, "#{@base_url}/Patient")
+        .with(query: @query_with_system, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@patient_ary.values.flatten).to_json)
 
       @sequence.run_test(@test)
