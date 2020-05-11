@@ -359,43 +359,6 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       assertion_exception = assert_raises(Inferno::AssertionException) { @sequence.test_output_against_profile('Patient', must_supports, @output, '1') }
       assert_match('Could not verify presence of the following must support elements: address.period', assertion_exception.message)
     end
-
-    it 'skips export is empty' do
-      lines = @patient_export.lines
-      lines[1] = "\n"
-
-      stub_request(:get, @patient_file_location)
-        .with(headers: @file_request_headers)
-        .to_return(
-          status: 200,
-          headers: { content_type: 'application/fhir+ndjson' },
-          body: ''
-        )
-
-      skip_exception = assert_raises(Inferno::SkipException) do
-        @sequence.test_output_against_profile('Patient', [], @output, '')
-      end
-      assert skip_exception.message == 'Bulk Data Server export for Patient is empty'
-    end
-
-    it 'pass when export is empty and lines_to_validate is zero' do
-      lines = @patient_export.lines
-      lines[1] = "\n"
-
-      stub_request(:get, @patient_file_location)
-        .with(headers: @file_request_headers)
-        .to_return(
-          status: 200,
-          headers: { content_type: 'application/fhir+ndjson' },
-          body: ''
-        )
-
-      pass_exception = assert_raises(Inferno::PassException) do
-        @sequence.test_output_against_profile('Patient', [], @output, '0')
-      end
-
-      assert pass_exception.message == 'Successfully validated 0 resource(s).'
-    end
   end
 
   describe 'read NDJSON file tests' do
@@ -555,12 +518,21 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
 
       assert !@sequence.instance_variable_get(:@test_warnings).include?("Count in status output (#{@file['count']}) did not match actual number of resources returned (#{@patient_export.lines.count})")
     end
+  end
+
+  describe 'read empty line tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+      @headers = { accept: 'application/fhir+ndjson' }
+      @headers['Authorization'] = "Bearer #{@instance.bulk_access_token}"
+      @file = @output.find { |line| line['type'] == 'Patient' }
+    end
 
     it 'ignores empty line in the output file' do
       lines = @patient_export.lines
       lines[1] = "\n"
 
-      stub_request(:get, 'https://www.example.com/patient_export_with_empty_line.json')
+      stub_request(:get, @patient_file_location)
         .with(headers: @file_request_headers)
         .to_return(
           status: 200,
@@ -568,10 +540,71 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
           body: lines.join
         )
 
-      @file['url'] = 'https://www.example.com/patient_export_with_empty_line.json'
+      line_count = @sequence.check_file_request(@file, 'Patient', true, 1, [])
+      assert line_count == @file['count'] - 1
+    end
+
+    it 'ignores empty at the beginning of output file' do
+      lines = @patient_export.lines
+      lines[0] = "\n"
+
+      stub_request(:get, @patient_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: lines.join
+        )
 
       line_count = @sequence.check_file_request(@file, 'Patient', true, 1, [])
       assert line_count == @file['count'] - 1
+    end
+
+    it 'ignores empty line at the end of output file' do
+      lines = @patient_export.lines
+      lines[lines.count - 1] = "\n"
+
+      stub_request(:get, @patient_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: lines.join
+        )
+
+      line_count = @sequence.check_file_request(@file, 'Patient', true, 1, [])
+      assert line_count == @file['count'] - 1
+    end
+
+    it 'skips when export is empty' do
+      stub_request(:get, @patient_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: ''
+        )
+
+      skip_exception = assert_raises(Inferno::SkipException) do
+        @sequence.test_output_against_profile('Patient', [], @output, '')
+      end
+      assert skip_exception.message == 'Bulk Data Server export for Patient is empty'
+    end
+
+    it 'passes when export is empty and lines_to_validate is zero' do
+      stub_request(:get, @patient_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: ''
+        )
+
+      pass_exception = assert_raises(Inferno::PassException) do
+        @sequence.test_output_against_profile('Patient', [], @output, '0')
+      end
+
+      assert pass_exception.message == 'Successfully validated 0 resource(s).'
     end
   end
 
