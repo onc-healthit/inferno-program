@@ -2,8 +2,8 @@
 
 module Inferno
   module Sequence
-    class SMARTInvalidAud < SequenceBase
-      title 'SMART Invalid AUD'
+    class SMARTInvalidAudSequence < SequenceBase
+      title 'SMART App Launch Error Condition: Invalid AUD'
       description 'Demonstrate that the server properly validates AUD parameter'
 
       test_id_prefix 'SIA'
@@ -11,10 +11,10 @@ module Inferno
       requires :bulk_client_id, :bulk_jwks_url_auth, :bulk_encryption_method, :bulk_token_endpoint, :bulk_scope
       defines :bulk_access_token
 
-      test 'test_one 1' do
+      test 'Test to be implemented by v1.0' do
         metadata do
-        id '01'
-        description %(
+          id '01'
+          description %(
             Test description
         )
         end

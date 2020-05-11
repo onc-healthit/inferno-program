@@ -152,14 +152,15 @@ test_sets:
           - BulkDataAuthorizationSequence
           - BulkDataGroupExportSequence
           - BulkDataGroupExportValidationSequence
-      - name: Extras
+      - name: Other
         run_all: false
         run_skipped: false
         overview: >
           Perform a variety of tests that do not fit in previous scenarios.  Each of these tests need to be run independently.  Please read the
           instructions for each, as they require special attention on the part of the tester.
         sequences:
-          - SMARTInvalidAud
-          - SMARTInvalidLaunch
-          - TokenRevocation
-          - BulkCacheCheck
+          - SMARTInvalidAudSequence
+          - SMARTInvalidLaunchSequence
+          - TokenRevocationSequence
+          - BulkCacheCheckSequence
+          - ONCVisualInspectionSequence

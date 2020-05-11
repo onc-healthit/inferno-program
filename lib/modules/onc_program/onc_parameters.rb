@@ -11,6 +11,25 @@ module Inferno
       property :onc_sl_restricted_scopes, String
 
       property :onc_patient_ids, String
+
+      property :onc_visual_single_registration, String, default: 'false'
+      property :onc_visual_single_registration_notes, String
+      property :onc_visual_multi_registration, String, default: 'false'
+      property :onc_visual_multi_registration_notes, String
+      property :onc_visual_single_scopes, String, default: 'false'
+      property :onc_visual_single_scopes_notes, String
+      property :onc_visual_single_offline_access, String, default: 'false'
+      property :onc_visual_single_offline_access_notes, String
+      property :onc_visual_single_scopes_honored, String, default: 'false'
+      property :onc_visual_single_scopes_honored_notes, String
+      property :onc_visual_introspection, String, default: 'false'
+      property :onc_visual_introspection_notes, String
+      property :onc_visual_data_without_omission, String, default: 'false'
+      property :onc_visual_data_without_omission_notes, String
+      property :onc_visual_multi_scopes_no_greater, String, default: 'false'
+      property :onc_visual_multi_scopes_no_greater_notes, String
+      property :onc_visual_documentation, String, default: 'false'
+      property :onc_visual_documentation_notes, String
     end
   end
 end
