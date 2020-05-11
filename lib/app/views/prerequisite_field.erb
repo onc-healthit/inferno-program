@@ -29,12 +29,11 @@
             <%if defined?(required) && required %>required<%end%>
             />
     <% elsif defined?(type) && type == 'textarea' %>
-      <textarea type="textarea"
+      <textarea
             class="form-control"
             name="<%=prerequisite.to_s%>"
-            id="<%=prerequisite.to_s%>"
-            <%if defined?(readonly) && readonly %>readonly<%end%>
-            <%if defined?(required) && required %>required<%end%>
-            ><%=value%></textarea>
+            id="<%=prerequisite.to_s%>" rows=6
+            <%if defined?(readonly) && readonly %>readonly="readonly"<%end%> 
+            <%if defined?(required) && required %>required="required"<%end%>><%=value%></textarea>
     <% end %>
 </div>

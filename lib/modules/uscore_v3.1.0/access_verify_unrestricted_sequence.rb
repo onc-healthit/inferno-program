@@ -86,7 +86,7 @@ module Inferno
         allowed_resources = all_resources.select { |resource| scope_granting_access(resource, scopes).present? }
         denied_resources = all_resources - allowed_resources
 
-        assert denied_resources.empty?, "This test requires access to all US Core resources with patient information, but the provided scope '#{@instance.received_scopes}' grants access to all resource types."
+        assert denied_resources.empty?, "This test requires access to all US Core resources with patient information, but the received scope '#{@instance.received_scopes}' does not grant access to the '#{denied_resources.join(', ')}' resource type(s)."
         pass 'Scopes received indicate access to all necessary resources.'
       end
 
