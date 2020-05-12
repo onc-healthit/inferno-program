@@ -39,6 +39,10 @@ module Inferno
       end
     end
 
+    FHIR_URIS = {
+      vital_signs: 'http://hl7.org/fhir/StructureDefinition/vitalsigns'
+    }.freeze
+
     ARGONAUT_URIS = {
       smoking_status: 'http://fhir.org/guides/argonaut/StructureDefinition/argo-smokingstatus',
       observation_results: 'http://fhir.org/guides/argonaut/StructureDefinition/argo-observationresults',
@@ -75,11 +79,10 @@ module Inferno
       head_circumference: 'http://hl7.org/fhir/StructureDefinition/headcircum',
       body_weight: 'http://hl7.org/fhir/StructureDefinition/bodyweight',
       bmi: 'http://hl7.org/fhir/StructureDefinition/bmi',
-      blood_pressure: 'http://hl7.org/fhir/StructureDefinition/bp',
-      vital_signs: 'http://hl7.org/fhir/StructureDefinition/vitalsigns'
+      blood_pressure: 'http://hl7.org/fhir/StructureDefinition/bp'
     }.freeze
 
-    def self.guess_profile(resource, version)
+    def self.guess_profile(resource, version, use_default: true)
       # if the profile is given, we don't need to guess
       if resource&.meta&.profile&.present?
         resource.meta.profile.each do |uri|
@@ -92,7 +95,7 @@ module Inferno
       elsif version == :stu3
         guess_stu3_profile(resource)
       elsif version == :r4
-        guess_r4_profile(resource)
+        guess_r4_profile(resource, use_default: use_default)
       end
     end
 
@@ -154,7 +157,7 @@ module Inferno
       candidates.first
     end
 
-    def self.guess_r4_profile(resource)
+    def self.guess_r4_profile(resource, use_default: true)
       return if resource.blank?
 
       candidates = RESOURCES[:r4][resource.resourceType]
@@ -179,17 +182,15 @@ module Inferno
 
         return DEFINITIONS[US_CORE_R4_URIS[:body_temperature]] if observation_contains_code(resource, '8310-5')
 
-        return DEFINITIONS[US_CORE_R4_URIS[:vital_signs]] if resource&.category&.first&.coding&.any? { |coding| coding&.code == 'vital-signs' }
-
-        return nil
-
       elsif resource.resourceType == 'DiagnosticReport'
         return DEFINITIONS[US_CORE_R4_URIS[:diagnostic_report_lab]] if resource&.category&.first&.coding&.any? { |coding| coding&.code == 'LAB' }
 
         return DEFINITIONS[US_CORE_R4_URIS[:diagnostic_report_note]]
       end
 
-      candidates.first
+      return candidates.first if use_default
+
+      nil
     end
 
     def self.observation_contains_code(observation_resource, code)

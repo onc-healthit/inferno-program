@@ -22,6 +22,8 @@ module Inferno
       MIN_RESOURCE_COUNT = 2
 
       US_CORE_R4_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
+      FHIR_URIS = Inferno::ValidationUtil::FHIR_URIS
+
       include Inferno::USCore310ProfileDefinitions
 
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
@@ -111,7 +113,8 @@ module Inferno
 
           @patient_ids_seen << resource.id if klass == 'Patient'
 
-          p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
+          p = guess_profile(resource, @instance.fhir_version.to_sym)
+
           if p && @instance.fhir_version == 'r4'
             resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, p.url)
           else
@@ -145,6 +148,18 @@ module Inferno
         end
 
         line_count
+      end
+
+      def guess_profile(resource, version)
+        return if resource.blank?
+        return Inferno::ValidationUtil.guess_profile(resource, version) unless resource.resourceType == 'Observation'
+
+        p = Inferno::ValidationUtil.guess_profile(resource, version, use_default: false)
+        if p.nil? && resource&.category&.any? { |category| category&.coding&.any? { |coding| coding&.code == 'vital-signs' } }
+          p = Inferno::ValidationUtil::DEFINITIONS[FHIR_URIS[:vital_signs]]
+        end
+
+        p
       end
 
       def process_must_support(must_supports, profile, resource)
@@ -282,7 +297,7 @@ module Inferno
         end
 
         if line_count > MAX_RECENT_LINE_SIZE
-          response_for_log[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS FHIRST #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response_for_log[:body]}"
+          response_for_log[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS FIRST #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response_for_log[:body]}"
         end
         LoggedRestClient.record_response(request_for_log, response_for_log)
 
