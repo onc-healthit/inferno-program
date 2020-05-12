@@ -8,7 +8,8 @@ test_sets:
   test_procedure:
     view: onc_program
     tests:
-      - name: Standalone Patient App
+      - name: Standalone Patient App - Full Patient Access
+        short_label: Standalone Patient App
         run_all: true
         overview: |
           This scenario demonstrates the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
@@ -38,7 +39,8 @@ test_sets:
             prefix: SPD
             description: Use refresh token to get new access token and verify it can access resources.
           - ONCAccessVerifyUnrestrictedSequence
-      - name: Limited App
+      - name: Standalone Patient App - Limited Access
+        short_label: Limited Patient App
         run_all: true
         overview: |
           This scenario demonstrates the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client 
@@ -62,7 +64,8 @@ test_sets:
             title: Standalone Launch with Limited Scope
             description: Perform Standalone SMART launch expecting limited scope access.
           - ONCAccessVerifyRestrictedSequence
-      - name: EHR Practitioner App
+      - name: EHR Practioner App
+        short_label: EHR Practitioner App
         run_all: true
         overview: |
           Demonstrate the ability to perform an EHR launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
@@ -93,7 +96,8 @@ test_sets:
           expects that the EHR will launch the application with a patient context.
 
           After `execute` is pressed, Inferno will wait for the system under test to launch the application.
-      - name: Single Patient Query
+      - name: Single Patient Query for US Core v3.1
+        short_label: Single Patient Query
         run_all: true
         run_skipped: true
         overview: >
@@ -136,7 +140,8 @@ test_sets:
           - USCore310PractitionerSequence
           - USCore310ProvenanceSequence
           - USCoreR4DataAbsentReasonSequence
-      - name: Multi-Patient Query
+      - name: Multi-Patient Authorization and Query
+        short_label: Multi-Patient Query
         run_all: true
         run_skipped: false
         overview: >
@@ -152,7 +157,8 @@ test_sets:
           - BulkDataAuthorizationSequence
           - BulkDataGroupExportSequence
           - BulkDataGroupExportValidationSequence
-      - name: Other
+      - name: Additional / Other Tests
+        short_label: Other
         run_all: false
         run_skipped: false
         overview: >
