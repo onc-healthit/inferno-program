@@ -152,14 +152,16 @@ module Inferno
 
       def guess_profile(resource, version)
         return if resource.blank?
-        return Inferno::ValidationUtil.guess_profile(resource, version) unless resource.resourceType == 'Observation'
 
-        p = Inferno::ValidationUtil.guess_profile(resource, version, use_default: false)
-        if p.nil? && resource&.category&.any? { |category| category&.coding&.any? { |coding| coding&.code == 'vital-signs' } }
-          p = Inferno::ValidationUtil::DEFINITIONS[FHIR_URIS[:vital_signs]]
+        if resource.resourceType == 'Observation'
+          Inferno::ValidationUtil.guess_profile(resource, version, use_default: false)
+          # Not sure if we need validate using FHIR vital-sign profile. 
+          # if p.nil? && resource&.category&.any? { |category| category&.coding&.any? { |coding| coding&.code == 'vital-signs' } }
+          #  p = Inferno::ValidationUtil::DEFINITIONS[FHIR_URIS[:vital_signs]]
+          # end
+        else
+          Inferno::ValidationUtil.guess_profile(resource, version, use_default: true)
         end
-
-        p
       end
 
       def process_must_support(must_supports, profile, resource)
