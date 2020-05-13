@@ -49,7 +49,7 @@ be used on Linux and MacOS hosts.
    the [docker-compose](https://docs.docker.com/compose/install/) tool (which
    may be included in the distribution, as is the case for Windows and MacOS).
 2. Download the [latest release of the `inferno`
-   project](https://github.com/onc-healthit/inferno/releases) to your local
+   project](https://github.com/onc-healthit/inferno-program/releases) to your local
    computer on a directory of your choice.
 3. Open a terminal in the directory where the project was downloaded (above).
 4. Run the command `docker-compose up` to start the server. This will
@@ -78,7 +78,7 @@ And run the following commands from the terminal:
 
 ```sh
 # MacOS or Linux
-git clone https://github.com/onc-healthit/inferno
+git clone https://github.com/onc-healthit/inferno-program
 cd inferno
 bundle install
 bundle exec rackup
@@ -144,7 +144,7 @@ all of which are hereby incorporated by reference.
 ### Reference Implementation
 
 While it is recommended that users install Inferno locally, a reference
-implementation of Inferno is hosted at https://inferno.healthit.gov
+implementation of Inferno is hosted at https://inferno.healthit.gov/inferno
 
 Users that would like to try out Inferno before installing locally can use that
 reference implementation, but should be forewarned that the database will be
@@ -170,7 +170,7 @@ bundle exec rake test
 
 Tests are written to be easily understood, even by those who aren't familiar
 with Ruby.  They can be viewed directly [in this
-repository](https://github.com/onc-healthit/inferno/tree/master/lib/app/modules).
+repository](https://github.com/onc-healthit/inferno-program/tree/master/lib/modules).
 
 Tests contain metadata that provide additional details and traceability to
 standards.  The active tests and related metadata can be exported into CSV
