@@ -14,6 +14,7 @@ module Inferno
       test 'Test to be implemented by v1.0' do
         metadata do
           id '01'
+          link 'http://www.hl7.org/fhir/smart-app-launch/'
           description %(
               Test description
           )

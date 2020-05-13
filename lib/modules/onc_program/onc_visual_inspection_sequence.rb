@@ -16,8 +16,8 @@ module Inferno
                :onc_visual_single_scopes_notes,
                :onc_visual_single_offline_access,
                :onc_visual_single_offline_access_notes,
-               :onc_visual_single_scopes_honored,
-               :onc_visual_single_scopes_honored_notes,
+               :onc_visual_refresh_timeout,
+               :onc_visual_refresh_timeout_notes,
                :onc_visual_introspection,
                :onc_visual_introspection_notes,
                :onc_visual_data_without_omission,
@@ -30,6 +30,7 @@ module Inferno
       test 'Health IT Module demonstrated support for application registration for single patients.' do
         metadata do
           id '01'
+          link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
           description %(
             Health IT Module demonstrated support for application registration for single patients.
           )
@@ -42,6 +43,7 @@ module Inferno
       test 'Health IT Module demonstrated support for application registration for multiple patients.' do
         metadata do
           id '02'
+          link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
           description %(
             Health IT Module demonstrated support for supports application registration for multiple patients.
           )
@@ -54,6 +56,7 @@ module Inferno
       test 'Health IT Module demonstrated a graphical user interface for user to authorize FHIR resources.' do
         metadata do
           id '03'
+          link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
           description %(
             Health IT Module demonstrated a graphical user interface for user to authorize FHIR resources
           )
@@ -66,6 +69,7 @@ module Inferno
       test 'Health IT Module demonstrated a graphical user interface to authorize offline access.' do
         metadata do
           id '04'
+          link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
           description %(
             Health IT Module demonstrated a graphical user interface for user to authorize offline access.
           )
@@ -75,21 +79,23 @@ module Inferno
         pass @instance.onc_visual_single_offline_access_notes if @instance.onc_visual_single_offline_access_notes.present?
       end
 
-      test 'Health IT Module demonstrated that it honored user scope preference.' do
+      test 'Health IT Module attested that refresh tokens had three month timeout period.' do
         metadata do
           id '05'
+          link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
           description %(
-            Health IT Module demonstrated that it honored user scope preference.
+            Health IT Module attested that refresh tokens had three month timeout period.
           )
         end
 
-        assert @instance.onc_visual_single_scopes_honored == 'true', 'Health IT Module did not demonstrate a graphical user interface for user to authorize offline access'
-        pass @instance.onc_visual_single_scopes_honored_notes if @instance.onc_visual_single_scopes_honored_notes.present?
+        assert @instance.onc_visual_refresh_timeout == 'true', 'Health IT Module did attest that refresh tokens have three month timeout period'
+        pass @instance.onc_visual_refresh_timeout_notes if @instance.onc_visual_refresh_timeout_notes.present?
       end
 
       test 'Health IT developer demonstrated the ability of the Health IT Module / authorization server to validate token it has issued.' do
         metadata do
           id '06'
+          link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
           description %(
             Health IT developer demonstrated the ability of the Health IT Module / authorization server to validate token it has issued
           )
@@ -102,6 +108,7 @@ module Inferno
       test 'Tester verifies that all information is accurate and without omission.' do
         metadata do
           id '07'
+          link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
           description %(
             Tester verifies that all information is accurate and without omission.
           )
@@ -114,6 +121,7 @@ module Inferno
       test 'Information returned no greater than scopes pre-authorized for multi-patient queries.' do
         metadata do
           id '08'
+          link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
           description %(
             Information returned no greater than scopes pre-authorized for multi-patient queries.
           )
@@ -126,6 +134,7 @@ module Inferno
       test 'Health IT developer demonstrated the documentation is available at a publicly accessible URL.' do
         metadata do
           id '09'
+          link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
           description %(
             Health IT developer demonstrated the documentation is available at a publicly accessible URL.
           )

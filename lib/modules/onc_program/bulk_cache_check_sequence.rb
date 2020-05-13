@@ -14,6 +14,7 @@ module Inferno
       test 'Test to be implemented by v1.0' do
         metadata do
           id '01'
+          link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#file-request'
           description %(
               Test description
           )

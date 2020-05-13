@@ -20,8 +20,8 @@ module Inferno
       property :onc_visual_single_scopes_notes, String
       property :onc_visual_single_offline_access, String, default: 'false'
       property :onc_visual_single_offline_access_notes, String
-      property :onc_visual_single_scopes_honored, String, default: 'false'
-      property :onc_visual_single_scopes_honored_notes, String
+      property :onc_visual_refresh_timeout, String, default: 'false'
+      property :onc_visual_refresh_timeout_notes, String
       property :onc_visual_introspection, String, default: 'false'
       property :onc_visual_introspection_notes, String
       property :onc_visual_data_without_omission, String, default: 'false'
