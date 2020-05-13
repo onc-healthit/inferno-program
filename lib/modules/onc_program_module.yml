@@ -8,12 +8,15 @@ test_sets:
   test_procedure:
     view: onc_program
     tests:
-      - name: Standalone Patient App
+      - name: Standalone Patient App - Full Patient Access
+        short_label: Standalone Patient App
+        run_all: true
         overview: |
           This scenario demonstrates the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
           refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
           on the patient in context.  The access token is then refreshed, and the Patient resource is read using the new
-          access token to ensure that the refresh was successful.  Finally, the authentication information provided by OpenID Connect is decoded and validated.
+          access token to ensure that the refresh was successful. The authentication information provided by OpenID Connect is decoded and validated, and simple queries
+          are performed to ensure that access is granted to all USCDI data elements.
         input_instructions: |
           Enter in the appropriate scope to enable patient-level access to all relevant resources.  In addition, support for the 
           OpenID Connect (`openid fhirUser`), refresh tokens (`offline_access`), and patient context (`launch/patient`) are required.
@@ -37,7 +40,9 @@ test_sets:
             prefix: SPD
             description: Use refresh token to get new access token and verify it can access resources.
           - ONCAccessVerifyUnrestrictedSequence
-      - name: Limited Scope App
+      - name: Standalone Patient App - Limited Access
+        short_label: Limited App
+        run_all: true
         overview: |
           This scenario demonstrates the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client 
           with limited access granted to the application.  The tester is expected to grant the application access to a subset of the relevant resource
@@ -60,7 +65,9 @@ test_sets:
             title: Standalone Launch with Limited Scope
             description: Perform Standalone SMART launch expecting limited scope access.
           - ONCAccessVerifyRestrictedSequence
-      - name: EHR Practitioner App
+      - name: EHR Practioner App
+        short_label: EHR Practitioner App
+        run_all: true
         overview: |
           Demonstrate the ability to perform an EHR launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
           refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
@@ -90,14 +97,16 @@ test_sets:
           expects that the EHR will launch the application with a patient context.
 
           After `execute` is pressed, Inferno will wait for the system under test to launch the application.
-      - name: Single Patient Query
+      - name: Single Patient API
+        short_label: Single Patient API
         run_all: true
         run_skipped: true
         overview: >
-          For each of the relevant USCDI data elements provided in the conformance statement, this test executes the [required supported searches](http://www.fhir.org/guides/argonaut/r2/Conformance-server.html)
-          as defined by the Argonaut Data Query Implementation Guide.  The test begins by searching by Patient provided in the most recent SMART App Launch performed by Inferno.  It uses results returned from that
-          query to generate other queries and checks that the results are consistent with the provided search parameters.  It then performs a read on each Resource returned and validates the response against the 
-          relevant [profile](http://www.fhir.org/guides/argonaut/r2/profiles.html) as currently defined in the Argonaut Data Query Implementation Guide.
+          For each of the relevant USCDI data elements provided in the conformance statement, this test executes the [required supported searches](https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html)
+          as defined by the US Core Implementation Guide v3.1.  The test begins by searching by one or more patients, with the expectation that the Bearer token provided to the test grants access to all USCDI resources.
+          It uses results returned from that query to generate other queries and checks that the results are consistent with the provided search parameters.  It then performs a read on each Resource returned and validates the response against the 
+          relevant [profile](https://www.hl7.org/fhir/us/core/profiles.html) as currently defined in the US Core Implementation Guide. All MUST SUPPORT elements must be seen before the test can pass, as well as Data Absent Reason
+          to demonstrate that the server can properly handle missing data.
         lock_variables: 
           - token
         sequences:
@@ -133,7 +142,8 @@ test_sets:
           - USCore310PractitionerSequence
           - USCore310ProvenanceSequence
           - USCoreR4DataAbsentReasonSequence
-      - name: Multi-Patient Query
+      - name: Multi-Patient Authorization and API
+        short_label: Multi-Patient API
         run_all: true
         run_skipped: false
         overview: >
@@ -149,3 +159,19 @@ test_sets:
           - BulkDataAuthorizationSequence
           - BulkDataGroupExportSequence
           - BulkDataGroupExportValidationSequence
+      - name: Additional Tests
+        short_label: Other
+        run_all: false
+        run_skipped: false
+        overview: >
+          Not all requirements that need to be tested fit within the previous scenarios.  The tests contained in this section addresses remaining testing requirements.
+          Each of these tests need to be run independently.  Please read the
+          instructions for each, as they require special attention on the part of the tester.
+
+          Note: additional tests are expected to be added to this preview version of Inferno prior to rule effective date.
+        sequences:
+          - ONCVisualInspectionSequence
+          # - SMARTInvalidAudSequence
+          # - SMARTInvalidLaunchSequence
+          # - TokenRevocationSequence
+          # - BulkCacheCheckSequence

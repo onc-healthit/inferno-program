@@ -10,6 +10,7 @@ module Inferno
       attr_accessor :lock_variables
       attr_accessor :name
       attr_accessor :overview
+      attr_accessor :short_label
       attr_accessor :test_cases
       attr_accessor :test_set
       attr_accessor :run_all
@@ -22,6 +23,7 @@ module Inferno
         @name = group[:name]
         @id = name.gsub(/[^0-9a-z]/i, '')
         @overview = group[:overview]
+        @short_label = group[:short_label] || group[:name]
         @run_all = group[:run_all] || false
         @test_cases = []
         @test_case_names = Set.new
