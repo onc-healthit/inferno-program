@@ -245,7 +245,7 @@ end
 
 class OncTokenRefreshSequenceTest < MiniTest::Test
   def setup
-    refresh_token = 'REFRESH_TOKEN'
+    @refresh_token = 'REFRESH_TOKEN'
     @instance = Inferno::Models::TestingInstance.create(
       url: 'http://www.example.com',
       client_name: 'Inferno',
@@ -257,7 +257,7 @@ class OncTokenRefreshSequenceTest < MiniTest::Test
       initiate_login_uri: 'http://localhost:4567/launch',
       redirect_uris: 'http://localhost:4567/redirect',
       scopes: 'launch/patient online_access openid profile launch user/*.* patient/*.*',
-      refresh_token: refresh_token
+      refresh_token: @refresh_token
     )
     @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'r4'))
 
@@ -276,9 +276,10 @@ class OncTokenRefreshSequenceTest < MiniTest::Test
       'Content-Type' => 'application/x-www-form-urlencoded'
     }
 
+    @instance.refresh_token = 'REFRESH_TOKEN'
+
     body = {
-      'grant_type' => 'refresh_token',
-      'refresh_token' => @instance.refresh_token
+      'grant_type' => 'refresh_token'
     }
 
     body_response_code = 200
@@ -288,6 +289,7 @@ class OncTokenRefreshSequenceTest < MiniTest::Test
     body_with_scope_response_code = 200
 
     exchange_response = @standalone_token_exchange.dup
+    exchange_response['refresh_token'] = SecureRandom.uuid
 
     response_headers = { content_type: 'application/json; charset=UTF-8',
                          cache_control: 'no-store',
@@ -310,6 +312,18 @@ class OncTokenRefreshSequenceTest < MiniTest::Test
       body_response_code = 400
     when :disallows_scope
       body_with_scope_response_code = 400
+    when :stale_refresh_token
+      @instance.update(
+        client_secret: @confidential_client_secret,
+        confidential_client: true
+      )
+      exchange_response['refresh_token'] = @instance.refresh_token
+    when :no_refresh_token
+      @instance.update(
+        client_secret: @confidential_client_secret,
+        confidential_client: true
+      )
+      exchange_response.delete('refresh_token')
     end
 
     # can't do this above because we are altering the content of hash in other error modes
@@ -330,14 +344,14 @@ class OncTokenRefreshSequenceTest < MiniTest::Test
 
     stub_request(:post, @instance.oauth_token_endpoint)
       .with(headers: headers,
-            body: body)
+            body: hash_including(body))
       .to_return(status: body_response_code,
                  body: exchange_response_json,
                  headers: response_headers)
 
     stub_request(:post, @instance.oauth_token_endpoint)
       .with(headers: headers,
-            body: body_with_scope)
+            body: hash_including(body_with_scope))
       .to_return(status: body_with_scope_response_code,
                  body: exchange_response_json,
                  headers: response_headers)
@@ -444,6 +458,20 @@ class OncTokenRefreshSequenceTest < MiniTest::Test
 
   def test_fail_if_scope_cannot_be_in_payload
     setup_mocks(:disallows_scope)
+
+    sequence_result = @sequence.start
+    assert sequence_result.fail?
+  end
+
+  def test_fail_if_stale_refresh_token
+    setup_mocks(:stale_refresh_token)
+
+    sequence_result = @sequence.start
+    assert sequence_result.fail?
+  end
+
+  def test_fail_if_no_refresh_token
+    setup_mocks(:no_refresh_token)
 
     sequence_result = @sequence.start
     assert sequence_result.fail?
