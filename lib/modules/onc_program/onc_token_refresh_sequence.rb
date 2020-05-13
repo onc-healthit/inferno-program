@@ -104,7 +104,7 @@ module Inferno
       test :refresh_without_scope do
         metadata do
           id '03'
-          name 'Server successfully refreshes the access token when optional scope parameter omitted'
+          name 'Refresh token exchange succeeds when optional scope parameter omitted'
           link 'https://tools.ietf.org/html/rfc6749'
           description %(
             Server successfully exchanges refresh token at OAuth token endpoint without providing scope in
@@ -124,7 +124,10 @@ module Inferno
 
         specify_scopes = false
 
+        @previous_refresh_token = @instance.refresh_token
+
         token_response = perform_refresh_request(instance_client_id, @instance.refresh_token, specify_scopes)
+
         assert_response_ok(token_response)
 
         validate_and_save_refresh_response(token_response)
@@ -134,7 +137,7 @@ module Inferno
       test :refresh_with_scope do
         metadata do
           id '04'
-          name 'Server successfully refreshes the access token when optional scope parameter provided'
+          name 'Refresh token exchange succeeds when optional scope parameter provided'
           link 'https://tools.ietf.org/html/rfc6749'
           description %(
             Server successfully exchanges refresh token at OAuth token endpoint while providing scope in
@@ -188,6 +191,31 @@ module Inferno
       end
 
       patient_context_test(index: '05', refresh: true)
+
+      test :refresh_token_refreshed do
+        metadata do
+          id '06'
+          name 'Server supplies new refresh token as required by ONC certification criteria.'
+          link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
+          description %(
+            The ONC certification criteria requires that refresh tokens can be refreshed.  While `refresh_token`
+            is optional in the refresh token response in the OAuth 2.0 specification, this test requires that a
+            new refresh token is provided that does not match the previous refresh token.
+
+            ```
+            An application capable of storing a client secret must be issued a new refresh token valid for a new
+            period of no less than three months.
+            ```
+
+          )
+        end
+
+        omit 'Applies to confidential clients only' unless instance_confidential_client
+
+        skip_if @previous_refresh_token.blank? && @instance.refresh_token.blank?, 'No refresh token was received during the SMART launch'
+
+        assert @previous_refresh_token != @instance.refresh_token, "Refresh response did not provide a new refresh token as required by ONC certification criteria.  Old Refresh Token: `#{@previous_refresh_token}`; New Refresh Token: `#{@instance.refresh_token}`"
+      end
     end
   end
 end
