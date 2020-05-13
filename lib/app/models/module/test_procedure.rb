@@ -37,11 +37,12 @@ module Inferno
         attr_accessor :inferno_module
         attr_accessor :group
         attr_accessor :id
-        attr_accessor :SUT
-        attr_accessor :TLV
+        attr_accessor :s_u_t
+        attr_accessor :t_l_v
         attr_accessor :inferno_supported
         attr_accessor :inferno_notes
         attr_accessor :inferno_tests
+        attr_accessor :alternate_test
 
         def initialize(data, inferno_module)
           @group = data[:group]
@@ -50,6 +51,7 @@ module Inferno
           @t_l_v = data[:TLV]
           @inferno_supported = data[:inferno_supported]
           @inferno_notes = data[:inferno_notes]
+          @alternate_test = data[:alternate_test]
           @inferno_module = inferno_module
           @inferno_tests = expand_tests(data[:inferno_tests]).flatten
         end

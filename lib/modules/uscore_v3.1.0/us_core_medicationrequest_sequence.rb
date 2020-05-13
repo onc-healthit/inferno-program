@@ -213,6 +213,7 @@ module Inferno
             save_resource_references(versioned_resource_class('MedicationRequest'), @medication_request_ary[patient])
             save_delayed_sequence_references(resources_returned, USCore310MedicationrequestSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
+
             test_medication_inclusion(@medication_request_ary[patient], search_params)
             break
           end

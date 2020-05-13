@@ -96,12 +96,12 @@
                 <span class="oi oi-x" aria-hidden="true"></span>
               </div>
             <% end %>
-            <div class="group-nav-label"><%= group_with_result[:group].name %></div>
+            <div class="group-nav-label"><%= group_with_result[:group].short_label %></div>
           </a>
         </li>
       <%end%>
       <li class="nav-item nav-item-no-chevron">
-        <a id="report-link" class="nav-link" href="#group-report" data-toggle="tab"><span class="oi oi-flag" aria-hidden="true"></span><div class="group-nav-label">Report</div></a>
+        <a id="report-link" class="nav-link" href="#group-report" data-toggle="tab"><span class="oi oi-flag" aria-hidden="true"></span><div class="group-nav-label"></div></a>
       </li>
       </ul>
     </div>
@@ -186,50 +186,56 @@
                   <%= markdown_to_html(group.overview) %>
 
                   <div class='buttons-container buttons-container-<%=group_result.to_s%>'>
-                    <% case group_result.to_s
-                      when 'pass' %>
-                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                          <span class="oi oi-loop"></span> Rerun Tests
-                        </button>
-                      <% when 'fail' %>
-                        <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id]&.skip?} %>
-                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
-                            <span class="oi oi-loop"></span> Rerun Skipped Tests
+                    <% if group.run_all %>
+                      <% case group_result.to_s
+                        when 'pass' %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                            <span class="oi oi-loop"></span> Rerun Tests
                           </button>
-                        <% end %>
-                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                          <span class="oi oi-loop"></span> Rerun Tests
-                        </button>
-                      <% when 'cancel' %>
-                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                          <span class="oi oi-media-play"></span> Begin Tests
-                        </button>
-                      <% when 'error' %>
-                        <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id]&.skip?} %>
-                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
-                            <span class="oi oi-loop"></span> Rerun Skipped Tests
+                        <% when 'fail' %>
+                          <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id]&.skip?} %>
+                            <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
+                              <span class="oi oi-loop"></span> Rerun Skipped Tests
+                            </button>
+                          <% end %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                            <span class="oi oi-loop"></span> Rerun Tests
                           </button>
-                        <% end %>
-                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                          <span class="oi oi-loop"></span> Rerun Tests
-                        </button>
-                      <% when 'wait' %>
-                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                          <span class="oi oi-media-play"></span> Begin Tests
-                        </button>
-                      <% when 'skip' %>
-                        <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id]&.skip?} %>
-                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
-                            <span class="oi oi-loop"></span> Rerun Skipped Tests
+                        <% when 'cancel' %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                            <span class="oi oi-media-play"></span> Begin Tests
                           </button>
-                        <% end %>
-                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                          <span class="oi oi-loop"></span> Rerun Tests
-                        </button>
-                      <% else %>
-                        <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
-                          <span class="oi oi-media-play"></span> Run Tests
-                        </button>
+                        <% when 'error' %>
+                          <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id]&.skip?} %>
+                            <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
+                              <span class="oi oi-loop"></span> Rerun Skipped Tests
+                            </button>
+                          <% end %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                            <span class="oi oi-loop"></span> Rerun Tests
+                          </button>
+                        <% when 'wait' %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                            <span class="oi oi-media-play"></span> Begin Tests
+                          </button>
+                        <% when 'skip' %>
+                          <% if group.run_skipped && group.test_cases.any?{ |test_case| sequence_results[test_case.id]&.skip?} %>
+                            <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' data-skipped-only='true'>
+                              <span class="oi oi-loop"></span> Rerun Skipped Tests
+                            </button>
+                          <% end %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                            <span class="oi oi-loop"></span> Rerun Tests
+                          </button>
+                        <% else %>
+                          <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>'>
+                            <span class="oi oi-media-play"></span> Run Tests
+                          </button>
+                      <% end %>
+                    <% else %>
+                      <button class='sequence-button btn btn-info btn-sm' data-group-id='<%=group.id%>' style='visibility:hidden' disabled=disabled>
+                        <span class="oi oi-media-play"></span> Run Tests
+                      </button> 
                     <% end %>
 
                     <% if index < instance.group_results(test_set.id).length - 1 && group_result.to_s != "not_run" %>
@@ -260,7 +266,7 @@
               </div>
             </div>
             <% group.test_cases.each_with_index do |tc, index| %>
-              <%= erb(:test_case,{},{instance: instance, sequence_results: sequence_results, test_case: tc, show_button: false, index: index}) %>
+              <%= erb(:test_case,{},{instance: instance, sequence_results: sequence_results, test_case: tc, show_button: !group.run_all, index: index}) %>
             <% end %>
           </div>
         <% end %>
@@ -404,7 +410,8 @@
               label: 'EHR-launched Scope',
               description: 'OAuth 2.0 scope provided by system to enable all required functionality',
               instance: instance,
-              value: instance.scopes || default_scopes,
+              value: instance.scopes || 'launch openid fhirUser offline_access user/Medication.read user/AllergyIntolerance.read user/CarePlan.read user/CareTeam.read user/Condition.read user/Device.read user/DiagnosticReport.read user/DocumentReference.read user/Encounter.read user/Goal.read user/Immunization.read user/Location.read user/MedicationRequest.read user/Observation.read user/Organization.read user/Patient.read user/Practitioner.read user/PractitionerRole.read user/Procedure.read user/Provenance.read',
+              type: 'textarea',
               required: true,
               })%>
 
@@ -412,9 +419,9 @@
               label: 'Standalone Patient Scope',
               description: 'OAuth 2.0 scope provided by system to enable all required functionality',
               instance: instance,
-              value: instance.onc_sl_scopes,
-              required: true,
-              })%>
+              type: 'textarea',
+              value: instance.onc_sl_scopes || 'launch/patient openid fhirUser offline_access patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read patient/Procedure.read patient/Provenance.read'
+               })%>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_restricted_scopes,
               label: 'Limited Standalone Patient Scope',
@@ -501,7 +508,8 @@
               label: 'Bulk Data Scopes',
               description: 'Bulk Data Scopes provided at registration to the Inferno application.',
               instance: instance,
-              value: instance.bulk_scope || 'system/*.read',
+              type: 'textarea',
+              value: instance.bulk_scope || 'system/Medication.read system/AllergyIntolerance.read system/CarePlan.read system/CareTeam.read system/Condition.read system/Device.read system/DiagnosticReport.read system/DocumentReference.read system/Encounter.read system/Goal.read system/Immunization.read system/Location.read system/MedicationRequest.read system/Observation.read system/Organization.read system/system.read system/Practitioner.read system/PractitionerRole.read system/Procedure.read system/Provenance.read',
               })%>  
 
         <div class="form-group"
@@ -557,6 +565,85 @@
                 To validate all resources, leave this blank.
               ),              
               value: instance.bulk_lines_to_validate}); %>
+
+        <% [
+          {
+            field: :onc_visual_single_registration,
+            notes_field: :onc_visual_single_registration_notes,
+            label: 'Health IT Module demonstrated support for application registration for single patients.',
+            description: ''
+          },
+          {
+            field: :onc_visual_multi_registration,
+            notes_field: :onc_visual_multi_registration_notes, 
+            label: 'Health IT Module demonstrated support for application registration for multiple patients.',
+            description: ''
+          },
+          {
+            field: :onc_visual_single_scopes,
+            notes_field: :onc_visual_single_scopes_notes, 
+            label: 'Health IT Module demonstrated a graphical user interface for user to authorize FHIR resources.',
+            description: ''
+          },
+          {
+            field: :onc_visual_single_offline_access,
+            notes_field: :onc_visual_single_offline_access_notes, 
+            label: 'Health IT Module demonstrated a graphical user interface to authorize offline access.',
+            description: ''
+          },
+          {
+            field: :onc_visual_refresh_timeout,
+            notes_field: :onc_visual_refresh_timeout_notes, 
+            label: 'Health IT Module did attest that refresh tokens have three month timeout period',
+            description: ''
+          },
+          {
+            field: :onc_visual_introspection,
+            notes_field: :onc_visual_introspection_notes, 
+            label: 'Health IT developer demonstrated the ability of the Health IT Module / authorization server to validate token it has issued.',
+            description: ''
+          },
+          {
+            field: :onc_visual_data_without_omission,
+            notes_field: :onc_visual_data_without_omission_notes, 
+            label: 'Tester verifies that all information is accurate and without omission.',
+            description: ''
+          },
+          {
+            field: :onc_visual_multi_scopes_no_greater,
+            notes_field: :onc_visual_multi_scopes_no_greater_notes, 
+            label: 'Information returned no greater than scopes pre-authorized for multi-patient queries.',
+            description: ''
+          },
+          {
+            field: :onc_visual_documentation,
+            notes_field: :onc_visual_documentation_notes, 
+            label: 'Health IT developer demonstrated the documentation is available at a publicly accessible URL.',
+            description: ''
+          }
+            ].each do |field| %>
+              <div class="form-group" data-requiredby="ONCVisualInspectionSequence" data-definedby="" data-prerequisite="<%=field[:field]%>" style="margin-bottom: 0px;">
+                <label style="display:block"><%=field[:label]%>
+                <% if field[:description].present? %>
+                <small><%=field[:description]%></small>
+                <% end %>
+                </label>
+                <div class="form-check form-check-inline" style="margin-bottom: 0px;">
+                  <input class="form-check-input" type="radio" name="<%=field[:field]%>" id="<%=field[:field]%>_on" value="true" <%=instance.send(field[:field]) == 'true' ? 'checked' : '' %>>
+                  <label style="margin-bottom: 0;" class="form-check-label" for="<%=field[:field]%>_on_active">Yes</label>
+                </div>
+                <div class="form-check form-check-inline" style="margin-bottom: 0px;">
+                  <input class="form-check-input" type="radio" name="<%=field[:field]%>" id="<%=field[:field]%>_off" value="false"  <%=instance.send(field[:field]) != 'true' ? 'checked' : '' %>>
+                  <label style="margin-bottom: 0;" class="form-check-label" for="<%=field[:field]%>_off_active">No</label>
+                </div>
+              </div>
+              <div class="form-group" data-requiredby="ONCVisualInspectionSequence" data-definedby="" data-prerequisite="<%=field[:notes_field]%>" style="margin-bottom: 2rem;">
+                <label for="<%=field[:notes_field]%>">
+                  <small>Notes, if applicable:</small>
+                </label>
+                <textarea type="textarea" class="form-control" name="<%=field[:notes_field]%>" id="<%=field[:notes_field]%>"><%=instance.send(field[:notes_field])%></textarea>
+              </div>
+        <% end %>
 
      
       </div>

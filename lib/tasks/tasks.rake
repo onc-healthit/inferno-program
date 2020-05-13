@@ -314,129 +314,223 @@ namespace :inferno do |_argv|
     args.with_defaults(filename: "#{args.module}_matrix.xlsx")
 
     workbook = RubyXL::Workbook.new
-    worksheet = workbook.worksheets[0]
-
-    # columns.each_with_index do |row_name, index|
-    #   cell = worksheet.add_cell(0, index, row_name.first)
-    #   cell.change_text_wrap(true)
-    # end
-
-    # worksheet.change_row_bold(0, true)
-    # worksheet.change_row_fill(0, 'BBBBBB')
-    # worksheet.change_row_height(0, 40)
 
     test_module = Inferno::Module.get(args.module)
     test_set = test_module.test_sets[args.test_set.to_sym]
+
+    ########################
+    # MATRIX WORKSHEET
+    ########################
+
+    matrix_worksheet = workbook.worksheets[0]
+    matrix_worksheet.sheet_name = 'Matrix'
+
     col = 2
-    cell = worksheet.add_cell(0, 1, "Inferno Program Tests (v#{Inferno::VERSION})")
-    worksheet.change_row_height(0, 20)
-    worksheet.change_row_vertical_alignment(0, 'distributed')
+    cell = matrix_worksheet.add_cell(0, 1, "Inferno Program Tests (v#{Inferno::VERSION})")
+    matrix_worksheet.change_row_height(0, 20)
+    matrix_worksheet.change_row_vertical_alignment(0, 'distributed')
     tests = []
     column_map = {}
-    worksheet.change_column_width(1, 25)
-    worksheet.change_row_height(1, 20)
-    worksheet.change_row_horizontal_alignment(1, 'center')
-    worksheet.change_row_vertical_alignment(1, 'distributed')
+    inferno_to_procedure_map = Hash.new { |h, k| h[k] = [] }
+    matrix_worksheet.change_column_width(1, 25)
+    matrix_worksheet.change_row_height(1, 20)
+    matrix_worksheet.change_row_horizontal_alignment(1, 'center')
+    matrix_worksheet.change_row_vertical_alignment(1, 'distributed')
     column_borders = []
 
     test_set.groups.each do |group|
-      cell = worksheet.add_cell(1, col, group.name)
-      worksheet.merge_cells(1, col, 1, col + group.test_cases.length - 1)
+      cell = matrix_worksheet.add_cell(1, col, group.name)
+      matrix_worksheet.merge_cells(1, col, 1, col + group.test_cases.length - 1)
       cell.change_text_wrap(true)
-      worksheet.change_column_border(col, :left, 'medium')
-      worksheet.change_column_border_color(col, :left, '000000')
+      matrix_worksheet.change_column_border(col, :left, 'medium')
+      matrix_worksheet.change_column_border_color(col, :left, '000000')
       column_borders << col
-      # worksheet.change_row_fill(row, 'EEEEEE')
-      # worksheet.change_row_height(row, 25)
-      # row += 1
+
       group.test_cases.each do |test_case|
-        worksheet.change_column_width(col, 4.2)
+        matrix_worksheet.change_column_width(col, 4.2)
 
         test_case_id = test_case.sequence.tests.first.id.split('-').first
         test_case_id = "#{test_case.prefix}#{test_case_id}" unless test_case.prefix.nil?
-        cell = worksheet.add_cell(2, col, test_case_id)
+        cell = matrix_worksheet.add_cell(2, col, test_case_id)
         cell.change_text_rotation(90)
         cell.change_border_color(:bottom, '000000')
         cell.change_border(:bottom, 'medium')
-        worksheet.change_column_border(col, :right, 'thin')
-        worksheet.change_column_border_color(col, :right, '666666')
+        matrix_worksheet.change_column_border(col, :right, 'thin')
+        matrix_worksheet.change_column_border_color(col, :right, '666666')
+
         test_case.sequence.tests.each do |test|
           tests << { test_case: test_case, test: test }
           full_test_id = "#{test_case.prefix}#{test.id}"
           column_map[full_test_id] = col
-
-          # next if test_case.sequence.optional? || test.optional?
-
-          # this_row = columns.map do |col|
-          #   col[2].call(group, test_case, test)
-          # end
-
-          # this_row.each_with_index do |value, index|
-          #   cell = worksheet.add_cell(row, index, value)
-          #   cell.change_text_wrap(true)
-          # end
-          # worksheet.change_row_height(row, 30)
-          # worksheet.change_row_vertical_alignment(row, 'top')
-          # worksheet.change_row_font_color(row, '666666') unless !test_case.sequence.optional? && !test.optional?
         end
         col += 1
       end
     end
 
     total_width = col - 1
-    worksheet.merge_cells(0, 1, 0, total_width)
-    worksheet.change_row_horizontal_alignment(0, 'center')
+    matrix_worksheet.merge_cells(0, 1, 0, total_width)
+    matrix_worksheet.change_row_horizontal_alignment(0, 'center')
 
-    cell = worksheet.add_cell(2, total_width + 2, 'Supported?')
+    cell = matrix_worksheet.add_cell(2, total_width + 2, 'Supported?')
     row = 3
 
     test_module.test_procedure.sections.each do |section|
       section.steps.each do |step|
-        cell = worksheet.add_cell(row, 1, "#{step.id.upcase} ")
-        worksheet.change_row_height(row, 13)
-        worksheet.change_row_vertical_alignment(row, 'distributed')
+        cell = matrix_worksheet.add_cell(row, 1, "#{step.id.upcase} ")
+        matrix_worksheet.change_row_height(row, 13)
+        matrix_worksheet.change_row_vertical_alignment(row, 'distributed')
 
         (2..total_width).each do |column|
-          cell = worksheet.add_cell(row, column, '')
+          cell = matrix_worksheet.add_cell(row, column, '')
         end
 
         step.inferno_tests.each do |test|
           column = column_map[test]
+          inferno_to_procedure_map[test].push(step.id.upcase)
           if column.nil?
             puts "No such test found: #{test}"
             next
           end
 
-          cell = worksheet.add_cell(row, column, '')
+          cell = matrix_worksheet.add_cell(row, column, '')
           cell.change_fill('3C63FF')
         end
 
-        cell = worksheet.add_cell(row, total_width + 2, step.inferno_supported.upcase)
+        cell = matrix_worksheet.add_cell(row, total_width + 2, step.inferno_supported.upcase)
 
         row += 1
       end
     end
-    worksheet.change_column_horizontal_alignment(1, 'right')
-    worksheet.change_row_horizontal_alignment(0, 'center')
+    matrix_worksheet.change_column_horizontal_alignment(1, 'right')
+    matrix_worksheet.change_row_horizontal_alignment(0, 'center')
 
     column_borders.each do |column|
-      worksheet.change_column_border(column, :left, 'medium')
-      worksheet.change_column_border_color(column, :left, '000000')
+      matrix_worksheet.change_column_border(column, :left, 'medium')
+      matrix_worksheet.change_column_border_color(column, :left, '000000')
     end
-    worksheet.change_column_border_color(total_width, :right, '000000')
-    worksheet.change_column_border(total_width, :right, 'medium')
-    worksheet.change_column_width(total_width + 1, 3)
+    matrix_worksheet.change_column_border_color(total_width, :right, '000000')
+    matrix_worksheet.change_column_border(total_width, :right, 'medium')
+    matrix_worksheet.change_column_width(total_width + 1, 3)
 
-    # worksheet.change_row_border(row-1, :bottom, 'medium')
-    # worksheet.change_row_border_color(row-1, :bottom, '000000')
+    matrix_worksheet.change_column_width(total_width + 3, 6)
+    matrix_worksheet.change_column_width(total_width + 4, 2)
+    matrix_worksheet.change_column_width(total_width + 5, 60)
+    matrix_worksheet.add_cell(1, total_width + 3, '').change_fill('3C63FF')
+    matrix_worksheet.add_cell(1, total_width + 5, 'Blue boxes indicate that the Inferno test (top) covers this test procedure step (left).').change_text_wrap(true)
+    matrix_worksheet.change_column_horizontal_alignment(total_width + 5, :left)
+
+    ########################
+    # TEST PROCEDURE WORKSHEET
+    ########################
+
+    workbook.add_worksheet('Test Procedure')
+    tp_worksheet = workbook.worksheets[1]
+
+    [3, 3, 22, 65, 65, 3, 15, 30, 65, 65].each_with_index { |width, index| tp_worksheet.change_column_width(index, width) }
+    ['',
+     '',
+     'ID',
+     'System Under Test',
+     'Test Lab Verifies',
+     '',
+     'Inferno Supports?',
+     'Inferno Tests',
+     'Inferno Notes',
+     'Alternate Test Methodology'].each_with_index { |text, index| tp_worksheet.add_cell(0, index, text) }
+
+    row = 2
+
+    test_module.test_procedure.sections.each do |section|
+      cell = tp_worksheet.add_cell(row, 0, section.name)
+      row += 1
+      section.steps.group_by(&:group).each do |group_name, steps|
+        cell = tp_worksheet.add_cell(row, 1, group_name)
+        row += 1
+        steps.each do |step|
+          longest_line = [step.s_u_t, step.t_l_v, step.inferno_notes, step.alternate_test].map { |text| text&.lines&.count || 0 }.max
+          tp_worksheet.change_row_height(row, longest_line * 10 + 10)
+          tp_worksheet.change_row_vertical_alignment(row, 'top')
+          cell = tp_worksheet.add_cell(row, 2, "#{step.id.upcase} ")
+          cell = tp_worksheet.add_cell(row, 3, step.s_u_t).change_text_wrap(true)
+          cell = tp_worksheet.add_cell(row, 4, step.t_l_v).change_text_wrap(true)
+          cell = tp_worksheet.add_cell(row, 5, '')
+          cell = tp_worksheet.add_cell(row, 6, step.inferno_supported)
+          cell = tp_worksheet.add_cell(row, 7, step.inferno_tests.join(', ')).change_text_wrap(true)
+          cell = tp_worksheet.add_cell(row, 8, step.inferno_notes).change_text_wrap(true)
+          cell = tp_worksheet.add_cell(row, 9, step.alternate_test).change_text_wrap(true)
+          row += 1
+        end
+      end
+      row += 1
+    end
+
+    ########################
+    # INFERNO TESTS WORKSHEET
+    ########################
+
+    workbook.add_worksheet('Inferno Tests')
+    inferno_worksheet = workbook.worksheets[2]
+
+    columns = [
+      ['', 3, ->(_group, _test_case, _test) { '' }],
+      ['', 3, ->(_group, _test_case, _test) { '' }],
+      ['Inferno Test ID', 22, ->(_group, test_case, test) { "#{test_case.prefix}#{test.id}" }],
+      ['Inferno Test Name', 65, ->(_group, _test_case, test) { test.name }],
+      ['Inferno Test Description', 65, lambda do |_group, _test_case, test|
+        natural_indent = test.description.lines.collect { |l| l.index(/[^ ]/) }.select { |l| !l.nil? && l.positive? }.min || 0
+        test.description.lines.map { |l| l[natural_indent..-1] || "\n" }.join.strip
+      end],
+      ['Reference', 65, ->(_group, _test_case, test) { test.link }],
+      ['Test Procedure Steps', 30, ->(_group, test_case, test) { inferno_to_procedure_map["#{test_case.prefix}#{test.id}"].join(', ') }]
+    ]
+
+    columns.each_with_index do |row_name, index|
+      cell = inferno_worksheet.add_cell(0, index, row_name.first)
+    end
+
+    test_module = Inferno::Module.get(args.module)
+    test_set = test_module.test_sets[args.test_set.to_sym]
+    row = 1
+
+    test_set.groups.each do |group|
+      row += 1
+      cell = inferno_worksheet.add_cell(row, 0, group.name)
+      row += 1
+      group.test_cases.each do |test_case|
+        cell = inferno_worksheet.add_cell(row, 1, "#{test_case.prefix}#{test_case.sequence.tests.first.id.split('-').first}: #{test_case.title}: #{test_case.description}")
+        row += 1
+        test_case.sequence.tests.each do |test|
+          next if test_case.sequence.optional? || test.optional?
+
+          this_row = columns.map do |column|
+            column[2].call(group, test_case, test)
+          end
+
+          this_row.each_with_index do |value, index|
+            cell = inferno_worksheet.add_cell(row, index, value)
+            cell.change_text_wrap(true)
+          end
+          inferno_worksheet.change_row_height(row, [26, test.description.strip.lines.count * 10 + 10].max)
+          inferno_worksheet.change_row_vertical_alignment(row, 'top')
+          row += 1
+        end
+      end
+    end
+
+    columns.each_with_index do |column, index|
+      inferno_worksheet.change_column_width(index, column[1])
+    end
+
+    # inferno_worksheet.change_row_border(row-1, :bottom, 'medium')
+    # inferno_worksheet.change_row_border_color(row-1, :bottom, '000000')
 
     # test_set.groups.each do |group|
-    #   cell = worksheet.add_cell(row, 0, group.name)
+    #   cell = inferno_worksheet.add_cell(row, 0, group.name)
     #   cell.change_text_wrap(true)
-    #   worksheet.merge_cells(row, 0, row, columns.length)
-    #   worksheet.change_row_fill(row, 'EEEEEE')
-    #   worksheet.change_row_height(row, 25)
-    #   worksheet.change_row_vertical_alignment(row, 'distributed')
+    #   inferno_worksheet.merge_cells(row, 0, row, columns.length)
+    #   inferno_worksheet.change_row_fill(row, 'EEEEEE')
+    #   inferno_worksheet.change_row_height(row, 25)
+    #   inferno_worksheet.change_row_vertical_alignment(row, 'distributed')
     #   row += 1
     #   group.test_cases.each do |test_case|
     #     test_case.sequence.tests.each do |test|

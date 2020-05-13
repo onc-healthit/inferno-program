@@ -402,7 +402,7 @@ module Inferno
 
         search_test[:description] += 'Because this is the first search of the sequence, resources in the response will be used for subsequent tests.' if is_first_search
         comparator_search_code = get_comparator_searches(search_param[:names], sequence)
-
+        token_system_search_code = get_token_system_search_code(search_param[:names], sequence)
         search_test[:test_code] =
           if is_first_search
             # rcs question: are comparators ever be in the first search?
@@ -420,6 +420,7 @@ module Inferno
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
               #{'test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)' if sequence[:resource] == 'MedicationRequest'}
               #{comparator_search_code}
+              #{token_system_search_code}
             )
             unless sequence[:delayed_sequence]
               reply_code = %(
@@ -454,7 +455,8 @@ module Inferno
           class_name: sequence[:class_name],
           sequence_name: sequence[:name],
           delayed_sequence: sequence[:delayed_sequence],
-          status_param: sequence_has_status_search?(sequence) ? status_param_strings(sequence) : {}
+          status_param: sequence_has_status_search?(sequence) ? status_param_strings(sequence) : {},
+          token_param: get_token_param(search_param[:names], sequence)
         )
       end
 
@@ -1077,6 +1079,7 @@ module Inferno
               save_resource_references(#{save_resource_references_arguments})
               save_delayed_sequence_references(resources_returned, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
               validate_reply_entries(resources_returned, search_params)
+              #{get_token_system_search_code(search_parameters, sequence)}
               #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
               break#{' if values_found == 2' if find_two_values}
             end
@@ -1132,6 +1135,23 @@ module Inferno
         end
       end
 
+      def get_token_param(search_params, sequence)
+        search_params.find { |param| ['Identifier', 'CodeableConcept', 'Coding'].include? sequence[:search_param_descriptions][param.to_sym][:type] }
+      end
+
+      def get_token_system_search_code(search_params, sequence)
+        token_param = search_params.find { |param| ['Identifier', 'CodeableConcept', 'Coding'].include? sequence[:search_param_descriptions][param.to_sym][:type] }
+        return unless token_param
+
+        param_description = sequence[:search_param_descriptions][token_param.to_sym]
+        %(
+          value_with_system = get_value_for_search_param(#{resolve_element_path(param_description, sequence[:delayed_sequence])}, true)
+          token_with_system_search_params = search_params.merge('#{token_param}': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, token_with_system_search_params)
+        )
+      end
+
       def get_comparator_searches(search_params, sequence)
         search_code = ''
         param_comparators = find_comparators(search_params, sequence)
@@ -1182,7 +1202,7 @@ module Inferno
             .split('.')
             .drop(1)
             .join('.')
-          path += get_value_path_by_type(type) unless ['Period', 'date', 'HumanName', 'Address'].include? type
+          path += get_value_path_by_type(type) unless ['Period', 'date', 'HumanName', 'Address', 'CodeableConcept', 'Coding', 'Identifier'].include? type
           search_validators += %(
               when '#{element}'
               values_found = resolve_path(resource, '#{path}')
@@ -1233,6 +1253,22 @@ module Inferno
               address&.state&.start_with?(value) ||
               address&.postalCode&.start_with?(value) ||
               address&.country&.start_with?(value)
+            end)
+        when 'CodeableConcept'
+          %(coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+            coding_value = value.split('|').last
+            match_found = values_found.any? do |codeable_concept|
+              if value.include? '|'
+                codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+              else
+                codeable_concept.coding.any? { |coding| coding.code == value }
+              end
+            end)
+        when 'Identifier'
+          %(identifier_system = value.split('|').first.empty? ? nil : value.split('|').first
+            identifier_value = value.split('|').last
+            match_found = values_found.any? do |identifier|
+              identifier.value == identifier_value && (!value.include?('|') || identifier.system == identifier_system)
             end)
         else
           # searching by patient requires special case because we are searching by a resource identifier

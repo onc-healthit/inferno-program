@@ -68,9 +68,16 @@ module Inferno
         case property
 
         when 'category'
-          values_found = resolve_path(resource, 'category.coding.code')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values_found = resolve_path(resource, 'category')
+          coding_system = value.split('|').first.empty? ? nil : value.split('|').first
+          coding_value = value.split('|').last
+          match_found = values_found.any? do |codeable_concept|
+            if value.include? '|'
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+            else
+              codeable_concept.coding.any? { |coding| coding.code == value }
+            end
+          end
           assert match_found, "category in CarePlan/#{resource.id} (#{values_found}) does not match category requested (#{value})"
 
         when 'date'
@@ -172,6 +179,11 @@ module Inferno
             save_delayed_sequence_references(resources_returned, USCore310CareplanSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
 
+            value_with_system = get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'category'), true)
+            token_with_system_search_params = search_params.merge('category': value_with_system)
+            reply = get_resource_by_params(versioned_resource_class('CarePlan'), token_with_system_search_params)
+            validate_search_reply(versioned_resource_class('CarePlan'), reply, token_with_system_search_params)
+
             break
           end
         end
@@ -225,6 +237,11 @@ module Inferno
             reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
             validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
           end
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'category'), true)
+          token_with_system_search_params = search_params.merge('category': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('CarePlan'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('CarePlan'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, category, date) in any resource.' unless resolved_one
@@ -276,6 +293,11 @@ module Inferno
             reply = get_resource_by_params(versioned_resource_class('CarePlan'), comparator_search_params)
             validate_search_reply(versioned_resource_class('CarePlan'), reply, comparator_search_params)
           end
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'category'), true)
+          token_with_system_search_params = search_params.merge('category': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('CarePlan'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('CarePlan'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, category, status, date) in any resource.' unless resolved_one
@@ -315,6 +337,11 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
 
           validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'category'), true)
+          token_with_system_search_params = search_params.merge('category': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('CarePlan'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('CarePlan'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, category, status) in any resource.' unless resolved_one

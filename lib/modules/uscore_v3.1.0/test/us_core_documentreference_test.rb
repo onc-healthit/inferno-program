@@ -316,6 +316,11 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
         'patient': @sequence.patient_ids.first,
         'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'type'))
       }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'type'), true)
+      }
     end
 
     it 'skips if the search params are not supported' do
@@ -381,6 +386,10 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
         .with(query: @query, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@document_reference_ary.values.flatten).to_json)
 
+      stub_request(:get, "#{@base_url}/DocumentReference")
+        .with(query: @query_with_system, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@document_reference_ary.values.flatten).to_json)
+
       @sequence.run_test(@test)
     end
 
@@ -443,6 +452,10 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
           .with(query: @query.merge('status': ['current,superseded,entered-in-error'].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@document_reference]).to_json)
 
+        stub_request(:get, "#{@base_url}/DocumentReference")
+          .with(query: @query_with_system.merge('status': ['current,superseded,entered-in-error'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@document_reference]).to_json)
+
         @sequence.run_test(@test)
       end
     end
@@ -462,6 +475,12 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @query = {
         'patient': @sequence.patient_ids.first,
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'date'))
+      }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'category'), true),
         'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'date'))
       }
     end
@@ -529,6 +548,10 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
         .with(query: @query, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@document_reference_ary.values.flatten).to_json)
 
+      stub_request(:get, "#{@base_url}/DocumentReference")
+        .with(query: @query_with_system, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@document_reference_ary.values.flatten).to_json)
+
       @sequence.run_test(@test)
     end
 
@@ -591,6 +614,10 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
           .with(query: @query.merge('status': ['current,superseded,entered-in-error'].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@document_reference]).to_json)
 
+        stub_request(:get, "#{@base_url}/DocumentReference")
+          .with(query: @query_with_system.merge('status': ['current,superseded,entered-in-error'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@document_reference]).to_json)
+
         @sequence.run_test(@test)
       end
     end
@@ -610,6 +637,11 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @query = {
         'patient': @sequence.patient_ids.first,
         'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'category'))
+      }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'category'), true)
       }
     end
 
@@ -676,6 +708,10 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
         .with(query: @query, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@document_reference_ary.values.flatten).to_json)
 
+      stub_request(:get, "#{@base_url}/DocumentReference")
+        .with(query: @query_with_system, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@document_reference_ary.values.flatten).to_json)
+
       @sequence.run_test(@test)
     end
 
@@ -738,6 +774,10 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
           .with(query: @query.merge('status': ['current,superseded,entered-in-error'].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@document_reference]).to_json)
 
+        stub_request(:get, "#{@base_url}/DocumentReference")
+          .with(query: @query_with_system.merge('status': ['current,superseded,entered-in-error'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@document_reference]).to_json)
+
         @sequence.run_test(@test)
       end
     end
@@ -757,6 +797,12 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
       @query = {
         'patient': @sequence.patient_ids.first,
         'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'type')),
+        'period': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'context.period'))
+      }
+
+      @query_with_system = {
+        'patient': @sequence.patient_ids.first,
+        'type': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'type'), true),
         'period': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@document_reference_ary[@sequence.patient_ids.first], 'context.period'))
       }
     end
