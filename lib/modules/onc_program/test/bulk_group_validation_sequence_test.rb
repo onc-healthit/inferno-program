@@ -626,10 +626,14 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
         )
     end
 
-    it 'succeeds with vital-signs observation' do
+    it 'fails with vital-signs observation' do
       must_supports = []
 
-      @sequence.check_file_request(@file, 'Observation', true, 1, must_supports)
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.check_file_request(@file, 'Observation', true, 1, must_supports)
+      end
+
+      assert_match(/Observation.category/, error.message)
     end
   end
 end

@@ -22,7 +22,6 @@ module Inferno
       MIN_RESOURCE_COUNT = 2
 
       US_CORE_R4_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
-      FHIR_URIS = Inferno::ValidationUtil::FHIR_URIS
 
       include Inferno::USCore310ProfileDefinitions
 
@@ -113,7 +112,7 @@ module Inferno
 
           @patient_ids_seen << resource.id if klass == 'Patient'
 
-          p = guess_profile(resource, @instance.fhir_version.to_sym)
+          p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
 
           if p && @instance.fhir_version == 'r4'
             resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, p.url)
@@ -148,20 +147,6 @@ module Inferno
         end
 
         line_count
-      end
-
-      def guess_profile(resource, version)
-        return if resource.blank?
-
-        if resource.resourceType == 'Observation'
-          Inferno::ValidationUtil.guess_profile(resource, version, use_default: false)
-          # Not sure if we need validate using FHIR vital-sign profile.
-          # if p.nil? && resource&.category&.any? { |category| category&.coding&.any? { |coding| coding&.code == 'vital-signs' } }
-          #  p = Inferno::ValidationUtil::DEFINITIONS[FHIR_URIS[:vital_signs]]
-          # end
-        else
-          Inferno::ValidationUtil.guess_profile(resource, version, use_default: true)
-        end
       end
 
       def process_must_support(must_supports, profile, resource)
