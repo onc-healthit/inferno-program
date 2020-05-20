@@ -22,6 +22,7 @@ module Inferno
       MIN_RESOURCE_COUNT = 2
 
       US_CORE_R4_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
+
       include Inferno::USCore310ProfileDefinitions
 
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
@@ -112,17 +113,18 @@ module Inferno
           @patient_ids_seen << resource.id if klass == 'Patient'
 
           p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
+
           if p && @instance.fhir_version == 'r4'
             resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, p.url)
-
-            # Remove warnings if using internal FHIRModelsValidator. FHIRModelsValidator has an issue with FluentPath.
-            resource_validation_errors = [] if resource_validation_errors[:errors].empty? &&
-                                               (Inferno::RESOURCE_VALIDATOR.is_a?(Inferno::FHIRModelsValidator) ||
-                                               (resource_validation_errors[:warnings].empty? && resource_validation_errors[:information].empty?))
           else
             warn { assert false, 'No profiles found for this Resource' }
-            resource_validation_errors = resource.validate
+            resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
           end
+
+          # Remove warnings if using internal FHIRModelsValidator. FHIRModelsValidator has an issue with FluentPath.
+          resource_validation_errors = [] if resource_validation_errors[:errors].empty? &&
+                                             (Inferno::RESOURCE_VALIDATOR.is_a?(Inferno::FHIRModelsValidator) ||
+                                             (resource_validation_errors[:warnings].empty? && resource_validation_errors[:information].empty?))
 
           process_must_support(must_supports, p, resource)
 
@@ -148,7 +150,7 @@ module Inferno
       end
 
       def process_must_support(must_supports, profile, resource)
-        return unless must_supports.present?
+        return unless profile.present? && must_supports.present?
 
         if must_supports.length > 1 && profile
           profile_must_support = must_supports.find { |must_support| must_support[:profile] == profile.url }
@@ -207,7 +209,7 @@ module Inferno
       def log_and_reraise_if_error(request, response, truncated)
         yield
       rescue StandardError
-        response[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS MOST RECENT #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response[:body]}" if truncated
+        response[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS FIRST #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response[:body]}" if truncated
         LoggedRestClient.record_response(request, response)
         raise
       end
@@ -249,10 +251,10 @@ module Inferno
           resource_list = next_block.lines
 
           # Skip process the last line since the it may not complete (still appending from stream)
-          last_line = resource_list.pop
+          next_block = resource_list.pop
           # Skip if the last_line is empty
-          # Cannot use .blank? since dock-compose complains "invalid byte sequence in US-ASCII" during unit test
-          next_block = String.new last_line unless last_line.nil? || last_line.strip.empty?
+          # Cannot use .blank? since docker-compose complains "invalid byte sequence in US-ASCII" during unit test
+          next_block = String.new next_block unless next_block.nil? || next_block.strip.empty?
 
           resource_list.each do |resource|
             # NDJSON does not specify empty line is NOT allowed.
@@ -282,7 +284,7 @@ module Inferno
         end
 
         if line_count > MAX_RECENT_LINE_SIZE
-          response_for_log[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS MOST RECENT #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response_for_log[:body]}"
+          response_for_log[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS FIRST #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response_for_log[:body]}"
         end
         LoggedRestClient.record_response(request_for_log, response_for_log)
 
@@ -625,7 +627,7 @@ module Inferno
             must_support_info: USCore310PediatricWeightForHeightSequenceDefinitions::MUST_SUPPORTS.dup
           },
           {
-            profile: US_CORE_R4_URIS[:USCore310PulseOximetrySequence],
+            profile: US_CORE_R4_URIS[:pulse_oximetry],
             must_support_info: USCore310PulseOximetrySequenceDefinitions::MUST_SUPPORTS.dup
           },
           {
@@ -660,28 +662,9 @@ module Inferno
         test_output_against_profile('Procedure', must_supports)
       end
 
-      test :validate_location do
-        metadata do
-          id '19'
-          name 'Location resources on the FHIR server follow the US Core Implementation Guide'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'
-          description %(
-            This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
-          )
-        end
-
-        must_supports = [
-          {
-            profile: nil,
-            must_support_info: USCore310LocationSequenceDefinitions::MUST_SUPPORTS.dup
-          }
-        ]
-        test_output_against_profile('Location', must_supports)
-      end
-
       test :validate_medication do
         metadata do
-          id '20'
+          id '19'
           name 'Medication resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
           description %(
@@ -692,28 +675,9 @@ module Inferno
         test_output_against_profile('Medication')
       end
 
-      test :validate_organization do
-        metadata do
-          id '21'
-          name 'Organization resources on the FHIR server follow the US Core Implementation Guide'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
-          description %(
-            This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
-          )
-        end
-
-        must_supports = [
-          {
-            profile: nil,
-            must_support_info: USCore310OrganizationSequenceDefinitions::MUST_SUPPORTS.dup
-          }
-        ]
-        test_output_against_profile('Organization', must_supports)
-      end
-
       test :validate_practitioner do
         metadata do
-          id '22'
+          id '20'
           name 'Practitioner resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
           description %(
@@ -730,11 +694,11 @@ module Inferno
         test_output_against_profile('Practitioner', must_supports)
       end
 
-      test :validate_practitionerrole do
+      test :validate_provenance do
         metadata do
-          id '23'
-          name 'PractitionerRole resources on the FHIR server follow the US Core Implementation Guide'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'
+          id '21'
+          name 'Provenance resources on the FHIR server follow the US Core Implementation Guide'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
           description %(
             This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
           )
@@ -743,10 +707,10 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: USCore310PractitionerroleSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310ProvenanceSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('PractitionerRole', must_supports)
+        test_output_against_profile('Provenance', must_supports)
       end
     end
   end
