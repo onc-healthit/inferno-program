@@ -133,7 +133,7 @@ module Inferno
 
         if access_allowed_scope.present?
           assert_response_ok reply
-          pass "Access expcted to be granted and request properly returned #{reply&.response&.dig(:code)}"
+          pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
         else
           assert_response_unauthorized reply
         end
