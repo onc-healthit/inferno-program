@@ -633,7 +633,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
         @sequence.check_file_request(@file, 'Observation', true, 1, must_supports)
       end
 
-      assert_match(/Observation.category/, error.message)
+      assert_match(%r{^2 / 2 Observation resources failed profile validation}, error.message)
     end
   end
 end
