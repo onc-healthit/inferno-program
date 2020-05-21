@@ -200,10 +200,9 @@ module Inferno
 
                 all_test_cases << test_case.id
                 expanded_test_cases << test_case.id if sequence_result.fail? || sequence_result.skip?
-
                 sequence_result.save!
                 if sequence_result.redirect_to_url
-                  out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result, instance)
+                  out << js_redirect_modal(sequence_result.redirect_to_url, sequence_result.expect_redirect_failure, sequence_result, instance)
                   next_test_case = nil
                   finished = false
                 elsif sequence_result.wait_at_endpoint

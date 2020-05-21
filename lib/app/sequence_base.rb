@@ -208,6 +208,7 @@ module Inferno
           next unless result.wait?
 
           sequence_result.redirect_to_url = result.redirect_to_url
+          sequence_result.expect_redirect_failure = result.expect_redirect_failure
           sequence_result.wait_at_endpoint = result.wait_at_endpoint
           break
         end
@@ -469,8 +470,8 @@ module Inferno
         raise WaitException, endpoint
       end
 
-      def redirect(url, endpoint)
-        raise RedirectException.new url, endpoint
+      def redirect(url, endpoint, expect_failure = false)
+        raise RedirectException.new url, endpoint, expect_failure
       end
 
       def warning
