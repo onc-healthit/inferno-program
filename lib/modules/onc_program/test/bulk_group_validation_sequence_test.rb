@@ -271,7 +271,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
         @sequence.test_output_against_profile('Observation', [], @output, '1')
       end
 
-      assert error.message == 'Bulk Data Server export does not have Observation data'
+      assert error.message == 'Bulk Data Server export did not provide any Observation resources.'
     end
 
     it 'select matched output file' do
@@ -588,7 +588,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       skip_exception = assert_raises(Inferno::SkipException) do
         @sequence.test_output_against_profile('Patient', [], @output, '')
       end
-      assert skip_exception.message == 'Bulk Data Server export for Patient is empty'
+      assert skip_exception.message == 'Bulk Data Server export did not provide any Patient resources.'
     end
 
     it 'passes when export is empty and lines_to_validate is zero' do
@@ -607,12 +607,12 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       assert pass_exception.message == 'Successfully validated 0 resource(s).'
     end
 
-    it 'passes when no Medication export' do
-      pass_exception = assert_raises(Inferno::PassException) do
+    it 'omits when no Medication export' do
+      omit_exception = assert_raises(Inferno::OmitException) do
         @sequence.test_output_against_profile('Medication', [], @output, '')
       end
 
-      assert pass_exception.message == 'No Medication resource in output.'
+      assert omit_exception.message == 'No Medication resources provided, and Medication resources are optional.'
     end
   end
 

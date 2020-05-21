@@ -34,6 +34,7 @@ module Inferno
         @output = status_response['output']
         requires_access_token = status_response['requiresAccessToken']
         @requires_access_token = requires_access_token.to_s.downcase == 'true' if requires_access_token.present?
+        @patient_ids_seen = Set.new
       end
 
       def test_output_against_profile(klass,
@@ -47,15 +48,13 @@ module Inferno
         file_list = output.find_all { |item| item['type'] == klass }
 
         if file_list.empty?
-          pass 'No Medication resource in output.' if klass == 'Medication'
+          omit 'No Medication resources provided, and Medication resources are optional.' if klass == 'Medication'
 
-          skip "Bulk Data Server export does not have #{klass} data"
+          skip "Bulk Data Server export did not provide any #{klass} resources."
         end
 
         validate_all = lines_to_validate_parameter[:validate_all]
         lines_to_validate = lines_to_validate_parameter[:lines_to_validate]
-
-        @patient_ids_seen = Set.new if klass == 'Patient'
 
         omit 'Validate has been omitted because line_to_validate is 0' if !validate_all && lines_to_validate.zero? && klass != 'Patient'
 
@@ -66,9 +65,9 @@ module Inferno
         end
 
         if success_count.zero? && (validate_all || lines_to_validate.positive?)
-          pass 'No Medication resource in output.' if klass == 'Medication'
+          omit 'No Medication resources provided, and Medication resources are optional.' if klass == 'Medication'
 
-          skip "Bulk Data Server export for #{klass} is empty"
+          skip "Bulk Data Server export did not provide any #{klass} resources."
         end
 
         pass "Successfully validated #{success_count} resource(s)."
@@ -107,8 +106,6 @@ module Inferno
 
         streamed_ndjson_get(file['url'], headers) do |response, resource|
           assert response.headers['Content-Type'] == 'application/fhir+ndjson', "Content type must be 'application/fhir+ndjson' but is '#{response.headers['Content-type']}"
-
-          @patient_ids_seen = Set.new if klass == 'Patient' && @patient_ids_seen.nil?
 
           break if !validate_all && line_count >= lines_to_validate && (klass != 'Patient' || @patient_ids_seen.length >= MIN_RESOURCE_COUNT)
 
