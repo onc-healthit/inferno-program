@@ -477,7 +477,14 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Device')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: USCore310ImplantableDeviceSequenceDefinitions::MUST_SUPPORTS.dup
+          }
+        ]
+
+        test_output_against_profile('Device', must_supports)
       end
 
       test :validate_diagnosticreport do
