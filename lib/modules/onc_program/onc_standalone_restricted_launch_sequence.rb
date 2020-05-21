@@ -17,7 +17,8 @@ module Inferno
                :onc_sl_client_id,
                :onc_sl_confidential_client,
                :onc_sl_client_secret,
-               :onc_sl_restricted_scopes,
+               :onc_sl_scopes,
+               :onc_sl_expected_resources,
                :oauth_authorize_endpoint,
                :oauth_token_endpoint,
                :initiate_login_uri,
@@ -102,7 +103,7 @@ module Inferno
       end
 
       def instance_scopes
-        @instance.onc_sl_restricted_scopes
+        @instance.onc_sl_scopes
       end
 
       auth_endpoint_tls_test(index: '01')
@@ -163,6 +164,57 @@ module Inferno
       token_response_headers_test(index: '09')
 
       patient_context_test(index: '10')
+
+      def scope_granting_access(resource, scopes)
+        scopes.split(' ').find do |scope|
+          scope.start_with?("patient/#{resource}", 'patient/*') && scope.end_with?('*', 'read')
+        end
+      end
+
+      test :onc_restricted_scopes do
+        metadata do
+          id '11'
+          name 'OAuth token exchange response grants scope that is limited to those selected by user'
+          link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#quick-start'
+          description %(
+            The ONC certification criteria requires that patients are capable of choosing which
+            FHIR resources to authorize to the application, and patients must be
+            given the choice to grant `offline_access`.  For this test, the tester specifies
+            which resources will be selected during authorization, and this verifies that only
+            those resources are granted according to the scopes returned during the access token
+            response.
+          )
+        end
+
+        skip_if_auth_failed
+
+        received_scopes = @instance.received_scopes || ''
+
+        all_resources = [
+          'AllergyIntolerance',
+          'CarePlan',
+          'CareTeam',
+          'Condition',
+          'Device',
+          'DiagnosticReport',
+          'DocumentReference',
+          'Goal',
+          'Immunization',
+          'MedicationRequest',
+          'Observation',
+          'Procedure',
+          'Patient'
+        ]
+
+        expected_resources = all_resources.select { |resource| @instance.onc_sl_expected_resources.split(',').map(&:strip).map(&:downcase).include?(resource.downcase) }
+        expected_denied_resources = all_resources - expected_resources
+
+        improperly_granted_resources = expected_denied_resources.select { |resource| scope_granting_access(resource, received_scopes).present? }
+
+        assert improperly_granted_resources.empty?, "User expected to deny the following resources that were granted: #{improperly_granted_resources.join(', ')}"
+
+        assert !received_scopes.split(' ').include?('offline_access'), 'Scopes returned in access token response contained offline_access.  User must deny this scope to pass this test.'
+      end
     end
   end
 end

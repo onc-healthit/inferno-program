@@ -44,16 +44,24 @@ test_sets:
         short_label: Limited App
         run_all: true
         overview: |
-          This scenario demonstrates the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client 
-          with limited access granted to the application.  The tester is expected to grant the application access to a subset of the relevant resource
-          types, and Inferno verifies that the application is granted access consistent with that subset.
+          This scenario demonstrates the ability to perform a Patient Standalone
+          Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/)
+          client with limited access granted to the app based on user input.
+          The tester is expected to grant the application access to a subset of
+          desired resource types, and to deny requests for "offline_access"
+          refresh tokens.
         input_instructions: |
-          The purpose of this test is to demonstrate that an app can be restricted to a subset of scopes.  This can either be done by having the app
-          request a subset of resource type scopes to be read, or by having the user select a subset of resources to grant an app access to during launch.
-          This uses the same app that was registered and used in the standalone patient app launch.  This test requires a patient context to be granted.
+          The purpose of this test is to demonstrate that users can restrict
+          access granted to apps to a limited number of resources and does
+          not force the user to have offline_access refresh tokens.  Enter
+          which resources the user will grant access to below, and during
+          the launch process only grant access to those resources. Additionally,
+          do not grant access to offline_access refresh tokens.  Inferno
+          will verify that access granted matches these expectations.
         lock_variables: 
           - redirect_uris
           - onc_sl_url
+          - onc_sl_scopes
           - oauth_authorize_endpoint
           - oauth_token_endpoint
           - onc_sl_confidential_client

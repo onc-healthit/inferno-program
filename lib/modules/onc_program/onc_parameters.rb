@@ -8,7 +8,7 @@ module Inferno
       property :onc_sl_client_id, String
       property :onc_sl_client_secret, String
       property :onc_sl_scopes, String
-      property :onc_sl_restricted_scopes, String
+      property :onc_sl_expected_resources, String
 
       property :onc_patient_ids, String
 
