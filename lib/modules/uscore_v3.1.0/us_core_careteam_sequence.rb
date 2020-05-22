@@ -284,20 +284,7 @@ module Inferno
 
         skip_if_not_found(resource_type: 'CareTeam', delayed: false)
         test_resources_against_profile('CareTeam')
-        bindings = [
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/care-team-status',
-            path: 'status'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-careteam-provider-roles',
-            path: 'participant.role'
-          }
-        ]
+        bindings = USCore310CareteamSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|

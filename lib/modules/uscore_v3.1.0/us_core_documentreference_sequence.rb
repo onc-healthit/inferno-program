@@ -612,56 +612,7 @@ module Inferno
           end.compact
         end
 
-        bindings = [
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/document-reference-status',
-            path: 'status'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/composition-status',
-            path: 'docStatus'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-documentreference-type',
-            path: 'type'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-documentreference-category',
-            path: 'category'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/document-relationship-type',
-            path: 'relatesTo.code'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/security-labels',
-            path: 'securityLabel'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/mimetypes',
-            path: 'content.attachment.contentType'
-          },
-          {
-            type: 'Coding',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/formatcodes',
-            path: 'content.format'
-          }
-        ]
+        bindings = USCore310DocumentreferenceSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|

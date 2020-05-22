@@ -740,8 +740,9 @@ module Inferno
         end
         resources_ary_str = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
         if bindings.present?
+          sequence[:bindings_constants] = "BINDINGS = #{structure_to_string(bindings)}.freeze"
           test[:test_code] += %(
-            bindings = #{structure_to_string(bindings)}
+            bindings = #{sequence[:class_name]}Definitions::BINDINGS
             invalid_binding_messages = []
             invalid_binding_resources = Set.new
             bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|

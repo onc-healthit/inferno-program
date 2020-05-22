@@ -125,44 +125,7 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Organization', delayed: true)
         test_resources_against_profile('Organization')
-        bindings = [
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/identifier-use',
-            path: 'identifier.use'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/identifier-type',
-            path: 'identifier.type'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/address-use',
-            path: 'address.use'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/address-type',
-            path: 'address.type'
-          },
-          {
-            type: 'string',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-usps-state',
-            path: 'address.state'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/contactentity-type',
-            path: 'contact.purpose'
-          }
-        ]
+        bindings = USCore310OrganizationSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|

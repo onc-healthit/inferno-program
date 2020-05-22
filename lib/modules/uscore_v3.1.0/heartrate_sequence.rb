@@ -526,62 +526,7 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Observation', delayed: false)
         test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:heart_rate])
-        bindings = [
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/observation-status',
-            path: 'status'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/observation-vitalsignresult',
-            path: 'code'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/quantity-comparator',
-            path: 'value.comparator'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/data-absent-reason',
-            path: 'dataAbsentReason'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/observation-interpretation',
-            path: 'interpretation'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/observation-vitalsignresult',
-            path: 'component.code'
-          },
-          {
-            type: 'Quantity',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/ucum-vitals-common',
-            path: 'component.value'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/data-absent-reason',
-            path: 'component.dataAbsentReason'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/observation-interpretation',
-            path: 'component.interpretation'
-          }
-        ]
+        bindings = USCore310HeartrateSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
