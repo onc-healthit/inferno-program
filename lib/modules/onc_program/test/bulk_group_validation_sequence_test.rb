@@ -685,4 +685,113 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       assert pass.message == 'Successfully validated 2 resource(s).'
     end
   end
+  
+  describe 'guess profile tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'returns nil for Devices without predefined type code' do
+      @instance.bulk_device_types_in_group = '2, 3'
+      resource = FHIR::Device.new(
+        type: {
+          coding: [{
+            system: 'http://snomed.info/sct',
+            code: '1'
+          }]
+        }
+      )
+
+      actual = @sequence.guess_profile(resource, :r4)
+
+      assert actual.nil?
+    end
+
+    it 'returns Implantable Device profile for Devices with predefined type code' do
+      @instance.bulk_device_types_in_group = '1, 2, 3'
+      resource = FHIR::Device.new(
+        type: {
+          coding: [{
+            system: 'http://snomed.info/sct',
+            code: '1'
+          }]
+        }
+      )
+      p = @sequence.guess_profile(resource, :r4)
+      assert p.url == Inferno::ValidationUtil::RESOURCES[:r4]['Device'].first().url
+    end
+  end
+
+  describe 'has predefined device type tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'returns false when resource is nil' do
+      actual = @sequence.has_predefined_device_type?(nil)
+      assert !actual
+    end
+
+    it 'returns true when bulk_device_types_in_group is empty' do
+      @instance.bulk_device_types_in_group = ''
+      resource = FHIR::Device.new
+      actual = @sequence.has_predefined_device_type?(resource)
+      assert actual
+    end
+
+    it 'returns true when device type code is in bulk_device_types_in_group and system is SCT' do
+      @instance.bulk_device_types_in_group = '1, 2, 3'
+      resource = FHIR::Device.new(
+        type: {
+          coding: [{
+            system: 'http://snomed.info/sct',
+            code: '1'
+          }]
+        }
+      )
+      actual = @sequence.has_predefined_device_type?(resource)
+      assert actual
+    end
+
+    it 'returns false when device type code is in not bulk_device_types_in_group and system is SCT' do
+      @instance.bulk_device_types_in_group = '2, 3'
+      resource = FHIR::Device.new(
+        type: {
+          coding: [{
+            system: 'http://snomed.info/sct',
+            code: '1'
+          }]
+        }
+      )
+      actual = @sequence.has_predefined_device_type?(resource)
+      assert !actual
+    end
+
+    it 'returns true when device type code is in bulk_device_types_in_group and system is empty' do
+      @instance.bulk_device_types_in_group = '1, 2, 3'
+      resource = FHIR::Device.new(
+        type: {
+          coding: [{
+            code: '1'
+          }]
+        }
+      )
+      actual = @sequence.has_predefined_device_type?(resource)
+      assert actual
+    end
+
+    it 'returns true when device type code is in bulk_device_types_in_group and system is not SCT nor empty' do
+      @instance.bulk_device_types_in_group = '1, 2, 3'
+      resource = FHIR::Device.new(
+        type: {
+          coding: [{
+            system: 'example',
+            code: '1'
+          }]
+        }
+      )
+      actual = @sequence.has_predefined_device_type?(resource)
+      assert !actual
+    end
+  end
 end
