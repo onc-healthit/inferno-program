@@ -645,47 +645,6 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
     end
   end
 
-  describe 'read multi file tests' do
-    before do
-      @patient_1_location = 'https://www.example.com/patient_1_export.ndjson'
-      @patient_2_location = 'https://www.example.com/patient_2_export.ndjson'
-
-      @patient_1_export = load_fixture_with_extension('bulk_data_patient_1.ndjson')
-      @patient_1_export = load_fixture_with_extension('bulk_data_patient_2.ndjson')
-
-      @output = [
-        { 'type' => 'Patient', 'url' => @patient_1_location },
-        { 'type' => 'Patient', 'url' => @patient_2_location }
-      ]
-
-      @sequence = @sequence_class.new(@instance, @client)
-
-      stub_request(:get, @patient_1_location)
-        .with(headers: @file_request_headers)
-        .to_return(
-          status: 200,
-          headers: { content_type: 'application/fhir+ndjson' },
-          body: @patient_1_export
-        )
-
-      stub_request(:get, @patient_2_location)
-        .with(headers: @file_request_headers)
-        .to_return(
-          status: 200,
-          headers: { content_type: 'application/fhir+ndjson' },
-          body: @patient_1_export
-        )
-    end
-
-    it 'passes when reading multi patient file' do
-      pass = assert_raises(Inferno::PassException) do
-        @sequence.test_output_against_profile('Patient', [], @output, '')
-      end
-
-      assert pass.message == 'Successfully validated 2 resource(s).'
-    end
-  end
-  
   describe 'guess profile tests' do
     before do
       @sequence = @sequence_class.new(@instance, @client)
