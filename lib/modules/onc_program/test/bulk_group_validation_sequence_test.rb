@@ -271,7 +271,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
         @sequence.test_output_against_profile('Observation', [], @output, '1')
       end
 
-      assert error.message == 'Bulk Data Server export does not have Observation data'
+      assert error.message == 'Bulk Data Server export did not provide any Observation resources.'
     end
 
     it 'select matched output file' do
@@ -437,7 +437,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
 
     it 'succeeds when NDJSON is valid and has at least two patients' do
       @sequence.check_file_request(@file, 'Patient', false, 0, [])
-      assert @sequence.has_min_patient_count
+      assert @sequence.patient_ids_seen.length >= 2
     end
 
     it 'fails when NDJSON is valid and has only one patient' do
@@ -454,7 +454,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
 
       @file['url'] = 'https://www.example.com/single_patient_export.json'
       @sequence.check_file_request(@file, 'Patient', false, 0, [])
-      assert !@sequence.has_min_patient_count
+      assert @sequence.patient_ids_seen.length == 1
     end
 
     it 'tests two patients when one of patient is invalid' do
@@ -588,7 +588,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       skip_exception = assert_raises(Inferno::SkipException) do
         @sequence.test_output_against_profile('Patient', [], @output, '')
       end
-      assert skip_exception.message == 'Bulk Data Server export for Patient is empty'
+      assert skip_exception.message == 'Bulk Data Server export did not provide any Patient resources.'
     end
 
     it 'passes when export is empty and lines_to_validate is zero' do
@@ -605,6 +605,14 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       end
 
       assert pass_exception.message == 'Successfully validated 0 resource(s).'
+    end
+
+    it 'omits when no Medication export' do
+      omit_exception = assert_raises(Inferno::OmitException) do
+        @sequence.test_output_against_profile('Medication', [], @output, '')
+      end
+
+      assert omit_exception.message == 'No Medication resources provided, and Medication resources are optional.'
     end
   end
 
@@ -634,6 +642,47 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       end
 
       assert_match(%r{^2 / 2 Observation resources failed profile validation}, error.message)
+    end
+  end
+
+  describe 'read multi file tests' do
+    before do
+      @patient_1_location = 'https://www.example.com/patient_1_export.ndjson'
+      @patient_2_location = 'https://www.example.com/patient_2_export.ndjson'
+
+      @patient_1_export = load_fixture_with_extension('bulk_data_patient_1.ndjson')
+      @patient_1_export = load_fixture_with_extension('bulk_data_patient_2.ndjson')
+
+      @output = [
+        { 'type' => 'Patient', 'url' => @patient_1_location },
+        { 'type' => 'Patient', 'url' => @patient_2_location }
+      ]
+
+      @sequence = @sequence_class.new(@instance, @client)
+
+      stub_request(:get, @patient_1_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: @patient_1_export
+        )
+
+      stub_request(:get, @patient_2_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: @patient_1_export
+        )
+    end
+
+    it 'passes when reading multi patient file' do
+      pass = assert_raises(Inferno::PassException) do
+        @sequence.test_output_against_profile('Patient', [], @output, '')
+      end
+
+      assert pass.message == 'Successfully validated 2 resource(s).'
     end
   end
 end

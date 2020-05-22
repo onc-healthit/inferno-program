@@ -16,7 +16,7 @@ module Inferno
 
       requires :bulk_status_output, :bulk_lines_to_validate, :bulk_patient_ids_in_group
 
-      attr_accessor :requires_access_token, :output, :patient_ids_seen, :has_min_patient_count
+      attr_accessor :requires_access_token, :output, :patient_ids_seen
 
       MAX_RECENT_LINE_SIZE = 100
       MIN_RESOURCE_COUNT = 2
@@ -34,6 +34,7 @@ module Inferno
         @output = status_response['output']
         requires_access_token = status_response['requiresAccessToken']
         @requires_access_token = requires_access_token.to_s.downcase == 'true' if requires_access_token.present?
+        @patient_ids_seen = Set.new
       end
 
       def test_output_against_profile(klass,
@@ -44,18 +45,30 @@ module Inferno
 
         lines_to_validate_parameter = get_lines_to_validate(bulk_lines_to_validate)
 
-        file = output.find { |item| item['type'] == klass }
+        file_list = output.find_all { |item| item['type'] == klass }
 
-        skip "Bulk Data Server export does not have #{klass} data" if file.nil?
+        if file_list.empty?
+          omit 'No Medication resources provided, and Medication resources are optional.' if klass == 'Medication'
+
+          skip "Bulk Data Server export did not provide any #{klass} resources."
+        end
 
         validate_all = lines_to_validate_parameter[:validate_all]
         lines_to_validate = lines_to_validate_parameter[:lines_to_validate]
 
         omit 'Validate has been omitted because line_to_validate is 0' if !validate_all && lines_to_validate.zero? && klass != 'Patient'
 
-        success_count = check_file_request(file, klass, validate_all, lines_to_validate, must_supports)
+        success_count = 0
 
-        skip "Bulk Data Server export for #{klass} is empty" if success_count.zero? && (validate_all || lines_to_validate.positive?)
+        file_list.each do |file|
+          success_count += check_file_request(file, klass, validate_all, lines_to_validate, must_supports)
+        end
+
+        if success_count.zero? && (validate_all || lines_to_validate.positive?)
+          omit 'No Medication resources provided, and Medication resources are optional.' if klass == 'Medication'
+
+          skip "Bulk Data Server export did not provide any #{klass} resources."
+        end
 
         pass "Successfully validated #{success_count} resource(s)."
       end
@@ -77,8 +90,6 @@ module Inferno
         headers = { accept: 'application/fhir+ndjson' }
         headers['Authorization'] = "Bearer #{@instance.bulk_access_token}" if @requires_access_token && @instance.bulk_access_token.present?
 
-        @patient_ids_seen = Set.new if klass == 'Patient'
-
         line_count = 0
         validation_error_collection = {}
         line_collection = []
@@ -96,15 +107,13 @@ module Inferno
         streamed_ndjson_get(file['url'], headers) do |response, resource|
           assert response.headers['Content-Type'] == 'application/fhir+ndjson', "Content type must be 'application/fhir+ndjson' but is '#{response.headers['Content-type']}"
 
-          break if !validate_all && line_count >= lines_to_validate && (klass != 'Patient' || @has_min_patient_count)
+          break if !validate_all && line_count >= lines_to_validate && (klass != 'Patient' || @patient_ids_seen.length >= MIN_RESOURCE_COUNT)
 
           response_for_log[:code] = response.code unless response_for_log.key?(:code)
           response_for_log[:headers] = response.headers unless response_for_log.key?(:headers)
           line_collection << resource if line_count < MAX_RECENT_LINE_SIZE
 
           line_count += 1
-
-          @has_min_patient_count = true if line_count >= MIN_RESOURCE_COUNT && klass == 'Patient'
 
           resource = versioned_resource_class.from_contents(resource)
           resource_type = resource.class.name.demodulize
@@ -368,7 +377,7 @@ module Inferno
           )
         end
 
-        assert @has_min_patient_count, 'Group export did not have multple patients.'
+        assert @patient_ids_seen.length >= MIN_RESOURCE_COUNT, 'Group export did not have multple patients.'
       end
 
       test :validate_patient_ids_in_group do
