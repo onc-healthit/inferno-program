@@ -168,7 +168,7 @@ module Inferno
       def predefined_device_type?(resource)
         return false if resource.nil?
 
-        return true if @instance.bulk_device_types_in_group.nil? || @instance.bulk_device_types_in_group.empty?
+        return true if @instance.bulk_device_types_in_group.blank?
 
         expected_types = Set.new(@instance.bulk_device_types_in_group.split(',').map(&:strip))
 
