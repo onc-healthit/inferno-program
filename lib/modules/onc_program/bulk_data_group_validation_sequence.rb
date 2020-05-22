@@ -160,12 +160,12 @@ module Inferno
 
       def guess_profile(resource, version)
         # if Device type code is not in predefined type code list, validate using FHIR base profile
-        return nil if resource.resourceType == 'Device' && !has_predefined_device_type?(resource)
+        return nil if resource.resourceType == 'Device' && !predefined_device_type?(resource)
 
         Inferno::ValidationUtil.guess_profile(resource, version)
       end
 
-      def has_predefined_device_type?(resource)
+      def predefined_device_type?(resource)
         return false if resource.nil?
 
         return true if @instance.bulk_device_types_in_group.nil? || @instance.bulk_device_types_in_group.empty?

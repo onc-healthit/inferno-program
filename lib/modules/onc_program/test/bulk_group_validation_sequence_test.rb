@@ -685,7 +685,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       assert pass.message == 'Successfully validated 2 resource(s).'
     end
   end
-  
+
   describe 'guess profile tests' do
     before do
       @sequence = @sequence_class.new(@instance, @client)
@@ -718,24 +718,24 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
         }
       )
       p = @sequence.guess_profile(resource, :r4)
-      assert p.url == Inferno::ValidationUtil::RESOURCES[:r4]['Device'].first().url
+      assert p.url == Inferno::ValidationUtil::RESOURCES[:r4]['Device'].first.url
     end
   end
 
-  describe 'has predefined device type tests' do
+  describe 'predefined device type tests' do
     before do
       @sequence = @sequence_class.new(@instance, @client)
     end
 
     it 'returns false when resource is nil' do
-      actual = @sequence.has_predefined_device_type?(nil)
+      actual = @sequence.predefined_device_type?(nil)
       assert !actual
     end
 
     it 'returns true when bulk_device_types_in_group is empty' do
       @instance.bulk_device_types_in_group = ''
       resource = FHIR::Device.new
-      actual = @sequence.has_predefined_device_type?(resource)
+      actual = @sequence.predefined_device_type?(resource)
       assert actual
     end
 
@@ -749,7 +749,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
           }]
         }
       )
-      actual = @sequence.has_predefined_device_type?(resource)
+      actual = @sequence.predefined_device_type?(resource)
       assert actual
     end
 
@@ -763,7 +763,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
           }]
         }
       )
-      actual = @sequence.has_predefined_device_type?(resource)
+      actual = @sequence.predefined_device_type?(resource)
       assert !actual
     end
 
@@ -776,7 +776,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
           }]
         }
       )
-      actual = @sequence.has_predefined_device_type?(resource)
+      actual = @sequence.predefined_device_type?(resource)
       assert actual
     end
 
@@ -790,7 +790,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
           }]
         }
       )
-      actual = @sequence.has_predefined_device_type?(resource)
+      actual = @sequence.predefined_device_type?(resource)
       assert !actual
     end
   end
