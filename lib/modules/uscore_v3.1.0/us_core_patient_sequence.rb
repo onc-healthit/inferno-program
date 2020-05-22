@@ -30,8 +30,10 @@ module Inferno
           * _id
           * identifier
           * name
-          * gender, name
-          * birthdate, name
+          * gender + name
+          * birthdate + name
+
+
 
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its

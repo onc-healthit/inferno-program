@@ -29,9 +29,11 @@ module Inferno
 
           * patient
           * _id
-          * patient, type
-          * patient, category, date
-          * patient, category
+          * patient + type
+          * patient + category + date
+          * patient + category
+
+
 
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
