@@ -518,32 +518,7 @@ module Inferno
 
         skip_if_not_found(resource_type: 'MedicationRequest', delayed: false)
         test_resources_against_profile('MedicationRequest')
-        bindings = [
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/medicationrequest-status',
-            path: 'status'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/medicationrequest-intent',
-            path: 'intent'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/request-priority',
-            path: 'priority'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-medication-codes',
-            path: 'medication'
-          }
-        ]
+        bindings = USCore310MedicationrequestSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|

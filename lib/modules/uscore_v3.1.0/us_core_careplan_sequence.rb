@@ -354,38 +354,7 @@ module Inferno
 
         skip_if_not_found(resource_type: 'CarePlan', delayed: false)
         test_resources_against_profile('CarePlan')
-        bindings = [
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-narrative-status',
-            path: 'text.status'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/request-status',
-            path: 'status'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/care-plan-intent',
-            path: 'intent'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/care-plan-activity-kind',
-            path: 'activity.detail.kind'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/care-plan-activity-status',
-            path: 'activity.detail.status'
-          }
-        ]
+        bindings = USCore310CareplanSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|

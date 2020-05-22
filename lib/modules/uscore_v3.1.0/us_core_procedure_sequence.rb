@@ -443,20 +443,7 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Procedure', delayed: false)
         test_resources_against_profile('Procedure')
-        bindings = [
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/event-status',
-            path: 'status'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-procedure-code',
-            path: 'code'
-          }
-        ]
+        bindings = USCore310ProcedureSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|

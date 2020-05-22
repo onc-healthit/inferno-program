@@ -466,32 +466,7 @@ module Inferno
           end.compact
         end
 
-        bindings = [
-          {
-            type: 'CodeableConcept',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/condition-clinical',
-            path: 'clinicalStatus'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/condition-ver-status',
-            path: 'verificationStatus'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-condition-category',
-            path: 'category'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-condition-code',
-            path: 'code'
-          }
-        ]
+        bindings = USCore310ConditionSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
