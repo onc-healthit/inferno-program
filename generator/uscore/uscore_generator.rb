@@ -64,10 +64,12 @@ module Inferno
             # make tests for each SHALL and SHOULD search param, SHALL's first
             sequence[:searches]
               .select { |search_param| search_param[:expectation] == 'SHALL' }
+              .select { |search_param| search_param[:must_support_or_mandatory] }
               .each { |search_param| create_search_test(sequence, search_param) }
 
             sequence[:searches]
               .select { |search_param| search_param[:expectation] == 'SHOULD' }
+              .select { |search_param| search_param[:must_support_or_mandatory] }
               .each { |search_param| create_search_test(sequence, search_param) }
 
             sequence[:search_param_descriptions]

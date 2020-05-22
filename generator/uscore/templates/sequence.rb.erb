@@ -38,8 +38,15 @@ module Inferno
         ## Searching
         This test sequence will first perform each required search associated with this resource. This sequence will perform searches
         with the following parameters:
-        <%searches.select { |search_param| search_param[:expectation] == 'SHALL' }.each do |search| %>
-          * <%=search[:names].join(', ')%><%end%>
+        <%searches.select { |search_param| search_param[:expectation] == 'SHALL' && search_param[:must_support_or_mandatory]}.each do |search| %>
+          * <%=search[:names].join(' + ')%><%end%>
+
+        <% if searches.any? {|search_param| search_param[:expectation] == 'SHALL' && !search_param[:must_support_or_mandatory]} %>
+        Note that this test sequence does not include the following mandatory <%=resource%> search combinations because they search elements
+        that are neither mandatory nor must support for the <%=profile_name%>:
+        <%searches.select { |search_param| search_param[:expectation] == 'SHALL' && !search_param[:must_support_or_mandatory]}.each do |search| %>
+          * <%=search[:names].join('+ ')%><%end%>
+        <% end %>
         
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its 

@@ -27,8 +27,10 @@ module Inferno
         This test sequence will first perform each required search associated with this resource. This sequence will perform searches
         with the following parameters:
 
-          * patient, intent
-          * patient, intent, status
+          * patient + intent
+          * patient + intent + status
+
+
 
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its

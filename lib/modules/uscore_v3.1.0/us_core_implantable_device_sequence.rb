@@ -32,6 +32,8 @@ module Inferno
 
           * patient
 
+
+
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
         parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is

@@ -28,7 +28,9 @@ module Inferno
         with the following parameters:
 
           * patient
-          * patient, date
+          * patient + date
+
+
 
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
