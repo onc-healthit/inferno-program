@@ -47,11 +47,7 @@ module Inferno
 
         file_list = output.find_all { |item| item['type'] == klass }
 
-        if file_list.empty?
-          omit 'No Medication resources provided, and Medication resources are optional.' if klass == 'Medication'
-
-          skip "Bulk Data Server export did not provide any #{klass} resources."
-        end
+        omit_or_skip_empty_resources(klass) if file_list.empty?
 
         validate_all = lines_to_validate_parameter[:validate_all]
         lines_to_validate = lines_to_validate_parameter[:lines_to_validate]
@@ -64,13 +60,14 @@ module Inferno
           success_count += check_file_request(file, klass, validate_all, lines_to_validate, must_supports)
         end
 
-        if success_count.zero? && (validate_all || lines_to_validate.positive?)
-          omit 'No Medication resources provided, and Medication resources are optional.' if klass == 'Medication'
-
-          skip "Bulk Data Server export did not provide any #{klass} resources."
-        end
+        omit_or_skip_empty_resources(klass) if success_count.zero? && (validate_all || lines_to_validate.positive?)
 
         pass "Successfully validated #{success_count} resource(s)."
+      end
+
+      def omit_or_skip_empty_resources(klass)
+        omit 'No Medication resources provided, and Medication resources are optional.' if klass == 'Medication'
+        skip "Bulk Data Server export did not provide any #{klass} resources."
       end
 
       def get_lines_to_validate(input)
@@ -377,7 +374,9 @@ module Inferno
           )
         end
 
-        assert @patient_ids_seen.length >= MIN_RESOURCE_COUNT, 'Group export did not have multple patients.'
+        skip 'Bulk Data Server export did not provide any Patient resources.' unless @patient_ids_seen.present?
+
+        assert @patient_ids_seen.length >= MIN_RESOURCE_COUNT, 'Bulk Data Server export did not have multple Patient resources.'
       end
 
       test :validate_patient_ids_in_group do

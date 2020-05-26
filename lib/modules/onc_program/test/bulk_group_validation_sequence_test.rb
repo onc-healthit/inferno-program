@@ -214,6 +214,36 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
     end
   end
 
+  describe 'validate two patients tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+      @test = @sequence_class[:validate_two_patients]
+    end
+
+    it 'success when 2 patients in output' do
+      @sequence.patient_ids_seen = Set.new(['1', '2'])
+      @sequence.run_test(@test)
+    end
+
+    it 'fails when 1 patients in output' do
+      @sequence.patient_ids_seen = Set.new(['1'])
+      error = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      assert error.message, 'Bulk Data Server export did not have multple Patient resources.'
+    end
+
+    it 'skips when 0 patients in output' do
+      @sequence.patient_ids_seen = Set.new
+      error = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+      assert error.message, 'Bulk Data Server export did not provide any Patient resources.'
+    end
+
+    it 'skips when patients in output is nil' do
+      @sequence.patient_ids_seen = nil
+      error = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+      assert error.message, 'Bulk Data Server export did not provide any Patient resources.'
+    end
+  end
+
   describe 'get lines-to-validate' do
     before do
       @sequence = @sequence_class.new(@instance, @client)
