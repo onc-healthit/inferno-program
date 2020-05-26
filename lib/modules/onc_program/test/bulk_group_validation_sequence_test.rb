@@ -236,6 +236,12 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       error = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
       assert error.message, 'Bulk Data Server export did not provide any Patient resources.'
     end
+
+    it 'skips when patients in output is nil' do
+      @sequence.patient_ids_seen = nil
+      error = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+      assert error.message, 'Bulk Data Server export did not provide any Patient resources.'
+    end
   end
 
   describe 'get lines-to-validate' do

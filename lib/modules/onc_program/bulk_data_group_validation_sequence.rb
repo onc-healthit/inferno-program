@@ -374,7 +374,7 @@ module Inferno
           )
         end
 
-        skip 'Bulk Data Server export did not provide any Patient resources.' if @patient_ids_seen.empty?
+        skip 'Bulk Data Server export did not provide any Patient resources.' unless @patient_ids_seen.present?
 
         assert @patient_ids_seen.length >= MIN_RESOURCE_COUNT, 'Bulk Data Server export did not have multple Patient resources.'
       end
