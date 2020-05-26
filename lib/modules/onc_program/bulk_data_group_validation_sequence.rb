@@ -38,7 +38,7 @@ module Inferno
       end
 
       def test_output_against_profile(klass,
-                                      must_supports = [],
+                                      profile_definitions = [],
                                       output = @output,
                                       bulk_lines_to_validate = @instance.bulk_lines_to_validate)
         skip 'Bulk Data Server response does not have output data' unless output.present?
@@ -61,7 +61,7 @@ module Inferno
         success_count = 0
 
         file_list.each do |file|
-          success_count += check_file_request(file, klass, validate_all, lines_to_validate, must_supports)
+          success_count += check_file_request(file, klass, validate_all, lines_to_validate, profile_definitions)
         end
 
         if success_count.zero? && (validate_all || lines_to_validate.positive?)
@@ -76,6 +76,7 @@ module Inferno
       def get_lines_to_validate(input)
         if input.nil? || input.strip.empty?
           validate_all = true
+          lines_to_validate = 0
         else
           lines_to_validate = input.to_i
         end
@@ -86,7 +87,7 @@ module Inferno
         }
       end
 
-      def check_file_request(file, klass, validate_all, lines_to_validate, must_supports)
+      def check_file_request(file, klass, validate_all = true, lines_to_validate = 0, profile_definitions = [])        
         headers = { accept: 'application/fhir+ndjson' }
         headers['Authorization'] = "Bearer #{@instance.bulk_access_token}" if @requires_access_token && @instance.bulk_access_token.present?
 
@@ -135,7 +136,7 @@ module Inferno
                                              (Inferno::RESOURCE_VALIDATOR.is_a?(Inferno::FHIRModelsValidator) ||
                                              (resource_validation_errors[:warnings].empty? && resource_validation_errors[:information].empty?))
 
-          process_must_support(must_supports, p, resource)
+          process_profile_definition(profile_definitions, p, resource, resource_validation_errors)
 
           validation_error_collection[line_count] = resource_validation_errors unless resource_validation_errors.empty?
         end
@@ -147,7 +148,7 @@ module Inferno
 
         process_validation_errors(validation_error_collection, line_count, klass)
 
-        assert_must_supports_found(must_supports) if line_count.positive?
+        assert_must_supports_found(profile_definitions) if line_count.positive?
 
         if file.key?('count') && validate_all
           warning do
@@ -158,16 +159,25 @@ module Inferno
         line_count
       end
 
-      def process_must_support(must_supports, profile, resource)
-        return unless profile.present? && must_supports.present?
+      def process_profile_definition(profile_definitions, profile, resource, resource_validation_errors)
+        return unless profile.present? && profile_definitions.present?
 
-        if must_supports.length > 1 && profile
-          profile_must_support = must_supports.find { |must_support| must_support[:profile] == profile.url }
+        if profile_definitions.length > 1 && profile
+          profile_must_support = profile_definitions.find { |profile_definition| profile_definition[:profile] == profile.url }
           must_support_info = profile_must_support.present? ? profile_must_support[:must_support_info] : nil
+          binding_info = profile_must_support.present? ? profile_must_support[:binding_info] : nil
         else
-          must_support_info = must_supports.first[:must_support_info]
+          must_support_info = profile_definitions.first[:must_support_info]
+          binding_info = profile_definitions.first[:binding_info]
         end
 
+        if must_support_info.present?
+          process_must_support(must_support_info, resource)
+          process_bindings(binding_info, resource, resource_validation_errors)
+        end
+      end
+
+      def process_must_support(must_support_info, resource)
         return unless must_support_info.present?
 
         must_support_info[:elements].reject! do |ms_element|
@@ -181,6 +191,51 @@ module Inferno
         must_support_info[:slices].reject! do |ms_slice|
           find_slice(resource, ms_slice[:path], ms_slice[:discriminator])
         end
+      end
+
+      def process_bindings(bindings, resource, resource_validation_errors)
+        return unless must_support_info.present?
+
+        invalid_binding_messages = []
+        invalid_binding_resources = Set.new
+        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
+          begin
+            invalid_bindings = resources_with_invalid_binding(binding_def, @condition_ary&.values&.flatten)
+          rescue Inferno::Terminology::UnknownValueSetException => e
+            warning do
+              assert false, e.message
+            end
+            invalid_bindings = []
+          end
+          invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
+          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
+        end
+        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required binding(s) found in #{invalid_binding_resources.count} resources:" \
+                                                "#{invalid_binding_messages.join('. ')}"
+
+        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
+          begin
+            invalid_bindings = resources_with_invalid_binding(binding_def, @condition_ary&.values&.flatten)
+            binding_def_new = binding_def
+            # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
+            if invalid_bindings.present?
+              invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), @condition_ary&.values&.flatten)
+              binding_def_new = binding_def.except(:system)
+            end
+          rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::ValueSet::UnknownCodeSystemException => e
+            warning do
+              assert false, e.message
+            end
+            invalid_bindings = []
+          end
+          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def_new) })
+        end
+        warning do
+          invalid_binding_messages.each do |error_message|
+            assert false, error_message
+          end
+        end
+
       end
 
       def process_validation_errors(validation_error_collection, line_count, klass)
@@ -199,8 +254,8 @@ module Inferno
         assert error_count.zero?, "#{error_count} / #{line_count} #{klass} resources failed profile validation. #{first_error}"
       end
 
-      def assert_must_supports_found(must_supports)
-        must_supports.each do |must_support|
+      def assert_must_supports_found(profile_definitions)
+        profile_definitions.each do |must_support|
           error_string = "Could not verify presence#{' for profile ' + must_support[:profile] if must_support[:profile].present?} of the following must support %s: %s"
           missing_must_supports = must_support[:must_support_info]
 
@@ -358,13 +413,15 @@ module Inferno
           )
         end
 
-        must_supports = [
+        profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310PatientSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310PatientSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310PatientSequenceDefinitions::BINDINGS.dup
           }
         ]
-        test_output_against_profile('Patient', must_supports)
+
+        test_output_against_profile('Patient', profile_definitions)
       end
 
       test :validate_two_patients do
@@ -410,13 +467,13 @@ module Inferno
           )
         end
 
-        must_supports = [
+        profile_definitions = [
           {
             profile: nil,
             must_support_info: USCore310AllergyintoleranceSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('AllergyIntolerance', must_supports)
+        test_output_against_profile('AllergyIntolerance', profile_definitions)
       end
 
       test :validate_careplan do
@@ -429,13 +486,13 @@ module Inferno
           )
         end
 
-        must_supports = [
+        profile_definitions = [
           {
             profile: nil,
             must_support_info: USCore310CareplanSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('CarePlan', must_supports)
+        test_output_against_profile('CarePlan', profile_definitions)
       end
 
       test :validate_careteam do
@@ -448,13 +505,13 @@ module Inferno
           )
         end
 
-        must_supports = [
+        profile_definitions = [
           {
             profile: nil,
             must_support_info: USCore310CareteamSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('CareTeam', must_supports)
+        test_output_against_profile('CareTeam', profile_definitions)
       end
 
       test :validate_condition do
@@ -467,13 +524,13 @@ module Inferno
           )
         end
 
-        must_supports = [
+        profile_definitions = [
           {
             profile: nil,
             must_support_info: USCore310ConditionSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('Condition', must_supports)
+        test_output_against_profile('Condition', profile_definitions)
       end
 
       test :validate_device do
@@ -502,7 +559,7 @@ module Inferno
           )
         end
 
-        must_supports = [
+        profile_definitions = [
           {
             profile: US_CORE_R4_URIS[:diagnostic_report_lab],
             must_support_info: USCore310DiagnosticreportLabSequenceDefinitions::MUST_SUPPORTS.dup
@@ -512,7 +569,7 @@ module Inferno
             must_support_info: USCore310DiagnosticreportNoteSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('DiagnosticReport', must_supports)
+        test_output_against_profile('DiagnosticReport', profile_definitions)
       end
 
       test :validate_documentreference do
@@ -525,13 +582,13 @@ module Inferno
           )
         end
 
-        must_supports = [
+        profile_definitions = [
           {
             profile: nil,
             must_support_info: USCore310DocumentreferenceSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('DocumentReference', must_supports)
+        test_output_against_profile('DocumentReference', profile_definitions)
       end
 
       test :validate_encounter do
@@ -544,13 +601,13 @@ module Inferno
           )
         end
 
-        must_supports = [
+        profile_definitions = [
           {
             profile: nil,
             must_support_info: USCore310EncounterSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('Encounter', must_supports)
+        test_output_against_profile('Encounter', profile_definitions)
       end
 
       test :validate_goal do
@@ -563,13 +620,13 @@ module Inferno
           )
         end
 
-        must_supports = [
+        profile_definitions = [
           {
             profile: nil,
             must_support_info: USCore310GoalSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('Goal', must_supports)
+        test_output_against_profile('Goal', profile_definitions)
       end
 
       test :validate_immunization do
@@ -582,13 +639,13 @@ module Inferno
           )
         end
 
-        must_supports = [
+        profile_definitions = [
           {
             profile: nil,
             must_support_info: USCore310ImmunizationSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('Immunization', must_supports)
+        test_output_against_profile('Immunization', profile_definitions)
       end
 
       test :validate_medicationrequest do
@@ -601,13 +658,13 @@ module Inferno
           )
         end
 
-        must_supports = [
+        profile_definitions = [
           {
             profile: nil,
             must_support_info: USCore310MedicationrequestSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('MedicationRequest', must_supports)
+        test_output_against_profile('MedicationRequest', profile_definitions)
       end
 
       test :validate_observation do
@@ -626,7 +683,7 @@ module Inferno
           )
         end
 
-        must_supports = [
+        profile_definitions = [
           {
             profile: US_CORE_R4_URIS[:pediatric_bmi_age],
             must_support_info: USCore310PediatricBmiForAgeSequenceDefinitions::MUST_SUPPORTS.dup
@@ -649,7 +706,7 @@ module Inferno
           }
         ]
 
-        test_output_against_profile('Observation', must_supports)
+        test_output_against_profile('Observation', profile_definitions)
       end
 
       test :validate_procedure do
@@ -662,13 +719,13 @@ module Inferno
           )
         end
 
-        must_supports = [
+        profile_definitions = [
           {
             profile: nil,
             must_support_info: USCore310ProcedureSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('Procedure', must_supports)
+        test_output_against_profile('Procedure', profile_definitions)
       end
 
       test :validate_medication do
@@ -694,13 +751,13 @@ module Inferno
           )
         end
 
-        must_supports = [
+        profile_definitions = [
           {
             profile: nil,
             must_support_info: USCore310PractitionerSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('Practitioner', must_supports)
+        test_output_against_profile('Practitioner', profile_definitions)
       end
 
       test :validate_provenance do
@@ -713,13 +770,13 @@ module Inferno
           )
         end
 
-        must_supports = [
+        profile_definitions = [
           {
             profile: nil,
             must_support_info: USCore310ProvenanceSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('Provenance', must_supports)
+        test_output_against_profile('Provenance', profile_definitions)
       end
     end
   end
