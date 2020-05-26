@@ -14,7 +14,7 @@ module Inferno
 
       test_id_prefix 'BDGV'
 
-      requires :bulk_status_output, :bulk_lines_to_validate, :bulk_patient_ids_in_group
+      requires :bulk_status_output, :bulk_lines_to_validate, :bulk_patient_ids_in_group, :bulk_device_types_in_group
 
       attr_accessor :requires_access_token, :output, :patient_ids_seen
 
@@ -118,7 +118,7 @@ module Inferno
 
           @patient_ids_seen << resource.id if klass == 'Patient'
 
-          p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
+          p = guess_profile(resource, @instance.fhir_version.to_sym)
 
           if p && @instance.fhir_version == 'r4'
             resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, p.url)
@@ -153,6 +153,25 @@ module Inferno
         end
 
         line_count
+      end
+
+      def guess_profile(resource, version)
+        # if Device type code is not in predefined type code list, validate using FHIR base profile
+        return nil if resource.resourceType == 'Device' && !predefined_device_type?(resource)
+
+        Inferno::ValidationUtil.guess_profile(resource, version)
+      end
+
+      def predefined_device_type?(resource)
+        return false if resource.nil?
+
+        return true if @instance.bulk_device_types_in_group.blank?
+
+        expected_types = Set.new(@instance.bulk_device_types_in_group.split(',').map(&:strip))
+
+        actual_types = resource&.type&.coding&.select { |coding| coding.system.nil? || coding.system == 'http://snomed.info/sct' }&.map { |coding| coding.code }
+
+        (expected_types & actual_types).any?
       end
 
       def process_must_support(must_supports, profile, resource)
@@ -485,7 +504,14 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Device')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: USCore310ImplantableDeviceSequenceDefinitions::MUST_SUPPORTS.dup
+          }
+        ]
+
+        test_output_against_profile('Device', must_supports)
       end
 
       test :validate_diagnosticreport do
