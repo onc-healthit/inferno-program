@@ -84,7 +84,7 @@ module Inferno
         }
       end
 
-      def check_file_request(file, klass, validate_all = true, lines_to_validate = 0, profile_definitions = [])        
+      def check_file_request(file, klass, validate_all = true, lines_to_validate = 0, profile_definitions = [])
         headers = { accept: 'application/fhir+ndjson' }
         headers['Authorization'] = "Bearer #{@instance.bulk_access_token}" if @requires_access_token && @instance.bulk_access_token.present?
 
@@ -128,12 +128,12 @@ module Inferno
             resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
           end
 
+          process_profile_definition(profile_definitions, p, resource, resource_validation_errors)
+
           # Remove warnings if using internal FHIRModelsValidator. FHIRModelsValidator has an issue with FluentPath.
           resource_validation_errors = [] if resource_validation_errors[:errors].empty? &&
                                              (Inferno::RESOURCE_VALIDATOR.is_a?(Inferno::FHIRModelsValidator) ||
                                              (resource_validation_errors[:warnings].empty? && resource_validation_errors[:information].empty?))
-
-          process_profile_definition(profile_definitions, p, resource, resource_validation_errors)
 
           validation_error_collection[line_count] = resource_validation_errors unless resource_validation_errors.empty?
         end
@@ -187,10 +187,13 @@ module Inferno
           binding_info = profile_definitions.first[:binding_info]
         end
 
-        if must_support_info.present?
-          process_must_support(must_support_info, resource)
-          process_bindings(binding_info, resource, resource_validation_errors)
-        end
+        process_must_support(must_support_info, resource) if must_support_info.present?
+
+        return unless binding_info.present?
+
+        terminology_validation_errors = validate_bindings(binding_info, Array(resource))
+        resource_validation_errors[:errors].concat(terminology_validation_errors[:errors])
+        resource_validation_errors[:warnings].concat(terminology_validation_errors[:warnings])
       end
 
       def process_must_support(must_support_info, resource)
@@ -209,64 +212,25 @@ module Inferno
         end
       end
 
-      def process_bindings(bindings, resource, resource_validation_errors)
-        return unless must_support_info.present?
-
-        invalid_binding_messages = []
-        invalid_binding_resources = Set.new
-        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
-          begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, @condition_ary&.values&.flatten)
-          rescue Inferno::Terminology::UnknownValueSetException => e
-            warning do
-              assert false, e.message
-            end
-            invalid_bindings = []
-          end
-          invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
-          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
-        end
-        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required binding(s) found in #{invalid_binding_resources.count} resources:" \
-                                                "#{invalid_binding_messages.join('. ')}"
-
-        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
-          begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, @condition_ary&.values&.flatten)
-            binding_def_new = binding_def
-            # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
-            if invalid_bindings.present?
-              invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), @condition_ary&.values&.flatten)
-              binding_def_new = binding_def.except(:system)
-            end
-          rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::ValueSet::UnknownCodeSystemException => e
-            warning do
-              assert false, e.message
-            end
-            invalid_bindings = []
-          end
-          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def_new) })
-        end
-        warning do
-          invalid_binding_messages.each do |error_message|
-            assert false, error_message
-          end
-        end
-
-      end
-
       def process_validation_errors(validation_error_collection, line_count, klass)
         error_count = 0
-        first_error = ''
+        first_error = String.new
+        first_warning = []
+
         validation_error_collection.each do |line_number, resource_validation_errors|
           unless resource_validation_errors[:errors].empty?
             error_count += 1
             first_error = "The first failed is line ##{line_number}:\n\n#{resource_validation_errors[:errors].join("\n")}" if first_error.empty?
           end
 
-          @test_warnings.concat(resource_validation_errors[:warnings].map { |e| "Line ##{line_number}: #{e}" })
-          @information_messages.concat(resource_validation_errors[:information].map { |e| "Line ##{line_number}: #{e}" })
+          if first_warning.empty? && resource_validation_errors[:warnings].count.positive?
+            first_warning.concat(resource_validation_errors[:warnings].map { |e| "Line ##{line_number}: #{e}" })
+          end
+
+          # @information_messages.concat(resource_validation_errors[:information].map { |e| "Line ##{line_number}: #{e}" })
         end
 
+        @test_warnings.concat(first_warning)
         assert error_count.zero?, "#{error_count} / #{line_count} #{klass} resources failed profile validation. #{first_error}"
       end
 
@@ -488,7 +452,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310AllergyintoleranceSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310AllergyintoleranceSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310AllergyintoleranceSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('AllergyIntolerance', profile_definitions)
@@ -507,7 +472,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310CareplanSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310CareplanSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310CareplanSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('CarePlan', profile_definitions)
@@ -526,7 +492,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310CareteamSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310CareteamSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310CareteamSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('CareTeam', profile_definitions)
@@ -545,7 +512,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310ConditionSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310ConditionSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310ConditionSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Condition', profile_definitions)
@@ -564,7 +532,8 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: USCore310ImplantableDeviceSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310ImplantableDeviceSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310ImplantableDeviceSequenceDefinitions::BINDINGS.dup
           }
         ]
 
@@ -587,11 +556,13 @@ module Inferno
         profile_definitions = [
           {
             profile: US_CORE_R4_URIS[:diagnostic_report_lab],
-            must_support_info: USCore310DiagnosticreportLabSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310DiagnosticreportLabSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310DiagnosticreportLabSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:diagnostic_report_note],
-            must_support_info: USCore310DiagnosticreportNoteSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310DiagnosticreportNoteSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310DiagnosticreportNoteSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('DiagnosticReport', profile_definitions)
@@ -610,7 +581,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310DocumentreferenceSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310DocumentreferenceSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310DocumentreferenceSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('DocumentReference', profile_definitions)
@@ -629,7 +601,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310EncounterSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310EncounterSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310EncounterSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Encounter', profile_definitions)
@@ -648,7 +621,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310GoalSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310GoalSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310GoalSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Goal', profile_definitions)
@@ -667,7 +641,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310ImmunizationSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310ImmunizationSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310ImmunizationSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Immunization', profile_definitions)
@@ -686,7 +661,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310MedicationrequestSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310MedicationrequestSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310MedicationrequestSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('MedicationRequest', profile_definitions)
@@ -711,23 +687,28 @@ module Inferno
         profile_definitions = [
           {
             profile: US_CORE_R4_URIS[:pediatric_bmi_age],
-            must_support_info: USCore310PediatricBmiForAgeSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310PediatricBmiForAgeSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310PediatricBmiForAgeSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:pediatric_weight_height],
-            must_support_info: USCore310PediatricWeightForHeightSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310PediatricWeightForHeightSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310PediatricWeightForHeightSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:pulse_oximetry],
-            must_support_info: USCore310PulseOximetrySequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310PulseOximetrySequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310PulseOximetrySequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:lab_results],
-            must_support_info: USCore310ObservationLabSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310ObservationLabSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310ObservationLabSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:smoking_status],
-            must_support_info: USCore310SmokingstatusSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310SmokingstatusSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310SmokingstatusSequenceDefinitions::BINDINGS.dup
           }
         ]
 
@@ -747,7 +728,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310ProcedureSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310ProcedureSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310ProcedureSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Procedure', profile_definitions)
@@ -779,7 +761,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310PractitionerSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310PractitionerSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310PractitionerSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Practitioner', profile_definitions)
@@ -798,7 +781,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310ProvenanceSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310ProvenanceSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310ProvenanceSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Provenance', profile_definitions)
