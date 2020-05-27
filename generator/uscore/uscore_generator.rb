@@ -1005,12 +1005,14 @@ module Inferno
           )
 
           if sequence[:resource] == 'Device'
-            first_search += %(.select do |resource|
-                  device_codes = @instance&.device_codes&.split(',')&.map(&:strip)
-                  device_codes.blank? || resource&.type&.coding&.any? do |coding|
-                    device_codes.include?(coding.code)
-                  end
+            first_search += %(
+              @device_ary[patient], non_implantable_devices = @device_ary[patient].partition do |resource|
+                device_codes = @instance&.device_codes&.split(',')&.map(&:strip)
+                device_codes.blank? || resource&.type&.coding&.any? do |coding|
+                  device_codes.include?(coding.code)
                 end
+              end
+              validate_reply_entries(non_implantable_devices, search_params)
               if  @#{sequence[:resource].underscore}_ary[patient].blank? && reply&.resource&.entry&.present?
                 @skip_if_not_found_message = "No Devices of the specified type (\#{@instance&.device_codes}) were found"
               end
