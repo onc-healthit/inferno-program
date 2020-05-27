@@ -423,11 +423,11 @@
               value: instance.onc_sl_scopes || 'launch/patient openid fhirUser offline_access patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read patient/Procedure.read patient/Provenance.read'
                })%>
 
-        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_restricted_scopes,
-              label: 'Limited Standalone Patient Scope',
-              description: 'OAuth 2.0 scope to enable all or limited functionality',
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_expected_resources,
+              label: 'Expected Resource Grant',
+              description: 'The user will only grant access to the following resources during authorization.',
               instance: instance,
-              value: instance.onc_sl_restricted_scopes || 'launch/patient patient/Patient.read patient/Condition.read patient/Observation.read',
+              value: instance.onc_sl_expected_resources || 'Patient, Condition, Observation',
               required: true,
               })%>
 
@@ -547,6 +547,16 @@
                 to not verify Group inclusion.
               ),              
               value: instance.bulk_patient_ids_in_group}); %>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_device_types_in_group,
+              instance: instance,
+              label: 'Implantable Device Type Codes in exported Group',
+              description: %(
+                Comma separated list of every Implantable Device type that is in the specified Group.  This information
+                is provided by the system under test to verify that data returned matches expectations.  Leave blank
+                to verify all Device resources against the Implantable Device profile.
+              ),              
+              value: instance.bulk_device_types_in_group}); %>
 
        <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_stop_after_must_support).map {|seq| seq.sequence_name}.join(',')%>" 
               data-prerequisite="bulk_stop_after_must_support">

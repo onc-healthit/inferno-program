@@ -27,9 +27,15 @@ module Inferno
         This test sequence will first perform each required search associated with this resource. This sequence will perform searches
         with the following parameters:
 
-          * patient, code
-          * patient, category, date
-          * patient, category
+          * patient + code
+
+
+        Note that this test sequence does not include the following mandatory Observation search combinations because they search elements
+        that are neither mandatory nor must support for the US Core Smoking Status Observation Profile:
+
+          * patient+ category+ date
+          * patient+ category
+
 
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
@@ -205,210 +211,9 @@ module Inferno
         skip_if_not_found(resource_type: 'Observation', delayed: false)
       end
 
-      test :search_by_patient_category_date do
-        metadata do
-          id '02'
-          name 'Server returns valid results for Observation search by patient+category+date.'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          description %(
-
-            A server SHALL support searching by patient+category+date on the Observation resource.
-            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
-
-              This will also test support for these date comparators: gt, lt, le, ge. Comparator values are created by taking
-              a date value from a resource returned in the first search of this sequence and adding/subtracting a day. For example, a date
-              of 05/05/2020 will create comparator values of lt2020-05-06 and gt2020-05-04
-
-          )
-          versions :r4
-        end
-
-        skip_if_known_search_not_supported('Observation', ['patient', 'category', 'date'])
-        skip_if_not_found(resource_type: 'Observation', delayed: false)
-
-        resolved_one = false
-
-        patient_ids.each do |patient|
-          search_params = {
-            'patient': patient,
-            'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }),
-            'date': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'effective') { |el| get_value_for_search_param(el).present? })
-          }
-
-          next if search_params.any? { |_param, value| value.nil? }
-
-          resolved_one = true
-
-          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-
-          reply = perform_search_with_status(reply, search_params) if reply.code == 400
-
-          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-
-          ['gt', 'lt', 'le', 'ge'].each do |comparator|
-            comparator_val = date_comparator_value(comparator, search_params[:date])
-            comparator_search_params = search_params.merge('date': comparator_val)
-            reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
-            validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
-          end
-
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category'), true)
-          token_with_system_search_params = search_params.merge('category': value_with_system)
-          reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
-        end
-
-        skip 'Could not resolve all parameters (patient, category, date) in any resource.' unless resolved_one
-      end
-
-      test :search_by_patient_category do
-        metadata do
-          id '03'
-          name 'Server returns valid results for Observation search by patient+category.'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          description %(
-
-            A server SHALL support searching by patient+category on the Observation resource.
-            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
-
-          )
-          versions :r4
-        end
-
-        skip_if_known_search_not_supported('Observation', ['patient', 'category'])
-        skip_if_not_found(resource_type: 'Observation', delayed: false)
-
-        resolved_one = false
-
-        patient_ids.each do |patient|
-          search_params = {
-            'patient': patient,
-            'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category') { |el| get_value_for_search_param(el).present? })
-          }
-
-          next if search_params.any? { |_param, value| value.nil? }
-
-          resolved_one = true
-
-          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-
-          reply = perform_search_with_status(reply, search_params) if reply.code == 400
-
-          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category'), true)
-          token_with_system_search_params = search_params.merge('category': value_with_system)
-          reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
-        end
-
-        skip 'Could not resolve all parameters (patient, category) in any resource.' unless resolved_one
-      end
-
-      test :search_by_patient_code_date do
-        metadata do
-          id '04'
-          name 'Server returns valid results for Observation search by patient+code+date.'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-
-            A server SHOULD support searching by patient+code+date on the Observation resource.
-            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
-
-              This will also test support for these date comparators: gt, lt, le, ge. Comparator values are created by taking
-              a date value from a resource returned in the first search of this sequence and adding/subtracting a day. For example, a date
-              of 05/05/2020 will create comparator values of lt2020-05-06 and gt2020-05-04
-
-          )
-          versions :r4
-        end
-
-        skip_if_known_search_not_supported('Observation', ['patient', 'code', 'date'])
-        skip_if_not_found(resource_type: 'Observation', delayed: false)
-
-        resolved_one = false
-
-        patient_ids.each do |patient|
-          search_params = {
-            'patient': patient,
-            'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code') { |el| get_value_for_search_param(el).present? }),
-            'date': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'effective') { |el| get_value_for_search_param(el).present? })
-          }
-
-          next if search_params.any? { |_param, value| value.nil? }
-
-          resolved_one = true
-
-          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-
-          reply = perform_search_with_status(reply, search_params) if reply.code == 400
-
-          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-
-          ['gt', 'lt', 'le', 'ge'].each do |comparator|
-            comparator_val = date_comparator_value(comparator, search_params[:date])
-            comparator_search_params = search_params.merge('date': comparator_val)
-            reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
-            validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
-          end
-
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code'), true)
-          token_with_system_search_params = search_params.merge('code': value_with_system)
-          reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
-        end
-
-        skip 'Could not resolve all parameters (patient, code, date) in any resource.' unless resolved_one
-      end
-
-      test :search_by_patient_category_status do
-        metadata do
-          id '05'
-          name 'Server returns valid results for Observation search by patient+category+status.'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-
-            A server SHOULD support searching by patient+category+status on the Observation resource.
-            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
-
-          )
-          versions :r4
-        end
-
-        skip_if_known_search_not_supported('Observation', ['patient', 'category', 'status'])
-        skip_if_not_found(resource_type: 'Observation', delayed: false)
-
-        resolved_one = false
-
-        patient_ids.each do |patient|
-          search_params = {
-            'patient': patient,
-            'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }),
-            'status': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
-          }
-
-          next if search_params.any? { |_param, value| value.nil? }
-
-          resolved_one = true
-
-          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-
-          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category'), true)
-          token_with_system_search_params = search_params.merge('category': value_with_system)
-          reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
-        end
-
-        skip 'Could not resolve all parameters (patient, category, status) in any resource.' unless resolved_one
-      end
-
       test :read_interaction do
         metadata do
-          id '06'
+          id '02'
           name 'Server returns correct Observation resource from Observation read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -425,7 +230,7 @@ module Inferno
 
       test :vread_interaction do
         metadata do
-          id '07'
+          id '03'
           name 'Server returns correct Observation resource from Observation vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -443,7 +248,7 @@ module Inferno
 
       test :history_interaction do
         metadata do
-          id '08'
+          id '04'
           name 'Server returns correct Observation resource from Observation history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -461,7 +266,7 @@ module Inferno
 
       test 'Server returns Provenance resources from Observation search by patient + code + _revIncludes: Provenance:target' do
         metadata do
-          id '09'
+          id '05'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
 
@@ -508,7 +313,7 @@ module Inferno
 
       test :validate_resources do
         metadata do
-          id '10'
+          id '06'
           name 'Observation resources returned from previous search conform to the US Core Smoking Status Observation Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-smokingstatus'
           description %(
@@ -524,50 +329,7 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Observation', delayed: false)
         test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:smoking_status])
-        bindings = [
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-observation-smoking-status-status',
-            path: 'status'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-smoking-status-observation-codes',
-            path: 'code'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-observation-smokingstatus',
-            path: 'value'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/data-absent-reason',
-            path: 'dataAbsentReason'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/observation-interpretation',
-            path: 'interpretation'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/data-absent-reason',
-            path: 'component.dataAbsentReason'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/observation-interpretation',
-            path: 'component.interpretation'
-          }
-        ]
+        bindings = USCore310SmokingstatusSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
@@ -611,7 +373,7 @@ module Inferno
 
       test 'All must support elements are provided in the Observation resources returned.' do
         metadata do
-          id '11'
+          id '07'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -654,7 +416,7 @@ module Inferno
 
       test 'Every reference within Observation resources can be read.' do
         metadata do
-          id '12'
+          id '08'
           link 'http://hl7.org/fhir/references.html'
           description %(
 

@@ -27,10 +27,12 @@ module Inferno
         This test sequence will first perform each required search associated with this resource. This sequence will perform searches
         with the following parameters:
 
-          * patient, category
+          * patient + category
           * patient
-          * patient, code
-          * patient, category, date
+          * patient + code
+          * patient + category + date
+
+
 
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
@@ -549,20 +551,7 @@ module Inferno
 
         skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
         test_resources_against_profile('DiagnosticReport', Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_lab])
-        bindings = [
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/diagnostic-report-status',
-            path: 'status'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-diagnosticreport-lab-codes',
-            path: 'code'
-          }
-        ]
+        bindings = USCore310DiagnosticreportLabSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|

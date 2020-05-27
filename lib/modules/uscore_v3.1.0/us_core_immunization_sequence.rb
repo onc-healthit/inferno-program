@@ -29,6 +29,8 @@ module Inferno
 
           * patient
 
+
+
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
         parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is
@@ -371,26 +373,7 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Immunization', delayed: false)
         test_resources_against_profile('Immunization')
-        bindings = [
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/immunization-status',
-            path: 'status'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-vaccines-cvx',
-            path: 'vaccineCode'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/immunization-function',
-            path: 'performer.function'
-          }
-        ]
+        bindings = USCore310ImmunizationSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|

@@ -101,44 +101,7 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Provenance', delayed: true)
         test_resources_against_profile('Provenance')
-        bindings = [
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://terminology.hl7.org/ValueSet/v3-PurposeOfUse',
-            path: 'reason'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/provenance-activity-type',
-            path: 'activity'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-provenance-participant-type',
-            path: 'agent.type'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/provenance-agent-type',
-            path: 'agent.type'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/provenance-agent-type',
-            path: 'agent.type'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/provenance-entity-role',
-            path: 'entity.role'
-          }
-        ]
+        bindings = USCore310ProvenanceSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|

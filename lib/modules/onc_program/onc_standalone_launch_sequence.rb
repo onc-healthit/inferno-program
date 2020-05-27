@@ -125,7 +125,7 @@ module Inferno
           'response_type' => 'code',
           'client_id' => @instance.onc_sl_client_id,
           'redirect_uri' => @instance.redirect_uris,
-          'scope' => @instance.onc_sl_scopes,
+          'scope' => instance_scopes,
           'state' => @instance.state,
           'aud' => @instance.onc_sl_url
         }

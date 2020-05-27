@@ -29,6 +29,8 @@ module Inferno
 
           * patient
 
+
+
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
         parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is
@@ -343,50 +345,7 @@ module Inferno
           end.compact
         end
 
-        bindings = [
-          {
-            type: 'CodeableConcept',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/allergyintolerance-clinical',
-            path: 'clinicalStatus'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/allergyintolerance-verification',
-            path: 'verificationStatus'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/allergy-intolerance-type',
-            path: 'type'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/allergy-intolerance-category',
-            path: 'category'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/allergy-intolerance-criticality',
-            path: 'criticality'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-allergy-substance',
-            path: 'code'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/reaction-event-severity',
-            path: 'reaction.severity'
-          }
-        ]
+        bindings = USCore310AllergyintoleranceSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|

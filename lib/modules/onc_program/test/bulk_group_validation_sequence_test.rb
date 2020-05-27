@@ -214,6 +214,36 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
     end
   end
 
+  describe 'validate two patients tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+      @test = @sequence_class[:validate_two_patients]
+    end
+
+    it 'success when 2 patients in output' do
+      @sequence.patient_ids_seen = Set.new(['1', '2'])
+      @sequence.run_test(@test)
+    end
+
+    it 'fails when 1 patients in output' do
+      @sequence.patient_ids_seen = Set.new(['1'])
+      error = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      assert error.message, 'Bulk Data Server export did not have multple Patient resources.'
+    end
+
+    it 'skips when 0 patients in output' do
+      @sequence.patient_ids_seen = Set.new
+      error = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+      assert error.message, 'Bulk Data Server export did not provide any Patient resources.'
+    end
+
+    it 'skips when patients in output is nil' do
+      @sequence.patient_ids_seen = nil
+      error = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
+      assert error.message, 'Bulk Data Server export did not provide any Patient resources.'
+    end
+  end
+
   describe 'get lines-to-validate' do
     before do
       @sequence = @sequence_class.new(@instance, @client)
@@ -271,7 +301,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
         @sequence.test_output_against_profile('Observation', [], @output, '1')
       end
 
-      assert error.message == 'Bulk Data Server export does not have Observation data'
+      assert error.message == 'Bulk Data Server export did not provide any Observation resources.'
     end
 
     it 'select matched output file' do
@@ -359,43 +389,6 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       assertion_exception = assert_raises(Inferno::AssertionException) { @sequence.test_output_against_profile('Patient', must_supports, @output, '1') }
       assert_match('Could not verify presence of the following must support elements: address.period', assertion_exception.message)
     end
-
-    it 'skips export is empty' do
-      lines = @patient_export.lines
-      lines[1] = "\n"
-
-      stub_request(:get, @patient_file_location)
-        .with(headers: @file_request_headers)
-        .to_return(
-          status: 200,
-          headers: { content_type: 'application/fhir+ndjson' },
-          body: ''
-        )
-
-      skip_exception = assert_raises(Inferno::SkipException) do
-        @sequence.test_output_against_profile('Patient', [], @output, '')
-      end
-      assert skip_exception.message == 'Bulk Data Server export for Patient is empty'
-    end
-
-    it 'pass when export is empty and lines_to_validate is zero' do
-      lines = @patient_export.lines
-      lines[1] = "\n"
-
-      stub_request(:get, @patient_file_location)
-        .with(headers: @file_request_headers)
-        .to_return(
-          status: 200,
-          headers: { content_type: 'application/fhir+ndjson' },
-          body: ''
-        )
-
-      pass_exception = assert_raises(Inferno::PassException) do
-        @sequence.test_output_against_profile('Patient', [], @output, '0')
-      end
-
-      assert pass_exception.message == 'Successfully validated 0 resource(s).'
-    end
   end
 
   describe 'read NDJSON file tests' do
@@ -474,7 +467,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
 
     it 'succeeds when NDJSON is valid and has at least two patients' do
       @sequence.check_file_request(@file, 'Patient', false, 0, [])
-      assert @sequence.has_min_patient_count
+      assert @sequence.patient_ids_seen.length >= 2
     end
 
     it 'fails when NDJSON is valid and has only one patient' do
@@ -491,7 +484,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
 
       @file['url'] = 'https://www.example.com/single_patient_export.json'
       @sequence.check_file_request(@file, 'Patient', false, 0, [])
-      assert !@sequence.has_min_patient_count
+      assert @sequence.patient_ids_seen.length == 1
     end
 
     it 'tests two patients when one of patient is invalid' do
@@ -555,12 +548,21 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
 
       assert !@sequence.instance_variable_get(:@test_warnings).include?("Count in status output (#{@file['count']}) did not match actual number of resources returned (#{@patient_export.lines.count})")
     end
+  end
+
+  describe 'read empty line tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+      @headers = { accept: 'application/fhir+ndjson' }
+      @headers['Authorization'] = "Bearer #{@instance.bulk_access_token}"
+      @file = @output.find { |line| line['type'] == 'Patient' }
+    end
 
     it 'ignores empty line in the output file' do
       lines = @patient_export.lines
       lines[1] = "\n"
 
-      stub_request(:get, 'https://www.example.com/patient_export_with_empty_line.json')
+      stub_request(:get, @patient_file_location)
         .with(headers: @file_request_headers)
         .to_return(
           status: 200,
@@ -568,10 +570,253 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
           body: lines.join
         )
 
-      @file['url'] = 'https://www.example.com/patient_export_with_empty_line.json'
+      line_count = @sequence.check_file_request(@file, 'Patient', true, 1, [])
+      assert line_count == @file['count'] - 1
+    end
+
+    it 'ignores empty at the beginning of output file' do
+      lines = @patient_export.lines
+      lines[0] = "\n"
+
+      stub_request(:get, @patient_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: lines.join
+        )
 
       line_count = @sequence.check_file_request(@file, 'Patient', true, 1, [])
       assert line_count == @file['count'] - 1
+    end
+
+    it 'ignores empty line at the end of output file' do
+      lines = @patient_export.lines
+      lines[lines.count - 1] = "\n"
+
+      stub_request(:get, @patient_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: lines.join
+        )
+
+      line_count = @sequence.check_file_request(@file, 'Patient', true, 1, [])
+      assert line_count == @file['count'] - 1
+    end
+
+    it 'skips when export is empty' do
+      stub_request(:get, @patient_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: ''
+        )
+
+      skip_exception = assert_raises(Inferno::SkipException) do
+        @sequence.test_output_against_profile('Patient', [], @output, '')
+      end
+      assert skip_exception.message == 'Bulk Data Server export did not provide any Patient resources.'
+    end
+
+    it 'passes when export is empty and lines_to_validate is zero' do
+      stub_request(:get, @patient_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: ''
+        )
+
+      pass_exception = assert_raises(Inferno::PassException) do
+        @sequence.test_output_against_profile('Patient', [], @output, '0')
+      end
+
+      assert pass_exception.message == 'Successfully validated 0 resource(s).'
+    end
+
+    it 'omits when no Medication export' do
+      omit_exception = assert_raises(Inferno::OmitException) do
+        @sequence.test_output_against_profile('Medication', [], @output, '')
+      end
+
+      assert omit_exception.message == 'No Medication resources provided, and Medication resources are optional.'
+    end
+  end
+
+  describe 'read Observation file tests' do
+    before do
+      @observation_file_location = 'https://www.example.com/observation_export.ndjson'
+      @observation_export = load_fixture_with_extension('bulk_data_observation.ndjson')
+      @sequence = @sequence_class.new(@instance, @client)
+      @headers = { accept: 'application/fhir+ndjson' }
+      @headers['Authorization'] = "Bearer #{@instance.bulk_access_token}"
+      @file = { 'type' => 'Observation', 'url' => @observation_file_location, 'count' => @observation_export.lines.count }
+
+      stub_request(:get, @observation_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: @observation_export
+        )
+    end
+
+    it 'succeeds with vital-signs observation' do
+      must_supports = []
+      @sequence.check_file_request(@file, 'Observation', true, 1, must_supports)
+    end
+  end
+
+  describe 'read multi file tests' do
+    before do
+      @patient_1_location = 'https://www.example.com/patient_1_export.ndjson'
+      @patient_2_location = 'https://www.example.com/patient_2_export.ndjson'
+
+      @patient_1_export = load_fixture_with_extension('bulk_data_patient_1.ndjson')
+      @patient_1_export = load_fixture_with_extension('bulk_data_patient_2.ndjson')
+
+      @output = [
+        { 'type' => 'Patient', 'url' => @patient_1_location },
+        { 'type' => 'Patient', 'url' => @patient_2_location }
+      ]
+
+      @sequence = @sequence_class.new(@instance, @client)
+
+      stub_request(:get, @patient_1_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: @patient_1_export
+        )
+
+      stub_request(:get, @patient_2_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: @patient_1_export
+        )
+    end
+
+    it 'passes when reading multi patient file' do
+      pass = assert_raises(Inferno::PassException) do
+        @sequence.test_output_against_profile('Patient', [], @output, '')
+      end
+
+      assert pass.message == 'Successfully validated 2 resource(s).'
+    end
+  end
+
+  describe 'guess profile tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'returns nil for Devices without predefined type code' do
+      @instance.bulk_device_types_in_group = '2, 3'
+      resource = FHIR::Device.new(
+        type: {
+          coding: [{
+            system: 'http://snomed.info/sct',
+            code: '1'
+          }]
+        }
+      )
+
+      actual = @sequence.guess_profile(resource, :r4)
+
+      assert actual.nil?
+    end
+
+    it 'returns Implantable Device profile for Devices with predefined type code' do
+      @instance.bulk_device_types_in_group = '1, 2, 3'
+      resource = FHIR::Device.new(
+        type: {
+          coding: [{
+            system: 'http://snomed.info/sct',
+            code: '1'
+          }]
+        }
+      )
+      p = @sequence.guess_profile(resource, :r4)
+      assert p.url == Inferno::ValidationUtil::RESOURCES[:r4]['Device'].first.url
+    end
+  end
+
+  describe 'predefined device type tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'returns false when resource is nil' do
+      actual = @sequence.predefined_device_type?(nil)
+      assert !actual
+    end
+
+    it 'returns true when bulk_device_types_in_group is empty' do
+      @instance.bulk_device_types_in_group = ''
+      resource = FHIR::Device.new
+      actual = @sequence.predefined_device_type?(resource)
+      assert actual
+    end
+
+    it 'returns true when device type code is in bulk_device_types_in_group and system is SCT' do
+      @instance.bulk_device_types_in_group = '1, 2, 3'
+      resource = FHIR::Device.new(
+        type: {
+          coding: [{
+            system: 'http://snomed.info/sct',
+            code: '1'
+          }]
+        }
+      )
+      actual = @sequence.predefined_device_type?(resource)
+      assert actual
+    end
+
+    it 'returns false when device type code is in not bulk_device_types_in_group and system is SCT' do
+      @instance.bulk_device_types_in_group = '2, 3'
+      resource = FHIR::Device.new(
+        type: {
+          coding: [{
+            system: 'http://snomed.info/sct',
+            code: '1'
+          }]
+        }
+      )
+      actual = @sequence.predefined_device_type?(resource)
+      assert !actual
+    end
+
+    it 'returns true when device type code is in bulk_device_types_in_group and system is empty' do
+      @instance.bulk_device_types_in_group = '1, 2, 3'
+      resource = FHIR::Device.new(
+        type: {
+          coding: [{
+            code: '1'
+          }]
+        }
+      )
+      actual = @sequence.predefined_device_type?(resource)
+      assert actual
+    end
+
+    it 'returns true when device type code is in bulk_device_types_in_group and system is not SCT nor empty' do
+      @instance.bulk_device_types_in_group = '1, 2, 3'
+      resource = FHIR::Device.new(
+        type: {
+          coding: [{
+            system: 'example',
+            code: '1'
+          }]
+        }
+      )
+      actual = @sequence.predefined_device_type?(resource)
+      assert !actual
     end
   end
 end

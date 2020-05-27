@@ -24,6 +24,7 @@ module Inferno
         add_metadata_from_ig(metadata, ig_resource)
         add_metadata_from_resources(metadata, capability_statement_json['rest'][0]['resource'])
         fix_metadata_errors(metadata)
+        add_mandatory_and_must_support_search_exclusions(metadata)
         add_special_cases(metadata)
       end
 
@@ -87,6 +88,7 @@ module Inferno
             slices: [],
             elements: []
           },
+          mandatory_elements: [],
           tests: []
         }
       end
@@ -112,6 +114,7 @@ module Inferno
             profile_definition = @resource_by_path[base_path]
             add_required_codeable_concepts(profile_definition, new_sequence)
             add_must_support_elements(profile_definition, new_sequence)
+            add_mandatory_elements(profile_definition, new_sequence)
             add_terminology_bindings(profile_definition, new_sequence)
             add_search_param_descriptions(profile_definition, new_sequence)
             add_references(profile_definition, new_sequence)
@@ -347,6 +350,13 @@ module Inferno
         end
       end
 
+      def add_mandatory_elements(profile_definition, sequence)
+        profile_elements = profile_definition['snapshot']['element']
+        sequence[:mandatory_elements] = profile_elements
+          .select { |el| el['min'].positive? }
+          .map { |el| el['path'] }
+      end
+
       def add_search_param_descriptions(profile_definition, sequence)
         sequence[:search_param_descriptions].each_key do |param|
           search_param_definition = @resource_by_path[search_param_path(sequence[:resource], param.to_s)]
@@ -465,6 +475,41 @@ module Inferno
           sequence[:search_param_descriptions].each do |_param, description|
             param_comparators = description[:comparators]
             param_comparators[:ge] = param_comparators[:le] if param_comparators.key? :le
+          end
+        end
+      end
+
+      def add_mandatory_and_must_support_search_exclusions(metadata)
+        # must be performed after we fix the metadata
+        metadata[:sequences].each do |sequence|
+          sequence[:searches].each do |search|
+            search[:names_not_must_support_or_mandatory] = search[:names].reject do |name|
+              path = sequence[:search_param_descriptions][name.to_sym][:path]
+              any_must_support_elements = sequence[:must_supports][:elements].any? do |element|
+                full_must_support_path = "#{sequence[:resource]}.#{element[:path]}"
+
+                # allow for non-choice, choice types, and _id
+                name == '_id' || full_must_support_path == path || full_must_support_path == "#{path}[x]"
+              end
+
+              any_must_support_slices = sequence[:must_supports][:slices].any? do |slice|
+                # only handle type slices because that is all we need for now
+                if slice[:discriminator] && slice[:discriminator][:type] == 'type'
+                  full_must_support_path = "#{sequence[:resource]}.#{slice[:path].sub('[x]', slice[:discriminator][:code])}"
+                  full_must_support_path == path
+                else
+                  false
+                end
+              end
+
+              any_mandatory_elements = sequence[:mandatory_elements].any? do |element|
+                element == path
+              end
+
+              any_must_support_elements || any_must_support_slices || any_mandatory_elements
+            end
+
+            search[:must_support_or_mandatory] = search[:names_not_must_support_or_mandatory].empty?
           end
         end
       end

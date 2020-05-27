@@ -29,6 +29,8 @@ module Inferno
 
           * patient
 
+
+
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
         parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is
@@ -249,60 +251,9 @@ module Inferno
         skip 'Could not resolve all parameters (patient, category) in any resource.' unless resolved_one
       end
 
-      test :search_by_patient_onset_date do
-        metadata do
-          id '03'
-          name 'Server returns valid results for Condition search by patient+onset-date.'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          optional
-          description %(
-
-            A server SHOULD support searching by patient+onset-date on the Condition resource.
-            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
-
-              This will also test support for these onset-date comparators: gt, lt, le, ge. Comparator values are created by taking
-              a onset-date value from a resource returned in the first search of this sequence and adding/subtracting a day. For example, a date
-              of 05/05/2020 will create comparator values of lt2020-05-06 and gt2020-05-04
-
-          )
-          versions :r4
-        end
-
-        skip_if_known_search_not_supported('Condition', ['patient', 'onset-date'])
-        skip_if_not_found(resource_type: 'Condition', delayed: false)
-
-        resolved_one = false
-
-        patient_ids.each do |patient|
-          search_params = {
-            'patient': patient,
-            'onset-date': get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'onsetDateTime') { |el| get_value_for_search_param(el).present? })
-          }
-
-          next if search_params.any? { |_param, value| value.nil? }
-
-          resolved_one = true
-
-          reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
-
-          reply = perform_search_with_status(reply, search_params) if reply.code == 400
-
-          validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
-
-          ['gt', 'lt', 'le', 'ge'].each do |comparator|
-            comparator_val = date_comparator_value(comparator, search_params[:'onset-date'])
-            comparator_search_params = search_params.merge('onset-date': comparator_val)
-            reply = get_resource_by_params(versioned_resource_class('Condition'), comparator_search_params)
-            validate_search_reply(versioned_resource_class('Condition'), reply, comparator_search_params)
-          end
-        end
-
-        skip 'Could not resolve all parameters (patient, onset-date) in any resource.' unless resolved_one
-      end
-
       test :search_by_patient_clinical_status do
         metadata do
-          id '04'
+          id '03'
           name 'Server returns valid results for Condition search by patient+clinical-status.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -345,7 +296,7 @@ module Inferno
 
       test :search_by_patient_code do
         metadata do
-          id '05'
+          id '04'
           name 'Server returns valid results for Condition search by patient+code.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -390,7 +341,7 @@ module Inferno
 
       test :read_interaction do
         metadata do
-          id '06'
+          id '05'
           name 'Server returns correct Condition resource from Condition read interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -407,7 +358,7 @@ module Inferno
 
       test :vread_interaction do
         metadata do
-          id '07'
+          id '06'
           name 'Server returns correct Condition resource from Condition vread interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -425,7 +376,7 @@ module Inferno
 
       test :history_interaction do
         metadata do
-          id '08'
+          id '07'
           name 'Server returns correct Condition resource from Condition history interaction'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           optional
@@ -443,7 +394,7 @@ module Inferno
 
       test 'Server returns Provenance resources from Condition search by patient + _revIncludes: Provenance:target' do
         metadata do
-          id '09'
+          id '08'
           link 'https://www.hl7.org/fhir/search.html#revinclude'
           description %(
 
@@ -483,7 +434,7 @@ module Inferno
 
       test :validate_resources do
         metadata do
-          id '10'
+          id '09'
           name 'Condition resources returned from previous search conform to the US Core Condition Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
           description %(
@@ -515,32 +466,7 @@ module Inferno
           end.compact
         end
 
-        bindings = [
-          {
-            type: 'CodeableConcept',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/condition-clinical',
-            path: 'clinicalStatus'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/condition-ver-status',
-            path: 'verificationStatus'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-condition-category',
-            path: 'category'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-condition-code',
-            path: 'code'
-          }
-        ]
+        bindings = USCore310ConditionSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
@@ -584,7 +510,7 @@ module Inferno
 
       test 'All must support elements are provided in the Condition resources returned.' do
         metadata do
-          id '11'
+          id '10'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -618,7 +544,7 @@ module Inferno
 
       test 'Every reference within Condition resources can be read.' do
         metadata do
-          id '12'
+          id '11'
           link 'http://hl7.org/fhir/references.html'
           description %(
 

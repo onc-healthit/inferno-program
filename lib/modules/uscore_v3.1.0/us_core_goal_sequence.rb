@@ -29,6 +29,8 @@ module Inferno
 
           * patient
 
+
+
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
         parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is
@@ -371,14 +373,7 @@ module Inferno
 
         skip_if_not_found(resource_type: 'Goal', delayed: false)
         test_resources_against_profile('Goal')
-        bindings = [
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/goal-status',
-            path: 'lifecycleStatus'
-          }
-        ]
+        bindings = USCore310GoalSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|

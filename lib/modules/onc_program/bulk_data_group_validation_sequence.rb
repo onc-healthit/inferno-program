@@ -14,14 +14,15 @@ module Inferno
 
       test_id_prefix 'BDGV'
 
-      requires :bulk_status_output, :bulk_lines_to_validate, :bulk_patient_ids_in_group
+      requires :bulk_status_output, :bulk_lines_to_validate, :bulk_patient_ids_in_group, :bulk_device_types_in_group
 
-      attr_accessor :requires_access_token, :output, :patient_ids_seen, :has_min_patient_count
+      attr_accessor :requires_access_token, :output, :patient_ids_seen
 
       MAX_RECENT_LINE_SIZE = 100
       MIN_RESOURCE_COUNT = 2
 
       US_CORE_R4_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
+
       include Inferno::USCore310ProfileDefinitions
 
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
@@ -33,6 +34,7 @@ module Inferno
         @output = status_response['output']
         requires_access_token = status_response['requiresAccessToken']
         @requires_access_token = requires_access_token.to_s.downcase == 'true' if requires_access_token.present?
+        @patient_ids_seen = Set.new
       end
 
       def test_output_against_profile(klass,
@@ -43,20 +45,29 @@ module Inferno
 
         lines_to_validate_parameter = get_lines_to_validate(bulk_lines_to_validate)
 
-        file = output.find { |item| item['type'] == klass }
+        file_list = output.find_all { |item| item['type'] == klass }
 
-        skip "Bulk Data Server export does not have #{klass} data" if file.nil?
+        omit_or_skip_empty_resources(klass) if file_list.empty?
 
         validate_all = lines_to_validate_parameter[:validate_all]
         lines_to_validate = lines_to_validate_parameter[:lines_to_validate]
 
         omit 'Validate has been omitted because line_to_validate is 0' if !validate_all && lines_to_validate.zero? && klass != 'Patient'
 
-        success_count = check_file_request(file, klass, validate_all, lines_to_validate, must_supports)
+        success_count = 0
 
-        skip "Bulk Data Server export for #{klass} is empty" if success_count.zero? && (validate_all || lines_to_validate.positive?)
+        file_list.each do |file|
+          success_count += check_file_request(file, klass, validate_all, lines_to_validate, must_supports)
+        end
+
+        omit_or_skip_empty_resources(klass) if success_count.zero? && (validate_all || lines_to_validate.positive?)
 
         pass "Successfully validated #{success_count} resource(s)."
+      end
+
+      def omit_or_skip_empty_resources(klass)
+        omit 'No Medication resources provided, and Medication resources are optional.' if klass == 'Medication'
+        skip "Bulk Data Server export did not provide any #{klass} resources."
       end
 
       def get_lines_to_validate(input)
@@ -76,8 +87,6 @@ module Inferno
         headers = { accept: 'application/fhir+ndjson' }
         headers['Authorization'] = "Bearer #{@instance.bulk_access_token}" if @requires_access_token && @instance.bulk_access_token.present?
 
-        @patient_ids_seen = Set.new if klass == 'Patient'
-
         line_count = 0
         validation_error_collection = {}
         line_collection = []
@@ -95,7 +104,7 @@ module Inferno
         streamed_ndjson_get(file['url'], headers) do |response, resource|
           assert response.headers['Content-Type'] == 'application/fhir+ndjson', "Content type must be 'application/fhir+ndjson' but is '#{response.headers['Content-type']}"
 
-          break if !validate_all && line_count >= lines_to_validate && (klass != 'Patient' || @has_min_patient_count)
+          break if !validate_all && line_count >= lines_to_validate && (klass != 'Patient' || @patient_ids_seen.length >= MIN_RESOURCE_COUNT)
 
           response_for_log[:code] = response.code unless response_for_log.key?(:code)
           response_for_log[:headers] = response.headers unless response_for_log.key?(:headers)
@@ -103,26 +112,25 @@ module Inferno
 
           line_count += 1
 
-          @has_min_patient_count = true if line_count >= MIN_RESOURCE_COUNT && klass == 'Patient'
-
           resource = versioned_resource_class.from_contents(resource)
           resource_type = resource.class.name.demodulize
           assert resource_type == klass, "Resource type \"#{resource_type}\" at line \"#{line_count}\" does not match type defined in output \"#{klass}\")"
 
           @patient_ids_seen << resource.id if klass == 'Patient'
 
-          p = Inferno::ValidationUtil.guess_profile(resource, @instance.fhir_version.to_sym)
+          p = guess_profile(resource, @instance.fhir_version.to_sym)
+
           if p && @instance.fhir_version == 'r4'
             resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, p.url)
-
-            # Remove warnings if using internal FHIRModelsValidator. FHIRModelsValidator has an issue with FluentPath.
-            resource_validation_errors = [] if resource_validation_errors[:errors].empty? &&
-                                               (Inferno::RESOURCE_VALIDATOR.is_a?(Inferno::FHIRModelsValidator) ||
-                                               (resource_validation_errors[:warnings].empty? && resource_validation_errors[:information].empty?))
           else
             warn { assert false, 'No profiles found for this Resource' }
-            resource_validation_errors = resource.validate
+            resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
           end
+
+          # Remove warnings if using internal FHIRModelsValidator. FHIRModelsValidator has an issue with FluentPath.
+          resource_validation_errors = [] if resource_validation_errors[:errors].empty? &&
+                                             (Inferno::RESOURCE_VALIDATOR.is_a?(Inferno::FHIRModelsValidator) ||
+                                             (resource_validation_errors[:warnings].empty? && resource_validation_errors[:information].empty?))
 
           process_must_support(must_supports, p, resource)
 
@@ -147,8 +155,27 @@ module Inferno
         line_count
       end
 
+      def guess_profile(resource, version)
+        # if Device type code is not in predefined type code list, validate using FHIR base profile
+        return nil if resource.resourceType == 'Device' && !predefined_device_type?(resource)
+
+        Inferno::ValidationUtil.guess_profile(resource, version)
+      end
+
+      def predefined_device_type?(resource)
+        return false if resource.nil?
+
+        return true if @instance.bulk_device_types_in_group.blank?
+
+        expected_types = Set.new(@instance.bulk_device_types_in_group.split(',').map(&:strip))
+
+        actual_types = resource&.type&.coding&.select { |coding| coding.system.nil? || coding.system == 'http://snomed.info/sct' }&.map { |coding| coding.code }
+
+        (expected_types & actual_types).any?
+      end
+
       def process_must_support(must_supports, profile, resource)
-        return unless must_supports.present?
+        return unless profile.present? && must_supports.present?
 
         if must_supports.length > 1 && profile
           profile_must_support = must_supports.find { |must_support| must_support[:profile] == profile.url }
@@ -207,7 +234,7 @@ module Inferno
       def log_and_reraise_if_error(request, response, truncated)
         yield
       rescue StandardError
-        response[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS MOST RECENT #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response[:body]}" if truncated
+        response[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS FIRST #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response[:body]}" if truncated
         LoggedRestClient.record_response(request, response)
         raise
       end
@@ -249,10 +276,10 @@ module Inferno
           resource_list = next_block.lines
 
           # Skip process the last line since the it may not complete (still appending from stream)
-          last_line = resource_list.pop
+          next_block = resource_list.pop
           # Skip if the last_line is empty
-          # Cannot use .blank? since dock-compose complains "invalid byte sequence in US-ASCII" during unit test
-          next_block = String.new last_line unless last_line.nil? || last_line.strip.empty?
+          # Cannot use .blank? since docker-compose complains "invalid byte sequence in US-ASCII" during unit test
+          next_block = String.new next_block unless next_block.nil? || next_block.strip.empty?
 
           resource_list.each do |resource|
             # NDJSON does not specify empty line is NOT allowed.
@@ -282,7 +309,7 @@ module Inferno
         end
 
         if line_count > MAX_RECENT_LINE_SIZE
-          response_for_log[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS MOST RECENT #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response_for_log[:body]}"
+          response_for_log[:body] = "NOTE: RESPONSE TRUNCATED\nINFERNO ONLY DISPLAYS FIRST #{MAX_RECENT_LINE_SIZE} LINES\n\n#{response_for_log[:body]}"
         end
         LoggedRestClient.record_response(request_for_log, response_for_log)
 
@@ -366,7 +393,9 @@ module Inferno
           )
         end
 
-        assert @has_min_patient_count, 'Group export did not have multple patients.'
+        skip 'Bulk Data Server export did not provide any Patient resources.' unless @patient_ids_seen.present?
+
+        assert @patient_ids_seen.length >= MIN_RESOURCE_COUNT, 'Bulk Data Server export did not have multple Patient resources.'
       end
 
       test :validate_patient_ids_in_group do
@@ -475,7 +504,14 @@ module Inferno
           )
         end
 
-        test_output_against_profile('Device')
+        must_supports = [
+          {
+            profile: nil,
+            must_support_info: USCore310ImplantableDeviceSequenceDefinitions::MUST_SUPPORTS.dup
+          }
+        ]
+
+        test_output_against_profile('Device', must_supports)
       end
 
       test :validate_diagnosticreport do
@@ -625,7 +661,7 @@ module Inferno
             must_support_info: USCore310PediatricWeightForHeightSequenceDefinitions::MUST_SUPPORTS.dup
           },
           {
-            profile: US_CORE_R4_URIS[:USCore310PulseOximetrySequence],
+            profile: US_CORE_R4_URIS[:pulse_oximetry],
             must_support_info: USCore310PulseOximetrySequenceDefinitions::MUST_SUPPORTS.dup
           },
           {
@@ -660,28 +696,9 @@ module Inferno
         test_output_against_profile('Procedure', must_supports)
       end
 
-      test :validate_location do
-        metadata do
-          id '19'
-          name 'Location resources on the FHIR server follow the US Core Implementation Guide'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'
-          description %(
-            This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
-          )
-        end
-
-        must_supports = [
-          {
-            profile: nil,
-            must_support_info: USCore310LocationSequenceDefinitions::MUST_SUPPORTS.dup
-          }
-        ]
-        test_output_against_profile('Location', must_supports)
-      end
-
       test :validate_medication do
         metadata do
-          id '20'
+          id '19'
           name 'Medication resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
           description %(
@@ -692,28 +709,9 @@ module Inferno
         test_output_against_profile('Medication')
       end
 
-      test :validate_organization do
-        metadata do
-          id '21'
-          name 'Organization resources on the FHIR server follow the US Core Implementation Guide'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
-          description %(
-            This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
-          )
-        end
-
-        must_supports = [
-          {
-            profile: nil,
-            must_support_info: USCore310OrganizationSequenceDefinitions::MUST_SUPPORTS.dup
-          }
-        ]
-        test_output_against_profile('Organization', must_supports)
-      end
-
       test :validate_practitioner do
         metadata do
-          id '22'
+          id '20'
           name 'Practitioner resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
           description %(
@@ -730,11 +728,11 @@ module Inferno
         test_output_against_profile('Practitioner', must_supports)
       end
 
-      test :validate_practitionerrole do
+      test :validate_provenance do
         metadata do
-          id '23'
-          name 'PractitionerRole resources on the FHIR server follow the US Core Implementation Guide'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'
+          id '21'
+          name 'Provenance resources on the FHIR server follow the US Core Implementation Guide'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
           description %(
             This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
           )
@@ -743,10 +741,10 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: USCore310PractitionerroleSequenceDefinitions::MUST_SUPPORTS.dup
+            must_support_info: USCore310ProvenanceSequenceDefinitions::MUST_SUPPORTS.dup
           }
         ]
-        test_output_against_profile('PractitionerRole', must_supports)
+        test_output_against_profile('Provenance', must_supports)
       end
     end
   end
