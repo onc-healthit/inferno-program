@@ -227,7 +227,7 @@ module Inferno
             first_warning.concat(resource_validation_errors[:warnings].map { |e| "Line ##{line_number}: #{e}" })
           end
 
-          # @information_messages.concat(resource_validation_errors[:information].map { |e| "Line ##{line_number}: #{e}" })
+          @information_messages.concat(resource_validation_errors[:information].map { |e| "Line ##{line_number}: #{e}" })
         end
 
         @test_warnings.concat(first_warning)
