@@ -185,5 +185,5 @@ test_sets:
             variable_defaults:
               confidential_client: 'true'
           - ONCVisualInspectionSequence
-          # - TokenRevocationSequence
+          - TokenRevocationSequence
           # - BulkCacheCheckSequence
