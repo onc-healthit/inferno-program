@@ -29,12 +29,12 @@ GitHub repository](https://github.com/onc-healthit/inferno).
 
 **Inferno Program Edition** currently tests conformance to the following
 standards as described in the proposed rule:
-* FHIR DSTU2 and Argonaut Data Query Implementation Guide v1
-* FHIR R4 and US Core R4 (an alternative to DSTU2 for comment)
-* SMART on FHIR App Launch Guide v1
+* FHIR Release 4.0.1
+* FHIR US Core Implementation Guide (IG) STU 3.1.0
+* SMART Application Launch Framework Implementation Guide Release 1.0.0
+* HL7 FHIR Bulk Data Access (Flat FHIR) (v1.0.0: STU 1)
 
-Prior to final release of the rule, these tests are considered draft and are
-subject to change.  Users are encouraged to [provide feedback](#contact-us)
+Users are encouraged to [provide feedback](#contact-us)
 regarding these tests to ensure they are complete and accurately reflect the
 requirements of these sets of standards.
 
@@ -102,9 +102,8 @@ unguessable URI that can be saved for future reference or shared.
 Deployment on a remote server can be done by using a modified form of the Docker
 containers provided (see above) or by direct installation on the remote host.
 
-Please see the file
-[deployment-configuration.md](https://github.com/onc-healthit/inferno-program/blob/master/deployment-configuration.md)
-for details.
+Please refer to this
+[link](https://github.com/onc-healthit/inferno/blob/master/deployment-configuration.md) for information about deployment configuration details.
 
 ### Terminology Support
 In order to validate terminologies, Inferno must be loaded with files generated from the 
