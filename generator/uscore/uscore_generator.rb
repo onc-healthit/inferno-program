@@ -1013,7 +1013,6 @@ module Inferno
                 end
               end
               validate_reply_entries(non_implantable_devices, search_params)
-              
               if  @#{sequence[:resource].underscore}_ary[patient].blank? && reply&.resource&.entry&.present?
                 @skip_if_not_found_message = "No Devices of the specified type (\#{@instance&.device_codes}) were found"
               end
