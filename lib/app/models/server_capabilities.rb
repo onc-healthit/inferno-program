@@ -32,9 +32,10 @@ module Inferno
       end
 
       def supported_profiles
-        statement.rest.flat_map(&:resource)
+        profile_urls = statement.rest.flat_map(&:resource)
           &.flat_map { |resource| resource.supportedProfile + [resource.profile] }
           &.compact || []
+        profile_urls.map { |profile_url| profile_url.split('|').first }
       end
 
       def operation_supported?(operation_name)
