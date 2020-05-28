@@ -102,7 +102,7 @@ module Inferno
         }
 
         streamed_ndjson_get(file['url'], headers) do |response, resource|
-          assert response.headers['Content-Type'] == 'application/fhir+ndjson', "Content type must be 'application/fhir+ndjson' but is '#{response.headers['Content-type']}"
+          assert response.headers['Content-Type'] == 'application/fhir+ndjson', "Content type must be 'application/fhir+ndjson' but is '#{response.headers['Content-type']}'"
 
           break if !validate_all && line_count >= lines_to_validate && (klass != 'Patient' || @patient_ids_seen.length >= MIN_RESOURCE_COUNT)
 
@@ -205,7 +205,7 @@ module Inferno
         validation_error_collection.each do |line_number, resource_validation_errors|
           unless resource_validation_errors[:errors].empty?
             error_count += 1
-            first_error = "The first failed is line ##{line_number}:\n\n#{resource_validation_errors[:errors].join("\n")}" if first_error.empty?
+            first_error = "The first failed is line ##{line_number}:\n\n* #{resource_validation_errors[:errors].join("\n* ")}" if first_error.empty?
           end
 
           @test_warnings.concat(resource_validation_errors[:warnings].map { |e| "Line ##{line_number}: #{e}" })
