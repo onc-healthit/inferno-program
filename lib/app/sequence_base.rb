@@ -920,49 +920,6 @@ module Inferno
         end
       end
 
-      def validate_bindings(bindings, resources)
-        return unless bindings.present?
-
-        invalid_binding_messages = []
-        invalid_binding_resources = Set.new
-        validation_errors = { errors: [], warnings: [] }
-        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
-          begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, resources)
-          rescue Inferno::Terminology::UnknownValueSetException => e
-            validation_errors[:warnings] << e.message
-            invalid_bindings = []
-          end
-          invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
-          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
-        end
-
-        unless invalid_binding_messages.blank?
-          validation_errors[:errors] << "#{invalid_binding_messages.count} invalid required binding(s) found in #{invalid_binding_resources.count} resources:" \
-            "#{invalid_binding_messages.join('. ')}"
-          return validation_errors
-        end
-
-        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
-          begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, resources)
-            binding_def_new = binding_def
-            # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
-            if invalid_bindings.present?
-              invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), resources)
-              binding_def_new = binding_def.except(:system)
-            end
-          rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::ValueSet::UnknownCodeSystemException => e
-            validation_errors[:warnings] << e.message
-            invalid_bindings = []
-          end
-
-          validation_errors[:warnings].concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def_new) })
-        end
-
-        validation_errors
-      end
-
       def resources_with_invalid_binding(binding_def, resources)
         path_source = resources
         resources.map do |resource|
