@@ -97,7 +97,8 @@ module Inferno
 
         when 'patient'
           values_found = resolve_path(resource, 'subject.reference')
-          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          value = value.split('Patient/').last
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in Condition/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'onset-date'
@@ -201,6 +202,20 @@ module Inferno
           save_resource_references(versioned_resource_class('Condition'), @condition_ary[patient])
           save_delayed_sequence_references(@condition_ary[patient], USCore310ConditionSequenceDefinitions::DELAYED_REFERENCES)
           validate_reply_entries(@condition_ary[patient], search_params)
+
+          search_params = search_params.merge('patient': "Patient/#{patient}")
+          reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert search_with_type.length == @condition_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
+
+          search_params = search_params.merge('patient': "#{@instance.url}/Patient/#{patient}")
+          reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          search_with_url = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert search_with_url.length == @condition_ary[patient].length, 'Expected search by url to have the same results as search by ID'
         end
 
         skip_if_not_found(resource_type: 'Condition', delayed: false)
