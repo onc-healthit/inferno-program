@@ -29,12 +29,12 @@ GitHub repository](https://github.com/onc-healthit/inferno).
 
 **Inferno Program Edition** currently tests conformance to the following
 standards as described in the proposed rule:
-* FHIR Release 4.0.1
-* FHIR US Core Implementation Guide (IG) STU 3.1.0
-* SMART Application Launch Framework Implementation Guide Release 1.0.0
-* HL7 FHIR Bulk Data Access (Flat FHIR) (v1.0.0: STU 1)
+* FHIR DSTU2 and Argonaut Data Query Implementation Guide v1
+* FHIR R4 and US Core R4 (an alternative to DSTU2 for comment)
+* SMART on FHIR App Launch Guide v1
 
-Users are encouraged to [provide feedback](#contact-us)
+Prior to the effective date of the rule, these tests are considered draft and are
+subject to change.  Users are encouraged to [provide feedback](#contact-us)
 regarding these tests to ensure they are complete and accurately reflect the
 requirements of these sets of standards.
 
@@ -65,7 +65,7 @@ Check out the [Troubleshooting
 Documentation](https://github.com/onc-healthit/inferno/wiki/Troubleshooting) for
 help.
 
-### Native Installation
+<!--### Native Installation
 
 Inferno can installed and run locally on your machine.  Install the following
 dependencies first:
@@ -90,20 +90,9 @@ If you would like to use a different port it can be specified when calling
 `rackup`.  For example, the following command would host Inferno on port 3000:
 
 ```sh
-rackup -p 3000
+bundle exec rackup -p 3000
 ```
-
-### Remote Deployment
-
-Inferno can also be deployed onto a server to test many different instances of
-the FHIR Servers by multiple users.  Test results are kept private at a unique,
-unguessable URI that can be saved for future reference or shared.
-
-Deployment on a remote server can be done by using a modified form of the Docker
-containers provided (see above) or by direct installation on the remote host.
-
-Please refer to this
-[link](https://github.com/onc-healthit/inferno/blob/master/deployment-configuration.md) for information about deployment configuration details.
+-->
 
 ### Terminology Support
 In order to validate terminologies, Inferno must be loaded with files generated from the 
@@ -225,12 +214,6 @@ from which sequences will be pulled.
 ```sh
 bundle exec rake inferno:generate_script[https://my-server.org/data,onc]
 ```
-
-### Caveats
-* For `DynamicRegistration` users must provide instructions similar to that
-  provided in `example_script.json` to automate the webdriver.
-* The `confidential_client` field is a boolean and must be provided as `true` or
-  `false`
 
 ## Using with Continuous Integration Systems
 Instructions and examples are available in the [Continuous Integration Section
