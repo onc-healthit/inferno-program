@@ -8,7 +8,7 @@ module Inferno
 
       test_id_prefix 'TR'
 
-      requires :onc_sl_url, :token, :refresh_token, :patient_id, :oauth_token_endpoint 
+      requires :onc_sl_url, :token, :refresh_token, :patient_id, :oauth_token_endpoint
 
       def encoded_secret(client_id, client_secret)
         "Basic #{Base64.strict_encode64(client_id + ':' + client_secret)}"
@@ -58,7 +58,6 @@ module Inferno
         token_response = LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
 
         assert_response_bad_or_unauthorized token_response
-
       end
     end
   end
