@@ -56,7 +56,7 @@ module Inferno
           @instance.update(id_token: @token_response_body['id_token'])
         end
 
-        if @token_response_body.key?('refresh_token') # rubocop:disable Style/IfUnlessModifier
+        if @token_response_body.key?('refresh_token')
           @instance.update(refresh_token: @token_response_body['refresh_token'])
           after_save_refresh_token(@token_response_body['refresh_token'])
         end
