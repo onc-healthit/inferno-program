@@ -169,7 +169,7 @@ module Inferno
         assert missing_fields.empty?, "The following recommended fields are missing: #{missing_fields.join(', ')}"
       end
 
-      test 'Conformance/Capability Statement provides OAuth 2.0 endpoints' do
+      test 'Capability Statement provides OAuth 2.0 endpoints' do
         metadata do
           id '04'
           link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#using-cs'
