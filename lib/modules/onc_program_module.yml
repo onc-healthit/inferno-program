@@ -178,6 +178,7 @@ test_sets:
 
           Note: additional tests are expected to be added to this preview version of Inferno prior to rule effective date.
         sequences:
+          - sequence: TokenRevocationSequence
           - sequence: SMARTInvalidAudSequence
             variable_defaults:
               confidential_client: 'true'
@@ -185,5 +186,4 @@ test_sets:
             variable_defaults:
               confidential_client: 'true'
           - ONCVisualInspectionSequence
-          - TokenRevocationSequence
           # - BulkCacheCheckSequence

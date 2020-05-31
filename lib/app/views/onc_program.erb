@@ -307,6 +307,92 @@
         </button>
       </div>
       <div class="prerequisites-forms" style="display:none">
+      
+        <% [
+          {
+            field: :onc_visual_single_registration,
+            notes_field: :onc_visual_single_registration_notes,
+            label: 'Health IT Module demonstrated support for application registration for single patients.',
+            description: ''
+          },
+          {
+            field: :onc_visual_multi_registration,
+            notes_field: :onc_visual_multi_registration_notes, 
+            label: 'Health IT Module demonstrated support for application registration for multiple patients.',
+            description: ''
+          },
+          {
+            field: :onc_visual_single_scopes,
+            notes_field: :onc_visual_single_scopes_notes, 
+            label: 'Health IT Module demonstrated a graphical user interface for user to authorize FHIR resources.',
+            description: ''
+          },
+          {
+            field: :onc_visual_single_offline_access,
+            notes_field: :onc_visual_single_offline_access_notes, 
+            label: 'Health IT Module demonstrated a graphical user interface to authorize offline access.',
+            description: ''
+          },
+          {
+            field: :onc_visual_refresh_timeout,
+            notes_field: :onc_visual_refresh_timeout_notes, 
+            label: 'Health IT Module did attest that refresh tokens have three month timeout period',
+            description: ''
+          },
+          {
+            field: :onc_visual_introspection,
+            notes_field: :onc_visual_introspection_notes, 
+            label: 'Health IT developer demonstrated the ability of the Health IT Module / authorization server to validate token it has issued.',
+            description: ''
+          },
+          {
+            field: :onc_visual_data_without_omission,
+            notes_field: :onc_visual_data_without_omission_notes, 
+            label: 'Tester verifies that all information is accurate and without omission.',
+            description: ''
+          },
+          {
+            field: :onc_visual_multi_scopes_no_greater,
+            notes_field: :onc_visual_multi_scopes_no_greater_notes, 
+            label: 'Information returned no greater than scopes pre-authorized for multi-patient queries.',
+            description: ''
+          },
+          {
+            field: :onc_visual_documentation,
+            notes_field: :onc_visual_documentation_notes, 
+            label: 'Health IT developer demonstrated the documentation is available at a publicly accessible URL.',
+            description: ''
+          },
+          {
+            field: :onc_visual_token_revocation,
+            notes_field: :onc_visual_token_revocation_notes, 
+            label: 'Prior to executing test, Health IT developer demonstrated revoking tokens provided during patient standalone launch.',
+            required_by: 'TokenRevocationSequence',
+            description: ''
+          }
+            ].each do |field| %>
+              <div class="form-group" data-requiredby="<%=field[:required_by] || 'ONCVisualInspectionSequence' %>" data-definedby="" data-prerequisite="<%=field[:field]%>" style="margin-bottom: 0px;">
+                <label style="display:block"><%=field[:label]%>
+                <% if field[:description].present? %>
+                <small><%=field[:description]%></small>
+                <% end %>
+                </label>
+                <div class="form-check form-check-inline" style="margin-bottom: 0px;">
+                  <input class="form-check-input" type="radio" name="<%=field[:field]%>" id="<%=field[:field]%>_on" value="true" <%=instance.send(field[:field]) == 'true' ? 'checked' : '' %>>
+                  <label style="margin-bottom: 0;" class="form-check-label" for="<%=field[:field]%>_on_active">Yes</label>
+                </div>
+                <div class="form-check form-check-inline" style="margin-bottom: 0px;">
+                  <input class="form-check-input" type="radio" name="<%=field[:field]%>" id="<%=field[:field]%>_off" value="false"  <%=instance.send(field[:field]) != 'true' ? 'checked' : '' %>>
+                  <label style="margin-bottom: 0;" class="form-check-label" for="<%=field[:field]%>_off_active">No</label>
+                </div>
+              </div>
+              <div class="form-group" data-requiredby="<%=field[:required_by] || 'ONCVisualInspectionSequence' %>"" data-definedby="" data-prerequisite="<%=field[:notes_field]%>" style="margin-bottom: 2rem;">
+                <label for="<%=field[:notes_field]%>">
+                  <small>Notes, if applicable:</small>
+                </label>
+                <textarea type="textarea" class="form-control" name="<%=field[:notes_field]%>" id="<%=field[:notes_field]%>"><%=instance.send(field[:notes_field])%></textarea>
+              </div>
+        <% end %>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :url,
               label: 'FHIR Endpoint',
@@ -337,6 +423,12 @@
               label: 'OAuth 2.0 Token Endpoint',
               value: instance.oauth_token_endpoint}); %>
 
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_oauth_token_endpoint,
+              instance: instance,
+              description: 'OAuth token endpoint provided during the patient standalone launch.',
+              label: 'OAuth 2.0 Token Endpoint',
+              value: instance.onc_sl_oauth_token_endpoint}); %>
+
         <%= erb(:prerequisite_field,{},{prerequisite: :client_id,
               instance: instance,
               label: 'Client ID',
@@ -349,6 +441,27 @@
               instance: instance,
               value: instance.onc_sl_client_id,
               })%> 
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_token,
+              label: 'Revoked Bearer Token',
+              description: 'Prior to the test, please revoke this bearer token from patient standalone launch.',
+              instance: instance,
+              value: instance.onc_sl_token,
+              })%> 
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_refresh_token,
+              label: 'Revoked Refresh Token',
+              description: 'Prior to the test, please revoke this refresh token from patient standalone launch.',
+              instance: instance,
+              value: instance.onc_sl_refresh_token,
+              })%> 
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :patient_id,
+              label: 'Patient ID',
+              description: 'Patient ID provided as context in the patient standalone launch.',
+              instance: instance,
+              value: instance.patient_id,
+              })%>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :dynamic_registration_token,
               instance: instance,
@@ -576,84 +689,6 @@
               ),              
               value: instance.bulk_lines_to_validate}); %>
 
-        <% [
-          {
-            field: :onc_visual_single_registration,
-            notes_field: :onc_visual_single_registration_notes,
-            label: 'Health IT Module demonstrated support for application registration for single patients.',
-            description: ''
-          },
-          {
-            field: :onc_visual_multi_registration,
-            notes_field: :onc_visual_multi_registration_notes, 
-            label: 'Health IT Module demonstrated support for application registration for multiple patients.',
-            description: ''
-          },
-          {
-            field: :onc_visual_single_scopes,
-            notes_field: :onc_visual_single_scopes_notes, 
-            label: 'Health IT Module demonstrated a graphical user interface for user to authorize FHIR resources.',
-            description: ''
-          },
-          {
-            field: :onc_visual_single_offline_access,
-            notes_field: :onc_visual_single_offline_access_notes, 
-            label: 'Health IT Module demonstrated a graphical user interface to authorize offline access.',
-            description: ''
-          },
-          {
-            field: :onc_visual_refresh_timeout,
-            notes_field: :onc_visual_refresh_timeout_notes, 
-            label: 'Health IT Module did attest that refresh tokens have three month timeout period',
-            description: ''
-          },
-          {
-            field: :onc_visual_introspection,
-            notes_field: :onc_visual_introspection_notes, 
-            label: 'Health IT developer demonstrated the ability of the Health IT Module / authorization server to validate token it has issued.',
-            description: ''
-          },
-          {
-            field: :onc_visual_data_without_omission,
-            notes_field: :onc_visual_data_without_omission_notes, 
-            label: 'Tester verifies that all information is accurate and without omission.',
-            description: ''
-          },
-          {
-            field: :onc_visual_multi_scopes_no_greater,
-            notes_field: :onc_visual_multi_scopes_no_greater_notes, 
-            label: 'Information returned no greater than scopes pre-authorized for multi-patient queries.',
-            description: ''
-          },
-          {
-            field: :onc_visual_documentation,
-            notes_field: :onc_visual_documentation_notes, 
-            label: 'Health IT developer demonstrated the documentation is available at a publicly accessible URL.',
-            description: ''
-          }
-            ].each do |field| %>
-              <div class="form-group" data-requiredby="ONCVisualInspectionSequence" data-definedby="" data-prerequisite="<%=field[:field]%>" style="margin-bottom: 0px;">
-                <label style="display:block"><%=field[:label]%>
-                <% if field[:description].present? %>
-                <small><%=field[:description]%></small>
-                <% end %>
-                </label>
-                <div class="form-check form-check-inline" style="margin-bottom: 0px;">
-                  <input class="form-check-input" type="radio" name="<%=field[:field]%>" id="<%=field[:field]%>_on" value="true" <%=instance.send(field[:field]) == 'true' ? 'checked' : '' %>>
-                  <label style="margin-bottom: 0;" class="form-check-label" for="<%=field[:field]%>_on_active">Yes</label>
-                </div>
-                <div class="form-check form-check-inline" style="margin-bottom: 0px;">
-                  <input class="form-check-input" type="radio" name="<%=field[:field]%>" id="<%=field[:field]%>_off" value="false"  <%=instance.send(field[:field]) != 'true' ? 'checked' : '' %>>
-                  <label style="margin-bottom: 0;" class="form-check-label" for="<%=field[:field]%>_off_active">No</label>
-                </div>
-              </div>
-              <div class="form-group" data-requiredby="ONCVisualInspectionSequence" data-definedby="" data-prerequisite="<%=field[:notes_field]%>" style="margin-bottom: 2rem;">
-                <label for="<%=field[:notes_field]%>">
-                  <small>Notes, if applicable:</small>
-                </label>
-                <textarea type="textarea" class="form-control" name="<%=field[:notes_field]%>" id="<%=field[:notes_field]%>"><%=instance.send(field[:notes_field])%></textarea>
-              </div>
-        <% end %>
 
      
       </div>
