@@ -33,6 +33,18 @@ module Inferno
         "State provided in redirect (#{@params[:state]}) does not match expected state (#{@instance.state})."
       end
 
+      def after_save_refresh_token(refresh_token)
+        # This method is used to save off the refresh token for standalone launch to be used for token
+        # revocation later.  We must do this because we are overwriting our standalone refresh/access token
+        # with the one used in the ehr launch.
+      end
+
+      def after_save_access_token(token)
+        # This method is used to save off the access token for standalone launch to be used for token
+        # revocation later.  We must do this because we are overwriting our standalone refresh/access token
+        # with the one used in the ehr launch.
+      end
+
       def validate_token_response_contents(token_response, require_expires_in:)
         skip_if token_response.blank?, no_token_response_message
 
@@ -44,8 +56,9 @@ module Inferno
           @instance.update(id_token: @token_response_body['id_token'])
         end
 
-        if @token_response_body.key?('refresh_token') # rubocop:disable Style/IfUnlessModifier
+        if @token_response_body.key?('refresh_token')
           @instance.update(refresh_token: @token_response_body['refresh_token'])
+          after_save_refresh_token(@token_response_body['refresh_token'])
         end
 
         assert @token_response_body['access_token'].present?, 'Token response did not contain access_token as required'
@@ -60,6 +73,8 @@ module Inferno
           token_retrieved_at: DateTime.now,
           token_expires_in: expires_in.to_i
         )
+
+        after_save_access_token(@token_response_body['access_token'])
 
         @instance.patient_id = @token_response_body['patient'] if @token_response_body['patient'].present?
         @instance.update(encounter_id: @token_response_body['encounter']) if @token_response_body['encounter'].present?
