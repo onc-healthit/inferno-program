@@ -808,7 +808,7 @@ module Inferno
                        when FHIR::CodeableConcept
                          if include_system
                            coding_with_code = resolve_element_from_path(element, 'coding') { |coding| coding.code.present? }
-                           "#{coding_with_code.system}|#{coding_with_code.code}"
+                           coding_with_code.present? ? "#{coding_with_code.system}|#{coding_with_code.code}" : nil
                          else
                            resolve_element_from_path(element, 'coding.code')
                          end
