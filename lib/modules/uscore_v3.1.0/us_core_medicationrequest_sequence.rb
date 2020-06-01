@@ -84,7 +84,8 @@ module Inferno
 
         when 'patient'
           values_found = resolve_path(resource, 'subject.reference')
-          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          value = value.split('Patient/').last
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in MedicationRequest/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'encounter'
@@ -215,6 +216,16 @@ module Inferno
             save_resource_references(versioned_resource_class('MedicationRequest'), @medication_request_ary[patient])
             save_delayed_sequence_references(resources_returned, USCore310MedicationrequestSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
+
+            search_params_with_type = search_params.merge('patient': "Patient/#{patient}")
+            reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params_with_type)
+
+            reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+            assert_response_ok(reply)
+            assert_bundle_response(reply)
+            search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
             test_medication_inclusion(@medication_request_ary[patient], search_params)
             break

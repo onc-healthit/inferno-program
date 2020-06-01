@@ -128,6 +128,10 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
         stub_request(:get, "#{@base_url}/DiagnosticReport")
           .with(query: query_params, headers: @auth_header)
           .to_return(status: 200, body: body)
+        reference_with_type_params = query_params.merge('patient': 'Patient/' + query_params[:patient])
+        stub_request(:get, "#{@base_url}/DiagnosticReport")
+          .with(query: reference_with_type_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
       end
 
       stub_request(:get, "#{@base_url}/DiagnosticReport")
@@ -223,6 +227,9 @@ describe Inferno::Sequence::USCore310DiagnosticreportNoteSequence do
             .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
           stub_request(:get, "#{@base_url}/DiagnosticReport")
             .with(query: query_params.merge('status': ['registered,partial,preliminary,final,amended,corrected,appended,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
+            .to_return(status: 200, body: wrap_resources_in_bundle([@diagnostic_report]).to_json)
+          stub_request(:get, "#{@base_url}/DiagnosticReport")
+            .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient], 'status': ['registered,partial,preliminary,final,amended,corrected,appended,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
             .to_return(status: 200, body: wrap_resources_in_bundle([@diagnostic_report]).to_json)
         end
 

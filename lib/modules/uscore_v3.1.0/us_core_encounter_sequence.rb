@@ -82,7 +82,8 @@ module Inferno
 
         when 'patient'
           values_found = resolve_path(resource, 'subject.reference')
-          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          value = value.split('Patient/').last
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in Encounter/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'status'

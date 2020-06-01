@@ -1019,6 +1019,15 @@ module Inferno
             )
           end
 
+          search_with_reference_types = %(
+            search_params = search_params.merge('patient': "Patient/\#{patient}")
+            reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+            assert_response_ok(reply)
+            assert_bundle_response(reply)
+            search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert search_with_type.length == @#{sequence[:resource].underscore}_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
+          )
+
           first_search + %(
               @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary[patient]
                 .find { |resource| resource.resourceType == '#{sequence[:resource]}' }
@@ -1027,6 +1036,7 @@ module Inferno
               save_resource_references(#{save_resource_references_arguments})
               save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient], #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
               validate_reply_entries(@#{sequence[:resource].underscore}_ary[patient], search_params)
+              #{search_with_reference_types unless sequence[:resource] == 'Patient'}
             end
 
             #{skip_if_not_found_code(sequence)}
@@ -1085,6 +1095,15 @@ module Inferno
               save_delayed_sequence_references(resources_returned, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
               validate_reply_entries(resources_returned, search_params)
               #{get_token_system_search_code(search_parameters, sequence)}
+
+              search_params_with_type = search_params.merge('patient': "Patient/\#{patient}")
+              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params_with_type)
+              #{status_search_code(sequence, search_parameters)}
+              assert_response_ok(reply)
+              assert_bundle_response(reply)
+              search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
+
               #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
               break#{' if values_found == 2' if find_two_values}
             end
@@ -1279,7 +1298,8 @@ module Inferno
           # searching by patient requires special case because we are searching by a resource identifier
           # references can also be URL's, so we made need to resolve those url's
           if ['subject', 'patient'].include? element.to_s
-            %(match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference })
+            %(value = value.split('Patient/').last
+              match_found = values_found.any? { |reference| [value, 'Patient/' + value, "\#{@instance.url}/Patient/\#{value}"].include? reference })
           else
             %(values = value.split(/(?<!\\\\),/).each { |str| str.gsub!('\\,', ',') }
               match_found = values_found.any? { |value_in_resource| values.include? value_in_resource })
