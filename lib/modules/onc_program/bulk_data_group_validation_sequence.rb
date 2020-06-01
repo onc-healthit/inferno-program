@@ -769,11 +769,11 @@ module Inferno
           description %(
             This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
 
-            Encounter is membership resource of [FHIR Patient Compartment](https://www.hl7.org/fhir/compartmentdefinition-patient.html). 
+            Encounter is membership resource of [FHIR Patient Compartment](https://www.hl7.org/fhir/compartmentdefinition-patient.html).
             These US Core profiles have "Must Support" data element referening Encounter resources:
-            
-            * [DiagnosticReport Note](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note)            
-            * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)            
+
+            * [DiagnosticReport Note](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note)
+            * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
             * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
           )
         end
@@ -797,10 +797,10 @@ module Inferno
             This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
 
             These US Core profiles have "Must Support" data element referening Organization resources:
-            
+
             * [CareTeam](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam)
             * [DiagnosticReport Lab](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab)
-            * [DiagnosticReport Note](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note)            
+            * [DiagnosticReport Note](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note)
             * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
             * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
             * [Provenance](http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance)
@@ -826,10 +826,10 @@ module Inferno
             This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
 
             These US Core profiles have "Must Support" data element referening Practitioner resources:
-            
+
             * [CareTeam](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam)
             * [DiagnosticReport Lab](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab)
-            * [DiagnosticReport Note](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note)            
+            * [DiagnosticReport Note](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note)
             * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
             * [Encounter](http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter)
             * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
@@ -878,7 +878,7 @@ module Inferno
             This test checks if the resources returned from bulk data export conform to the HL7 FHIR Specification. This includes checking for missing data elements.
 
             This US Core profile has "Must Support" data element referening Location resources:
-            
+
             * [Encounter](http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter)
           )
         end
@@ -896,7 +896,7 @@ module Inferno
             This test is omitted if bulk data export does not return any Medication resources.
 
             This US Core profile has "Must Support" data element referening Medication resources:
-            
+
             * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
           )
         end
