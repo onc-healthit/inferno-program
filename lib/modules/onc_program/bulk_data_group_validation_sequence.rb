@@ -792,7 +792,7 @@ module Inferno
         metadata do
           id '19'
           name 'Organization resources on the FHIR server follow the US Core Implementation Guide'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
           description %(
             This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
 
