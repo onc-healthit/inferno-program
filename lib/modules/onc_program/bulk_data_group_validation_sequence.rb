@@ -769,7 +769,6 @@ module Inferno
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
 
-            Encounter is membership resource of [FHIR Patient Compartment](https://www.hl7.org/fhir/compartmentdefinition-patient.html).
             The following US Core profiles have "Must Support" data element which reference Encounter resources:
 
             * [DiagnosticReport Note](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note)
@@ -854,8 +853,6 @@ module Inferno
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
-
-            Provenance is membership resource of [FHIR Patient Compartment](https://www.hl7.org/fhir/compartmentdefinition-patient.html).
           )
         end
 
