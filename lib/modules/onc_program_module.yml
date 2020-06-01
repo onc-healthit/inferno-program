@@ -213,7 +213,7 @@ test_sets:
           scenarios.  The tests contained in this section addresses remaining
           testing requirements. Each of these tests need to be run
           independently.  Please read the instructions for each in the 'About'
-          section, as they may special setup on the part of the tester.
+          section, as they may require special setup on the part of the tester.
         sequences:
           - sequence: OncStandalonePublicLaunchSequence
           - sequence: TokenRevocationSequence
