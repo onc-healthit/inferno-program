@@ -15,6 +15,11 @@ module Inferno
       property :onc_sl_patient_id, String
       property :onc_sl_oauth_token_endpoint, String
 
+      property :onc_public_confidential_client, Boolean
+      property :onc_public_client_id, String
+      property :onc_public_client_secret, String
+      property :onc_public_scopes, String
+
       property :onc_patient_ids, String
 
       property :onc_visual_single_registration, String, default: 'false'

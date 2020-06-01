@@ -442,6 +442,13 @@
               value: instance.onc_sl_client_id,
               })%> 
 
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_public_client_id,
+              label: 'Public Client ID',
+              description: 'Public Client ID provided during registration of Inferno as a standalone application',
+              instance: instance,
+              value: instance.onc_public_client_id,
+              })%> 
+
         <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_token,
               label: 'Revoked Bearer Token',
               description: 'Prior to the test, please revoke this bearer token from patient standalone launch.',
@@ -534,6 +541,14 @@
               instance: instance,
               type: 'textarea',
               value: instance.onc_sl_scopes || 'launch/patient openid fhirUser offline_access patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read patient/Procedure.read patient/Provenance.read'
+               })%>
+
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_public_scopes,
+              label: 'Standalone Patient Scope',
+              description: 'OAuth 2.0 scope provided by system to enable public client access for a patient standalone launch',
+              instance: instance,
+              type: 'textarea',
+              value: instance.onc_public_scopes || 'launch/patient patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read patient/Procedure.read patient/Provenance.read'
                })%>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_expected_resources,

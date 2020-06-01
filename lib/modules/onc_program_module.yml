@@ -12,14 +12,22 @@ test_sets:
         short_label: Standalone Patient App
         run_all: true
         overview: |
-          This scenario demonstrates the ability to perform a Patient Standalone Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
-          refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
-          on the patient in context.  The access token is then refreshed, and the Patient resource is read using the new
-          access token to ensure that the refresh was successful. The authentication information provided by OpenID Connect is decoded and validated, and simple queries
-          are performed to ensure that access is granted to all USCDI data elements.
+          This scenario demonstrates the ability to perform a Patient Standalone
+          Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/)
+          confidential client with a patient context, refresh token, and [OpenID
+          Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html)
+          identity token.  After launch, a simple Patient resource read is
+          performed on the patient in context.  The access token is then
+          refreshed, and the Patient resource is read using the new access token
+          to ensure that the refresh was successful. The authentication
+          information provided by OpenID Connect is decoded and validated, and
+          simple queries are performed to ensure that access is granted to all
+          USCDI data elements.
         input_instructions: |
-          Enter in the appropriate scope to enable patient-level access to all relevant resources.  In addition, support for the 
-          OpenID Connect (`openid fhirUser`), refresh tokens (`offline_access`), and patient context (`launch/patient`) are required.
+          Enter in the appropriate scope to enable patient-level access to all
+          relevant resources.  In addition, support for the OpenID Connect
+          (`openid fhirUser`), refresh tokens (`offline_access`), and patient
+          context (`launch/patient`) are required.
         lock_variables: 
           - redirect_uris
           - onc_sl_confidential_client
@@ -46,7 +54,7 @@ test_sets:
         overview: |
           This scenario demonstrates the ability to perform a Patient Standalone
           Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/)
-          client with limited access granted to the app based on user input.
+          confidential client with limited access granted to the app based on user input.
           The tester is expected to grant the application access to a subset of
           desired resource types, and to deny requests for "offline_access"
           refresh tokens.
@@ -77,10 +85,16 @@ test_sets:
         short_label: EHR Practitioner App
         run_all: true
         overview: |
-          Demonstrate the ability to perform an EHR launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/) client with a patient context,
-          refresh token, and [OpenID Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html) identity token.  After launch, a simple Patient resource read is performed
-          on the patient in context.  The access token is then refreshed, and the Patient resource is read using the new
-          access token to ensure that the refresh was successful.  Finally, the authentication information provided by OpenID Connect is decoded and validated.
+          Demonstrate the ability to perform an EHR launch to a [SMART on
+          FHIR](http://www.hl7.org/fhir/smart-app-launch/) confidential client
+          with patient context, refresh token, and [OpenID Connect
+          (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html)
+          identity token.  After launch, a simple Patient resource read is
+          performed on the patient in context.  The access token is then
+          refreshed, and the Patient resource is read using the new access token
+          to ensure that the refresh was successful.  Finally, the
+          authentication information provided by OpenID Connect is decoded and
+          validated.
         lock_variables: 
           - redirect_uris
           - confidential_client
@@ -110,11 +124,24 @@ test_sets:
         run_all: true
         run_skipped: true
         overview: >
-          For each of the relevant USCDI data elements provided in the conformance statement, this test executes the [required supported searches](https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html)
-          as defined by the US Core Implementation Guide v3.1.  The test begins by searching by one or more patients, with the expectation that the Bearer token provided to the test grants access to all USCDI resources.
-          It uses results returned from that query to generate other queries and checks that the results are consistent with the provided search parameters.  It then performs a read on each Resource returned and validates the response against the 
-          relevant [profile](https://www.hl7.org/fhir/us/core/profiles.html) as currently defined in the US Core Implementation Guide. All MUST SUPPORT elements must be seen before the test can pass, as well as Data Absent Reason
-          to demonstrate that the server can properly handle missing data.
+          For each of the relevant USCDI data elements provided in the
+          conformance statement, this test executes the [required supported
+          searches](https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html)
+          as defined by the US Core Implementation Guide v3.1.  The test begins
+          by searching by one or more patients, with the expectation that the
+          Bearer token provided to the test grants access to all USCDI
+          resources. It uses results returned from that query to generate other
+          queries and checks that the results are consistent with the provided
+          search parameters.  It then performs a read on each Resource returned
+          and validates the response against the relevant
+          [profile](https://www.hl7.org/fhir/us/core/profiles.html) as currently
+          defined in the US Core Implementation Guide. All MUST SUPPORT elements
+          must be seen before the test can pass, as well as Data Absent Reason
+          to demonstrate that the server can properly handle missing data. Note that
+          Encounter, Organization and Practitioner resources must be accessible as
+          references in some US Core profiles to satisfy must support
+          requirements, and those references will be validated to their US Core porfile.
+          These resources will not be tested for FHIR search support.
         lock_variables: 
           - token
         sequences:
@@ -155,14 +182,24 @@ test_sets:
         run_all: true
         run_skipped: false
         overview: >
-          Demonstrate the ability to export clinical data for multiple patients in a group using [FHIR Bulk Data Access IG](https://hl7.org/fhir/uv/bulkdata/). This test uses 
-          [Backend Services Authorization](https://hl7.org/fhir/uv/bulkdata/authorization/index.html) to obtain an access token from the server. After authorization, a group level bulk data export 
-          request is initialized. Finally, this test reads exported NDJSON files from the server and validates the resources in each file. To run the test successfully, the selected group export is required
-          to have every type of resource mapped to [USCDI data elements](https://www.healthit.gov/isa/us-core-data-interoperability-uscdi).
+          Demonstrate the ability to export clinical data for multiple patients
+          in a group using [FHIR Bulk Data Access
+          IG](https://hl7.org/fhir/uv/bulkdata/). This test uses [Backend
+          Services
+          Authorization](https://hl7.org/fhir/uv/bulkdata/authorization/index.html)
+          to obtain an access token from the server. After authorization, a
+          group level bulk data export request is initialized. Finally, this
+          test reads exported NDJSON files from the server and validates the
+          resources in each file. To run the test successfully, the selected
+          group export is required to have every type of resource mapped to
+          [USCDI data
+          elements](https://www.healthit.gov/isa/us-core-data-interoperability-uscdi). Additionally,
+          it is expected the server will provide Encounter, Location, Organization, and
+          Practitioner resources as they are referenced as must support elements in
+          required resources.
         input_instructions: |
           Register Inferno as a bulk data client with the following information, and enter the client id and client registration in the appropriate fields.
           This set of tests only checks the Group export.  Enter the group export information in the appropriate box.
-          
         sequences:
           - BulkDataAuthorizationSequence
           - BulkDataGroupExportSequence
@@ -172,12 +209,13 @@ test_sets:
         run_all: false
         run_skipped: false
         overview: >
-          Not all requirements that need to be tested fit within the previous scenarios.  The tests contained in this section addresses remaining testing requirements.
-          Each of these tests need to be run independently.  Please read the
-          instructions for each, as they require special attention on the part of the tester.
-
-          Note: additional tests are expected to be added to this preview version of Inferno prior to rule effective date.
+          Not all requirements that need to be tested fit within the previous
+          scenarios.  The tests contained in this section addresses remaining
+          testing requirements. Each of these tests need to be run
+          independently.  Please read the instructions for each in the 'About'
+          section, as they may special setup on the part of the tester.
         sequences:
+          - sequence: OncStandalonePublicLaunchSequence
           - sequence: TokenRevocationSequence
           - sequence: SMARTInvalidAudSequence
             variable_defaults:
@@ -186,4 +224,3 @@ test_sets:
             variable_defaults:
               confidential_client: 'true'
           - ONCVisualInspectionSequence
-          # - BulkCacheCheckSequence
