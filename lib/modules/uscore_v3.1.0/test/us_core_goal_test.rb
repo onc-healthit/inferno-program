@@ -88,6 +88,11 @@ describe Inferno::Sequence::USCore310GoalSequence do
         .with(query: @query, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@goal_ary.values.flatten).to_json)
 
+      reference_with_type_params = @query.merge('patient': 'Patient/' + @query[:patient])
+      stub_request(:get, "#{@base_url}/Goal")
+        .with(query: reference_with_type_params, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@goal_ary.values.flatten).to_json)
+
       @sequence.run_test(@test)
     end
 
@@ -148,6 +153,10 @@ describe Inferno::Sequence::USCore310GoalSequence do
           .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
         stub_request(:get, "#{@base_url}/Goal")
           .with(query: @query.merge('lifecycle-status': ['proposed', 'planned', 'accepted', 'active', 'on-hold', 'completed', 'cancelled', 'entered-in-error', 'rejected'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@goal]).to_json)
+
+        stub_request(:get, "#{@base_url}/Goal")
+          .with(query: @query.merge('patient': 'Patient/' + @query[:patient], 'lifecycle-status': ['proposed', 'planned', 'accepted', 'active', 'on-hold', 'completed', 'cancelled', 'entered-in-error', 'rejected'].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@goal]).to_json)
 
         @sequence.run_test(@test)

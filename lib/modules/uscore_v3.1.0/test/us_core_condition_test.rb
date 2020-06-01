@@ -88,6 +88,11 @@ describe Inferno::Sequence::USCore310ConditionSequence do
         .with(query: @query, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@condition_ary.values.flatten).to_json)
 
+      reference_with_type_params = @query.merge('patient': 'Patient/' + @query[:patient])
+      stub_request(:get, "#{@base_url}/Condition")
+        .with(query: reference_with_type_params, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@condition_ary.values.flatten).to_json)
+
       @sequence.run_test(@test)
     end
 
@@ -148,6 +153,10 @@ describe Inferno::Sequence::USCore310ConditionSequence do
           .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
         stub_request(:get, "#{@base_url}/Condition")
           .with(query: @query.merge('clinical-status': ['active', 'recurrence', 'relapse', 'inactive', 'remission', 'resolved'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@condition]).to_json)
+
+        stub_request(:get, "#{@base_url}/Condition")
+          .with(query: @query.merge('patient': 'Patient/' + @query[:patient], 'clinical-status': ['active', 'recurrence', 'relapse', 'inactive', 'remission', 'resolved'].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@condition]).to_json)
 
         @sequence.run_test(@test)

@@ -171,14 +171,6 @@ module Inferno
             search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
-            search_params_with_url = search_params.merge('patient': "#{@instance.url}/Patient/#{patient}")
-            reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params_with_url)
-
-            assert_response_ok(reply)
-            assert_bundle_response(reply)
-            search_with_url = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-            assert search_with_url.length == resources_returned.length, 'Expected search by url to have the same results as search by ID'
-
             break if values_found == 2
           end
         end
