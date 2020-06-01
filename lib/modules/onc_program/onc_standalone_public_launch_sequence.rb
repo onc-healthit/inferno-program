@@ -14,8 +14,6 @@ module Inferno
       test_id_prefix 'OSLSP'
 
       requires :onc_public_client_id,
-               :onc_public_confidential_client,
-               :onc_public_client_secret,
                :onc_public_scopes,
                :onc_sl_oauth_authorize_endpoint,
                :onc_sl_oauth_token_endpoint,
