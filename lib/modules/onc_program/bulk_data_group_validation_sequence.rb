@@ -230,7 +230,8 @@ module Inferno
         end
 
         unless invalid_binding_messages.blank?
-          validation_errors[:errors] << "#{invalid_binding_messages.count} invalid required binding(s) found in #{invalid_binding_resources.count} resources:" \
+          validation_errors[:errors] << "#{invalid_binding_messages.count} invalid required #{'binding'.pluralize(invalid_binding_messages.count)}" \
+            " found in #{invalid_binding_resources.count} #{'resource'.pluralize(invalid_binding_resources.count)}: " \
             "#{invalid_binding_messages.join('. ')}"
           return validation_errors
         end

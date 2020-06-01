@@ -758,8 +758,9 @@ module Inferno
               invalid_binding_messages.concat(invalid_bindings.map{ |invalid| invalid_binding_message(invalid, binding_def)})
 
             end
-            assert invalid_binding_messages.blank?, "\#{invalid_binding_messages.count} invalid required binding(s) found in \#{invalid_binding_resources.count} resources:" \\
-                                                    "\#{invalid_binding_messages.join('. ')}"
+            assert invalid_binding_messages.blank?, "\#{invalid_binding_messages.count} invalid required \#{'binding'.pluralize(invalid_binding_messages.count)}" \\
+            " found in \#{invalid_binding_resources.count} \#{'resource'.pluralize(invalid_binding_resources.count)}: " \\
+            "\#{invalid_binding_messages.join('. ')}"
 
             bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
               begin
