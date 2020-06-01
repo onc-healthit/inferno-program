@@ -432,7 +432,7 @@ module Inferno
       test :validate_patient do
         metadata do
           id '03'
-          name 'Patient resources on the FHIR server follow the US Core Patient Profile'
+          name 'Patient resources returned conform to the US Core Patient Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
@@ -488,7 +488,7 @@ module Inferno
       test :validate_allergyintolerance do
         metadata do
           id '06'
-          name 'AllergyIntolerance resources on the FHIR server follow the US Core AllergyIntolerance Profile'
+          name 'AllergyIntolerance resources returned conform to the US Core AllergyIntolerance Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
@@ -508,7 +508,7 @@ module Inferno
       test :validate_careplan do
         metadata do
           id '07'
-          name 'CarePlan resources on the FHIR server follow the US Core CarePlan Profile'
+          name 'CarePlan resources returned conform to the US Core CarePlan Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
@@ -528,7 +528,7 @@ module Inferno
       test :validate_careteam do
         metadata do
           id '08'
-          name 'CareTeam resources on the FHIR server follow the US Core CareTeam Profile'
+          name 'CareTeam resources returned conform to the US Core CareTeam Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
@@ -548,7 +548,7 @@ module Inferno
       test :validate_condition do
         metadata do
           id '09'
-          name 'Condition resources on the FHIR server follow the US Core Condition Profile'
+          name 'Condition resources returned conform to the US Core Condition Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
@@ -568,7 +568,7 @@ module Inferno
       test :validate_device do
         metadata do
           id '10'
-          name 'Device resources on the FHIR server follow the US Core Implantable Device Profile'
+          name 'Device resources returned conform to the US Core Implantable Device Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
@@ -589,7 +589,7 @@ module Inferno
       test :validate_diagnosticreport do
         metadata do
           id '11'
-          name 'DiagnosticReport resources on the FHIR server follow the US Core DiagnosticReport Profiles'
+          name 'DiagnosticReport resources returned conform to the US Core DiagnosticReport Profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab'
           description %(
             This test verifies that the resources returned from bulk data export conform to the following US Core profiles. This includes checking for missing data elements and value set verification.
@@ -617,7 +617,7 @@ module Inferno
       test :validate_documentreference do
         metadata do
           id '12'
-          name 'DocumentReference resources on the FHIR server follow the US Core DocumentationReference Profile'
+          name 'DocumentReference resources returned conform to the US Core DocumentationReference Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
@@ -637,7 +637,7 @@ module Inferno
       test :validate_goal do
         metadata do
           id '13'
-          name 'Goal resources on the FHIR server follow the US Core Goal Profile'
+          name 'Goal resources returned conform to the US Core Goal Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
@@ -657,7 +657,7 @@ module Inferno
       test :validate_immunization do
         metadata do
           id '14'
-          name 'Immunization resources on the FHIR server follow the US Core Immunization Profile'
+          name 'Immunization resources returned conform to the US Core Immunization Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
@@ -677,7 +677,7 @@ module Inferno
       test :validate_medicationrequest do
         metadata do
           id '15'
-          name 'MedicationRequest resources on the FHIR server follow the US Core MeidcationRequest Profile'
+          name 'MedicationRequest resources returned conform to the US Core MeidcationRequest Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
@@ -697,7 +697,7 @@ module Inferno
       test :validate_observation do
         metadata do
           id '16'
-          name 'Observation resources on the FHIR server follow the US Core Observation Profiles'
+          name 'Observation resources returned conform to the US Core Observation Profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab'
           description %(
             This test verifies that the resources returned from bulk data export conform to the following US Core profiles. This includes checking for missing data elements and value set verification.
@@ -744,7 +744,7 @@ module Inferno
       test :validate_procedure do
         metadata do
           id '17'
-          name 'Procedure resources on the FHIR server follow the US Core Procedure Profile'
+          name 'Procedure resources returned conform to the US Core Procedure Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
@@ -764,13 +764,13 @@ module Inferno
       test :validate_encounter do
         metadata do
           id '18'
-          name 'Encounter resources on the FHIR server follow the US Core Encounter Profile'
+          name 'Encounter resources returned conform to the US Core Encounter Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
 
             Encounter is membership resource of [FHIR Patient Compartment](https://www.hl7.org/fhir/compartmentdefinition-patient.html).
-            These US Core profiles have "Must Support" data element referening Encounter resources:
+            The following US Core profiles have "Must Support" data element which reference Encounter resources:
 
             * [DiagnosticReport Note](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note)
             * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
@@ -791,12 +791,12 @@ module Inferno
       test :validate_organization do
         metadata do
           id '19'
-          name 'Organization resources on the FHIR server follow the US Core Organization Profile'
+          name 'Organization resources returned conform to the US Core Organization Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
 
-            These US Core profiles have "Must Support" data element referening Organization resources:
+            The following US Core profiles have "Must Support" data element which reference Organization resources:
 
             * [CareTeam](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam)
             * [DiagnosticReport Lab](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab)
@@ -820,12 +820,12 @@ module Inferno
       test :validate_practitioner do
         metadata do
           id '20'
-          name 'Practitioner resources on the FHIR server follow the US Core Practitioner Profile'
+          name 'Practitioner resources returned conform to the US Core Practitioner Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
 
-            These US Core profiles have "Must Support" data element referening Practitioner resources:
+            The following US Core profiles have "Must Support" data element which reference Practitioner resources:
 
             * [CareTeam](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam)
             * [DiagnosticReport Lab](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab)
@@ -850,7 +850,7 @@ module Inferno
       test :validate_provenance do
         metadata do
           id '21'
-          name 'Provenance resources on the FHIR server follow the US Core Provenance Profile'
+          name 'Provenance resources returned conform to the US Core Provenance Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
@@ -872,12 +872,12 @@ module Inferno
       test :validate_location do
         metadata do
           id '22'
-          name 'Location resources on the FHIR server follow the HL7 FHIR Specification Location Resource'
+          name 'Location resources returned conform to the HL7 FHIR Specification Location Resource'
           link 'http://hl7.org/fhir/StructureDefinition/Location'
           description %(
             This test verifies that the resources returned from bulk data export conform to the HL7 FHIR Specification. This includes checking for missing data elements.
 
-            This US Core profile has "Must Support" data element referening Location resources:
+            The following US Core profiles have "Must Support" data elements which reference Location resources:
 
             * [Encounter](http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter)
           )
@@ -889,13 +889,13 @@ module Inferno
       test :validate_medication do
         metadata do
           id '23'
-          name 'Medication resources on the FHIR server follow the US Core Medication Profile if FHIR server has Medication resources'
+          name 'Medication resources returned conform to the US Core Medication Profile if FHIR server has Medication resources'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
             This test is omitted if bulk data export does not return any Medication resources.
 
-            This US Core profile has "Must Support" data element referening Medication resources:
+            The following US Core profiles have "Must Support" data elements which reference Medication resources:
 
             * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
           )
