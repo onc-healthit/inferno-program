@@ -160,6 +160,9 @@ module Inferno
         # if Device type code is not in predefined type code list, validate using FHIR base profile
         return nil if resource.resourceType == 'Device' && !predefined_device_type?(resource)
 
+        # validate Location using FHIR base profile
+        return nil if resource.resourceType == 'Location'
+
         Inferno::ValidationUtil.guess_profile(resource, version)
       end
 
@@ -631,29 +634,9 @@ module Inferno
         test_output_against_profile('DocumentReference', profile_definitions)
       end
 
-      test :validate_encounter do
-        metadata do
-          id '13'
-          name 'Encounter resources on the FHIR server follow the US Core Implementation Guide'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter'
-          description %(
-            This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
-          )
-        end
-
-        profile_definitions = [
-          {
-            profile: nil,
-            must_support_info: USCore310EncounterSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310EncounterSequenceDefinitions::BINDINGS.dup
-          }
-        ]
-        test_output_against_profile('Encounter', profile_definitions)
-      end
-
       test :validate_goal do
         metadata do
-          id '14'
+          id '13'
           name 'Goal resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal'
           description %(
@@ -673,7 +656,7 @@ module Inferno
 
       test :validate_immunization do
         metadata do
-          id '15'
+          id '14'
           name 'Immunization resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization'
           description %(
@@ -693,7 +676,7 @@ module Inferno
 
       test :validate_medicationrequest do
         metadata do
-          id '16'
+          id '15'
           name 'MedicationRequest resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
@@ -713,7 +696,7 @@ module Inferno
 
       test :validate_observation do
         metadata do
-          id '17'
+          id '16'
           name 'Observation resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab'
           description %(
@@ -760,7 +743,7 @@ module Inferno
 
       test :validate_procedure do
         metadata do
-          id '18'
+          id '17'
           name 'Procedure resources on the FHIR server follow the US Core Implementation Guide'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure'
           description %(
@@ -778,17 +761,44 @@ module Inferno
         test_output_against_profile('Procedure', profile_definitions)
       end
 
-      test :validate_medication do
+      test :validate_encounter do
         metadata do
-          id '19'
-          name 'Medication resources on the FHIR server follow the US Core Implementation Guide'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
+          id '18'
+          name 'Encounter resources on the FHIR server follow the US Core Implementation Guide'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter'
           description %(
             This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
           )
         end
 
-        test_output_against_profile('Medication')
+        profile_definitions = [
+          {
+            profile: nil,
+            must_support_info: USCore310EncounterSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310EncounterSequenceDefinitions::BINDINGS.dup
+          }
+        ]
+        test_output_against_profile('Encounter', profile_definitions)
+      end
+
+      test :validate_organization do
+        metadata do
+          id '19'
+          name 'Organization resources on the FHIR server follow the US Core Implementation Guide'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure'
+          description %(
+            This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
+          )
+        end
+
+        profile_definitions = [
+          {
+            profile: nil,
+            must_support_info: USCore310OrganizationSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310OrganizationSequenceDefinitions::BINDINGS.dup
+          }
+        ]
+        test_output_against_profile('Organization', profile_definitions)
       end
 
       test :validate_practitioner do
@@ -829,6 +839,33 @@ module Inferno
           }
         ]
         test_output_against_profile('Provenance', profile_definitions)
+      end
+
+      test :validate_location do
+        metadata do
+          id '22'
+          name 'Location resources on the FHIR server follow the HL7 FHIR Specification'
+          link 'http://hl7.org/fhir/StructureDefinition/Location'
+          description %(
+            This test checks if the resources returned from bulk data export conform to the HL7 FHIR Specification. This includes checking for missing data elements.
+          )
+        end
+
+        test_output_against_profile('Location')
+      end
+
+      test :validate_medication do
+        metadata do
+          id '23'
+          name 'Medication resources on the FHIR server follow the US Core Implementation Guide if FHIR server has Medication resources'
+          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
+          description %(
+            This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
+            This test is omitted if bulk data export does not return any Medication resources.
+          )
+        end
+
+        test_output_against_profile('Medication')
       end
     end
   end

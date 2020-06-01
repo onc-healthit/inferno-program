@@ -745,6 +745,12 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       p = @sequence.guess_profile(resource, :r4)
       assert p.url == Inferno::ValidationUtil::RESOURCES[:r4]['Device'].first.url
     end
+
+    it 'returns nil for Location' do
+      resource = FHIR::Location.new
+      actual = @sequence.guess_profile(resource, :r4)
+      assert actual.nil?
+    end
   end
 
   describe 'predefined device type tests' do
