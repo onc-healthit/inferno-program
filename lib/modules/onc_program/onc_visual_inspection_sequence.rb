@@ -143,6 +143,19 @@ module Inferno
         assert @instance.onc_visual_documentation == 'true', 'Health IT developer did not demonstrate the documentation is available at a publicly accessible URL.'
         pass @instance.onc_visual_documentation_notes if @instance.onc_visual_documentation_notes.present?
       end
+
+      test 'Health IT developer confirms support for the PractitionerRole and RelatedPerson resources to fulfill must support requirements of referenced elements within US Core profiles.' do
+        metadata do
+          id '10'
+          link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
+          description %(
+            Health IT developer confirms support for the PractitionerRole and RelatedPerson resources to fulfill must support requirements of referenced elements within US Core profiles.
+          )
+        end
+
+        assert @instance.onc_visual_other_resources == 'true', 'Health IT developer confirms support for the PractitionerRole and RelatedPerson resources to fulfill must support requirements of referenced elements within US Core profiles.'
+        pass @instance.onc_visual_other_resources_notes if @instance.onc_visual_other_resources_notes.present?
+      end
     end
   end
 end
