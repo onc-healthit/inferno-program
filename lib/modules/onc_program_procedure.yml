@@ -147,7 +147,9 @@ procedure:
         TLV: |
           [Standalone-Launch] The tester verifies the ability of the Health IT
           Module to support SMART’s public client profile.
-        inferno_supported: 'no'
+        inferno_supported: 'yes'
+        inferno_tests:
+          - OSLSP-01 - OSLSP-07
       - id: AUTH-PATIENT-5
         SUT: |
           [Both] The health IT developer demonstrates the ability of the
@@ -659,9 +661,9 @@ procedure:
           access to an authorized application at a patient’s direction,
           including a demonstration of the inability of the application with
           revoked access to receive patient EHI.
-        inferno_supported: 'no'
-        inferno_notes: |
-          Inferno does not currently have a scenario where an authorization is revoked.
+        inferno_supported: 'yes'
+        inferno_tests:
+          - TR-01 - TR-03
   - section: Authentication and authorization for system scopes
     steps:
       - group: Authentication and Authorization for System Scopes
@@ -754,10 +756,12 @@ procedure:
           does not cache a JWK Set received via a TLS-protected URL for
           longer than the “cache-control” header received by an application
           indicates.
-        inferno_supported: 'no'
+        inferno_supported: 'yes'
         inferno_notes: |
           This test requires the tester to register an attestation from the
           Health IT Module that the "cache-control" header is obeyed.
+        inferno_tests:
+          - ATT-11
       - id: AUTH-SYSTEM-6
         SUT: |
           The health IT developer demonstrates the ability of the Health IT
@@ -1135,7 +1139,7 @@ procedure:
           - USCG-07
           - USCI-07
           - USCMR-09
-          - USCSSO-09
+          - USCSSO-05
           - USCPWHO-09
           - USCLRO-09
           - USCPBMIAO-09
@@ -1197,7 +1201,7 @@ procedure:
           including:
           * “DataAbsentReason” Extension; and
           * “DataAbsentReason” Code System.
-        inferno_supported: 'no'
+        inferno_supported: 'yes'
         inferno_tests: 
           - USCDAR-01 - USCDAR-02
       - group: Response to Requests for a Single Patient’s Data
@@ -1322,7 +1326,9 @@ procedure:
           Module to limit the data returned to only those FHIR resources for
           which the client is authorized according to the implementation
           specification adopted in § 170.215(a)(4).
-        inferno_supported: 'no'
+        inferno_supported: 'yes'
+        inferno_tests:
+          - AVR-02 - AVR-14
         inferno_notes: |
           Inferno does not do this because there is no requirement to only
           supported a subset of the scopes.
