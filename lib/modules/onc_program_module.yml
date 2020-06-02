@@ -12,7 +12,7 @@ test_sets:
         short_label: Standalone Patient App
         run_all: true
         overview: |
-          This scenario demonstrates the ability to perform a Patient Standalone
+          This scenario demonstrates the ability of a system to perform a Patient Standalone
           Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/)
           confidential client with a patient context, refresh token, and [OpenID
           Connect (OIDC)](https://openid.net/specs/openid-connect-core-1_0.html)
