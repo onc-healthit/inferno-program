@@ -171,9 +171,7 @@ module Inferno
           versions :r4
         end
         assert @token_response_body.key?('id_token'), 'Token response did not provide an id_token as required.'
-
       end
-
     end
   end
 end
