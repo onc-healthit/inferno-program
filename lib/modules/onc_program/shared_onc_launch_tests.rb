@@ -332,7 +332,7 @@ module Inferno
           test :token_response_headers do
             metadata do
               id index
-              name 'OAuth Token exchange response includes correct HTTP Cache-Control and Pragma headers'
+              name 'OAuth token exchange response includes correct HTTP Cache-Control and Pragma headers'
               link 'http://www.hl7.org/fhir/smart-app-launch/'
               description %(
                 The authorization servers response must include the HTTP

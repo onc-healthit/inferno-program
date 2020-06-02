@@ -59,7 +59,6 @@ module Inferno
 
         # save a copy so patient_id and oauth_token_endpoint are not overwritten
         @instance.onc_sl_patient_id = @instance.patient_id
-        @instance.onc_sl_oauth_token_endpoint = @instance.oauth_token_endpoint
 
         @instance.save!
       end

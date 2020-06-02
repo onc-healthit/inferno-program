@@ -13,7 +13,11 @@ module Inferno
       property :onc_sl_token, String
       property :onc_sl_refresh_token, String
       property :onc_sl_patient_id, String
+      property :onc_sl_oauth_authorize_endpoint, String
       property :onc_sl_oauth_token_endpoint, String
+
+      property :onc_public_client_id, String
+      property :onc_public_scopes, String
 
       property :onc_patient_ids, String
 

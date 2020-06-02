@@ -53,6 +53,10 @@ module Inferno
         @instance.send(url_property)
       end
 
+      def after_save_oauth_endpoints(oauth_token_endpoint, oauth_authorize_endpoint)
+        # run after the oauth endpoints are saved
+      end
+
       REQUIRED_SMART_CAPABILITIES = [
         'launch-ehr',
         'launch-standalone',
@@ -229,6 +233,8 @@ module Inferno
           oauth_token_endpoint: @conformance_token_url,
           oauth_register_endpoint: @conformance_register_url
         )
+
+        after_save_oauth_endpoints(@instance.oauth_token_endpoint, @instance.oauth_authorize_endpoint)
       end
 
       test 'OAuth 2.0 Endpoints in the conformance statement match those from the well-known configuration' do
