@@ -41,7 +41,7 @@ module Inferno
       property :onc_visual_documentation_notes, String
       property :onc_visual_other_resources, String, default: 'false'
       property :onc_visual_other_resources_notes, String
-      property :onc_visual_jwks_cache, String, default: false
+      property :onc_visual_jwks_cache, String, default: 'false'
       property :onc_visual_jwks_cache_notes, String
 
       property :onc_visual_token_revocation, String, default: 'false'
