@@ -3,40 +3,38 @@ src="https://raw.githubusercontent.com/onc-healthit/inferno/master/public/images
 width="300px" />
 
 [![Build
-Status](https://travis-ci.org/onc-healthit/inferno.svg?branch=master)](https://travis-ci.org/onc-healthit/inferno-program)
+Status](https://travis-ci.org/onc-healthit/inferno-program.svg?branch=master)](https://travis-ci.org/onc-healthit/inferno-program)
 
 # Inferno Program Edition
 
-## ONC 21st Century Cures open API certification Testing
+## ONC 21st Century Cures Open API Certification Testing
 
-**Inferno Program Edition** performs API conformance testing for the [Notice of
-Proposed Rulemaking (NPRM) to Improve the Interoperability of Health
-Information](https://www.healthit.gov/topic/laws-regulation-and-policy/notice-proposed-rulemaking-improve-interoperability-health).
-It implements the test steps described in the [NPRM draft test method for
-170.315(g)(10) Standardized API for patient and population
-services](https://www.healthit.gov/sites/default/files/page/2019-03/170_315g_10_Standardized_API_for_Patient_and_Population_Services.pdf).
-This application can be [installed locally](#installation-and-deployment), and a
-public reference instance of this application can be accessed at
-[https://inferno.healthit.gov/inferno](https://inferno.healthit.gov/inferno).
+**Inferno Program Edition** is a streamlined testing tool for Health Level 7 (HL7®)
+Fast Healthcare Interoperability Resources (FHIR®) services seeking to meet the
+requirements of the Standardized API for Patient and Population Services
+criterion § 170.315(g)(10) in the 2015 Edition Cures Update.
+
+**Inferno Program Edition** behaves like an API consumer, making a series of
+HTTP requests that mimic a real world client to ensure that the API supports all
+required
+standards, including:
+* FHIR Release 4.0.1
+* FHIR US Core Implementation Guide (IG) STU 3.1.0
+* SMART Application Launch Framework Implementation Guide Release 1.0.0
+* HL7 FHIR Bulk Data Access (Flat FHIR) (v1.0.0: STU 1)
+
+**Inferno Program Edition** is open source and freely available for use or
+adoption by the health IT community including EHR vendors, health app
+developers, and testing labs. It can be used as a testing tool for the EHR
+Certification program supported by the Office of the National Coordinator for
+Health IT (ONC).
 
 **Inferno Program Edition** is a pre-configured and customized version of the
-open source [Inferno](https://github.com/onc-healthit/inferno-program) FHIR
+open source [Inferno](https://github.com/onc-healthit/inferno) FHIR
 testing tool, and only contains tests and functionality relevant to the ONC
 Certification Program.  Users interested in extending or reusing this open
 testing capability to meet their own needs are encouraged to visit the [Inferno
 GitHub repository](https://github.com/onc-healthit/inferno).
-
-
-**Inferno Program Edition** currently tests conformance to the following
-standards as described in the proposed rule:
-* FHIR DSTU2 and Argonaut Data Query Implementation Guide v1
-* FHIR R4 and US Core R4 (an alternative to DSTU2 for comment)
-* SMART on FHIR App Launch Guide v1
-
-Prior to final release of the rule, these tests are considered draft and are
-subject to change.  Users are encouraged to [provide feedback](#contact-us)
-regarding these tests to ensure they are complete and accurately reflect the
-requirements of these sets of standards.
 
 ## Installation and Deployment
 
@@ -50,11 +48,11 @@ be used on Linux and MacOS hosts.
    may be included in the distribution, as is the case for Windows and MacOS).
 2. Download the [latest release of the `inferno`
    project](https://github.com/onc-healthit/inferno-program/releases) to your local
-   computer on a directory of your choice.
+   computer in a directory of your choice.
 3. Open a terminal in the directory where the project was downloaded (above).
-4. Run the command `docker-compose up` to start the server. This will
-   automatically build the Docker image and launch both the ruby server (using
-   unicorn) and an NGINX web server.
+4. Run the command `docker-compose up --build` to start the server. This will
+   automatically build the Docker image and launch Inferno, the HL7 FHIR Validator,
+   and an NGINX web server.
 5. Navigate to http://localhost:4567 to find the running application.
 
 If the docker image gets out of sync with the underlying system, such as when
@@ -65,7 +63,7 @@ Check out the [Troubleshooting
 Documentation](https://github.com/onc-healthit/inferno/wiki/Troubleshooting) for
 help.
 
-### Native Installation
+<!--### Native Installation
 
 Inferno can installed and run locally on your machine.  Install the following
 dependencies first:
@@ -90,27 +88,18 @@ If you would like to use a different port it can be specified when calling
 `rackup`.  For example, the following command would host Inferno on port 3000:
 
 ```sh
-rackup -p 3000
+bundle exec rackup -p 3000
 ```
-
-### Remote Deployment
-
-Inferno can also be deployed onto a server to test many different instances of
-the FHIR Servers by multiple users.  Test results are kept private at a unique,
-unguessable URI that can be saved for future reference or shared.
-
-Deployment on a remote server can be done by using a modified form of the Docker
-containers provided (see above) or by direct installation on the remote host.
-
-Please see the file
-[deployment-configuration.md](https://github.com/onc-healthit/inferno-program/blob/master/deployment-configuration.md)
-for details.
+-->
 
 ### Terminology Support
-In order to validate terminologies, Inferno must be loaded with files generated from the 
-Unified Medical Language System (UMLS).  The UMLS is distributed by the National Library of Medicine (NLM) and requires an account to access.
+In order to validate terminologies, Inferno must be loaded with files generated
+from the Unified Medical Language System (UMLS).  The UMLS is distributed by the
+National Library of Medicine (NLM) and requires an account to access.
 
-Inferno provides some rake tasks which may make this process easier, as well as a Dockerfile and docker-compose file that will create the validators in a self-contained environment.
+Inferno provides some rake tasks which may make this process easier, as well as
+a Dockerfile and docker-compose file that will create the validators in a
+self-contained environment.
 
 Prerequisites:
 * A UMLS account
@@ -184,13 +173,13 @@ Arguments can be provided to the task in order to export a specific set of tests
 or to specify the output file.
 
 ```sh
-bundle exec rake inferno:tests_to_csv[onc,all_tests.csv]
+bundle exec rake inferno:tests_to_csv[onc_program,all_tests.csv]
 ```
 
 To just choose the module and use the default groups and filename:
 
 ```sh
-bundle exec rake inferno:tests_to_csv[onc]
+bundle exec rake inferno:tests_to_csv[onc_program]
 
 ```
 
@@ -206,13 +195,13 @@ features and improvements in ways it can be used_
 Testing sequences can be run from the command line via a rake task which takes
 the sequence (or sequences) to be run and server url as arguments:
 ```sh
-bundle exec rake inferno:execute[https://my-server.org/data,onc,ArgonautConformance]
+bundle exec rake inferno:execute[https://my-server.org/data,onc_program,ArgonautConformance]
 ```
 
 ### Running Automated Command Line Interface Scripts
 For more complicated testing where passing arguments is unwieldy, Inferno
 provides the ability to use a script containing parameters to drive test
-execution. The provided `example_script.json` shows an example of this script
+execution. The provided `script_example.json` shows an example of this script
 and how it can be used.  The `execute_batch` task runs the script:
 
 ```sh
@@ -226,12 +215,6 @@ from which sequences will be pulled.
 ```sh
 bundle exec rake inferno:generate_script[https://my-server.org/data,onc]
 ```
-
-### Caveats
-* For `DynamicRegistration` users must provide instructions similar to that
-  provided in `example_script.json` to automate the webdriver.
-* The `confidential_client` field is a boolean and must be provided as `true` or
-  `false`
 
 ## Using with Continuous Integration Systems
 Instructions and examples are available in the [Continuous Integration Section
