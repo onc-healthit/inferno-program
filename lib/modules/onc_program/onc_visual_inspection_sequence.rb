@@ -153,8 +153,21 @@ module Inferno
           )
         end
 
-        assert @instance.onc_visual_other_resources == 'true', 'Health IT developer confirms support for the PractitionerRole and RelatedPerson resources to fulfill must support requirements of referenced elements within US Core profiles.'
+        assert @instance.onc_visual_other_resources == 'true', 'Health IT developer did not confirm support for the PractitionerRole and RelatedPerson resources.'
         pass @instance.onc_visual_other_resources_notes if @instance.onc_visual_other_resources_notes.present?
+      end
+
+      test 'The health IT developer confirms the Health IT module does not cache the JWK Set received via a TLS-protected URL for longer than the cache-control header received by an application indicates.' do
+        metadata do
+          id '11'
+          link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
+          description %(
+            The health IT developer confirms the Health IT module does not cache the JWK Set received via a TLS-protected URL for longer than the cache-control header indicates.
+          )
+        end
+
+        assert @instance.onc_visual_jwks_cache == 'true', 'Health IT developer did not confirm that the JWK Sets are not cached for longer than appropriate.'
+        pass @instance.onc_visual_jwks_cache_notes if @instance.onc_visual_jwks_cache_notes.present?
       end
     end
   end
