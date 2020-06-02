@@ -140,7 +140,7 @@ test_sets:
           to demonstrate that the server can properly handle missing data. Note that
           Encounter, Organization and Practitioner resources must be accessible as
           references in some US Core profiles to satisfy must support
-          requirements, and those references will be validated to their US Core porfile.
+          requirements, and those references will be validated to their US Core profile.
           These resources will not be tested for FHIR search support.
         lock_variables: 
           - token
