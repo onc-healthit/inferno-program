@@ -127,7 +127,7 @@ module Inferno
           return_data << {
             group: group,
             result_details: result_details,
-            result: group_result(result_details),
+            result: group_result(result_details, group.test_cases.length),
             missing_variables: group.lock_variables_without_defaults.select { |var| send(var.to_sym).nil? }
           }
         end
@@ -320,12 +320,13 @@ module Inferno
 
       private
 
-      def group_result(results)
+      def group_result(results, total_in_group)
         return :fail if results[:fail].positive?
         return :fail if results[:cancel].positive?
         return :error if results[:error].positive?
         return :skip if results[:skip].positive?
         return :not_run if results[:total].zero?
+        return :not_run if results[:total] < total_in_group
 
         :pass
       end
