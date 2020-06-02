@@ -39,6 +39,8 @@ module Inferno
       property :onc_visual_multi_scopes_no_greater_notes, String
       property :onc_visual_documentation, String, default: 'false'
       property :onc_visual_documentation_notes, String
+      property :onc_visual_other_resources, String, default: 'false'
+      property :onc_visual_other_resources_notes, String
 
       property :onc_visual_token_revocation, String, default: 'false'
       property :onc_visual_token_revocation_notes, String
