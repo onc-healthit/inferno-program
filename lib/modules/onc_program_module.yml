@@ -81,7 +81,7 @@ test_sets:
             title: Standalone Launch with Limited Scope
             description: Perform Standalone SMART launch expecting limited scope access.
           - ONCAccessVerifyRestrictedSequence
-      - name: EHR Practioner App
+      - name: EHR Practitioner App
         short_label: EHR Practitioner App
         run_all: true
         overview: |

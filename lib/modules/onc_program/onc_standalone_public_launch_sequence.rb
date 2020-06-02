@@ -7,7 +7,7 @@ module Inferno
     class OncStandalonePublicLaunchSequence < SequenceBase
       include Inferno::Sequence::SharedONCLaunchTests
 
-      title 'Public Client Standalone Launch Sequence'
+      title 'Public Client Standalone Launch with OpenID Connect'
 
       description 'Register Inferno as a public client with patient access and execute standalone launch.'
 
@@ -53,7 +53,7 @@ module Inferno
       end
 
       def required_scopes
-        ['launch/patient']
+        ['launch/patient', 'openid', 'fhirUser']
       end
 
       details %(
@@ -114,21 +114,25 @@ module Inferno
           )
         end
 
+        # We need to use the same endpoints that we discovered from the standalone launch
+        @instance.oauth_authorize_endpoint = @instance.onc_sl_oauth_authorize_endpoint
+        @instance.oauth_token_endpoint = @instance.onc_sl_oauth_token_endpoint
+
         @instance.save
         @instance.update(state: SecureRandom.uuid)
 
         oauth2_params = {
           'response_type' => 'code',
-          'client_id' => @instance.onc_public_client_id,
+          'client_id' => instance_client_id,
           'redirect_uri' => @instance.redirect_uris,
           'scope' => instance_scopes,
           'state' => @instance.state,
-          'aud' => @instance.onc_sl_url
+          'aud' => instance_url
         }
 
         oauth_authorize_endpoint = @instance.oauth_authorize_endpoint
 
-        assert_valid_http_uri oauth_authorize_endpoint, "OAuth2 Authorization Endpoint: \"#{oauth_authorize_endpoint}\" is not a valid URI"
+        assert_valid_http_uri oauth_authorize_endpoint, "OAuth2 Authorization Endpoint: \"#{@oauth_authorize_endpoint}\" is not a valid URI"
 
         oauth2_auth_query = oauth_authorize_endpoint
 
@@ -147,42 +151,29 @@ module Inferno
 
       code_and_state_received_test(index: '02')
 
-      token_endpoint_tls_test(index: '03')
+      successful_token_exchange_test(index: '03')
 
-      invalid_code_test(index: '04')
+      token_response_contents_test(index: '04')
 
-      invalid_client_id_test(index: '05')
+      token_response_headers_test(index: '05')
 
-      successful_token_exchange_test(index: '06')
+      patient_context_test(index: '06')
 
-      token_response_contents_test(index: '07')
-
-      token_response_headers_test(index: '08')
-
-      test :unauthorized_read do
+      test :token_contains_id_token do
         metadata do
-          id '09'
-          name 'Server rejects unauthorized access'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
+          id '07'
+          name 'OAuth token exchange response contains OpenID Connect id_token'
+          link 'http://hl7.org/fhir/smart-app-launch/'
           description %(
-            A server SHALL reject any unauthorized requests by returning an HTTP
-            401 unauthorized response code.
+            This test requires that an OpenID Connect id_token is provided to demonstrate authentication capabilies
+            for public clients.
           )
           versions :r4
         end
+        assert @token_response_body.key?('id_token'), 'Token response did not provide an id_token as required.'
 
-        @client.set_no_auth
-        skip_if_auth_failed
-
-        skip_if @instance.patient_id.nil?, 'Patient context expected to verify unauthorized read.'
-
-        reply = @client.read(FHIR::Patient, @instance.patient_id)
-        @client.set_bearer_token(@instance.token)
-
-        assert_response_unauthorized reply
       end
 
-      patient_context_test(index: '10')
     end
   end
 end

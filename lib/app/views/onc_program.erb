@@ -85,7 +85,7 @@
       <% test_group = "" if defined?(test_group).nil? %>
       <% instance.group_results(test_set.id).each_with_index do |group_with_result, index| %>
         <li class="nav-item group-result-<%= group_with_result[:result].to_s %>">
-          <a class="nav-link<%= if (index == 0 && test_group.blank? ) || (test_group == group_with_result[:group].id) then ' active' end %>" id="group-link-<%=group_with_result[:group].id%>" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab">
+          <a class="nav-link<%= if (index == 0 && test_group.blank? ) || (test_group == group_with_result[:group].id) then ' active' end %><%= if (index == 0) then ' nav-link-first' end%>" id="group-link-<%=group_with_result[:group].id%>" href="#group-<%=group_with_result[:group].id%>" data-toggle="tab">
             <% case group_with_result[:result].to_s
               when 'pass' %>
               <div class="group-nav-score group-nav-score-pass" data-toggle="tooltip" title="Test Passed">
@@ -418,6 +418,12 @@
               label: 'OAuth 2.0 Authorize Endpoint',
               value: instance.oauth_authorize_endpoint}); %>
 
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_oauth_authorize_endpoint,
+              instance: instance,
+              label: 'OAuth 2.0 Authorize Endpoint',
+              description: 'OAuth 2.0 Authorize Endpoint provided during the patient standalone launch',
+              value: instance.onc_sl_oauth_authorize_endpoint}); %>
+
         <%= erb(:prerequisite_field,{},{prerequisite: :oauth_token_endpoint,
               instance: instance,
               label: 'OAuth 2.0 Token Endpoint',
@@ -425,7 +431,7 @@
 
         <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_oauth_token_endpoint,
               instance: instance,
-              description: 'OAuth token endpoint provided during the patient standalone launch.',
+              description: 'OAuth token endpoint provided during the patient standalone launch',
               label: 'OAuth 2.0 Token Endpoint',
               value: instance.onc_sl_oauth_token_endpoint}); %>
 
@@ -548,7 +554,7 @@
               description: 'OAuth 2.0 scope provided by system to enable public client access for a patient standalone launch',
               instance: instance,
               type: 'textarea',
-              value: instance.onc_public_scopes || 'launch/patient patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read patient/Procedure.read patient/Provenance.read'
+              value: instance.onc_public_scopes || 'launch/patient openid fhirUser patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read patient/Procedure.read patient/Provenance.read'
                })%>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_expected_resources,

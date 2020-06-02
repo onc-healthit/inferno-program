@@ -52,6 +52,12 @@ module Inferno
       def url_property
         'onc_sl_url'
       end
+
+      def after_save_oauth_endpoints(oauth_token_endpoint, oauth_authorize_endpoint)
+        @instance.onc_sl_oauth_token_endpoint = oauth_token_endpoint
+        @instance.onc_sl_oauth_authorize_endpoint = oauth_authorize_endpoint
+        @instance.save!
+      end
     end
   end
 end
