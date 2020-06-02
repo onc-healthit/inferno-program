@@ -27,8 +27,10 @@ module Inferno
         This test sequence will first perform each required search associated with this resource. This sequence will perform searches
         with the following parameters:
 
-          * patient, intent
-          * patient, intent, status
+          * patient + intent
+          * patient + intent + status
+
+
 
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
@@ -82,7 +84,8 @@ module Inferno
 
         when 'patient'
           values_found = resolve_path(resource, 'subject.reference')
-          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          value = value.split('Patient/').last
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in MedicationRequest/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'encounter'
@@ -213,6 +216,16 @@ module Inferno
             save_resource_references(versioned_resource_class('MedicationRequest'), @medication_request_ary[patient])
             save_delayed_sequence_references(resources_returned, USCore310MedicationrequestSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
+
+            search_params_with_type = search_params.merge('patient': "Patient/#{patient}")
+            reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params_with_type)
+
+            reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+            assert_response_ok(reply)
+            assert_bundle_response(reply)
+            search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
             test_medication_inclusion(@medication_request_ary[patient], search_params)
             break
@@ -516,32 +529,7 @@ module Inferno
 
         skip_if_not_found(resource_type: 'MedicationRequest', delayed: false)
         test_resources_against_profile('MedicationRequest')
-        bindings = [
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/medicationrequest-status',
-            path: 'status'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/medicationrequest-intent',
-            path: 'intent'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/request-priority',
-            path: 'priority'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-medication-codes',
-            path: 'medication'
-          }
-        ]
+        bindings = USCore310MedicationrequestSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
@@ -556,8 +544,9 @@ module Inferno
           invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
           invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
         end
-        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required binding(s) found in #{invalid_binding_resources.count} resources:" \
-                                                "#{invalid_binding_messages.join('. ')}"
+        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required #{'binding'.pluralize(invalid_binding_messages.count)}" \
+        " found in #{invalid_binding_resources.count} #{'resource'.pluralize(invalid_binding_resources.count)}: " \
+        "#{invalid_binding_messages.join('. ')}"
 
         bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
           begin

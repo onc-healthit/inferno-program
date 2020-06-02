@@ -88,6 +88,11 @@ describe Inferno::Sequence::USCore310ProcedureSequence do
         .with(query: @query, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@procedure_ary.values.flatten).to_json)
 
+      reference_with_type_params = @query.merge('patient': 'Patient/' + @query[:patient])
+      stub_request(:get, "#{@base_url}/Procedure")
+        .with(query: reference_with_type_params, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@procedure_ary.values.flatten).to_json)
+
       @sequence.run_test(@test)
     end
 
@@ -148,6 +153,10 @@ describe Inferno::Sequence::USCore310ProcedureSequence do
           .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
         stub_request(:get, "#{@base_url}/Procedure")
           .with(query: @query.merge('status': ['preparation,in-progress,not-done,on-hold,stopped,completed,entered-in-error,unknown'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@procedure]).to_json)
+
+        stub_request(:get, "#{@base_url}/Procedure")
+          .with(query: @query.merge('patient': 'Patient/' + @query[:patient], 'status': ['preparation,in-progress,not-done,on-hold,stopped,completed,entered-in-error,unknown'].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@procedure]).to_json)
 
         @sequence.run_test(@test)

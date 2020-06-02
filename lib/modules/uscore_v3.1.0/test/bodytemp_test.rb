@@ -128,6 +128,10 @@ describe Inferno::Sequence::USCore310BodytempSequence do
         stub_request(:get, "#{@base_url}/Observation")
           .with(query: query_params, headers: @auth_header)
           .to_return(status: 200, body: body)
+        reference_with_type_params = query_params.merge('patient': 'Patient/' + query_params[:patient])
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: reference_with_type_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
       end
 
       stub_request(:get, "#{@base_url}/Observation")
@@ -223,6 +227,9 @@ describe Inferno::Sequence::USCore310BodytempSequence do
             .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
           stub_request(:get, "#{@base_url}/Observation")
             .with(query: query_params.merge('status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
+            .to_return(status: 200, body: wrap_resources_in_bundle([@observation]).to_json)
+          stub_request(:get, "#{@base_url}/Observation")
+            .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient], 'status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
             .to_return(status: 200, body: wrap_resources_in_bundle([@observation]).to_json)
         end
 

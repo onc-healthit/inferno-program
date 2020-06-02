@@ -29,9 +29,11 @@ module Inferno
 
           * patient
           * _id
-          * patient, type
-          * patient, category, date
-          * patient, category
+          * patient + type
+          * patient + category + date
+          * patient + category
+
+
 
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
@@ -85,7 +87,8 @@ module Inferno
 
         when 'patient'
           values_found = resolve_path(resource, 'subject.reference')
-          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          value = value.split('Patient/').last
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in DocumentReference/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'category'
@@ -208,6 +211,13 @@ module Inferno
           save_resource_references(versioned_resource_class('DocumentReference'), @document_reference_ary[patient])
           save_delayed_sequence_references(@document_reference_ary[patient], USCore310DocumentreferenceSequenceDefinitions::DELAYED_REFERENCES)
           validate_reply_entries(@document_reference_ary[patient], search_params)
+
+          search_params = search_params.merge('patient': "Patient/#{patient}")
+          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert search_with_type.length == @document_reference_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
         end
 
         skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
@@ -610,56 +620,7 @@ module Inferno
           end.compact
         end
 
-        bindings = [
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/document-reference-status',
-            path: 'status'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/composition-status',
-            path: 'docStatus'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-documentreference-type',
-            path: 'type'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-documentreference-category',
-            path: 'category'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/document-relationship-type',
-            path: 'relatesTo.code'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/security-labels',
-            path: 'securityLabel'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/mimetypes',
-            path: 'content.attachment.contentType'
-          },
-          {
-            type: 'Coding',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/ValueSet/formatcodes',
-            path: 'content.format'
-          }
-        ]
+        bindings = USCore310DocumentreferenceSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
@@ -674,8 +635,9 @@ module Inferno
           invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
           invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
         end
-        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required binding(s) found in #{invalid_binding_resources.count} resources:" \
-                                                "#{invalid_binding_messages.join('. ')}"
+        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required #{'binding'.pluralize(invalid_binding_messages.count)}" \
+        " found in #{invalid_binding_resources.count} #{'resource'.pluralize(invalid_binding_resources.count)}: " \
+        "#{invalid_binding_messages.join('. ')}"
 
         bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
           begin

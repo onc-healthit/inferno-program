@@ -127,38 +127,7 @@ module Inferno
 
         skip_if_not_found(resource_type: 'PractitionerRole', delayed: true)
         test_resources_against_profile('PractitionerRole')
-        bindings = [
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-provider-role',
-            path: 'code'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-provider-specialty',
-            path: 'specialty'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/contact-point-system',
-            path: 'telecom.system'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/contact-point-use',
-            path: 'telecom.use'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/days-of-week',
-            path: 'availableTime.daysOfWeek'
-          }
-        ]
+        bindings = USCore310PractitionerroleSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
@@ -173,8 +142,9 @@ module Inferno
           invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
           invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
         end
-        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required binding(s) found in #{invalid_binding_resources.count} resources:" \
-                                                "#{invalid_binding_messages.join('. ')}"
+        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required #{'binding'.pluralize(invalid_binding_messages.count)}" \
+        " found in #{invalid_binding_resources.count} #{'resource'.pluralize(invalid_binding_resources.count)}: " \
+        "#{invalid_binding_messages.join('. ')}"
 
         bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
           begin

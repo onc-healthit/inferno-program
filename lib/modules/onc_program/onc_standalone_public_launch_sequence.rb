@@ -4,27 +4,25 @@ require_relative './shared_onc_launch_tests'
 
 module Inferno
   module Sequence
-    class OncStandaloneRestrictedLaunchSequence < SequenceBase
+    class OncStandalonePublicLaunchSequence < SequenceBase
       include Inferno::Sequence::SharedONCLaunchTests
 
-      title 'ONC Standalone Launch Sequence'
+      title 'Public Client Standalone Launch with OpenID Connect'
 
-      description 'Demonstrate the ONC SMART Standalone Launch Sequence.'
+      description 'Register Inferno as a public client with patient access and execute standalone launch.'
 
-      test_id_prefix 'OSRLS'
+      test_id_prefix 'OSLSP'
 
-      requires :onc_sl_url,
-               :onc_sl_client_id,
-               :onc_sl_confidential_client,
-               :onc_sl_client_secret,
-               :onc_sl_scopes,
-               :onc_sl_expected_resources,
-               :oauth_authorize_endpoint,
-               :oauth_token_endpoint,
+      requires :onc_public_client_id,
+               :onc_public_scopes,
+               :onc_sl_oauth_authorize_endpoint,
+               :onc_sl_oauth_token_endpoint,
                :initiate_login_uri,
                :redirect_uris
 
       defines :token, :id_token, :refresh_token, :patient_id
+
+      show_uris
 
       def valid_resource_types
         [
@@ -56,7 +54,7 @@ module Inferno
       end
 
       def required_scopes
-        ['launch/patient']
+        ['launch/patient', 'openid', 'fhirUser']
       end
 
       details %(
@@ -92,26 +90,24 @@ module Inferno
       end
 
       def instance_client_id
-        @instance.onc_sl_client_id
+        @instance.onc_public_client_id
       end
 
       def instance_confidential_client
-        @instance.onc_sl_confidential_client
+        false
       end
 
       def instance_client_secret
-        @instance.onc_sl_client_secret
+        ''
       end
 
       def instance_scopes
-        @instance.onc_sl_scopes
+        @instance.onc_public_scopes
       end
-
-      auth_endpoint_tls_test(index: '01')
 
       test 'OAuth server redirects client browser to app redirect URI' do
         metadata do
-          id '02'
+          id '01'
           link 'http://www.hl7.org/fhir/smart-app-launch/'
           description %(
             Client browser redirected from OAuth server to redirect URI of
@@ -119,21 +115,25 @@ module Inferno
           )
         end
 
+        # We need to use the same endpoints that we discovered from the standalone launch
+        @instance.oauth_authorize_endpoint = @instance.onc_sl_oauth_authorize_endpoint
+        @instance.oauth_token_endpoint = @instance.onc_sl_oauth_token_endpoint
+
         @instance.save
         @instance.update(state: SecureRandom.uuid)
 
         oauth2_params = {
           'response_type' => 'code',
-          'client_id' => @instance.onc_sl_client_id,
+          'client_id' => instance_client_id,
           'redirect_uri' => @instance.redirect_uris,
           'scope' => instance_scopes,
           'state' => @instance.state,
-          'aud' => @instance.onc_sl_url
+          'aud' => instance_url
         }
 
         oauth_authorize_endpoint = @instance.oauth_authorize_endpoint
 
-        assert_valid_http_uri oauth_authorize_endpoint, "OAuth2 Authorization Endpoint: \"#{oauth_authorize_endpoint}\" is not a valid URI"
+        assert_valid_http_uri oauth_authorize_endpoint, "OAuth2 Authorization Endpoint: \"#{@oauth_authorize_endpoint}\" is not a valid URI"
 
         oauth2_auth_query = oauth_authorize_endpoint
 
@@ -150,71 +150,28 @@ module Inferno
         redirect oauth2_auth_query[0..-2], 'redirect'
       end
 
-      code_and_state_received_test(index: '03')
+      code_and_state_received_test(index: '02')
 
-      token_endpoint_tls_test(index: '04')
+      successful_token_exchange_test(index: '03')
 
-      invalid_code_test(index: '05')
+      token_response_contents_test(index: '04')
 
-      invalid_client_id_test(index: '06')
+      token_response_headers_test(index: '05')
 
-      successful_token_exchange_test(index: '07')
+      patient_context_test(index: '06')
 
-      token_response_contents_test(index: '08')
-
-      token_response_headers_test(index: '09')
-
-      patient_context_test(index: '10')
-
-      def scope_granting_access(resource, scopes)
-        scopes.split(' ').find do |scope|
-          scope.start_with?("patient/#{resource}", 'patient/*') && scope.end_with?('*', 'read')
-        end
-      end
-
-      test :onc_restricted_scopes do
+      test :token_contains_id_token do
         metadata do
-          id '11'
-          name 'OAuth token exchange response grants scope that is limited to those selected by user'
-          link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#quick-start'
+          id '07'
+          name 'OAuth token exchange response contains OpenID Connect id_token'
+          link 'http://hl7.org/fhir/smart-app-launch/'
           description %(
-            The ONC certification criteria requires that patients are capable of choosing which
-            FHIR resources to authorize to the application, and patients must be
-            given the choice to grant `offline_access`.  For this test, the tester specifies
-            which resources will be selected during authorization, and this verifies that only
-            those resources are granted according to the scopes returned during the access token
-            response.
+            This test requires that an OpenID Connect id_token is provided to demonstrate authentication capabilies
+            for public clients.
           )
+          versions :r4
         end
-
-        skip_if_auth_failed
-
-        received_scopes = @instance.received_scopes || ''
-
-        all_resources = [
-          'AllergyIntolerance',
-          'CarePlan',
-          'CareTeam',
-          'Condition',
-          'Device',
-          'DiagnosticReport',
-          'DocumentReference',
-          'Goal',
-          'Immunization',
-          'MedicationRequest',
-          'Observation',
-          'Procedure',
-          'Patient'
-        ]
-
-        expected_resources = all_resources.select { |resource| @instance.onc_sl_expected_resources.split(',').map(&:strip).map(&:downcase).include?(resource.downcase) }
-        expected_denied_resources = all_resources - expected_resources
-
-        improperly_granted_resources = expected_denied_resources.select { |resource| scope_granting_access(resource, received_scopes).present? }
-
-        assert improperly_granted_resources.empty?, "User expected to deny the following resources that were granted: #{improperly_granted_resources.join(', ')}"
-
-        assert !received_scopes.split(' ').include?('offline_access'), 'Scopes returned in access token response contained offline_access.  User must deny this scope to pass this test.'
+        assert @token_response_body.key?('id_token'), 'Token response did not provide an id_token as required.'
       end
     end
   end

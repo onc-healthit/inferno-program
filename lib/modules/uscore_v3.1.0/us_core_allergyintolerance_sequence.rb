@@ -29,6 +29,8 @@ module Inferno
 
           * patient
 
+
+
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
         parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is
@@ -82,7 +84,8 @@ module Inferno
 
         when 'patient'
           values_found = resolve_path(resource, 'patient.reference')
-          match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference }
+          value = value.split('Patient/').last
+          match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in AllergyIntolerance/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         end
@@ -168,6 +171,13 @@ module Inferno
           save_resource_references(versioned_resource_class('AllergyIntolerance'), @allergy_intolerance_ary[patient])
           save_delayed_sequence_references(@allergy_intolerance_ary[patient], USCore310AllergyintoleranceSequenceDefinitions::DELAYED_REFERENCES)
           validate_reply_entries(@allergy_intolerance_ary[patient], search_params)
+
+          search_params = search_params.merge('patient': "Patient/#{patient}")
+          reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), search_params)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert search_with_type.length == @allergy_intolerance_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
         end
 
         skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
@@ -343,50 +353,7 @@ module Inferno
           end.compact
         end
 
-        bindings = [
-          {
-            type: 'CodeableConcept',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/allergyintolerance-clinical',
-            path: 'clinicalStatus'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/allergyintolerance-verification',
-            path: 'verificationStatus'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/allergy-intolerance-type',
-            path: 'type'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/allergy-intolerance-category',
-            path: 'category'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/allergy-intolerance-criticality',
-            path: 'criticality'
-          },
-          {
-            type: 'CodeableConcept',
-            strength: 'extensible',
-            system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-allergy-substance',
-            path: 'code'
-          },
-          {
-            type: 'code',
-            strength: 'required',
-            system: 'http://hl7.org/fhir/ValueSet/reaction-event-severity',
-            path: 'reaction.severity'
-          }
-        ]
+        bindings = USCore310AllergyintoleranceSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
         bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
@@ -401,8 +368,9 @@ module Inferno
           invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
           invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
         end
-        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required binding(s) found in #{invalid_binding_resources.count} resources:" \
-                                                "#{invalid_binding_messages.join('. ')}"
+        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required #{'binding'.pluralize(invalid_binding_messages.count)}" \
+        " found in #{invalid_binding_resources.count} #{'resource'.pluralize(invalid_binding_resources.count)}: " \
+        "#{invalid_binding_messages.join('. ')}"
 
         bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
           begin

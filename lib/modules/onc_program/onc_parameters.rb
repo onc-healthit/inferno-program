@@ -8,7 +8,16 @@ module Inferno
       property :onc_sl_client_id, String
       property :onc_sl_client_secret, String
       property :onc_sl_scopes, String
-      property :onc_sl_restricted_scopes, String
+      property :onc_sl_expected_resources, String
+
+      property :onc_sl_token, String
+      property :onc_sl_refresh_token, String
+      property :onc_sl_patient_id, String
+      property :onc_sl_oauth_authorize_endpoint, String
+      property :onc_sl_oauth_token_endpoint, String
+
+      property :onc_public_client_id, String
+      property :onc_public_scopes, String
 
       property :onc_patient_ids, String
 
@@ -30,6 +39,13 @@ module Inferno
       property :onc_visual_multi_scopes_no_greater_notes, String
       property :onc_visual_documentation, String, default: 'false'
       property :onc_visual_documentation_notes, String
+      property :onc_visual_other_resources, String, default: 'false'
+      property :onc_visual_other_resources_notes, String
+      property :onc_visual_jwks_cache, String, default: 'false'
+      property :onc_visual_jwks_cache_notes, String
+
+      property :onc_visual_token_revocation, String, default: 'false'
+      property :onc_visual_token_revocation_notes, String
     end
   end
 end

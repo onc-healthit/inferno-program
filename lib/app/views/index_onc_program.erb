@@ -56,16 +56,13 @@
         <% end %>
       </fieldset>
     </form>
-    <div class="alert alert-warning" style="width:100%; margin-top: 20px;">
-    This is a preview version that will be updated prior to the rule effective date.  Please see release notes below for more information.
-    </div>
 
     </div>
       </div>
     </div>
   </div>
 </div>
-<div class="container-fluid onc-index-page" role="main" style="margin-top: 20px; background-image: url(/images/gradient.png);background-color: #f2f2f2;padding: 3px;background-size:cover;"></div>
+<div class="container-fluid onc-index-page" role="main" style="margin-top: 60px; background-image: url(/images/gradient.png);background-color: #f2f2f2;padding: 3px;background-size:cover;"></div>
 <div class="container-fluid onc-index-page" role="main" style="background-color: #efefef; border-bottom: 1px solid #dedede;">
 <div class="row">
 <div class="col">
@@ -201,6 +198,27 @@ For alternate installation options, please visit <a href='https://github.com/onc
   </div>
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.0.0</div>
+      <p>
+        The v1.0.0 release of Inferno Program Edition marks the first release containing complete coverage
+        of the test procedure for the Standardized API for Patient and Population Services criterion within the ONC 2015
+        Certification Edition Cures Update.
+      </p>
+      <p>
+        Updates from the previous version includes:
+      </p>
+      <ul>
+        <li>Public client SMART App Launch testing.</li>
+        <li>Additional SMART App Launch tests to ensure that authorization server properly validate launches.</li>
+        <li>Improved testing for patient selection of resources to grant or deny.</li>
+        <li>Alignment between USCDI and US Core test requirements.</li>
+        <li>Token revocation tests.</li>
+        <li>Improved visual inspection tests.</li>
+      </ul>
+    <p>
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_0_0.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure.
+    </p>
     <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v0.9.6</div>
       <ul>
         <li>Added high-level 'Other' step for tests that do not fit in other steps.</li>

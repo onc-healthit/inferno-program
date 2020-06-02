@@ -36,7 +36,7 @@ class ServerCapabilitiesTest < MiniTest::Test
             },
             {
               type: 'Condition',
-              profile: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition',
+              profile: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition|3.1.0',
               interaction: [
                 { code: 'delete' },
                 { code: 'update' },
@@ -51,7 +51,7 @@ class ServerCapabilitiesTest < MiniTest::Test
             {
               type: 'Observation',
               supportedProfile: [
-                'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age',
+                'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age|3.1.0',
                 'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height'
               ]
             }

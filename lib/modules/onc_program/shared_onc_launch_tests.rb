@@ -33,6 +33,18 @@ module Inferno
         "State provided in redirect (#{@params[:state]}) does not match expected state (#{@instance.state})."
       end
 
+      def after_save_refresh_token(refresh_token)
+        # This method is used to save off the refresh token for standalone launch to be used for token
+        # revocation later.  We must do this because we are overwriting our standalone refresh/access token
+        # with the one used in the ehr launch.
+      end
+
+      def after_save_access_token(token)
+        # This method is used to save off the access token for standalone launch to be used for token
+        # revocation later.  We must do this because we are overwriting our standalone refresh/access token
+        # with the one used in the ehr launch.
+      end
+
       def validate_token_response_contents(token_response, require_expires_in:)
         skip_if token_response.blank?, no_token_response_message
 
@@ -44,8 +56,9 @@ module Inferno
           @instance.update(id_token: @token_response_body['id_token'])
         end
 
-        if @token_response_body.key?('refresh_token') # rubocop:disable Style/IfUnlessModifier
+        if @token_response_body.key?('refresh_token')
           @instance.update(refresh_token: @token_response_body['refresh_token'])
+          after_save_refresh_token(@token_response_body['refresh_token'])
         end
 
         assert @token_response_body['access_token'].present?, 'Token response did not contain access_token as required'
@@ -60,6 +73,8 @@ module Inferno
           token_retrieved_at: DateTime.now,
           token_expires_in: expires_in.to_i
         )
+
+        after_save_access_token(@token_response_body['access_token'])
 
         @instance.patient_id = @token_response_body['patient'] if @token_response_body['patient'].present?
         @instance.update(encounter_id: @token_response_body['encounter']) if @token_response_body['encounter'].present?
@@ -295,7 +310,7 @@ module Inferno
           test :token_response_contents do
             metadata do
               id index
-              name 'Token exchange response body contains required information encoded in JSON'
+              name 'OAuth token exchange response body contains required information encoded in JSON'
               link 'http://www.hl7.org/fhir/smart-app-launch/'
               description %(
                 The EHR authorization server shall return a JSON structure that
@@ -317,7 +332,7 @@ module Inferno
           test :token_response_headers do
             metadata do
               id index
-              name 'Response includes correct HTTP Cache-Control and Pragma headers'
+              name 'OAuth token exchange response includes correct HTTP Cache-Control and Pragma headers'
               link 'http://www.hl7.org/fhir/smart-app-launch/'
               description %(
                 The authorization servers response must include the HTTP
@@ -341,7 +356,8 @@ module Inferno
               name "#{patient_or_user.capitalize}-level access with OpenID Connect and Refresh Token scopes used."
               link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#quick-start'
               description %(
-                The scopes being input must follow the guidelines specified in the smart-app-launch guide
+                The scopes being input must follow the guidelines specified in the smart-app-launch guide.
+                All scopes requested are expected to be granted.
               )
             end
 
@@ -395,7 +411,7 @@ module Inferno
           test :patient_context do
             metadata do
               id index
-              name 'Patient context provided during token exchange and patient resource can be retrieved'
+              name 'OAuth token exchange response body contains patient context and patient resource can be retrieved'
               link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#scopes-for-requesting-context-data'
               description %(
                 The `patient` field is a String value with a patient id,

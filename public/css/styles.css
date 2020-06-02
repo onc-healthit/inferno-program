@@ -1036,7 +1036,10 @@ body {
   border-radius: 0;
   color: #53585e;
   padding-top: 8px;
-  padding-top: 8px;
+}
+
+.guided .group-nav li a.nav-link-first {
+  padding-left: 0px;
 }
 
 .guided .group-nav li a::after{

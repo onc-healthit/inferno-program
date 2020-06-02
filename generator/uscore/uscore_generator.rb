@@ -64,10 +64,12 @@ module Inferno
             # make tests for each SHALL and SHOULD search param, SHALL's first
             sequence[:searches]
               .select { |search_param| search_param[:expectation] == 'SHALL' }
+              .select { |search_param| search_param[:must_support_or_mandatory] }
               .each { |search_param| create_search_test(sequence, search_param) }
 
             sequence[:searches]
               .select { |search_param| search_param[:expectation] == 'SHOULD' }
+              .select { |search_param| search_param[:must_support_or_mandatory] }
               .each { |search_param| create_search_test(sequence, search_param) }
 
             sequence[:search_param_descriptions]
@@ -738,8 +740,9 @@ module Inferno
         end
         resources_ary_str = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
         if bindings.present?
+          sequence[:bindings_constants] = "BINDINGS = #{structure_to_string(bindings)}.freeze"
           test[:test_code] += %(
-            bindings = #{structure_to_string(bindings)}
+            bindings = #{sequence[:class_name]}Definitions::BINDINGS
             invalid_binding_messages = []
             invalid_binding_resources = Set.new
             bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
@@ -755,8 +758,9 @@ module Inferno
               invalid_binding_messages.concat(invalid_bindings.map{ |invalid| invalid_binding_message(invalid, binding_def)})
 
             end
-            assert invalid_binding_messages.blank?, "\#{invalid_binding_messages.count} invalid required binding(s) found in \#{invalid_binding_resources.count} resources:" \\
-                                                    "\#{invalid_binding_messages.join('. ')}"
+            assert invalid_binding_messages.blank?, "\#{invalid_binding_messages.count} invalid required \#{'binding'.pluralize(invalid_binding_messages.count)}" \\
+            " found in \#{invalid_binding_resources.count} \#{'resource'.pluralize(invalid_binding_resources.count)}: " \\
+            "\#{invalid_binding_messages.join('. ')}"
 
             bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
               begin
@@ -1002,17 +1006,28 @@ module Inferno
           )
 
           if sequence[:resource] == 'Device'
-            first_search += %(.select do |resource|
-                  device_codes = @instance&.device_codes&.split(',')&.map(&:strip)
-                  device_codes.blank? || resource&.type&.coding&.any? do |coding|
-                    device_codes.include?(coding.code)
-                  end
+            first_search += %(
+              @device_ary[patient], non_implantable_devices = @device_ary[patient].partition do |resource|
+                device_codes = @instance&.device_codes&.split(',')&.map(&:strip)
+                device_codes.blank? || resource&.type&.coding&.any? do |coding|
+                  device_codes.include?(coding.code)
                 end
+              end
+              validate_reply_entries(non_implantable_devices, search_params)
               if  @#{sequence[:resource].underscore}_ary[patient].blank? && reply&.resource&.entry&.present?
                 @skip_if_not_found_message = "No Devices of the specified type (\#{@instance&.device_codes}) were found"
               end
             )
           end
+
+          search_with_reference_types = %(
+            search_params = search_params.merge('patient': "Patient/\#{patient}")
+            reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+            assert_response_ok(reply)
+            assert_bundle_response(reply)
+            search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert search_with_type.length == @#{sequence[:resource].underscore}_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
+          )
 
           first_search + %(
               @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary[patient]
@@ -1022,6 +1037,7 @@ module Inferno
               save_resource_references(#{save_resource_references_arguments})
               save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient], #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
               validate_reply_entries(@#{sequence[:resource].underscore}_ary[patient], search_params)
+              #{search_with_reference_types unless sequence[:resource] == 'Patient'}
             end
 
             #{skip_if_not_found_code(sequence)}
@@ -1080,6 +1096,15 @@ module Inferno
               save_delayed_sequence_references(resources_returned, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
               validate_reply_entries(resources_returned, search_params)
               #{get_token_system_search_code(search_parameters, sequence)}
+
+              search_params_with_type = search_params.merge('patient': "Patient/\#{patient}")
+              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params_with_type)
+              #{status_search_code(sequence, search_parameters)}
+              assert_response_ok(reply)
+              assert_bundle_response(reply)
+              search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
+
               #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
               break#{' if values_found == 2' if find_two_values}
             end
@@ -1274,7 +1299,8 @@ module Inferno
           # searching by patient requires special case because we are searching by a resource identifier
           # references can also be URL's, so we made need to resolve those url's
           if ['subject', 'patient'].include? element.to_s
-            %(match_found = values_found.any? { |reference| [value, 'Patient/' + value].include? reference })
+            %(value = value.split('Patient/').last
+              match_found = values_found.any? { |reference| [value, 'Patient/' + value, "\#{@instance.url}/Patient/\#{value}"].include? reference })
           else
             %(values = value.split(/(?<!\\\\),/).each { |str| str.gsub!('\\,', ',') }
               match_found = values_found.any? { |value_in_resource| values.include? value_in_resource })

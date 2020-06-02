@@ -88,6 +88,11 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
         .with(query: @query, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@document_reference_ary.values.flatten).to_json)
 
+      reference_with_type_params = @query.merge('patient': 'Patient/' + @query[:patient])
+      stub_request(:get, "#{@base_url}/DocumentReference")
+        .with(query: reference_with_type_params, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@document_reference_ary.values.flatten).to_json)
+
       @sequence.run_test(@test)
     end
 
@@ -148,6 +153,10 @@ describe Inferno::Sequence::USCore310DocumentreferenceSequence do
           .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
         stub_request(:get, "#{@base_url}/DocumentReference")
           .with(query: @query.merge('status': ['current,superseded,entered-in-error'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@document_reference]).to_json)
+
+        stub_request(:get, "#{@base_url}/DocumentReference")
+          .with(query: @query.merge('patient': 'Patient/' + @query[:patient], 'status': ['current,superseded,entered-in-error'].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@document_reference]).to_json)
 
         @sequence.run_test(@test)

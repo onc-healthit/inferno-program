@@ -208,6 +208,7 @@ module Inferno
           next unless result.wait?
 
           sequence_result.redirect_to_url = result.redirect_to_url
+          sequence_result.expect_redirect_failure = result.expect_redirect_failure
           sequence_result.wait_at_endpoint = result.wait_at_endpoint
           break
         end
@@ -469,8 +470,8 @@ module Inferno
         raise WaitException, endpoint
       end
 
-      def redirect(url, endpoint)
-        raise RedirectException.new url, endpoint
+      def redirect(url, endpoint, expect_failure = false)
+        raise RedirectException.new url, endpoint, expect_failure
       end
 
       def warning
@@ -807,7 +808,7 @@ module Inferno
                        when FHIR::CodeableConcept
                          if include_system
                            coding_with_code = resolve_element_from_path(element, 'coding') { |coding| coding.code.present? }
-                           "#{coding_with_code.system}|#{coding_with_code.code}"
+                           coding_with_code.present? ? "#{coding_with_code.system}|#{coding_with_code.code}" : nil
                          else
                            resolve_element_from_path(element, 'coding.code')
                          end

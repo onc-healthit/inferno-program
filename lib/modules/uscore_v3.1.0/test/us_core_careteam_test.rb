@@ -123,6 +123,10 @@ describe Inferno::Sequence::USCore310CareteamSequence do
         stub_request(:get, "#{@base_url}/CareTeam")
           .with(query: query_params, headers: @auth_header)
           .to_return(status: 200, body: body)
+        reference_with_type_params = query_params.merge('patient': 'Patient/' + query_params[:patient])
+        stub_request(:get, "#{@base_url}/CareTeam")
+          .with(query: reference_with_type_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
       end
 
       @sequence.run_test(@test)
