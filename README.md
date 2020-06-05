@@ -104,19 +104,26 @@ self-contained environment.
 Prerequisites:
 * A UMLS account
 * A working Docker toolchain, which has been assigned at least 10GB of RAM (The Metathesaurus step requires 8GB of RAM for the Java process)
+  * Note: the Docker terminology process will not run unless Docker has access to at least this much RAM.
 * A copy of the Inferno repository, which contains the required Docker and Ruby files
 
 You can prebuild the terminology docker container by running the following command:
 ```sh
 docker-compose -f terminology_compose.yml build
 ```
-Once the container is built, you can run the terminology creation task by using the following commands, in order:
+Once the container is built, you will have to add your UMLS username and passwords to a file named `.env` at the root of the inferno project. The file should look like this:
 ```sh
-export UMLS_USERNAME=<your UMLS username>
-export UMLS_PASSWORD=<your UMLS password>
+UMLS_USERNAME=<your UMLS username>
+UMLS_PASSWORD=<your UMLS password>
+```
+Once that file exists, you can run the terminology creation task by using the following commands, in order:
+```sh
 docker-compose -f terminology_compose.yml up
 ```
-This will run the terminology creation steps in order, using the UMLS credentials supplied. These tasks may take several hours. If the creation task is cancelled in progress and restarted, it will restart after the last _completed_ step. Intermediate files are saved to `tmp/terminology` in the Inferno repository that the Docker Compose job is run from, and the validators are saved to `resources/terminology/validators/bloom`, where Inferno can use them for validation.
+This will run the terminology creation steps in order, using the UMLS credentials supplied in `.env`. These tasks may take several hours. If the creation task is cancelled in progress and restarted, it will restart after the last _completed_ step. Intermediate files are saved to `tmp/terminology` in the Inferno repository that the Docker Compose job is run from, and the validators are saved to `resources/terminology/validators/bloom`, where Inferno can use them for validation.
+
+#### Cleanup
+Once the terminology building is done, the `.env` file should be deleted to remove the UMLS username and password from the system.
 
 If this Docker-based method does not work based on your architecture, manual setup and creation of the terminology validators is documented [on this wiki page](https://github.com/onc-healthit/inferno/wiki/Installing-Terminology-Validators#building-the-validators-without-docker)
 
