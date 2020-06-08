@@ -8,6 +8,8 @@ require 'fileutils'
 
 module Inferno
   class Terminology
+    SNOMED_URL = 'http://snomed.info/sct'
+
     SKIP_SYS = [
       'http://hl7.org/fhir/ValueSet/message-events', # has 0 codes
       'http://hl7.org/fhir/ValueSet/care-team-category', # has 0 codes
@@ -245,12 +247,33 @@ module Inferno
       end
 
       if system
-        validation_fn.call('code' => code, 'system' => system)
+        validation_fn.call(
+          'code' => uncoordinated_code(code: code, system: system, valueset_url: valueset_url),
+          'system' => system
+        )
       else
         @loaded_validators[valueset_url][:code_systems].any? do |possible_system|
-          validation_fn.call('code' => code, 'system' => possible_system)
+          validation_fn.call(
+            'code' => uncoordinated_code(code: code, system: possible_system, valueset_url: valueset_url),
+            'system' => possible_system
+          )
         end
       end
+    end
+
+    def self.could_be_snomed_code?(valueset_url: nil, system: nil)
+      return false if system.present? && system != SNOMED_URL
+
+      system == SNOMED_URL || known_valuesets.dig(valueset_url, :code_systems)&.include?(SNOMED_URL)
+    end
+
+    # Return the base concept code for postcoordinated SNOMED codes
+    def self.uncoordinated_code(valueset_url: nil, code:, system: nil)
+      return code unless could_be_snomed_code?(valueset_url: valueset_url, system: system)
+
+      return code unless code&.include? '|'
+
+      code&.slice(0, code&.index('|'))
     end
 
     class UnknownValueSetException < StandardError
