@@ -104,7 +104,7 @@ self-contained environment.
 Prerequisites:
 * A UMLS account
 * A working Docker toolchain, which has been assigned at least 10GB of RAM (The Metathesaurus step requires 8GB of RAM for the Java process)
-  * Note: the Docker terminology process will not run unless Docker has access to at least this much RAM.
+  * Note: the Docker terminology process will not run unless Docker has access to at least this 10GB of RAM.
 * A copy of the Inferno repository, which contains the required Docker and Ruby files
 
 You can prebuild the terminology docker container by running the following command:
