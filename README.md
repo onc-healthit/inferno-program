@@ -104,7 +104,7 @@ self-contained environment.
 Prerequisites:
 * A UMLS account
 * A working Docker toolchain, which has been assigned at least 10GB of RAM (The Metathesaurus step requires 8GB of RAM for the Java process)
-  * Note: the Docker terminology process will not run unless Docker has access to at least this 10GB of RAM.
+  * Note: the Docker terminology process will not run unless Docker has access to at least 10GB of RAM.
 * A copy of the Inferno repository, which contains the required Docker and Ruby files
 
 You can prebuild the terminology docker container by running the following command:
@@ -124,6 +124,10 @@ This will run the terminology creation steps in order, using the UMLS credential
 
 #### Cleanup
 Once the terminology building is done, the `.env` file should be deleted to remove the UMLS username and password from the system.
+
+Optionally, the files and folders in `tmp/terminology/` can be deleted after terminology building to free up space, as they are several GB in size. If you intend to re-run the terminology builder, these files can be left to speed up building in the future, since the builder will be able to skip the initial download/preprocessing steps.
+
+#### Manual build instructions
 
 If this Docker-based method does not work based on your architecture, manual setup and creation of the terminology validators is documented [on this wiki page](https://github.com/onc-healthit/inferno/wiki/Installing-Terminology-Validators#building-the-validators-without-docker)
 
