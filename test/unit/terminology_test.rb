@@ -47,6 +47,7 @@ describe Inferno::Terminology do
 
       it 'returns false if the system is not SNOMED' do
         refute Inferno::Terminology.could_be_snomed_code?(system: NF_CS)
+        refute Inferno::Terminology.could_be_snomed_code?(system: nil)
       end
     end
 
