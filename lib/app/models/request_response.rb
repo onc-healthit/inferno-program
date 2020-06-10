@@ -14,6 +14,7 @@ module Inferno
       property :response_body, Text
       property :direction, String
       property :instance_id, String
+      property :sequence, Serial, unique_index: true
 
       property :timestamp, DateTime, default: proc { DateTime.now }
 
