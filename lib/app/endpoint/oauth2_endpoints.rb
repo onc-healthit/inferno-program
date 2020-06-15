@@ -18,8 +18,10 @@ module Inferno
           end
 
           get '/oauth2/:key/redirect/?' do
-            @instance = Inferno::Models::TestingInstance.first(state: params[:state])
-            return resume_execution if @instance.present?
+            unless params[:state].blank?
+              @instance = Inferno::Models::TestingInstance.first(state: params[:state])
+              return resume_execution if @instance.present?
+            end
 
             @instance = Inferno::Models::TestingInstance.get(instance_id_from_cookie)
             halt 500, no_instance_for_state_error_message if @instance.nil?
