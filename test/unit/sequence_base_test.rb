@@ -123,12 +123,12 @@ class SequenceBaseTest < MiniTest::Test
     end
 
     it 'returns value from period' do
-      { start: 'now', end: 'later' }.each do |key, value|
+      { start: '2020-05-26', end: '2020-05-26' }.each do |key, value|
         element = FHIR::Period.new(key => value)
         expected_value = if key == :start
-                           'gt' + value
+                           'gt2020-05-25T00:00:00+00:00'
                          else
-                           'lt' + value
+                           'lt2020-05-27T00:00:00+00:00'
                          end
         assert @sequence.get_value_for_search_param(element) == expected_value
       end
