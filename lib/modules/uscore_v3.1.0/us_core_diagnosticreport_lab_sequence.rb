@@ -34,6 +34,8 @@ module Inferno
 
 
 
+        We search by patient + category before doing a search by just patient in order to differentiate the two Diagnostic Report profiles.
+
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
         parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is

@@ -47,7 +47,9 @@ module Inferno
         <%searches.select { |search_param| search_param[:expectation] == 'SHALL' && !search_param[:must_support_or_mandatory]}.each do |search| %>
           * <%=search[:names].join('+ ')%><%end%>
         <% end %>
-        
+        <% if resource == 'DiagnosticReport' %>
+        We search by patient + category before doing a search by just patient in order to differentiate the two Diagnostic Report profiles. 
+        <% end %>
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its 
         parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is 
