@@ -287,13 +287,13 @@ module Inferno
           missing_must_supports = must_support[:must_support_info]
 
           missing_elements_list = missing_must_supports[:elements].map { |el| "#{el[:path]}#{': ' + el[:fixed_value] if el[:fixed_value].present?}" }
-          assert missing_elements_list.empty?, format(error_string, 'elements', missing_elements_list.join(', '))
+          skip_if missing_elements_list.present?, format(error_string, 'elements', missing_elements_list.join(', '))
 
           missing_slices_list = missing_must_supports[:slices].map { |slice| slice[:name] }
-          assert missing_slices_list.empty?, format(error_string, 'slices', missing_slices_list.join(', '))
+          skip_if missing_slices_list.present?, format(error_string, 'slices', missing_slices_list.join(', '))
 
           missing_extensions_list = missing_must_supports[:extensions].map { |extension| extension[:id] }
-          assert missing_extensions_list.empty?, format(error_string, 'extensions', missing_extensions_list.join(', '))
+          skip_if missing_extensions_list.present?, format(error_string, 'extensions', missing_extensions_list.join(', '))
         end
       end
 
