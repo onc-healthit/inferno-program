@@ -14,6 +14,7 @@ require_relative '../app/endpoint'
 require_relative '../app/helpers/configuration'
 require_relative '../app/sequence_base'
 require_relative '../app/models'
+require_relative '../app/utils/nlm_user_validator'
 
 include Inferno
 
@@ -1118,6 +1119,21 @@ namespace :terminology do |_argv|
     Inferno::Terminology.load_fhir_r4
     Inferno::Terminology.load_fhir_expansions
     Inferno::Terminology.load_us_core
+  end
+
+  desc 'Download a terminology zip file, after authenticating with your API key'
+  task :get_terminology_zip, [:api_key, :terminology_zip_url] do |_t, args|
+    args.with_defaults(terminology_zip_url: 'https://inferno.healthit.gov/terminology/validators.zip')
+    service_ticket = Inferno::NLMUserValidator.service_ticket(args[:api_key])
+    response = RestClient.get("#{args[:terminology_zip_url]}?ticket=#{service_ticket}")
+    filename = 'tmp/terminology/validators.zip'
+    terminology_dir = 'resources/terminology'
+    File.open(filename, 'w') { |f| f.write(response.body) }
+    Zip::File.open(filename) do |zip_file|
+      zip_file.each do |entry|
+        entry.extract(File.join(terminology_dir, entry.name))
+      end
+    end
   end
 end
 
