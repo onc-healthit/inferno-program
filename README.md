@@ -105,6 +105,8 @@ Prerequisites:
 * A UMLS account
 * A working Docker toolchain, which has been assigned at least 10GB of RAM (The Metathesaurus step requires 8GB of RAM for the Java process)
   * Note: the Docker terminology process will not run unless Docker has access to at least 10GB of RAM.
+* At least 33 GB of free disk space on the Host OS, for downloading/unzipping/processing the terminology files.
+  * Note: this space needs to be allocated on the host because Docker maps these files through to the Host, to allow for building in the dedicated terminology container.
 * A copy of the Inferno repository, which contains the required Docker and Ruby files
 
 You can prebuild the terminology docker container by running the following command:
