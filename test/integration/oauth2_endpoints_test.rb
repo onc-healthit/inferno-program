@@ -194,6 +194,29 @@ class OAuth2EndpointsTest < MiniTest::Test
     end
   end
 
+  def test_redirect_response_no_state
+    state = SecureRandom.uuid
+    instance = create_testing_instance
+    sequence_result = create_sequence_result(
+      testing_instance: instance,
+      wait_at_endpoint: 'redirect'
+    )
+    Inferno::Models::TestResult.create(
+      sequence_result: sequence_result
+    )
+
+    EventMachine.run do
+      get "/inferno/oauth2/static/redirect"
+
+      assert last_response.status == 500
+
+      expected_error_message = "No actively running launch sequences found"
+      assert last_response.body.include? expected_error_message
+
+      break
+    end
+  end
+
   def test_redirect_response_bad_state
     state = SecureRandom.uuid
     instance = create_testing_instance(state: state)
