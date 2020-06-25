@@ -7,7 +7,11 @@ module Inferno
         %(
           <p>
             Inferno has detected an issue with the SMART launch.
-            No actively running launch sequences found with a state of #{params[:state]}.
+            <% if params[:state].nil?} %>
+              No 'state' parameter was returned by the authorization server.
+            <% else %>
+              No actively running launch sequences found with a 'state' parameter of '#{params[:state]}'.
+            <% end %>
             The authorization server is not returning the correct state variable and
             therefore Inferno cannot identify which server is currently under test.
             Please click your browser's "Back" button to return to Inferno,

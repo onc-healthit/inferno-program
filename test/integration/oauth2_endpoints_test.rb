@@ -39,6 +39,13 @@ class OAuth2EndpointsTest < MiniTest::Test
 
   def setup
     WebMock.disable_net_connect!
+
+    # Guard against misconfigured environment because we are purging the database
+    raise "Tests must run in test environment, currently #{Inferno::ENVIRONMENT}" unless Inferno::ENVIRONMENT == :test
+
+    Inferno::Models::TestResult.destroy!
+    Inferno::Models::SequenceResult.destroy!
+    Inferno::Models::TestingInstance.destroy!
   end
 
   def test_launch_response_success
@@ -188,14 +195,13 @@ class OAuth2EndpointsTest < MiniTest::Test
 
       assert last_response.status == 500
 
-      expected_error_message = "No actively running launch sequences found with a state of #{bad_state}"
+      expected_error_message = "No actively running launch sequences found with a 'state' parameter of '#{bad_state}'"
       assert last_response.body.include? expected_error_message
       break
     end
   end
 
   def test_redirect_response_no_state
-    state = SecureRandom.uuid
     instance = create_testing_instance
     sequence_result = create_sequence_result(
       testing_instance: instance,
@@ -206,11 +212,11 @@ class OAuth2EndpointsTest < MiniTest::Test
     )
 
     EventMachine.run do
-      get "/inferno/oauth2/static/redirect"
+      get '/inferno/oauth2/static/redirect'
 
       assert last_response.status == 500
 
-      expected_error_message = "No actively running launch sequences found"
+      expected_error_message = 'No actively running launch sequences found'
       assert last_response.body.include? expected_error_message
 
       break
