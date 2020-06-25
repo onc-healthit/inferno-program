@@ -7,11 +7,7 @@ module Inferno
         %(
           <p>
             Inferno has detected an issue with the SMART launch.
-            <% if params[:state].nil?} %>
-              No 'state' parameter was returned by the authorization server.
-            <% else %>
-              No actively running launch sequences found with a 'state' parameter of '#{params[:state]}'.
-            <% end %>
+            #{param_description}
             The authorization server is not returning the correct state variable and
             therefore Inferno cannot identify which server is currently under test.
             Please click your browser's "Back" button to return to Inferno,
@@ -20,6 +16,12 @@ module Inferno
           #{server_error_message}
           #{server_error_description}
         )
+      end
+
+      def param_description
+        return 'No state parameter was returned by the authorization server. ' if params[:state].nil?
+
+        "No actively running launch sequences found with a 'state' parameter of '#{params[:state]}'."
       end
 
       def server_error_message
