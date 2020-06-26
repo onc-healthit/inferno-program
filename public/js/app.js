@@ -439,4 +439,15 @@ $(function(){
       $('#preset-select').trigger("change", preset_id);
     }
   }
+
+  // Load the server state modal only if it's called
+  $("#ServerStatusModal").on('show.bs.modal', function() {
+    // Only load the state modal if #server-state doesn't already exist
+    // AKA if we haven't already loaded it before
+    if (!($("#server-state").length > 0)) {
+      $.get('/server_state', function(data) {
+        $("#ServerStatusModalBody").html(data);
+      });
+    }
+  });
 }); 
