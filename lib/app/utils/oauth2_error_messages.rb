@@ -19,7 +19,7 @@ module Inferno
       end
 
       def param_description
-        return 'No state parameter was returned by the authorization server. ' if params[:state].nil?
+        return "No 'state' parameter was returned by the authorization server." if params[:state].nil?
 
         "No actively running launch sequences found with a 'state' parameter of '#{params[:state]}'."
       end
