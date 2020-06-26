@@ -216,7 +216,7 @@ class OAuth2EndpointsTest < MiniTest::Test
 
       assert last_response.status == 500
 
-      expected_error_message = 'No state parameter was returned by the authorization server'
+      expected_error_message = "No 'state' parameter was returned by the authorization server"
       assert last_response.body.include? expected_error_message
 
       break
