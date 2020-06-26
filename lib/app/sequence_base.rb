@@ -799,9 +799,9 @@ module Inferno
         search_value = case element
                        when FHIR::Period
                          if element.start.present?
-                           'gt' + element.start
+                           'gt' + (DateTime.xmlschema(element.start) - 1).xmlschema
                          else
-                           'lt' + element.end
+                           'lt' + (DateTime.xmlschema(element.end) + 1).xmlschema
                          end
                        when FHIR::Reference
                          element.reference
