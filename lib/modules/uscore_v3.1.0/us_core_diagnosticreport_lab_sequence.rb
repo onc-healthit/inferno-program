@@ -34,7 +34,7 @@ module Inferno
 
 
 
-        We search by patient + category before doing a search by just patient in order to differentiate the two Diagnostic Report profiles.
+        Inferno will search by patient + category before doing a search by only patient in order to differentiate the two Diagnostic Report profiles.
 
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
