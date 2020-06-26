@@ -30,7 +30,7 @@ module Inferno
 
         ## Must Support
         Each profile has a list of elements marked as "must support". This test sequence expects to see each of these elements
-        at least once. If at least one cannot be found, the test will fail. The test will look through the `#{title.gsub(/\s+/, '')}`
+        at least once. If at least one cannot be found, the test will fail. The test will look through the PractitionerRole
         resources found for these elements.
 
         ## Profile Validation

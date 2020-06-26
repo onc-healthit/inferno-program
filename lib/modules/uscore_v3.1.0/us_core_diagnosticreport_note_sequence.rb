@@ -34,6 +34,8 @@ module Inferno
 
 
 
+        Inferno will search by patient + category before doing a search by only patient in order to differentiate the two Diagnostic Report profiles.
+
         ### Search Parameters
         The first search uses the selected patient(s) from the prior launch sequence. Any subsequent searches will look for its
         parameter values from the results of the first search. For example, the `identifier` search in the patient sequence is
@@ -49,7 +51,7 @@ module Inferno
 
         ## Must Support
         Each profile has a list of elements marked as "must support". This test sequence expects to see each of these elements
-        at least once. If at least one cannot be found, the test will fail. The test will look through the `#{title.gsub(/\s+/, '')}`
+        at least once. If at least one cannot be found, the test will fail. The test will look through the DiagnosticReport
         resources found for these elements.
 
         ## Profile Validation
