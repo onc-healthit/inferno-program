@@ -8,10 +8,10 @@ module Inferno
       description 'Verify that access to resource types can be restricted to app.'
       test_id_prefix 'AVR'
       details %(
-        This test ensures that patients have control  to grant or deny access to a subset of resources to an app.
-        It also verifies that patients can deny refresh token access.  The tester provides a list of resources
-        that will be granted during the SMART App Launch process, and this test verifies that the scope granted
-        is consistent with what the tester provided.  It also formulates queries to ensure that the app
+        This test ensures that patients are able to grant or deny access to a subset of resources to an app.
+        It also verifies that patients can prevent issuance of a refresh token by denying the `offline_access` scope.  The tester provides a list of resources
+        that will be granted during the SMART App Launch process, and this test verifies that the scopes granted
+        are consistent with what the tester provided.  It also formulates queries to ensure that the app
         is either given access to, or denied access to, the appropriate resource types based on those chosen
         by the tester.
 
@@ -31,15 +31,15 @@ module Inferno
           * Procedure
 
         For each of the resources that can be mapped to USCDI data class or elements, this set of tests
-        performs a minimum number of requests to determine that the resource type can be accessed or denied given the
+        performs a minimum number of requests to determine if access to the resource type is appropriately allowed or denied given the
         scope granted.  In the case of the Patient resource, this test simply performs a read request.
         For other resources, it performs a search by patient that must be supported by the server.  In some cases,
         servers can return an error message if a status search parameter is not provided.  For these, the
         test will perform an additional search with the required status search parameter.
 
-        This set of tests do not attempt to access resources that do not directly map to USCDI v1, including Encounter, Location,
+        This set of tests does not attempt to access resources that do not directly map to USCDI v1, including Encounter, Location,
         Organization, Practitioner, PractionerRole, and RelatedPerson.  It also does not test Provenance, as this
-        resource type is accessed as queries through other resource types.  These resource types are accessed in the more
+        resource type is accessed by queries through other resource types.  These resource types are accessed in the more
         comprehensive Single Patient Query tests.
 
         If the tester chooses to not grant access to a resource, the queries associated with that resource must

@@ -25,16 +25,16 @@ module Inferno
           * Observation
           * Procedure
 
-        For each of the resources that can be mapped to USCDI data class or elements, this set of tests
+        For each of the resource types that can be mapped to USCDI data class or elements, this set of tests
         performs a minimum number of requests to determine that the resource type can be accessed given the
         scope granted.  In the case of the Patient resource, this test simply performs a read request.
         For other resources, it performs a search by patient that must be supported by the server.  In some cases,
         servers can return an error message if a status search parameter is not provided.  For these, the
         test will perform an additional search with the required status search parameter.
 
-        This set of tests do not attempt to access resources that do not directly map to USCDI v1, including Encounter, Location,
+        This set of tests does not attempt to access resources that do not directly map to USCDI v1, including Encounter, Location,
         Organization, Practitioner, PractionerRole, and RelatedPerson.  It also does not test Provenance, as this
-        resource type is accessed as queries through other resource types. These resources types are accessed in the more
+        resource type is accessed by queries through other resource types. These resources types are accessed in the more
         comprehensive Single Patient Query tests.
       )
 
