@@ -49,6 +49,25 @@ module Inferno
         @instance.onc_sl_expected_resources&.split(',')&.map { |resource| "patient/#{resource.strip}.read" }&.join(' ')
       end
 
+      def assert_response_insufficient_scope(response)
+        # This is intended for tests that are expecting the server to reject a
+        # resource request due to user not authorizing the application for that
+        # particular resource.  In early versions of this test, these tests
+        # expected a 401 (Unauthorized), but after later review it seems
+        # reasonable for a server to return 403 (Forbidden) instead.  This
+        # assertion therefore allows either.  403 may be the only correct
+        # answer, but further review is required before preventing 401 from
+        # being returned because that is a large change because it may cause
+        # some previously passing servers to fail.
+
+        message = "Bad response code: expected 403 (Forbidden), but found #{response.code}.  401 is also allowed."
+        assert [401, 403].include?(response.code), message
+
+        warning do
+          assert response.code == 403, "403 (Forbidden) is the preferred response code for authenticated requests with insufficient authorization for the request. #{response.code} was returned."
+        end
+      end
+
       def url_property
         'onc_sl_url'
       end
@@ -123,7 +142,9 @@ module Inferno
           assert_response_ok reply
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
         else
-          assert_response_unauthorized reply
+
+          assert_response_insufficient_scope reply
+
         end
       end
 
@@ -173,7 +194,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -224,7 +245,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -275,7 +296,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -325,7 +346,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -361,7 +382,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -412,7 +433,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -462,7 +483,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -512,7 +533,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -562,7 +583,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -613,7 +634,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -664,7 +685,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -714,7 +735,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
     end
