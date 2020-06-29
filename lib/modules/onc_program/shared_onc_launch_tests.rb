@@ -322,8 +322,7 @@ module Inferno
                 includes an access token or a message indicating that the
                 authorization request has been denied.
                 `access_token`, `token_type`, and `scope` are required. `token_type` must
-                be Bearer. `expires_in` is required for token refreshes. `scope`
-                must be a strict subset of the requested scopes, or empty.
+                be Bearer. `expires_in` is required for token refreshes.
               )
             end
 
