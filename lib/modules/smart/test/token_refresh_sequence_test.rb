@@ -14,10 +14,10 @@ describe Inferno::Sequence::TokenRefreshSequence do
 
   let(:unrequested_scope_body) do
     {
-        'access_token' => 'abc',
-        'expires_in' => 300,
-        'token_type' => 'Bearer',
-        'scope' => 'jkl asd'
+      'access_token' => 'abc',
+      'expires_in' => 300,
+      'token_type' => 'Bearer',
+      'scope' => 'jkl asd'
     }
   end
 
@@ -127,10 +127,9 @@ describe Inferno::Sequence::TokenRefreshSequence do
     end
 
     it 'fails when the token refresh includes unrequested scopes' do
-
       stub_request(:post, @token_endpoint)
-          .with(body: hash_including(scope: 'jkl'))
-          .to_return(status: 200, body: unrequested_scope_body.to_json, headers: {})
+        .with(body: hash_including(scope: 'jkl'))
+        .to_return(status: 200, body: unrequested_scope_body.to_json, headers: {})
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
       assert_equal 'Token response contained unrequested scopes: asd', exception.message
@@ -168,10 +167,9 @@ describe Inferno::Sequence::TokenRefreshSequence do
     end
 
     it 'fails when the token refresh includes unrequested scopes' do
-
       stub_request(:post, @token_endpoint)
-          .with { |request| !request.body.include? 'scope' }
-          .to_return(status: 200, body: unrequested_scope_body.to_json, headers: {})
+        .with { |request| !request.body.include? 'scope' }
+        .to_return(status: 200, body: unrequested_scope_body.to_json, headers: {})
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
       assert_equal 'Token response contained unrequested scopes: asd', exception.message
