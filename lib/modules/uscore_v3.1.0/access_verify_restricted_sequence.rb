@@ -7,36 +7,44 @@ module Inferno
 
       description 'Verify that access to resource types can be restricted to app.'
       test_id_prefix 'AVR'
-
       details %(
+        This test ensures that patients have control  to grant or deny access to a subset of resources to an app.
+        It also verifies that patients can deny refresh token access.  The tester provides a list of resources
+        that will be granted during the SMART App Launch process, and this test verifies that the scope granted
+        is consistent with what the tester provided.  It also formulates queries to ensure that the app
+        is either given access to, or denied access to, the appropriate resource types based on those chosen
+        by the tester.
 
-        The following are required to be seen:
+        Resources that can be mapped to USCDI are checked in this test, including:
 
           * AllergyIntolerance
-
           * CarePlan
-
           * CareTeam
-
           * Condition
-
           * Device
-
           * DiagnosticReport
-
           * DocumentReference
-
           * Goal
-
           * Immunization
-
           * MedicationRequest
-
           * Observation
-
           * Procedure
 
+        For each of the resources that can be mapped to USCDI data class or elements, this set of tests
+        performs a minimum number of requests to determine that the resource type can be accessed or denied given the
+        scope granted.  In the case of the Patient resource, this test simply performs a read request.
+        For other resources, it performs a search by patient that must be supported by the server.  In some cases,
+        servers can return an error message if a status search parameter is not provided.  For these, the
+        test will perform an additional search with the required status search parameter.
 
+        This set of tests do not attempt to access resources that do not directly map to USCDI v1, including Encounter, Location,
+        Organization, Practitioner, PractionerRole, and RelatedPerson.  It also does not test Provenance, as this
+        resource type is accessed as queries through other resource types.  These resource types are accessed in the more
+        comprehensive Single Patient Query tests.
+
+        If the tester chooses to not grant access to a resource, the queries associated with that resource must
+        result in either a 401 (Unauthorized) or 403 (Forbidden) status code.  The flexiblity provided here
+        is due to some ambiguity in the specifications tested.
       )
 
       requires :onc_sl_url, :token, :patient_id, :received_scopes, :onc_sl_expected_resources
@@ -55,17 +63,10 @@ module Inferno
         # particular resource.  In early versions of this test, these tests
         # expected a 401 (Unauthorized), but after later review it seems
         # reasonable for a server to return 403 (Forbidden) instead.  This
-        # assertion therefore allows either.  403 may be the only correct
-        # answer, but further review is required before preventing 401 from
-        # being returned because that is a large change because it may cause
-        # some previously passing servers to fail.
+        # assertion therefore allows either.
 
-        message = "Bad response code: expected 403 (Forbidden), but found #{response.code}.  401 is also allowed."
+        message = "Bad response code: expected 403 (Forbidden) or 401 (Unauthorized), but found #{response.code}."
         assert [401, 403].include?(response.code), message
-
-        warning do
-          assert response.code == 403, "403 (Forbidden) is the preferred response code for authenticated requests with insufficient authorization for the request. #{response.code} was returned."
-        end
       end
 
       def url_property

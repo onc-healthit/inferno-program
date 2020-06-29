@@ -7,36 +7,35 @@ module Inferno
 
       description 'Verify that all resource types can be accessed by apps with appropriate scopes.'
       test_id_prefix 'AVU'
-
       details %(
-
-        The following are required to be seen:
+        This test ensures that apps have full access to USCDI resources if granted access by the tester.
+        The tester must grant access to the following resources during the SMART Launch process,
+        and this test ensures they all can be accessed:
 
           * AllergyIntolerance
-
           * CarePlan
-
           * CareTeam
-
           * Condition
-
           * Device
-
           * DiagnosticReport
-
           * DocumentReference
-
           * Goal
-
           * Immunization
-
           * MedicationRequest
-
           * Observation
-
           * Procedure
 
+        For each of the resources that can be mapped to USCDI data class or elements, this set of tests
+        performs a minimum number of requests to determine that the resource type can be accessed given the
+        scope granted.  In the case of the Patient resource, this test simply performs a read request.
+        For other resources, it performs a search by patient that must be supported by the server.  In some cases,
+        servers can return an error message if a status search parameter is not provided.  For these, the
+        test will perform an additional search with the required status search parameter.
 
+        This set of tests do not attempt to access resources that do not directly map to USCDI v1, including Encounter, Location,
+        Organization, Practitioner, PractionerRole, and RelatedPerson.  It also does not test Provenance, as this
+        resource type is accessed as queries through other resource types. These resources types are accessed in the more
+        comprehensive Single Patient Query tests.
       )
 
       requires :onc_sl_url, :token, :patient_id, :received_scopes
@@ -70,17 +69,10 @@ module Inferno
         # particular resource.  In early versions of this test, these tests
         # expected a 401 (Unauthorized), but after later review it seems
         # reasonable for a server to return 403 (Forbidden) instead.  This
-        # assertion therefore allows either.  403 may be the only correct
-        # answer, but further review is required before preventing 401 from
-        # being returned because that is a large change because it may cause
-        # some previously passing servers to fail.
+        # assertion therefore allows either.
 
-        message = "Bad response code: expected 403 (Forbidden), but found #{response.code}.  401 is also allowed."
+        message = "Bad response code: expected 403 (Forbidden) or 401 (Unauthorized), but found #{response.code}."
         assert [401, 403].include?(response.code), message
-
-        warning do
-          assert response.code == 403, "403 (Forbidden) is the preferred response code for authenticated requests with insufficient authorization for the request. #{response.code} was returned."
-        end
       end
 
       def url_property
