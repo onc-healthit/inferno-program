@@ -12,6 +12,15 @@ describe Inferno::Sequence::TokenRefreshSequence do
     }
   end
 
+  let(:unrequested_scope_body) do
+    {
+        'access_token' => 'abc',
+        'expires_in' => 300,
+        'token_type' => 'Bearer',
+        'scope' => 'jkl asd'
+    }
+  end
+
   before do
     @sequence_class = Inferno::Sequence::TokenRefreshSequence
     @token_endpoint = 'http://www.example.com/token'
@@ -116,6 +125,16 @@ describe Inferno::Sequence::TokenRefreshSequence do
 
       assert_equal 'Bad response code: expected 200, 201, but found 400. ', exception.message
     end
+
+    it 'fails when the token refresh includes unrequested scopes' do
+
+      stub_request(:post, @token_endpoint)
+          .with(body: hash_including(scope: 'jkl'))
+          .to_return(status: 200, body: unrequested_scope_body.to_json, headers: {})
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      assert_equal 'Token response contained unrequested scopes: asd', exception.message
+    end
   end
 
   describe 'refresh without scope parameter test' do
@@ -146,6 +165,16 @@ describe Inferno::Sequence::TokenRefreshSequence do
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
       assert_equal 'Bad response code: expected 200, 201, but found 400. ', exception.message
+    end
+
+    it 'fails when the token refresh includes unrequested scopes' do
+
+      stub_request(:post, @token_endpoint)
+          .with { |request| !request.body.include? 'scope' }
+          .to_return(status: 200, body: unrequested_scope_body.to_json, headers: {})
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+      assert_equal 'Token response contained unrequested scopes: asd', exception.message
     end
   end
 
@@ -191,6 +220,12 @@ describe Inferno::Sequence::TokenRefreshSequence do
       response = OpenStruct.new(code: 200, body: full_body.to_json)
       exception = assert_raises(Inferno::AssertionException) { @sequence.validate_and_save_refresh_response(response) }
       assert_equal('Token type must be Bearer.', exception.message)
+    end
+
+    it 'fails when unrequested scopes are provided' do
+      response = OpenStruct.new(code: 200, body: unrequested_scope_body.to_json)
+      exception = assert_raises(Inferno::AssertionException) { @sequence.validate_and_save_refresh_response(response) }
+      assert_equal 'Token response contained unrequested scopes: asd', exception.message
     end
 
     it 'creates a warning when scopes are missing' do
