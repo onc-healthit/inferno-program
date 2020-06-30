@@ -106,7 +106,7 @@ module Inferno
         # See: https://github.com/onc-healthit/inferno/issues/464 and other related issues tagged linked to that issue.
         if check_scope_subset
           extra_scopes = actual_scopes - @instance.received_scopes.split(' ')
-          assert extra_scopes.empty?, "Token response contained scopes which are not a subset of those provided in the original launch: #{extra_scopes.join(', ')}"
+          assert extra_scopes.empty?, "Token response contained scope which is not a subset of the scope granted to the original access token: #{extra_scopes.join(', ')}"
         end
 
         warning do
