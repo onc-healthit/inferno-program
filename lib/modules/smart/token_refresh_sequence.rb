@@ -138,7 +138,7 @@ module Inferno
       end
 
       def validate_and_save_refresh_response(token_response)
-        validate_token_response_contents(token_response, require_expires_in: true, check_unrequested_scopes: true)
+        validate_token_response_contents(token_response, require_expires_in: true, check_scope_subset: true)
         warning { validate_token_response_headers(token_response) }
       end
 

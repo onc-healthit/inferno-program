@@ -28,7 +28,8 @@ describe Inferno::Sequence::TokenRefreshSequence do
     @instance = Inferno::Models::TestingInstance.create(
       oauth_token_endpoint: @token_endpoint,
       scopes: 'jkl',
-      refresh_token: 'abc'
+      refresh_token: 'abc',
+      received_scopes: 'jkl'
     )
     @sequence = @sequence_class.new(@instance, @client)
     @sequence.instance_variable_set(:@params, 'abc' => 'def')
@@ -126,13 +127,13 @@ describe Inferno::Sequence::TokenRefreshSequence do
       assert_equal 'Bad response code: expected 200, 201, but found 400. ', exception.message
     end
 
-    it 'fails when the token refresh includes unrequested scopes' do
+    it 'fails when the token refresh includes scopes outside original set' do
       stub_request(:post, @token_endpoint)
         .with(body: hash_including(scope: 'jkl'))
         .to_return(status: 200, body: unrequested_scope_body.to_json, headers: {})
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
-      assert_equal 'Token response contained unrequested scopes: asd', exception.message
+      assert_equal 'Token response contained scopes which are not a subset of those provided in the original launch: asd', exception.message
     end
   end
 
@@ -166,13 +167,13 @@ describe Inferno::Sequence::TokenRefreshSequence do
       assert_equal 'Bad response code: expected 200, 201, but found 400. ', exception.message
     end
 
-    it 'fails when the token refresh includes unrequested scopes' do
+    it 'fails when the token refresh includes scopes outside original set' do
       stub_request(:post, @token_endpoint)
         .with { |request| !request.body.include? 'scope' }
         .to_return(status: 200, body: unrequested_scope_body.to_json, headers: {})
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
-      assert_equal 'Token response contained unrequested scopes: asd', exception.message
+      assert_equal 'Token response contained scopes which are not a subset of those provided in the original launch: asd', exception.message
     end
   end
 
@@ -220,10 +221,10 @@ describe Inferno::Sequence::TokenRefreshSequence do
       assert_equal('Token type must be Bearer.', exception.message)
     end
 
-    it 'fails when unrequested scopes are provided' do
+    it 'fails when scopes outside original set are provided' do
       response = OpenStruct.new(code: 200, body: unrequested_scope_body.to_json)
       exception = assert_raises(Inferno::AssertionException) { @sequence.validate_and_save_refresh_response(response) }
-      assert_equal 'Token response contained unrequested scopes: asd', exception.message
+      assert_equal 'Token response contained scopes which are not a subset of those provided in the original launch: asd', exception.message
     end
 
     it 'creates a warning when scopes are missing' do
@@ -289,7 +290,8 @@ class TokenRefreshSequenceTest < MiniTest::Test
       initiate_login_uri: 'http://localhost:4567/launch',
       redirect_uris: 'http://localhost:4567/redirect',
       scopes: 'launch/patient online_access openid profile launch user/*.* patient/*.*',
-      refresh_token: refresh_token
+      refresh_token: refresh_token,
+      received_scopes: 'launch/patient online_access openid profile launch user/*.* patient/*.*'
     )
 
     client = FHIR::Client.new(@instance.url)

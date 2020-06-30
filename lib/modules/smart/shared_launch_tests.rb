@@ -23,7 +23,7 @@ module Inferno
         "State provided in redirect (#{@params[:state]}) does not match expected state (#{@instance.state})."
       end
 
-      def validate_token_response_contents(token_response, require_expires_in:, check_unrequested_scopes: false)
+      def validate_token_response_contents(token_response, require_expires_in:, check_scope_subset: false)
         skip_if token_response.blank?, no_token_response_message
 
         assert_valid_json(token_response.body)
@@ -79,9 +79,9 @@ module Inferno
         # During a token refresh scopes provided must be a strict sub-set of the scopes granted in the original launch.
         # This does not apply to the original token exchange
         # See: https://github.com/onc-healthit/inferno/issues/464 and other related issues tagged linked to that issue.
-        if check_unrequested_scopes
-          extra_scopes = actual_scopes - expected_scopes
-          assert extra_scopes.empty?, "Token response contained unrequested scopes: #{extra_scopes.join(', ')}"
+        if check_scope_subset
+          extra_scopes = actual_scopes - @instance.received_scopes.split(' ')
+          assert extra_scopes.empty?, "Token response contained scopes which are not a subset of those provided in the original launch: #{extra_scopes.join(', ')}"
         end
 
         warning do
