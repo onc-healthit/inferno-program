@@ -20,7 +20,8 @@ describe Inferno::Sequence::OncStandaloneTokenRefreshSequence do
       oauth_token_endpoint: @token_endpoint,
       scopes: 'bad',
       onc_sl_scopes: 'jkl',
-      refresh_token: 'abc'
+      refresh_token: 'abc',
+      received_scopes: 'jkl'
     )
     @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'r4'))
     @sequence = @sequence_class.new(@instance, @client)
@@ -261,7 +262,8 @@ class OncStandaloneTokenRefreshSequenceTest < MiniTest::Test
       redirect_uris: 'http://localhost:4567/redirect',
       scopes: 'launch/patient online_access openid profile launch user/*.* patient/*.*',
       onc_sl_scopes: 'launch/patient online_access openid profile launch user/*.* patient/*.*',
-      refresh_token: refresh_token
+      refresh_token: refresh_token,
+      received_scopes: 'launch/patient online_access openid profile launch user/*.* patient/*.*'
     )
     @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'r4'))
 
