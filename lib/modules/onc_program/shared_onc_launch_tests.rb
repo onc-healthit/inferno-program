@@ -98,7 +98,7 @@ module Inferno
 
         warning do
           missing_scopes = expected_scopes - actual_scopes
-          assert missing_scopes.empty?, "Token exchange response did not include expected scopes: #{missing_scopes}"
+          assert missing_scopes.empty?, "Token exchange response did not include all requested scopes.  These may have been denied by user: #{missing_scopes}"
         end
 
         # During a token refresh scopes provided must be a strict sub-set of the scopes granted in the original launch.
@@ -390,7 +390,7 @@ module Inferno
               patient_scope_found = false
 
               scopes.each do |scope|
-                bad_format_message = "#{received_or_requested.capitalize} scope '#{scope}' does not follow the format: #{patient_or_user}/[ resource | * ].[ read | * ]"
+                bad_format_message = "#{received_or_requested.capitalize} scope '#{scope}' does not follow the format: `#{patient_or_user}/[ resource | * ].[ read | * ]`"
                 scope_pieces = scope.split('/')
 
                 assert scope_pieces.count == 2, bad_format_message
@@ -406,7 +406,7 @@ module Inferno
                 patient_scope_found = true
               end
 
-              assert patient_scope_found, "#{patient_or_user.capitalize}-level scope in the format: #{patient_or_user}/[ resource | * ].[ read | *] was not #{received_or_requested}."
+              assert patient_scope_found, "#{patient_or_user.capitalize}-level scope in the format: `#{patient_or_user}/[ resource | * ].[ read | *]` was not #{received_or_requested}."
             end
           end
         end

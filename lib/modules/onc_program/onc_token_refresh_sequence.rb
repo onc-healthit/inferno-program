@@ -189,7 +189,7 @@ module Inferno
 
         oauth2_headers['Authorization'] = encoded_secret(client_id, instance_client_secret) if instance_confidential_client
 
-        oauth2_params['scope'] = instance_scopes if provide_scope
+        oauth2_params['scope'] = @instance.received_scopes || instance_scopes if provide_scope
 
         LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
       end

@@ -51,7 +51,7 @@ describe Inferno::Sequence::OncEHRLaunchSequence do
       @instance.instance_variable_set(:@scopes, @sequence.required_scopes.join(' '))
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'User-level scope in the format: user/[ resource | * ].[ read | *] was not requested.', exception.message
+      assert_equal 'User-level scope in the format: `user/[ resource | * ].[ read | *]` was not requested.', exception.message
     end
 
     it 'fails when no user-level scope was received' do
@@ -59,7 +59,7 @@ describe Inferno::Sequence::OncEHRLaunchSequence do
       @instance.instance_variable_set(:@received_scopes, @sequence.required_scopes.join(' '))
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'User-level scope in the format: user/[ resource | * ].[ read | *] was not received.', exception.message
+      assert_equal 'User-level scope in the format: `user/[ resource | * ].[ read | *]` was not received.', exception.message
     end
 
     it 'fails when a badly formatted scope was requested' do
@@ -68,7 +68,7 @@ describe Inferno::Sequence::OncEHRLaunchSequence do
         @instance.instance_variable_set(:@scopes, (@sequence.required_scopes + [scope]).join(' '))
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-        assert_equal "Requested scope '#{scope}' does not follow the format: user/[ resource | * ].[ read | * ]", exception.message
+        assert_equal "Requested scope '#{scope}' does not follow the format: `user/[ resource | * ].[ read | * ]`", exception.message
       end
 
       bad_resource_type = 'ValueSet'
@@ -87,7 +87,7 @@ describe Inferno::Sequence::OncEHRLaunchSequence do
         @instance.instance_variable_set(:@received_scopes, (@sequence.required_scopes + [scope]).join(' '))
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-        assert_equal "Received scope '#{scope}' does not follow the format: user/[ resource | * ].[ read | * ]", exception.message
+        assert_equal "Received scope '#{scope}' does not follow the format: `user/[ resource | * ].[ read | * ]`", exception.message
       end
 
       bad_resource_type = 'ValueSet'
