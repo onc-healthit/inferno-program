@@ -211,8 +211,10 @@ module Inferno
         expected_denied_resources = all_resources - expected_resources
 
         improperly_granted_resources = expected_denied_resources.select { |resource| scope_granting_access(resource, received_scopes).present? }
+        improperly_denied_resources = expected_resources.reject { |resource| scope_granting_access(resource, received_scopes).present? }
 
         assert improperly_granted_resources.empty?, "User expected to deny the following resources that were granted: #{improperly_granted_resources.join(', ')}"
+        assert improperly_denied_resources.empty?, "User expected to grant access to the following resources: #{improperly_denied_resources.join(', ')}"
 
         assert !received_scopes.split(' ').include?('offline_access'), 'Scopes returned in access token response contained offline_access.  User must deny this scope to pass this test.'
       end

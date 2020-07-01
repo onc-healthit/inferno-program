@@ -111,11 +111,12 @@ module Inferno
 
         allowed_resources = all_resources.select { |resource| scope_granting_access(resource, resource_access_as_scope) }
         denied_resources = all_resources - allowed_resources
-
         assert denied_resources.present?, "This test requires at least one resource to be denied, but the provided scope '#{@instance.received_scopes}' grants access to all resource types."
         received_scope_resources = all_resources.select { |resource| scope_granting_access(resource, @instance.received_scopes) }
         unexpected_resources = received_scope_resources - allowed_resources
         assert unexpected_resources.empty?, "This test expected the user to deny access to the following resources that are present in scopes received during token exchange response: #{unexpected_resources.join(', ')}"
+        improperly_denied_resources = allowed_resources.reject { |resource| scope_granting_access(resource, @instance.received_scopes).present? }
+        assert improperly_denied_resources.empty?, "This test expected the user to grant access to the following resources that are not received during token exhange response: #{improperly_denied_resources.join(', ')}"
         pass "Resources to be denied: #{denied_resources.join(',')}"
       end
 

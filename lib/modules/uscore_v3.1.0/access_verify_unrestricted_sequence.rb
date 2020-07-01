@@ -115,9 +115,8 @@ module Inferno
           'Patient'
         ]
 
-        allowed_resources = all_resources.select { |resource| scope_granting_access(resource, resource_access_as_scope) }
+        allowed_resources = all_resources.select { |resource| scope_granting_access(resource, @instance.received_scopes) }
         denied_resources = all_resources - allowed_resources
-
         assert denied_resources.empty?, "This test requires access to all US Core resources with patient information, but the received scope '#{@instance.received_scopes}' does not grant access to the '#{denied_resources.join(', ')}' resource type(s)."
         pass 'Scopes received indicate access to all necessary resources.'
       end
