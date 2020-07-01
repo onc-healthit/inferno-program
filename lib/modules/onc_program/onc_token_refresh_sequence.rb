@@ -117,6 +117,8 @@ module Inferno
             the token refresh response should include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache
             to be consistent with the requirements of the inital access token exchange.
 
+            [`scopes` returned must be a strict subset of the scopes granted in the original launch](http://www.hl7.org/fhir/smart-app-launch/index.html#step-5-later-app-uses-a-refresh-token-to-obtain-a-new-access-token)
+
           )
         end
 
@@ -149,6 +151,8 @@ module Inferno
             Although not required in the token refresh portion of the SMART App Launch Guide,
             the token refresh response should include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache
             to be consistent with the requirements of the inital access token exchange.
+
+            [`scopes` returned must be a strict subset of the scopes granted in the original launch](http://www.hl7.org/fhir/smart-app-launch/index.html#step-5-later-app-uses-a-refresh-token-to-obtain-a-new-access-token)
           )
         end
 
@@ -168,7 +172,7 @@ module Inferno
       end
 
       def validate_and_save_refresh_response(token_response)
-        validate_token_response_contents(token_response, require_expires_in: true)
+        validate_token_response_contents(token_response, require_expires_in: true, check_scope_subset: true)
         warning { validate_token_response_headers(token_response) }
       end
 
@@ -185,7 +189,7 @@ module Inferno
 
         oauth2_headers['Authorization'] = encoded_secret(client_id, instance_client_secret) if instance_confidential_client
 
-        oauth2_params['scope'] = instance_scopes if provide_scope
+        oauth2_params['scope'] = @instance.received_scopes || instance_scopes if provide_scope
 
         LoggedRestClient.post(@instance.oauth_token_endpoint, oauth2_params, oauth2_headers)
       end
