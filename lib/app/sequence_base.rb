@@ -841,9 +841,9 @@ module Inferno
 
         case comparator
         when 'lt', 'le'
-          comparator + (DateTime.xmlschema(date) + 1).xmlschema
+          comparator + (DateTime.xmlschema(date) + 2).xmlschema
         when 'gt', 'ge'
-          comparator + (DateTime.xmlschema(date) - 1).xmlschema
+          comparator + (DateTime.xmlschema(date) - 2).xmlschema
         else
           ''
         end
