@@ -123,14 +123,46 @@ class SequenceBaseTest < MiniTest::Test
     end
 
     it 'returns value from period' do
-      { start: '2020-05-26', end: '2020-05-26' }.each do |key, value|
-        element = FHIR::Period.new(key => value)
-        expected_value = if key == :start
-                           'gt2020-05-25T00:00:00+00:00'
-                         else
-                           'lt2020-05-27T00:00:00+00:00'
-                         end
-        assert @sequence.get_value_for_search_param(element) == expected_value
+      [
+        {
+          element: FHIR::Period.new('start' => '2020'),
+          expected: 'gt2019-12-31T00:00:00+00:00'
+        },
+        {
+          element: FHIR::Period.new('start' => '2020', 'end' => '2020'),
+          expected: 'gt2019-12-31T00:00:00+00:00'
+        },
+        {
+          element: FHIR::Period.new('end' => '2020'),
+          expected: 'lt2021-01-01T23:59:59+00:00'
+        },
+        {
+          element: FHIR::Period.new('start' => '2020-01'),
+          expected: 'gt2019-12-31T00:00:00+00:00'
+        },
+        {
+          element: FHIR::Period.new('end' => '2020-01'),
+          expected: 'lt2020-02-01T23:59:59+00:00'
+        },
+        {
+          element: FHIR::Period.new('start' => '2020-01-01'),
+          expected: 'gt2019-12-31T00:00:00+00:00'
+        },
+        {
+          element: FHIR::Period.new('end' => '2020-01-01'),
+          expected: 'lt2020-01-02T23:59:59+00:00'
+        },
+        {
+          element: FHIR::Period.new('start' => '2015-02-07T13:28:17-05:00'),
+          expected: 'gt2015-02-06T13:28:17-05:00'
+        },
+        {
+          element: FHIR::Period.new('end' => '2015-02-07T13:28:17-05:00'),
+          expected: 'lt2015-02-08T13:28:17-05:00'
+        }
+      ].each do |expectation|
+        actual_value = @sequence.get_value_for_search_param(expectation[:element])
+        assert actual_value == expectation[:expected], "Expected: #{expectation[:expected]}, Saw: #{actual_value}"
       end
     end
 

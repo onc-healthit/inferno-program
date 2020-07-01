@@ -801,7 +801,8 @@ module Inferno
                          if element.start.present?
                            'gt' + (DateTime.xmlschema(element.start) - 1).xmlschema
                          else
-                           'lt' + (DateTime.xmlschema(element.end) + 1).xmlschema
+                           end_datetime = get_fhir_datetime_range(element.end)[:end]
+                           'lt' + (end_datetime + 1).xmlschema
                          end
                        when FHIR::Reference
                          element.reference
