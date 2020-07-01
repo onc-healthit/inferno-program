@@ -198,6 +198,47 @@ For alternate installation options, please visit <a href='https://github.com/onc
   </div>
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.0.1</div>
+      <p>
+      This patch update to the Inferno Program Edition includes a number of fixes, updates and improvements.
+      All test updates provide more flexibility in implementation than v1.0.0, as allowed in the referenced
+      standards and implementation specifications.
+      Systems that passed v1.0.0 should continue to pass all tests in v1.0.1.  
+      </p>
+      <p>
+      <i>
+      NOTICE: If you are installing v1.0.1 in the same directory as a previous v1.0.0 installation, please delete or
+      rename the files in /data/ (e.g. production.db; development.db; test.db).  Inferno will fail to load if these
+      files are not removed or renamed due to a change in the Inferno data schema.
+      </i>
+      </p>
+      <p>
+        Test updates from the previous version include:
+      </p>
+      <ul>
+        <li>Allow response code of 403 (Forbidden) when the resource being accessed is not authorized by the user.  Previously these tests only allowed 401 (Unauthorized) to be returned, but 403 may be more suitable in this situation where valid credentials are provided but do not provide sufficient scope for the request.  <a href="https://github.com/onc-healthit/inferno-program/pull/129" target="_blank">#129</a> </li>
+        <li>Remove 'strict subset' requirement for granted scopes, and allow the authorization service to grant different scopes than were requested by the app.  <a href="https://github.com/onc-healthit/inferno-program/pull/132" target="_blank">#132</a>  </li>
+        <li>Change failure to demonstrate all MUST SUPPORT elements in the multi-patient API from FAIL to SKIP to be consistent with single-patient API test behavior.  <a href="https://github.com/onc-healthit/inferno-program/pull/123" target="_blank">#123</a>  </li>
+        <li>Change search comparator behavior for dates so that the date range search is more broad to ensure timezone offsets do not cause known dates to not fall within the search query.  <a href="https://github.com/onc-healthit/inferno-program/pull/121" target="_blank">#121</a>  </li>
+      </ul>
+      <p>
+      Additionally, the following updates have been made to the Inferno UI, installation, and deployment configuration:
+      </p>
+      <ul>
+      <li>Security patch update for underlying libraries. <a href="https://github.com/onc-healthit/inferno-program/pull/128" target="_blank">#128</a> </li>
+      <li>Load “Server State” asynchronously to improve load time of main testing page. <a href="https://github.com/onc-healthit/inferno-program/pull/125" target="_blank">#125</a> </li>
+      <li>Update presets so running Inferno from localhost includes the Inferno Reference Server as a preset option. <a href="https://github.com/onc-healthit/inferno-program/pull/124" target="_blank">#124</a> </li>
+      <li>Include language within tests to explain why Diagnostic Report searches are performed in a different order than most other tests.  <a href="https://github.com/onc-healthit/inferno-program/pull/120" target="_blank">#120</a> </li>
+      <li>Fix issue that could result in incorrectly redirected SMART Launches being sent to the wrong test session. <a href="https://github.com/onc-healthit/inferno-program/pull/115" target="_blank">#115</a> </li>
+      <li>Fix ordering of HTTP requests and responses within the interface.  This update requires users to remove their old SQLite database files.  <a href="https://github.com/onc-healthit/inferno-program/pull/117" target="_blank">#117</a> </li>
+      <li>Fix error message formatting on SMART Discovery tests. <a href="https://github.com/onc-healthit/inferno-program/pull/112" target="_blank">#112</a> </li>
+      <li>Improve terminology installation tooling instructions. <a href="https://github.com/onc-healthit/inferno-program/pull/111" target="_blank">#111</a> </li>
+      </ul>
+    
+    <p>
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_0_1.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure.
+    </p>
     <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.0.0</div>
       <p>
         The v1.0.0 release of Inferno Program Edition marks the first release containing complete coverage
