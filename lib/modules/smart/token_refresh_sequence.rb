@@ -86,6 +86,8 @@ module Inferno
             the token refresh response should include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache
             to be consistent with the requirements of the inital access token exchange.
 
+            [`scopes` returned must be a strict subset of the scopes granted in the original launch](http://www.hl7.org/fhir/smart-app-launch/index.html#step-5-later-app-uses-a-refresh-token-to-obtain-a-new-access-token)
+
           )
         end
 
@@ -115,6 +117,8 @@ module Inferno
             Although not required in the token refresh portion of the SMART App Launch Guide,
             the token refresh response should include the HTTP Cache-Control response header field with a value of no-store, as well as the Pragma response header field with a value of no-cache
             to be consistent with the requirements of the inital access token exchange.
+
+            [`scopes` returned must be a strict subset of the scopes granted in the original launch](http://www.hl7.org/fhir/smart-app-launch/index.html#step-5-later-app-uses-a-refresh-token-to-obtain-a-new-access-token)
           )
         end
 
@@ -134,7 +138,7 @@ module Inferno
       end
 
       def validate_and_save_refresh_response(token_response)
-        validate_token_response_contents(token_response, require_expires_in: true)
+        validate_token_response_contents(token_response, require_expires_in: true, check_scope_subset: true)
         warning { validate_token_response_headers(token_response) }
       end
 

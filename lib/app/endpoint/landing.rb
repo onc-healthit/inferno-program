@@ -18,6 +18,10 @@ module Inferno
           # Custom landing page intended to be overwritten for branded deployments
           erb :landing
         end
+
+        get '/server_state/?' do
+          erb :server_state, { layout: false }
+        end
       end
     end
   end

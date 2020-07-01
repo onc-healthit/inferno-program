@@ -14,6 +14,7 @@ tmp/*
 resources/terminology/*
 sequence_coverage.csv
 fhir-pgdata/
+.env
 
 # Auto-generated terminology files
 MR*.pipe

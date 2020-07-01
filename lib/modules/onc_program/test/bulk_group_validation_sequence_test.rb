@@ -361,7 +361,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       assert_match(/^Successfully validated [\d]+ resource/, pass_exception.message)
     end
 
-    it 'fails when not all must supports are found' do
+    it 'skips when not all must supports are found' do
       stub_request(:get, @patient_file_location)
         .with(headers: @file_request_headers)
         .to_return(
@@ -387,7 +387,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
           }
         }
       ]
-      assertion_exception = assert_raises(Inferno::AssertionException) { @sequence.test_output_against_profile('Patient', must_supports) }
+      assertion_exception = assert_raises(Inferno::SkipException) { @sequence.test_output_against_profile('Patient', must_supports) }
       assert_match('Could not verify presence of the following must support elements: address.period', assertion_exception.message)
     end
   end

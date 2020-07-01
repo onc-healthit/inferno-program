@@ -1,6 +1,6 @@
 version: '3.2'
 services:
-  ruby_server:
+  terminology_builder:
     build:
       context: .
       dockerfile: terminology_dockerfile

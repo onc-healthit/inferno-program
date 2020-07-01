@@ -7,36 +7,44 @@ module Inferno
 
       description 'Verify that access to resource types can be restricted to app.'
       test_id_prefix 'AVR'
-
       details %(
+        This test ensures that patients are able to grant or deny access to a subset of resources to an app.
+        It also verifies that patients can prevent issuance of a refresh token by denying the `offline_access` scope.  The tester provides a list of resources
+        that will be granted during the SMART App Launch process, and this test verifies that the scopes granted
+        are consistent with what the tester provided.  It also formulates queries to ensure that the app
+        is either given access to, or denied access to, the appropriate resource types based on those chosen
+        by the tester.
 
-        The following are required to be seen:
+        Resources that can be mapped to USCDI are checked in this test, including:
 
           * AllergyIntolerance
-
           * CarePlan
-
           * CareTeam
-
           * Condition
-
           * Device
-
           * DiagnosticReport
-
           * DocumentReference
-
           * Goal
-
           * Immunization
-
           * MedicationRequest
-
           * Observation
-
           * Procedure
 
+        For each of the resources that can be mapped to USCDI data class or elements, this set of tests
+        performs a minimum number of requests to determine if access to the resource type is appropriately allowed or denied given the
+        scope granted.  In the case of the Patient resource, this test simply performs a read request.
+        For other resources, it performs a search by patient that must be supported by the server.  In some cases,
+        servers can return an error message if a status search parameter is not provided.  For these, the
+        test will perform an additional search with the required status search parameter.
 
+        This set of tests does not attempt to access resources that do not directly map to USCDI v1, including Encounter, Location,
+        Organization, Practitioner, PractionerRole, and RelatedPerson.  It also does not test Provenance, as this
+        resource type is accessed by queries through other resource types.  These resource types are accessed in the more
+        comprehensive Single Patient Query tests.
+
+        If the tester chooses to not grant access to a resource, the queries associated with that resource must
+        result in either a 401 (Unauthorized) or 403 (Forbidden) status code.  The flexiblity provided here
+        is due to some ambiguity in the specifications tested.
       )
 
       requires :onc_sl_url, :token, :patient_id, :received_scopes, :onc_sl_expected_resources
@@ -47,6 +55,18 @@ module Inferno
 
       def resource_access_as_scope
         @instance.onc_sl_expected_resources&.split(',')&.map { |resource| "patient/#{resource.strip}.read" }&.join(' ')
+      end
+
+      def assert_response_insufficient_scope(response)
+        # This is intended for tests that are expecting the server to reject a
+        # resource request due to user not authorizing the application for that
+        # particular resource.  In early versions of this test, these tests
+        # expected a 401 (Unauthorized), but after later review it seems
+        # reasonable for a server to return 403 (Forbidden) instead.  This
+        # assertion therefore allows either.
+
+        message = "Bad response code: expected 403 (Forbidden) or 401 (Unauthorized), but found #{response.code}."
+        assert [401, 403].include?(response.code), message
       end
 
       def url_property
@@ -123,7 +143,9 @@ module Inferno
           assert_response_ok reply
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
         else
-          assert_response_unauthorized reply
+
+          assert_response_insufficient_scope reply
+
         end
       end
 
@@ -173,7 +195,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -224,7 +246,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -275,7 +297,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -325,7 +347,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -361,7 +383,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -412,7 +434,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -462,7 +484,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -512,7 +534,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -562,7 +584,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -613,7 +635,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -664,7 +686,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
 
@@ -714,7 +736,7 @@ module Inferno
           pass "Access expected to be granted and request properly returned #{reply&.response&.dig(:code)}"
 
         else
-          assert_response_unauthorized reply
+          assert_response_insufficient_scope reply
         end
       end
     end

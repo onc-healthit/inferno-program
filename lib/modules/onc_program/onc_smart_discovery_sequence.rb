@@ -256,8 +256,8 @@ module Inferno
             The #{endpoint[:description]} url is not consistent between the
             well-known configuration and the conformance statement:
 
-            Well-known #{url} url: #{well_known_url}
-            Conformance #{url} url: #{conformance_url}
+            * Well-known #{url} url: #{well_known_url}
+            * Conformance #{url} url: #{conformance_url}
           )
         end
       end

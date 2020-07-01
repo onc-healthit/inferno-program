@@ -74,7 +74,7 @@
           No actively running launch sequences found for iss <%=params[:iss]%>.
           Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR.
         <% elsif error_code == 'no_state' %>
-          Inferno has detected an issue with the SMART launch. No actively running launch sequences found with a state of <%=params[:state]%>.
+          Inferno has detected an issue with the SMART launch. No actively running launch sequences found with a state parameter of '<%=params[:state]%>'.
           The authorization server is not returning the correct state variable and therefore Inferno cannot identify which server is currently under test.
         <% end %>
       </div>

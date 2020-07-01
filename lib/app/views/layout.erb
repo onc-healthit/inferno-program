@@ -52,8 +52,11 @@
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
-          <div class="modal-body">
-            <%= erb(:server_state, {}, {}) %>
+          <div class="modal-body" id="ServerStatusModalBody">
+            <div class="container">
+              <div class="spinner-border"><span class="sr-only">Loading</span></div>
+              Loading...
+            </div>
           </div>
         </div>
       </div>
@@ -62,10 +65,10 @@
     <footer class="footer">
       <div class="container row">
         <div class="col-sm text-left">
-          <a target="_blank" href="https://github.com/onc-healthit/inferno">Open Source</a>
+          <a target="_blank" href="https://github.com/onc-healthit/inferno-program">Open Source</a>
         </div>
         <div class="col-sm text-center">
-          <a target="_blank" href="https://github.com/onc-healthit/inferno/issues">Issues</a>
+          <a target="_blank" href="https://github.com/onc-healthit/inferno-program/issues">Issues</a>
         </div>
         <div class="col-sm text-right">
           <a href="#" data-toggle="modal" data-target="#ServerStatusModal">
