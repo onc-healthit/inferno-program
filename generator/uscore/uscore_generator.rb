@@ -1188,7 +1188,7 @@ module Inferno
           when 'Period', 'date'
             search_code += %(\n
               [#{comparators.keys.map { |comparator| "'#{comparator}'" }.join(', ')}].each do |comparator|
-                comparator_val = date_comparator_value(comparator, #{param_val_name})
+                comparator_val = date_comparator_value(comparator, #{resolve_element_path(param_info, sequence[:delayed_sequence])} { |el| get_value_for_search_param(el).present? })
                 comparator_search_params = search_params.merge('#{param}': comparator_val)
                 reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), comparator_search_params)
                 validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, comparator_search_params)

@@ -222,7 +222,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
 
           ['gt', 'lt', 'le', 'ge'].each do |comparator|
-            comparator_val = date_comparator_value(comparator, search_params[:date])
+            comparator_val = date_comparator_value(comparator, resolve_element_from_path(@immunization_ary[patient], 'occurrence') { |el| get_value_for_search_param(el).present? })
             comparator_search_params = search_params.merge('date': comparator_val)
             reply = get_resource_by_params(versioned_resource_class('Immunization'), comparator_search_params)
             validate_search_reply(versioned_resource_class('Immunization'), reply, comparator_search_params)
