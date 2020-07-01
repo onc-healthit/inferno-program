@@ -84,6 +84,35 @@ class SequenceBaseTest < MiniTest::Test
     end
   end
 
+  describe '#date_comparator_value' do
+    before do
+      @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
+      client = FHIR::Client.new('')
+      @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
+    end
+
+    it 'returns searches for periods' do
+      period = FHIR::Period.new('start' => '2020-07-01T12:12:12+00:00')
+      assert @sequence.date_comparator_value('gt', period) == 'gt2020-06-30T12:12:12+00:00'
+
+      period = FHIR::Period.new('end' => '2020-07-01T12:12:12+00:00')
+      assert @sequence.date_comparator_value('ge', period) == 'ge2020-06-30T12:12:12+00:00'
+
+      period = FHIR::Period.new('start' => '2020-07-03')
+      assert @sequence.date_comparator_value('le', period) == 'le2020-07-04T00:00:00+00:00'
+
+      period = FHIR::Period.new('start' => '2020-07')
+      assert @sequence.date_comparator_value('lt', period) == 'lt2020-07-02T00:00:00+00:00'
+    end
+
+    it 'returns searches for datetimes' do
+      assert @sequence.date_comparator_value('le', '2020') == 'le2020-01-02T00:00:00+00:00'
+      assert @sequence.date_comparator_value('lt', '2020-04') == 'lt2020-04-02T00:00:00+00:00'
+      assert @sequence.date_comparator_value('gt', '2020-04-01') == 'gt2020-03-31T00:00:00+00:00'
+      assert @sequence.date_comparator_value('ge', '2020-04-01T00:00:00+00:00') == 'ge2020-03-31T00:00:00+00:00'
+    end
+  end
+
   describe '#save_delayed_sequence_references' do
     before do
       @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
