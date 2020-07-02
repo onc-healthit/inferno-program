@@ -837,8 +837,7 @@ module Inferno
       end
 
       def date_comparator_value(comparator, date)
-        date = date.slice(2..-1) if ['gt', 'ge', 'lt', 'le'].include? date[0, 2]
-
+        date = date.start || date.end if date.is_a? FHIR::Period
         case comparator
         when 'lt', 'le'
           comparator + (DateTime.xmlschema(date) + 1).xmlschema
