@@ -198,6 +198,25 @@ For alternate installation options, please visit <a href='https://github.com/onc
   </div>
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.0.2</div>
+      <p>
+      The Inferno Program Edition v1.0.2 patch release reverts an unintended change in testing behavior
+      introduced in the previous release. US Core date searches based on period values were updated in v1.0.1 to correctly formulate search queries
+      based on resources with periods that start and end on the same day.  This change inadvertently altered how tests formulate date comparator
+      search queries, which may result in systems failing tests that previously passed.
+      </p>
+      <p>
+      This update should only alter results for servers that fail search tests in v1.0.1.
+      <p>
+      <i>
+      NOTICE: If you are updating to Inferno Program Edition v1.0.2 from v1.0.0 in the same directory, please delete or
+      rename the files in /data/ (e.g. production.db; development.db; test.db).  Inferno will fail to load if these
+      files are not removed or renamed due to a change in the Inferno data schema.
+      </i>
+    <p>
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_0_2.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure.
+    </p>
     <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.0.1</div>
       <p>
       This patch update to the Inferno Program Edition includes a number of fixes, updates and improvements.
