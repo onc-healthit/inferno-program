@@ -222,7 +222,7 @@ module Inferno
           validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
 
           ['gt', 'lt', 'le', 'ge'].each do |comparator|
-            comparator_val = date_comparator_value(comparator, search_params[:'target-date'])
+            comparator_val = date_comparator_value(comparator, resolve_element_from_path(@goal_ary[patient], 'target.dueDate') { |el| get_value_for_search_param(el).present? })
             comparator_search_params = search_params.merge('target-date': comparator_val)
             reply = get_resource_by_params(versioned_resource_class('Goal'), comparator_search_params)
             validate_search_reply(versioned_resource_class('Goal'), reply, comparator_search_params)
