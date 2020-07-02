@@ -1181,14 +1181,14 @@ module Inferno
         search_code = ''
         param_comparators = find_comparators(search_params, sequence)
         param_comparators.each do |param, comparators|
-          param_val_name = param_value_name(param)
           param_info = sequence[:search_param_descriptions][param.to_sym]
+          get_element_string = "#{resolve_element_path(param_info, sequence[:delayed_sequence])} { |el| get_value_for_search_param(el).present? }"
           type = param_info[:type]
           case type
           when 'Period', 'date'
             search_code += %(\n
               [#{comparators.keys.map { |comparator| "'#{comparator}'" }.join(', ')}].each do |comparator|
-                comparator_val = date_comparator_value(comparator, #{resolve_element_path(param_info, sequence[:delayed_sequence])} { |el| get_value_for_search_param(el).present? })
+                comparator_val = date_comparator_value(comparator, #{get_element_string})
                 comparator_search_params = search_params.merge('#{param}': comparator_val)
                 reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), comparator_search_params)
                 validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, comparator_search_params)
