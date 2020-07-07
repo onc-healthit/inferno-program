@@ -1121,15 +1121,15 @@ namespace :terminology do |_argv|
   end
 
   desc 'Check if the code is in the specified ValueSet.  Omit the ValueSet to check against CodeSystem'
-  task :check_code, [:code, :system, :valueset] do |t, args|
-    args.with_defaults(:system => nil, :valueset => nil)
-    code_display = args.system ? "#{args.code}" : "#{args.system}|#{args.code}"
+  task :check_code, [:code, :system, :valueset] do |_t, args|
+    args.with_defaults(system: nil, valueset: nil)
+    code_display = args.system ? args.code.to_s : "#{args.system}|#{args.code}"
     if Inferno::Terminology.validate_code(code: args.code, system: args.system, valueset_url: args.valueset)
       in_system = 'is in'
-      symbol = "#{"\u2713".encode('utf-8')}".green
+      symbol = "\u2713".encode('utf-8').to_s.green
     else
       in_system = 'is not in'
-      symbol = "X".red
+      symbol = 'X'.red
     end
     system_checked = args.valueset || args.system
 
