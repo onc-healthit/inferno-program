@@ -162,7 +162,7 @@ module Inferno
       if resource.resourceType == 'Observation'
         return DEFINITIONS[US_CORE_R4_URIS[:smoking_status]] if observation_contains_code(resource, '72166-2')
 
-        return DEFINITIONS[US_CORE_R4_URIS[:lab_results]] if resource&.category&.first&.coding&.any? { |coding| coding&.code == 'laboratory' }
+        return DEFINITIONS[US_CORE_R4_URIS[:lab_results]] if resource_contains_category(resource, 'laboratory')
 
         return DEFINITIONS[US_CORE_R4_URIS[:pediatric_bmi_age]] if observation_contains_code(resource, '59576-9')
 
@@ -181,7 +181,7 @@ module Inferno
         # if none of the US Core profile matches, use FHIR base profile
         return
       elsif resource.resourceType == 'DiagnosticReport'
-        return DEFINITIONS[US_CORE_R4_URIS[:diagnostic_report_lab]] if resource&.category&.first&.coding&.any? { |coding| coding&.code == 'LAB' }
+        return DEFINITIONS[US_CORE_R4_URIS[:diagnostic_report_lab]] if resource_contains_category(resource, 'LAB')
 
         return DEFINITIONS[US_CORE_R4_URIS[:diagnostic_report_note]]
       end
@@ -191,6 +191,22 @@ module Inferno
 
     def self.observation_contains_code(observation_resource, code)
       observation_resource&.code&.coding&.any? { |coding| coding&.code == code }
+    end
+
+    def self.resource_contains_category(resource, category_code)
+      category_system = if resource.resourceType == 'Observation'
+                          'http://terminology.hl7.org/CodeSystem/observation-category'
+                        elsif resource.resourceType == 'DiagnosticReport'
+                          'http://terminology.hl7.org/CodeSystem/v2-0074'
+                        else
+                          ''
+                        end
+
+      resource&.category&.any? do |category|
+        category.coding&.any? do |coding|
+          coding.code == category_code && (category_system.empty? || category_system == coding.system)
+        end
+      end
     end
   end
 end
