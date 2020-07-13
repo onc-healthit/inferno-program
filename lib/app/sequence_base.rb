@@ -943,8 +943,8 @@ module Inferno
                 else
                   el.coding.any? do |coding|
                     !Terminology.validate_code(valueset_url: nil,
-                                              code: coding.code,
-                                              system: coding.system)
+                                               code: coding.code,
+                                               system: coding.system)
                   end
                 end
               else
