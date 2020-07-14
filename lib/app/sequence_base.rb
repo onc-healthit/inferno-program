@@ -942,9 +942,9 @@ module Inferno
                 # We want all of the codes to be in their respective systems
                 else
                   el.coding.any? do |coding|
-                    Terminology.validate_code(valueset_url: nil,
-                                              code: coding.code,
-                                              system: coding.system)
+                    !Terminology.validate_code(valueset_url: nil,
+                                               code: coding.code,
+                                               system: coding.system)
                   end
                 end
               else
