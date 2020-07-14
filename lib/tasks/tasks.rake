@@ -1119,6 +1119,22 @@ namespace :terminology do |_argv|
     Inferno::Terminology.load_fhir_expansions
     Inferno::Terminology.load_us_core
   end
+
+  desc 'Check if the code is in the specified ValueSet.  Omit the ValueSet to check against CodeSystem'
+  task :check_code, [:code, :system, :valueset] do |_t, args|
+    args.with_defaults(system: nil, valueset: nil)
+    code_display = args.system ? "#{args.system}|#{args.code}" : args.code.to_s
+    if Inferno::Terminology.validate_code(code: args.code, system: args.system, valueset_url: args.valueset)
+      in_system = 'is in'
+      symbol = "\u2713".encode('utf-8').to_s.green
+    else
+      in_system = 'is not in'
+      symbol = 'X'.red
+    end
+    system_checked = args.valueset || args.system
+
+    puts "#{symbol} #{code_display} #{in_system} #{system_checked}"
+  end
 end
 
 RuboCop::RakeTask.new(:rubocop) do |t|
