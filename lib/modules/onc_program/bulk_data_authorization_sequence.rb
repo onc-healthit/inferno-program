@@ -106,7 +106,8 @@ module Inferno
           name 'Authorization service token endpoint secured by transport layer security'
           link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#security-considerations'
           description %(
-            All exchanges described herein between a client and a server SHALL be secured using Transport Layer Security (TLS) Protocol Version 1.2 (RFC5246)
+            [§170.315(g)(10) Test Procedure](https://www.healthit.gov/test-method/standardized-api-patient-and-population-services) requires that
+            all exchanges described herein between a client and a server SHALL be secured using Transport Layer Security (TLS) Protocol Version 1.2 (RFC5246).
           )
         end
 
