@@ -28,6 +28,15 @@ module Inferno
       issues_by_severity(outcome.issue)
     end
 
+    # @return [String] the version of the validator currently being used
+    def version
+      Inferno.logger.info('Fetching validator version')
+      Inferno.logger.info("GET #{@validator_url}/version")
+
+      result = RestClient.get "#{@validator_url}/version"
+      result.body
+    end
+
     private
 
     def issues_by_severity(issues)
