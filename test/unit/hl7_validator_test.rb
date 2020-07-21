@@ -48,4 +48,13 @@ describe Inferno::HL7Validator do
       assert result[:information].length == 5
     end
   end
+
+  describe 'Fetching the validator version' do
+    it 'Should return the version string' do
+      stub_request(:get, "#{@validator_url}/version")
+        .to_return(status: 200, body: '5.0.11-SNAPSHOT')
+
+      assert_equal '5.0.11-SNAPSHOT', @validator.version
+    end
+  end
 end
