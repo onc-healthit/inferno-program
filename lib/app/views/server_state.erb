@@ -1,6 +1,16 @@
 <div id="server-state">
   <div>
-    <h4>Code Systems and Versions used in Inferno</h4>
+    <h4>Validator Type and Version Currently in Use</h4>
+    <p>
+      <% if settings.resource_validator == 'external' %>
+        The version of the HL7 Validator currently used for validation is <%= Inferno::RESOURCE_VALIDATOR.version %>.
+      <% else %>
+        The version of the FHIR Models Validator currently used for validation is <%= FHIR::Models::VERSION %>.
+      <% end %>
+    </p>
+  </div>
+  <div>
+    <h4>Code System Versions used in Inferno</h4>
     <p>
       The following code systems are derived from the Unified Medical Language System (UMLS)
       developed by the National Library of Medicine.
