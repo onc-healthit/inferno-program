@@ -3,6 +3,11 @@
 module Inferno
   # A validator that calls out to the HL7 validator API
   class HL7Validator
+    DETAILS_FILTER = [
+      "Sub-extension url 'introspect' is not defined by the Extension http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris",
+      "Sub-extension url 'revoke' is not defined by the Extension http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris",
+      "URL value 'http://hl7.org/fhir/uv/bulkdata/OperationDefinition/group-export' does not resolve"
+    ].freeze
     @validator_url = nil
 
     def initialize(validator_url)
@@ -33,7 +38,7 @@ module Inferno
     private
 
     def issues_by_severity(issues, severity)
-      issues.reject { |i| i.code == 'code-invalid' }
+      issues.reject { |i| i.code == 'code-invalid' || DETAILS_FILTER.include?(i.details.text) }
         .select { |i| i.severity == severity }
         .map { |iss| "#{issue_location(iss)}: #{iss&.details&.text}" }
     end
