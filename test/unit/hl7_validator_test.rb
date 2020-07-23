@@ -14,7 +14,7 @@ describe Inferno::HL7Validator do
       stub_request(:post, "#{@validator_url}/validate")
         .with(
           query: { profile: 'http://hl7.org/fhir/StructureDefinition/Patient' },
-          body: patient.to_json
+          body: patient.source_contents
         )
         .to_return(status: 200, body: load_fixture('validator_good_response'))
       result = @validator.validate(patient, FHIR)
@@ -29,7 +29,7 @@ describe Inferno::HL7Validator do
       stub_request(:post, "#{@validator_url}/validate")
         .with(
           query: { profile: 'http://hl7.org/fhir/StructureDefinition/Patient' },
-          body: patient.to_json
+          body: patient.source_contents
         )
         .to_return(status: 200, body: load_fixture('validator_invalid_code_response'))
       result = @validator.validate(patient, FHIR)
@@ -47,7 +47,7 @@ describe Inferno::HL7Validator do
       stub_request(:post, "#{@validator_url}/validate")
         .with(
           query: { profile: 'http://hl7.org/fhir/StructureDefinition/Patient' },
-          body: patient.to_json
+          body: patient.source_contents
         )
         .to_return(status: 200, body: load_fixture('validator_bad_response'))
       result = @validator.validate(patient, FHIR)
