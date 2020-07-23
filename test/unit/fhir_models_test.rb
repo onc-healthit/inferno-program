@@ -14,6 +14,13 @@ describe FHIR::Models do
         assert_instance_of String, entry.resource.source_contents
       end
     end
+
+    it 'should preserve primitive extensions in source_contents' do
+      procedure_json = File.read('test/fixtures/procedure_primitive_extension.json')
+      procedure_resource = FHIR.from_contents(procedure_json)
+      assert procedure_resource.source_contents.include?('_performedDateTime'), 'Primitive extension key was lost'
+      assert procedure_resource.source_contents.include?('http://hl7.org/fhir/StructureDefinition/data-absent-reason'), 'Primitive extension URL was lost'
+    end
   end
 
   describe '#initialize' do
