@@ -17,6 +17,32 @@ describe Inferno::Sequence::ONCAccessVerifyRestrictedSequence do
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
 
+  describe '#scope_granting_access' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    [
+      ['returns nil when no resource match', 'Condition', 'patient/Observation.read patient/Patient.read', nil],
+      ['returns nil when not read or * access', 'Condition', 'patient/Patient.read patient/Condition.write', nil],
+      ['returns nil when not patient-level scope', 'Condition', 'patient/Patient.read user/Condition.read', nil],
+      ['returns nil when not exact resource match', 'Condition', 'patient/Patient.read patient/Condition.something.read', nil],
+      ['returns nil when case wrong', 'Condition', 'patient/Patient.read patient/condition.read', nil],
+      ['returns nil when Patient case wrong', 'Condition', 'patient/Patient.read Patient/Condition.read', nil],
+      ['returns scope when read', 'Condition', 'patient/Patient.read patient/Condition.read', 'patient/Condition.read'],
+      ['returns scope when operation wildcard', 'Condition', 'patient/Patient.read patient/Condition.*', 'patient/Condition.*'],
+      ['returns scope when resource wildcard', 'Condition', 'another_scope patient/*.read yet_another_scope', 'patient/*.read'],
+      ['returns scope when resource and operation wildcard', 'Condition', 'another_scope patient/*.* yet_another_scope', 'patient/*.*'],
+      ['returns scope when only scope', 'Condition', 'patient/Condition.read', 'patient/Condition.read']
+    ].each do |testing_case|
+      description, resource, scope, expected_value = testing_case
+
+      it description do
+        assert @sequence.scope_granting_access(resource, scope) == expected_value
+      end
+    end
+  end
+
   describe 'Validate correct scopes granted test' do
     before do
       @test = @sequence_class[:validate_right_scopes]
