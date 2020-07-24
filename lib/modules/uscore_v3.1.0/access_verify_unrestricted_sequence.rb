@@ -42,8 +42,8 @@ module Inferno
         resource type is accessed by queries through other resource types. These resources types are accessed in the more
         comprehensive Single Patient Query tests.
 
-        However, the authorization system must indicate that access is granted to the Encounter, Practitioner and Location
-        resource types because they are required to support the read interaction.
+        However, the authorization system must indicate that access is granted to the Encounter, Practitioner and Organization
+        resource types by providing them in the returned scopes because they are required to support the read interaction.
       )
 
       requires :onc_sl_url, :token, :patient_id, :received_scopes
