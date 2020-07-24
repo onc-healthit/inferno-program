@@ -7,6 +7,7 @@ describe FHIR::Models do
     it 'should set source_contents' do
       bundle_json = File.read('test/fixtures/bundle_1.json')
       bundle_resource = FHIR.from_contents(bundle_json)
+
       bundle_resource.entry.each do |entry|
         assert entry.source_contents.present?, "entry.source_contents not populated for #{entry}"
         assert_instance_of String, entry.source_contents
@@ -18,8 +19,21 @@ describe FHIR::Models do
     it 'should preserve primitive extensions in source_contents' do
       procedure_json = File.read('test/fixtures/procedure_primitive_extension.json')
       procedure_resource = FHIR.from_contents(procedure_json)
+
       assert procedure_resource.source_contents.include?('_performedDateTime'), 'Primitive extension key was lost'
       assert procedure_resource.source_contents.include?('http://hl7.org/fhir/StructureDefinition/data-absent-reason'), 'Primitive extension URL was lost'
+    end
+
+    it 'should preserve primitive extensions in contained resources in a bundle' do
+      bundle_json = File.read('test/fixtures/bundle_primitive_extensions.json')
+      bundle_resource = FHIR.from_contents(bundle_json)
+      contained_patient = bundle_resource.entry.find { |e| e.resource.id == '1' }.resource
+      contained_procedure = bundle_resource.entry.find { |e| e.resource.id == '2' }.resource
+
+      assert contained_patient.source_contents.include?('_deceasedDateTime'), 'Primitive extension key was lost'
+      assert contained_patient.source_contents.include?('http://hl7.org/fhir/StructureDefinition/data-absent-reason'), 'Primitive extension URL was lost'
+      assert contained_procedure.source_contents.include?('_performedDateTime'), 'Primitive extension key was lost'
+      assert contained_procedure.source_contents.include?('http://hl7.org/fhir/StructureDefinition/data-absent-reason'), 'Primitive extension URL was lost'
     end
   end
 
@@ -34,6 +48,7 @@ describe FHIR::Models do
           ]
         }
       )
+
       bundle_resource.entry.each do |entry|
         assert entry.source_contents.present?, "entry.source_contents not populated for #{entry}"
         assert_instance_of String, entry.source_contents
