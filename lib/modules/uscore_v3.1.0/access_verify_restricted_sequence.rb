@@ -75,7 +75,7 @@ module Inferno
 
       def scope_granting_access(resource, scopes)
         scopes.split(' ').find do |scope|
-          scope.start_with?("patient/#{resource}.", 'patient/*.') && scope.end_with?('.*', '.read')
+          ['patient/*.read', 'patient/*.*', "patient/#{resource}.read", "patient/#{resource}.*"].include? scope
         end
       end
 
