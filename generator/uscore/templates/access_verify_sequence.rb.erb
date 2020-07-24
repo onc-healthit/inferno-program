@@ -133,6 +133,28 @@ module Inferno
         skip_if @instance.received_scopes.nil?, 'A list of granted scopes was not provided to this test as required.'
 
 
+       <% if access_verify_restriction == 'restricted' %>
+        # Consider all directly-mapped USCDI resources only.  Do not fail based on the inclusion/Exclusion of Encounter, Practitioner
+        # PractitionerRole, Location, Organization, or RelatedPerson because the SUT has flexibility to decide if those
+        # should be included or not based on whether other resources are selected (e.g. if Observation then maybe it makes
+        # sense to include Encounter scope) without having the user be in charge of that particular choice.
+        
+        all_resources = [
+        <%= non_delayed_sequences.group_by{|sequence| sequence[:resource]}.values.map(&:first).map{|resource| "'#{resource[:resource]}'"}.join(",\n") %>,
+        'Patient',
+        'Provenance'
+        ]
+       allowed_resources = all_resources.select {|resource| scope_granting_access(resource, resource_access_as_scope).present?}
+       denied_resources = all_resources - allowed_resources
+       assert denied_resources.present?, "This test requires at least one resource to be denied, but the provided scope '#{@instance.received_scopes}' grants access to all resource types."
+       received_scope_resources = all_resources.select{|resource| scope_granting_access(resource, @instance.received_scopes).present?}
+       unexpected_resources = received_scope_resources - allowed_resources
+       assert unexpected_resources.empty?, "This test expected the user to deny access to the following resources that are present in scopes received during token exchange response: #{unexpected_resources.join(', ')}"
+       improperly_denied_resources = allowed_resources.reject { |resource| scope_granting_access(resource, @instance.received_scopes).present? }
+       assert improperly_denied_resources.empty?, "This test expected the user to grant access to the following resources that are not received during token exhange response: #{improperly_denied_resources.join(', ')}"
+       assert @instance.received_scopes.split(' ').exclude?('offline_access'), 'This test expects the user to deny offline access to demonstrate that refresh tokens require user approval'
+       pass "Resources to be denied: #{denied_resources.join(',')}"
+       <% else %>
         # Consider all directly-mapped USCDI resources, as well as Encounter, Practitioner and Organization
         # because they have US Core Profile references in the other US Core Profiles.  This excludes
         # PractionerRole, Location and RelatedPerson because they do not have US Core Profile references
@@ -145,19 +167,6 @@ module Inferno
         'Practitioner',
         'Organization'
         ]
-
-       <% if access_verify_restriction == 'restricted' %>
-       allowed_resources = all_resources.select {|resource| scope_granting_access(resource, resource_access_as_scope).present?}
-       denied_resources = all_resources - allowed_resources
-       assert denied_resources.present?, "This test requires at least one resource to be denied, but the provided scope '#{@instance.received_scopes}' grants access to all resource types."
-       received_scope_resources = all_resources.select{|resource| scope_granting_access(resource, @instance.received_scopes).present?}
-       unexpected_resources = received_scope_resources - allowed_resources
-       assert unexpected_resources.empty?, "This test expected the user to deny access to the following resources that are present in scopes received during token exchange response: #{unexpected_resources.join(', ')}"
-       improperly_denied_resources = allowed_resources.reject { |resource| scope_granting_access(resource, @instance.received_scopes).present? }
-       assert improperly_denied_resources.empty?, "This test expected the user to grant access to the following resources that are not received during token exhange response: #{improperly_denied_resources.join(', ')}"
-       assert @instance.received_scopes.split(' ').exclude?('offline_access'), 'This test expects the user to deny offline access to demonstrate that refresh tokens require user approval'
-       pass "Resources to be denied: #{denied_resources.join(',')}"
-       <% else %>
        allowed_resources = all_resources.select {|resource| scope_granting_access(resource, @instance.received_scopes).present?}
        denied_resources = all_resources - allowed_resources
        assert denied_resources.empty?, "This test requires access to all US Core resources with patient information, but the received scope '#{@instance.received_scopes}' does not grant access to the '#{denied_resources.join(', ')}' resource type(s)."

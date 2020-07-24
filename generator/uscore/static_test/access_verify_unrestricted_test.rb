@@ -51,7 +51,7 @@ describe Inferno::Sequence::ONCAccessVerifyUnrestrictedSequence do
       assert_raises(Inferno::PassException) { @sequence.run_test(@test) }
     end
 
-    it 'passes if Medication, PractitionerRole, Location and Related Person are omitted' do
+    it 'passes if Medication, PractitionerRole, Location and RelatedPerson are omitted' do
       @instance.received_scopes = 'launch/patient openid fhirUser offline_access patient/AllergyIntolerance.read patient/CarePlan.read '\
                                   'patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read '\
                                   'patient/Encounter.read patient/Goal.read patient/Immunization.read patient/MedicationRequest.read '\

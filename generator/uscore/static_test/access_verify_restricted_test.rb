@@ -44,9 +44,9 @@ describe Inferno::Sequence::ONCAccessVerifyRestrictedSequence do
       assert_raises(Inferno::PassException) { @sequence.run_test(@test) }
     end
 
-    it 'passes if PractitionerRole, Location and RelatedPerson scope provided' do
-      @instance.received_scopes = 'patient/PractitionerRole.read patient/Location.read patient/RelatedPerson.read launch/patient openid fhirUser patient/Observation.* '\
-                                  'patient/Condition.* patient/Patient.*'
+    it 'passes if Practitioner, Organization, Encounter, PractitionerRole, Location, RelatedPerson scope provided' do
+      @instance.received_scopes = 'patient/PractitionerRole.read patient/Location.read patient/RelatedPerson.read launch/patient openid fhirUser patient/Observation.read '\
+                                  'patient/Condition.read patient/Patient.read patient/Encounter.read patient/Practitioner.read patient/Organization.read'
       assert_raises(Inferno::PassException) { @sequence.run_test(@test) }
     end
 

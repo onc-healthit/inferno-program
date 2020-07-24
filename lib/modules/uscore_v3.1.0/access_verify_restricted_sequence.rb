@@ -95,10 +95,11 @@ module Inferno
 
         skip_if @instance.received_scopes.nil?, 'A list of granted scopes was not provided to this test as required.'
 
-        # Consider all directly-mapped USCDI resources, as well as Encounter, Practitioner and Organization
-        # because they have US Core Profile references in the other US Core Profiles.  This excludes
-        # PractionerRole, Location and RelatedPerson because they do not have US Core Profile references
-        # and therefore could be 'contained' and do not have a read interaction requirement.
+        # Consider all directly-mapped USCDI resources only.  Do not fail based on the inclusion/Exclusion of Encounter, Practitioner
+        # PractitionerRole, Location, Organization, or RelatedPerson because the SUT has flexibility to decide if those
+        # should be included or not based on whether other resources are selected (e.g. if Observation then maybe it makes
+        # sense to include Encounter scope) without having the user be in charge of that particular choice.
+
         all_resources = [
           'AllergyIntolerance',
           'CarePlan',
@@ -113,12 +114,8 @@ module Inferno
           'Observation',
           'Procedure',
           'Patient',
-          'Provenance',
-          'Encounter',
-          'Practitioner',
-          'Organization'
+          'Provenance'
         ]
-
         allowed_resources = all_resources.select { |resource| scope_granting_access(resource, resource_access_as_scope).present? }
         denied_resources = all_resources - allowed_resources
         assert denied_resources.present?, "This test requires at least one resource to be denied, but the provided scope '#{@instance.received_scopes}' grants access to all resource types."
