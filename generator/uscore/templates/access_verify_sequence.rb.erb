@@ -155,18 +155,18 @@ module Inferno
        assert @instance.received_scopes.split(' ').exclude?('offline_access'), 'This test expects the user to deny offline access to demonstrate that refresh tokens require user approval'
        pass "Resources to be denied: #{denied_resources.join(',')}"
        <% else %>
-        # Consider all directly-mapped USCDI resources, as well as Encounter, Practitioner and Organization
-        # because they have US Core Profile references in the other US Core Profiles.  This excludes
-        # PractionerRole, Location and RelatedPerson because they do not have US Core Profile references
-        # and therefore could be 'contained' and do not have a read interaction requirement.
-        all_resources = [
-        <%= non_delayed_sequences.group_by{|sequence| sequence[:resource]}.values.map(&:first).map{|resource| "'#{resource[:resource]}'"}.join(",\n") %>,
-        'Patient',
-        'Provenance',
-        'Encounter',
-        'Practitioner',
-        'Organization'
-        ]
+       # Consider all directly-mapped USCDI resources, as well as Encounter, Practitioner and Organization
+       # because they have US Core Profile references in the other US Core Profiles.  This excludes
+       # PractionerRole, Location and RelatedPerson because they do not have US Core Profile references
+       # and therefore could be 'contained' and do not have a read interaction requirement.
+       all_resources = [
+       <%= non_delayed_sequences.group_by{|sequence| sequence[:resource]}.values.map(&:first).map{|resource| "'#{resource[:resource]}'"}.join(",\n") %>,
+       'Patient',
+       'Provenance',
+       'Encounter',
+       'Practitioner',
+       'Organization'
+       ]
        allowed_resources = all_resources.select {|resource| scope_granting_access(resource, @instance.received_scopes).present?}
        denied_resources = all_resources - allowed_resources
        assert denied_resources.empty?, "This test requires access to all US Core resources with patient information, but the received scope '#{@instance.received_scopes}' does not grant access to the '#{denied_resources.join(', ')}' resource type(s)."
