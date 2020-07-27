@@ -202,7 +202,7 @@ module Inferno
         pass @instance.onc_visual_patient_period_notes if @instance.onc_visual_patient_period_notes.present?
       end
 
-      test 'Health IT developer demonstrates support for the Allergy and Intolerance Reaction USCDI v1 element.' do
+      test 'Health IT developer demonstrates support for the Allergy and Intolerances Reaction USCDI v1 element.' do
         metadata do
           id '14'
           link 'https://www.healthit.gov/isa/united-states-core-data-interoperability-uscdi'

@@ -1114,7 +1114,7 @@ procedure:
           tool to compare responses to what is displayed in the system, and
           register this as an attestation.  Additionally, US Core v3.1 does
           not include two required USCDI v1 data elements for Patient Demographics
-          and Allergy and Intolerance, and this requires visual inspection
+          and Allergy and Intolerances, and this requires visual inspection
           by the tester.
       - id: RESPONSE-3
         SUT: |
