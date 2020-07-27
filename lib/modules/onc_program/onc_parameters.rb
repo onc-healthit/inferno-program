@@ -43,6 +43,10 @@ module Inferno
       property :onc_visual_other_resources_notes, String
       property :onc_visual_jwks_cache, String, default: 'false'
       property :onc_visual_jwks_cache_notes, String
+      property :onc_visual_patient_demographics, String, default: 'false'
+      property :onc_visual_patient_demographics_notes, String
+      property :onc_visual_allergy_reaction, String, default: 'false'
+      property :onc_visual_allergy_reaction_notes, String
 
       property :onc_visual_token_revocation, String, default: 'false'
       property :onc_visual_token_revocation_notes, String

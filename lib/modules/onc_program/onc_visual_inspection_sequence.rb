@@ -157,17 +157,55 @@ module Inferno
         pass @instance.onc_visual_other_resources_notes if @instance.onc_visual_other_resources_notes.present?
       end
 
-      test 'The health IT developer confirms the Health IT module does not cache the JWK Set received via a TLS-protected URL for longer than the cache-control header received by an application indicates.' do
+      test 'Health IT developer confirms the Health IT module does not cache the JWK Set received via a TLS-protected URL for longer than the cache-control header received by an application indicates.' do
         metadata do
           id '11'
           link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
           description %(
-            The health IT developer confirms the Health IT module does not cache the JWK Set received via a TLS-protected URL for longer than the cache-control header indicates.
+            The Health IT developer confirms the Health IT module does not cache the JWK Set received via a TLS-protected URL for longer than the cache-control header indicates.
           )
         end
 
         assert @instance.onc_visual_jwks_cache == 'true', 'Health IT developer did not confirm that the JWK Sets are not cached for longer than appropriate.'
         pass @instance.onc_visual_jwks_cache_notes if @instance.onc_visual_jwks_cache_notes.present?
+      end
+
+      test 'Health IT developer demonstrates support for the Patient Demographics Suffix and Previous Name USCDI v1 elements.' do
+        metadata do
+          id '12'
+          link 'https://www.healthit.gov/isa/united-states-core-data-interoperability-uscdi'
+          description %(
+            ONC certification criteria states that all USCDI v1 needs to be supported, including the following:
+            * Patient Demographics - Suffix
+            * Patient Demographics - Previous Name
+
+            However, US Core v3.1 does not currently tag relevant elements as 'MUST SUPPORT':
+            * Patient.name.suffix
+            * Patient.name.period
+
+            Since these elements are not marked as MUST SUPPORT, Inferno does not require them to be present before passing the tests.
+            The Health IT developer must demonstrate support for these USCDI v1 elements.
+          )
+        end
+
+        assert @instance.onc_visual_patient_demographics == 'true', 'Health IT developer did not demonstrate that Patient Demographics Suffix and Previous Name are supported.'
+        pass @instance.onc_visual_patient_demographics_notes if @instance.onc_visual_patient_demographics_notes.present?
+      end
+
+      test 'Health IT developer demonstrates support for the Allergy and Intolerance Reaction USCDI v1 element.' do
+        metadata do
+          id '13'
+          link 'https://www.healthit.gov/isa/united-states-core-data-interoperability-uscdi'
+          description %(
+            ONC certification criteria states that all USCDI v1 needs to be supported, including Allergies
+            and Intolerance - Reaction. However, US Core v3.1 does not currently tag the relevant element
+            (AllergyIntolerance.reaction) as MUST SUPPORT. The Health IT developer must demonstrate support
+            for this USCDI v1 element.
+          )
+        end
+
+        assert @instance.onc_visual_allergy_reaction == 'true', 'Health IT developer did not demonstrate that Allergy and Intolerance Reaction is supported.'
+        pass @instance.onc_visual_allergy_reaction_notes if @instance.onc_visual_allergy_reaction_notes.present?
       end
     end
   end
