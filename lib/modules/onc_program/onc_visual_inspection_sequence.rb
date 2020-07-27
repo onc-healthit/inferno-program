@@ -170,31 +170,41 @@ module Inferno
         pass @instance.onc_visual_jwks_cache_notes if @instance.onc_visual_jwks_cache_notes.present?
       end
 
-      test 'Health IT developer demonstrates support for the Patient Demographics Suffix and Previous Name USCDI v1 elements.' do
+      test 'Health IT developer demonstrates support for the Patient Demographics Suffix USCDI v1 element by Patient.name.suffix.' do
         metadata do
           id '12'
           link 'https://www.healthit.gov/isa/united-states-core-data-interoperability-uscdi'
           description %(
-            ONC certification criteria states that all USCDI v1 needs to be supported, including the following:
-            * Patient Demographics - Suffix
-            * Patient Demographics - Previous Name
-
-            However, US Core v3.1 does not currently tag relevant elements as 'MUST SUPPORT':
-            * Patient.name.suffix
-            * Patient.name.period
-
-            Since these elements are not marked as MUST SUPPORT, Inferno does not require them to be present before passing the tests.
-            The Health IT developer must demonstrate support for these USCDI v1 elements.
+            ONC certification criteria states that all USCDI v1 data classes and elements need to be supported, including Patient
+            Demographics - Suffix.However, US Core v3.1 does not currently tag the relevant element
+            (Patient.name.suffix) as MUST SUPPORT. The Health IT developer must demonstrate support
+            for this USCDI v1 element.
           )
         end
 
-        assert @instance.onc_visual_patient_demographics == 'true', 'Health IT developer did not demonstrate that Patient Demographics Suffix and Previous Name are supported.'
-        pass @instance.onc_visual_patient_demographics_notes if @instance.onc_visual_patient_demographics_notes.present?
+        assert @instance.onc_visual_patient_suffix == 'true', 'Health IT developer did not demonstrate that Patient Demographics Suffix is supported.'
+        pass @instance.onc_visual_patient_suffix_notes if @instance.onc_visual_patient_suffix_notes.present?
+      end
+
+      test 'Health IT developer demonstrates support for the Patient Demographics Previous Name USCDI v1 element by Patient.name.period.' do
+        metadata do
+          id '13'
+          link 'https://www.healthit.gov/isa/united-states-core-data-interoperability-uscdi'
+          description %(
+            ONC certification criteria states that all USCDI v1 data classes and elements need to be supported, including Patient
+            Demographics - Previous Name. However, US Core v3.1 does not currently tag the relevant element
+            (Patient.name.period) as MUST SUPPORT. The Health IT developer must demonstrate support
+            for this USCDI v1 element.
+          )
+        end
+
+        assert @instance.onc_visual_patient_period == 'true', 'Health IT developer did not demonstrate that Patient Demographics Previous Name is supported.'
+        pass @instance.onc_visual_patient_period_notes if @instance.onc_visual_patient_period_notes.present?
       end
 
       test 'Health IT developer demonstrates support for the Allergy and Intolerance Reaction USCDI v1 element.' do
         metadata do
-          id '13'
+          id '14'
           link 'https://www.healthit.gov/isa/united-states-core-data-interoperability-uscdi'
           description %(
             ONC certification criteria states that all USCDI v1 needs to be supported, including Allergies
