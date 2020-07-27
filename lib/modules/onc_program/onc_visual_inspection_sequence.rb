@@ -170,7 +170,7 @@ module Inferno
         pass @instance.onc_visual_jwks_cache_notes if @instance.onc_visual_jwks_cache_notes.present?
       end
 
-      test 'Health IT developer demonstrates support for the Patient Demographics Suffix USCDI v1 element by Patient.name.suffix.' do
+      test 'Health IT developer demonstrates support for the Patient Demographics Suffix USCDI v1 element by using the Patient.name.suffix FHIR element.' do
         metadata do
           id '12'
           link 'https://www.healthit.gov/isa/united-states-core-data-interoperability-uscdi'
@@ -186,7 +186,7 @@ module Inferno
         pass @instance.onc_visual_patient_suffix_notes if @instance.onc_visual_patient_suffix_notes.present?
       end
 
-      test 'Health IT developer demonstrates support for the Patient Demographics Previous Name USCDI v1 element by Patient.name.period.' do
+      test 'Health IT developer demonstrates support for the Patient Demographics Previous Name USCDI v1 element by using the Patient.name.period FHIR element.' do
         metadata do
           id '13'
           link 'https://www.healthit.gov/isa/united-states-core-data-interoperability-uscdi'
@@ -202,13 +202,13 @@ module Inferno
         pass @instance.onc_visual_patient_period_notes if @instance.onc_visual_patient_period_notes.present?
       end
 
-      test 'Health IT developer demonstrates support for the Allergy and Intolerances Reaction USCDI v1 element.' do
+      test 'Health IT developer demonstrates support for the Allergy and Intolerances Reaction USCDI v1 element by using the AllergyIntolerance.reaction FHIR element.' do
         metadata do
           id '14'
           link 'https://www.healthit.gov/isa/united-states-core-data-interoperability-uscdi'
           description %(
             ONC certification criteria states that all USCDI v1 needs to be supported, including Allergies
-            and Intolerance - Reaction. However, US Core v3.1 does not currently tag the relevant element
+            and Intolerances - Reaction. However, US Core v3.1 does not currently tag the relevant element
             (AllergyIntolerance.reaction) as MUST SUPPORT. The Health IT developer must demonstrate support
             for this USCDI v1 element.
           )
