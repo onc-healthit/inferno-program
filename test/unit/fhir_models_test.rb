@@ -24,7 +24,7 @@ describe FHIR::Models do
       assert procedure_resource.source_contents.include?('http://hl7.org/fhir/StructureDefinition/data-absent-reason'), 'Primitive extension URL was lost'
     end
 
-    it 'should preserve primitive extensions in contained resources in a bundle' do
+    it 'should preserve primitive extensions in bundled resources' do
       bundle_json = File.read('test/fixtures/bundle_primitive_extensions.json')
       bundle_resource = FHIR.from_contents(bundle_json)
       contained_patient = bundle_resource.entry.find { |e| e.resource.id == '1' }.resource
@@ -34,6 +34,18 @@ describe FHIR::Models do
       assert contained_patient.source_contents.include?('http://hl7.org/fhir/StructureDefinition/data-absent-reason'), 'Primitive extension URL was lost'
       assert contained_procedure.source_contents.include?('_performedDateTime'), 'Primitive extension key was lost'
       assert contained_procedure.source_contents.include?('http://hl7.org/fhir/StructureDefinition/data-absent-reason'), 'Primitive extension URL was lost'
+    end
+
+    it 'should preserve primitive extensions in contained resources' do
+      contained_json = File.read('test/fixtures/contained_resource.json')
+      full_resource = FHIR.from_contents(contained_json)
+      practitioner = full_resource.contained.first
+
+      assert full_resource.source_contents.include?('_birthDate'), 'Primitive extension key was lost'
+      assert full_resource.source_contents.include?('http://hl7.org/fhir/StructureDefinition/data-absent-reason'), 'Primitive extension URL was lost'
+
+      assert practitioner.source_contents.include?('_birthDate'), 'Primitive extension key was lost'
+      assert practitioner.source_contents.include?('http://hl7.org/fhir/StructureDefinition/data-absent-reason'), 'Primitive extension URL was lost'
     end
   end
 
