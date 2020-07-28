@@ -9,6 +9,11 @@ describe Inferno::HL7Validator do
   end
 
   describe 'Validating a good resource' do
+    before do
+      @resource = FHIR::CapabilityStatement.new
+      @profile = FHIR::Definitions.resource_definition(@resource.resourceType).url
+    end
+
     it "Shouldn't pass back any messages" do
       patient = FHIR::Patient.new
       stub_request(:post, "#{@validator_url}/validate")
@@ -24,37 +29,23 @@ describe Inferno::HL7Validator do
       assert_empty result[:information]
     end
 
-    it 'Should reject code-invalid issues' do
-      patient = FHIR::Patient.new
-      stub_request(:post, "#{@validator_url}/validate")
+    it 'removes excluded errors' do
+      outcome = load_fixture('hl7_validator_operation_outcome')
+
+      stub_request(:post, @validator_url + '/validate')
         .with(
-          query: { profile: 'http://hl7.org/fhir/StructureDefinition/Patient' },
-          body: patient.to_json
+          query: { 'profile': @profile },
+          body: @resource.to_json
         )
-        .to_return(status: 200, body: load_fixture('validator_invalid_code_response'))
-      result = @validator.validate(patient, FHIR)
-
-      assert_empty result[:errors]
-      assert_empty result[:warnings]
-      assert_empty result[:information]
-    end
-  end
-
-  describe 'Validating a bad resource' do
-    it 'Should pass back an error message' do
-      patient = FHIR::Patient.new(gender: 'robot')
-
-      stub_request(:post, "#{@validator_url}/validate")
-        .with(
-          query: { profile: 'http://hl7.org/fhir/StructureDefinition/Patient' },
-          body: patient.to_json
+        .to_return(
+          status: 200,
+          body: outcome
         )
-        .to_return(status: 200, body: load_fixture('validator_bad_response'))
-      result = @validator.validate(patient, FHIR)
 
-      assert_equal 2, result[:errors].size
-      assert_equal 1, result[:warnings].size
-      assert_equal 1, result[:information].size
+      result = @validator.validate(@resource, FHIR, @profile)
+      assert result[:errors].length == 2
+      assert result[:warnings].length == 1
+      assert result[:information].length == 5
     end
   end
 end

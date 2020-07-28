@@ -2,6 +2,13 @@
   "resourceType": "OperationOutcome",
   "issue": [
     {
+      "severity": "fatal",
+      "code": "value",
+      "details": {
+        "text": "This is a fatal error"
+      }
+    },
+    {
       "severity": "error",
       "code": "structure",
       "details": {
@@ -33,9 +40,30 @@
     },
     {
       "severity": "error",
+      "code": "code-invalid",
+      "details": {
+        "text": "This is a code-invalid error"
+      }
+    },
+    {
+      "severity": "error",
       "code": "value",
       "details": {
-        "text": "This is a test"
+        "text": "This is an error"
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "value",
+      "details": {
+        "text": "This is a warning"
+      }
+    },
+    {
+      "severity": "information",
+      "code": "value",
+      "details": {
+        "text": "This is a information"
       }
     }
   ]

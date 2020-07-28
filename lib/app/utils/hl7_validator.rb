@@ -4,9 +4,9 @@ module Inferno
   # A validator that calls out to the HL7 validator API
   class HL7Validator
     DETAILS_FILTER = [
-      "Sub-extension url 'introspect' is not defined by the Extension http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris",
-      "Sub-extension url 'revoke' is not defined by the Extension http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris",
-      "URL value 'http://hl7.org/fhir/uv/bulkdata/OperationDefinition/group-export' does not resolve"
+      %r{Sub-extension url 'introspect' is not defined by the Extension http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris},
+      %r{Sub-extension url 'revoke' is not defined by the Extension http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris},
+      /URL value .* does not resolve/
     ].freeze
     @validator_url = nil
 
@@ -24,23 +24,32 @@ module Inferno
 
       result = RestClient.post "#{@validator_url}/validate", resource.to_json, params: { profile: profile_url }
       outcome = fhir_models_klass.from_contents(result.body)
-      fatals = issues_by_severity(outcome.issue, 'fatal')
-      errors = issues_by_severity(outcome.issue, 'error')
-      warnings = issues_by_severity(outcome.issue, 'warning')
-      information = issues_by_severity(outcome.issue, 'information')
-      {
-        errors: fatals.concat(errors).reject(&:empty?),
-        warnings: warnings,
-        information: information
-      }
+
+      issues_by_severity(outcome.issue)
     end
 
     private
 
-    def issues_by_severity(issues, severity)
-      issues.reject { |i| i.code == 'code-invalid' || DETAILS_FILTER.include?(i.details.text) }
-        .select { |i| i.severity == severity }
-        .map { |iss| "#{issue_location(iss)}: #{iss&.details&.text}" }
+    def issues_by_severity(issues)
+      errors = []
+      warnings = []
+      information = []
+
+      issues.each do |iss|
+        if iss.severity == 'information' || iss.code == 'code-invalid' || DETAILS_FILTER.any? { |filter| filter.match?(iss&.details&.text) }
+          information << "#{issue_location(iss)}: #{iss&.details&.text}"
+        elsif iss.severity == 'warning'
+          warnings << "#{issue_location(iss)}: #{iss&.details&.text}"
+        else
+          errors << "#{issue_location(iss)}: #{iss&.details&.text}"
+        end
+      end
+
+      {
+        errors: errors,
+        warnings: warnings,
+        information: information
+      }
     end
 
     def issue_location(issue)
