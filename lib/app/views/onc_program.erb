@@ -372,14 +372,32 @@
           {
             field: :onc_visual_jwks_cache,
             notes_field: :onc_visual_jwks_cache_notes, 
-            label: 'The health IT developer confirms the Health IT module does not cache the JWK Set received via a TLS-protected URL for longer than the cache-control header indicates.',
+            label: 'Health IT developer confirms the Health IT module does not cache the JWK Set received via a TLS-protected URL for longer than the cache-control header indicates.',
             description: ''
           },
           {
             field: :onc_visual_token_revocation,
-            notes_field: :onc_visual_token_revocation_notes, 
+            notes_field: :onc_visual_token_revocation_notes,
             label: 'Prior to executing test, Health IT developer demonstrated revoking tokens provided during patient standalone launch.',
             required_by: 'TokenRevocationSequence',
+            description: ''
+          },
+          {
+            field: :onc_visual_patient_period,
+            notes_field: :onc_visual_patient_period_notes,
+            label: 'Health IT developer demonstrates support for the Patient Demographics Previous Name USCDI v1 element by using the Patient.name.period FHIR element.',
+            description: ''
+          },
+          {
+            field: :onc_visual_patient_suffix,
+            notes_field: :onc_visual_patient_suffix_notes,
+            label: 'Health IT developer demonstrates support for the Patient Demographics Suffix USCDI v1 element by using the Patient.name.suffix FHIR element.',
+            description: ''
+          },
+          {
+            field: :onc_visual_allergy_reaction,
+            notes_field: :onc_visual_allergy_reaction_notes,
+            label: 'Health IT developer demonstrates support for the Allergy and Intolerances Reaction USCDI v1 element by using the AllergyIntolerance.reaction FHIR element.',
             description: ''
           }
             ].each do |field| %>
