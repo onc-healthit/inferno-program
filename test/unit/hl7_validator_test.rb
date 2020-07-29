@@ -12,6 +12,8 @@ describe Inferno::HL7Validator do
     before do
       @resource = FHIR::CapabilityStatement.new
       @profile = FHIR::Definitions.resource_definition(@resource.resourceType).url
+    end
+
     it "Shouldn't pass back any messages" do
       patient = FHIR::Patient.new
       stub_request(:post, "#{@validator_url}/validate")
