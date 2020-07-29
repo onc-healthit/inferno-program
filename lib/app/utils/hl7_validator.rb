@@ -37,11 +37,11 @@ module Inferno
 
       issues.each do |iss|
         if iss.severity == 'information' || iss.code == 'code-invalid' || ISSUE_DETAILS_FILTER.any? { |filter| filter.match?(iss&.details&.text) }
-          information << "#{issue_location(iss)}: #{iss&.details&.text}"
+          information << issue_message(iss)
         elsif iss.severity == 'warning'
-          warnings << "#{issue_location(iss)}: #{iss&.details&.text}"
+          warnings << issue_message(iss)
         else
-          errors << "#{issue_location(iss)}: #{iss&.details&.text}"
+          errors << issue_message(iss)
         end
       end
 
@@ -52,12 +52,14 @@ module Inferno
       }
     end
 
-    def issue_location(issue)
+    def issue_message(issue)
       if issue.respond_to?(:expression)
-        issue&.expression&.join(', ')
+        location = issue&.expression&.join(', ')
       else
-        issue&.location&.join(', ')
+        location = issue&.location&.join(', ')
       end
+
+      "#{location}: #{issue&.details&.text}"
     end
   end
 end
