@@ -3,7 +3,7 @@
 module Inferno
   # A validator that calls out to the HL7 validator API
   class HL7Validator
-    DETAILS_FILTER = [
+    ISSUE_DETAILS_FILTER = [
       %r{Sub-extension url 'introspect' is not defined by the Extension http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris},
       %r{Sub-extension url 'revoke' is not defined by the Extension http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris},
       /URL value .* does not resolve/
@@ -36,7 +36,7 @@ module Inferno
       information = []
 
       issues.each do |iss|
-        if iss.severity == 'information' || iss.code == 'code-invalid' || DETAILS_FILTER.any? { |filter| filter.match?(iss&.details&.text) }
+        if iss.severity == 'information' || iss.code == 'code-invalid' || ISSUE_DETAILS_FILTER.any? { |filter| filter.match?(iss&.details&.text) }
           information << "#{issue_location(iss)}: #{iss&.details&.text}"
         elsif iss.severity == 'warning'
           warnings << "#{issue_location(iss)}: #{iss&.details&.text}"
