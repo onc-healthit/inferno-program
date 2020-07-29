@@ -53,11 +53,11 @@ module Inferno
     end
 
     def issue_message(issue)
-      if issue.respond_to?(:expression)
-        location = issue&.expression&.join(', ')
-      else
-        location = issue&.location&.join(', ')
-      end
+      location = if issue.respond_to?(:expression)
+                   issue&.expression&.join(', ')
+                 else
+                   issue&.location&.join(', ')
+                 end
 
       "#{location}: #{issue&.details&.text}"
     end
