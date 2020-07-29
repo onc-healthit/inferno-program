@@ -32,7 +32,7 @@ describe Inferno::HL7Validator do
     it 'removes excluded errors' do
       outcome = load_fixture('hl7_validator_operation_outcome')
 
-      stub_request(:post, @validator_url + '/validate')
+      stub_request(:post, "#{@validator_url}/validate")
         .with(
           query: { 'profile': @profile },
           body: @resource.source_contents
