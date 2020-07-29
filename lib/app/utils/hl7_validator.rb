@@ -4,9 +4,9 @@ module Inferno
   # A validator that calls out to the HL7 validator API
   class HL7Validator
     ISSUE_DETAILS_FILTER = [
-      %r{Sub-extension url 'introspect' is not defined by the Extension http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris},
-      %r{Sub-extension url 'revoke' is not defined by the Extension http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris},
-      /URL value .* does not resolve/
+      %r{^Sub-extension url 'introspect' is not defined by the Extension http://fhir-registry\.smarthealthit\.org/StructureDefinition/oauth-uris$},
+      %r{^Sub-extension url 'revoke' is not defined by the Extension http://fhir-registry\.smarthealthit\.org/StructureDefinition/oauth-uris$},
+      /^URL value .* does not resolve$/
     ].freeze
     @validator_url = nil
 
