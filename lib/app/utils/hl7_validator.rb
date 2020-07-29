@@ -22,7 +22,7 @@ module Inferno
       Inferno.logger.info("Validating #{resource.resourceType} resource with id #{resource.id}")
       Inferno.logger.info("POST #{@validator_url}/validate?profile=#{profile_url}")
 
-      result = RestClient.post "#{@validator_url}/validate", resource.to_json, params: { profile: profile_url }
+      result = RestClient.post "#{@validator_url}/validate", resource.source_contents, params: { profile: profile_url }
       outcome = fhir_models_klass.from_contents(result.body)
 
       issues_by_severity(outcome.issue)

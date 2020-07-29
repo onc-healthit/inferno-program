@@ -12,14 +12,12 @@ describe Inferno::HL7Validator do
     before do
       @resource = FHIR::CapabilityStatement.new
       @profile = FHIR::Definitions.resource_definition(@resource.resourceType).url
-    end
-
     it "Shouldn't pass back any messages" do
       patient = FHIR::Patient.new
       stub_request(:post, "#{@validator_url}/validate")
         .with(
           query: { profile: 'http://hl7.org/fhir/StructureDefinition/Patient' },
-          body: patient.to_json
+          body: patient.source_contents
         )
         .to_return(status: 200, body: load_fixture('validator_good_response'))
       result = @validator.validate(patient, FHIR)
@@ -35,7 +33,7 @@ describe Inferno::HL7Validator do
       stub_request(:post, @validator_url + '/validate')
         .with(
           query: { 'profile': @profile },
-          body: @resource.to_json
+          body: @resource.source_contents
         )
         .to_return(
           status: 200,
