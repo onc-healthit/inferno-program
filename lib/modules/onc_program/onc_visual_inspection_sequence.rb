@@ -170,7 +170,7 @@ module Inferno
         pass @instance.onc_visual_jwks_cache_notes if @instance.onc_visual_jwks_cache_notes.present?
       end
 
-      test 'Health IT developer demonstrates support for the Patient Demographics Suffix USCDI v1 element by using the Patient.name.suffix FHIR element.' do
+      test 'Health IT developer demonstrates support for the Patient Demographics Suffix USCDI v1 element.' do
         metadata do
           id '12'
           link 'https://www.healthit.gov/isa/united-states-core-data-interoperability-uscdi'
@@ -186,7 +186,7 @@ module Inferno
         pass @instance.onc_visual_patient_suffix_notes if @instance.onc_visual_patient_suffix_notes.present?
       end
 
-      test 'Health IT developer demonstrates support for the Patient Demographics Previous Name USCDI v1 element by using the Patient.name.period FHIR element.' do
+      test 'Health IT developer demonstrates support for the Patient Demographics Previous Name USCDI v1 element.' do
         metadata do
           id '13'
           link 'https://www.healthit.gov/isa/united-states-core-data-interoperability-uscdi'
@@ -202,7 +202,7 @@ module Inferno
         pass @instance.onc_visual_patient_period_notes if @instance.onc_visual_patient_period_notes.present?
       end
 
-      test 'Health IT developer demonstrates support for the Allergy and Intolerances Reaction USCDI v1 element by using the AllergyIntolerance.reaction FHIR element.' do
+      test 'Health IT developer demonstrates support for the Allergy and Intolerances Reaction USCDI v1 element.' do
         metadata do
           id '14'
           link 'https://www.healthit.gov/isa/united-states-core-data-interoperability-uscdi'
