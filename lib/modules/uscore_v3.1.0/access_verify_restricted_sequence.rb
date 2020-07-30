@@ -5,7 +5,7 @@ module Inferno
     class ONCAccessVerifyRestrictedSequence < SequenceBase
       title 'Restricted Resource Type Access'
 
-      description 'Verify that access to resource types can be restricted to app.'
+      description 'Verify that patients have control over which resource types can be accessed.'
       test_id_prefix 'AVR'
       details %(
         This test ensures that patients are able to grant or deny access to a subset of resources to an app.
@@ -75,7 +75,7 @@ module Inferno
 
       def scope_granting_access(resource, scopes)
         scopes.split(' ').find do |scope|
-          scope.start_with?("patient/#{resource}", 'patient/*') && scope.end_with?('*', 'read')
+          ['patient/*.read', 'patient/*.*', "patient/#{resource}.read", "patient/#{resource}.*"].include? scope
         end
       end
 
@@ -86,12 +86,19 @@ module Inferno
 
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
           description %(
-            This test confirms that the scopes received during authorization match those that
-            expected for this launch.
+
+            This test confirms that the scopes granted during authorization match those that
+            were expected for this launch based on input provided by the tester.
+
           )
         end
 
-        skip_if @instance.received_scopes.nil?, 'No SMART scopes were provided to the test.'
+        skip_if @instance.received_scopes.nil?, 'A list of granted scopes was not provided to this test as required.'
+
+        # Consider all directly-mapped USCDI resources only.  Do not fail based on the inclusion/Exclusion of Encounter, Practitioner
+        # PractitionerRole, Location, Organization, or RelatedPerson because the SUT has flexibility to decide if those
+        # should be included or not based on whether other resources are selected (e.g. if Observation then maybe it makes
+        # sense to include Encounter scope) without having the user be in charge of that particular choice.
 
         all_resources = [
           'AllergyIntolerance',
@@ -106,26 +113,29 @@ module Inferno
           'MedicationRequest',
           'Observation',
           'Procedure',
-          'Patient'
+          'Patient',
+          'Provenance'
         ]
-
-        allowed_resources = all_resources.select { |resource| scope_granting_access(resource, resource_access_as_scope) }
+        allowed_resources = all_resources.select { |resource| scope_granting_access(resource, resource_access_as_scope).present? }
         denied_resources = all_resources - allowed_resources
-
         assert denied_resources.present?, "This test requires at least one resource to be denied, but the provided scope '#{@instance.received_scopes}' grants access to all resource types."
-        received_scope_resources = all_resources.select { |resource| scope_granting_access(resource, @instance.received_scopes) }
+        received_scope_resources = all_resources.select { |resource| scope_granting_access(resource, @instance.received_scopes).present? }
         unexpected_resources = received_scope_resources - allowed_resources
         assert unexpected_resources.empty?, "This test expected the user to deny access to the following resources that are present in scopes received during token exchange response: #{unexpected_resources.join(', ')}"
+        improperly_denied_resources = allowed_resources.reject { |resource| scope_granting_access(resource, @instance.received_scopes).present? }
+        assert improperly_denied_resources.empty?, "This test expected the user to grant access to the following resources that are not received during token exhange response: #{improperly_denied_resources.join(', ')}"
+        assert @instance.received_scopes.split(' ').exclude?('offline_access'), 'This test expects the user to deny offline access to demonstrate that refresh tokens require user approval'
         pass "Resources to be denied: #{denied_resources.join(',')}"
       end
 
       test :validate_patient_authorization do
         metadata do
           id '02'
-          name 'Patient resources on the FHIR server follow the US Core Implementation Guide'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
+          name 'Access to Patient resource granted and patient resource can be read.'
+          link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
-            This test checks if the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and valueset verification.
+            This test ensures that the authorization service has granted access to the Patient resource
+            and that the patient resource can be read without an authorization error.
           )
         end
         skip_if @instance.patient_id.nil?, 'Patient ID not provided to test. The patient ID is typically provided during in a SMART launch context.'
@@ -155,6 +165,12 @@ module Inferno
           name 'Access to AllergyIntolerance resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
+            This test ensures that access to the AllergyIntolerance is granted or denied based on the
+            selection by the tester prior to the execution of the test.  If the tester indicated that access
+            will be granted to this resource, this test verifies that
+            a search by patient in this resource does not result in an access denied result.  If the tester indicated that
+            access will be denied for this resource, this verifies that
+            search by patient in the resource results in an access denied result.
           )
         end
 
@@ -205,6 +221,12 @@ module Inferno
           name 'Access to CarePlan resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
+            This test ensures that access to the CarePlan is granted or denied based on the
+            selection by the tester prior to the execution of the test.  If the tester indicated that access
+            will be granted to this resource, this test verifies that
+            a search by patient in this resource does not result in an access denied result.  If the tester indicated that
+            access will be denied for this resource, this verifies that
+            search by patient in the resource results in an access denied result.
           )
         end
 
@@ -256,6 +278,12 @@ module Inferno
           name 'Access to CareTeam resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
+            This test ensures that access to the CareTeam is granted or denied based on the
+            selection by the tester prior to the execution of the test.  If the tester indicated that access
+            will be granted to this resource, this test verifies that
+            a search by patient in this resource does not result in an access denied result.  If the tester indicated that
+            access will be denied for this resource, this verifies that
+            search by patient in the resource results in an access denied result.
           )
         end
 
@@ -307,6 +335,12 @@ module Inferno
           name 'Access to Condition resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
+            This test ensures that access to the Condition is granted or denied based on the
+            selection by the tester prior to the execution of the test.  If the tester indicated that access
+            will be granted to this resource, this test verifies that
+            a search by patient in this resource does not result in an access denied result.  If the tester indicated that
+            access will be denied for this resource, this verifies that
+            search by patient in the resource results in an access denied result.
           )
         end
 
@@ -357,6 +391,12 @@ module Inferno
           name 'Access to Device resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
+            This test ensures that access to the Device is granted or denied based on the
+            selection by the tester prior to the execution of the test.  If the tester indicated that access
+            will be granted to this resource, this test verifies that
+            a search by patient in this resource does not result in an access denied result.  If the tester indicated that
+            access will be denied for this resource, this verifies that
+            search by patient in the resource results in an access denied result.
           )
         end
 
@@ -393,6 +433,12 @@ module Inferno
           name 'Access to DiagnosticReport resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
+            This test ensures that access to the DiagnosticReport is granted or denied based on the
+            selection by the tester prior to the execution of the test.  If the tester indicated that access
+            will be granted to this resource, this test verifies that
+            a search by patient in this resource does not result in an access denied result.  If the tester indicated that
+            access will be denied for this resource, this verifies that
+            search by patient in the resource results in an access denied result.
           )
         end
 
@@ -444,6 +490,12 @@ module Inferno
           name 'Access to DocumentReference resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
+            This test ensures that access to the DocumentReference is granted or denied based on the
+            selection by the tester prior to the execution of the test.  If the tester indicated that access
+            will be granted to this resource, this test verifies that
+            a search by patient in this resource does not result in an access denied result.  If the tester indicated that
+            access will be denied for this resource, this verifies that
+            search by patient in the resource results in an access denied result.
           )
         end
 
@@ -494,6 +546,12 @@ module Inferno
           name 'Access to Goal resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
+            This test ensures that access to the Goal is granted or denied based on the
+            selection by the tester prior to the execution of the test.  If the tester indicated that access
+            will be granted to this resource, this test verifies that
+            a search by patient in this resource does not result in an access denied result.  If the tester indicated that
+            access will be denied for this resource, this verifies that
+            search by patient in the resource results in an access denied result.
           )
         end
 
@@ -544,6 +602,12 @@ module Inferno
           name 'Access to Immunization resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
+            This test ensures that access to the Immunization is granted or denied based on the
+            selection by the tester prior to the execution of the test.  If the tester indicated that access
+            will be granted to this resource, this test verifies that
+            a search by patient in this resource does not result in an access denied result.  If the tester indicated that
+            access will be denied for this resource, this verifies that
+            search by patient in the resource results in an access denied result.
           )
         end
 
@@ -594,6 +658,12 @@ module Inferno
           name 'Access to MedicationRequest resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
+            This test ensures that access to the MedicationRequest is granted or denied based on the
+            selection by the tester prior to the execution of the test.  If the tester indicated that access
+            will be granted to this resource, this test verifies that
+            a search by patient in this resource does not result in an access denied result.  If the tester indicated that
+            access will be denied for this resource, this verifies that
+            search by patient in the resource results in an access denied result.
           )
         end
 
@@ -645,6 +715,12 @@ module Inferno
           name 'Access to Observation resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
+            This test ensures that access to the Observation is granted or denied based on the
+            selection by the tester prior to the execution of the test.  If the tester indicated that access
+            will be granted to this resource, this test verifies that
+            a search by patient in this resource does not result in an access denied result.  If the tester indicated that
+            access will be denied for this resource, this verifies that
+            search by patient in the resource results in an access denied result.
           )
         end
 
@@ -696,6 +772,12 @@ module Inferno
           name 'Access to Procedure resources are restricted properly based on patient-selected scope'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
+            This test ensures that access to the Procedure is granted or denied based on the
+            selection by the tester prior to the execution of the test.  If the tester indicated that access
+            will be granted to this resource, this test verifies that
+            a search by patient in this resource does not result in an access denied result.  If the tester indicated that
+            access will be denied for this resource, this verifies that
+            search by patient in the resource results in an access denied result.
           )
         end
 

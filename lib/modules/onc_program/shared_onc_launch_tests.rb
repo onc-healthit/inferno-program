@@ -143,7 +143,8 @@ module Inferno
               description %(
                 Apps MUST assure that sensitive information (authentication secrets,
                 authorization codes, tokens) is transmitted ONLY to authenticated
-                servers, over TLS-secured channels.
+                servers, over TLS-secured channels. [§170.315(g)(10) Test Procedure](https://www.healthit.gov/test-method/standardized-api-patient-and-population-services)
+                requires secure connection using TLS version 1.2 or higher.
               )
             end
 

@@ -3,6 +3,7 @@
 require_relative 'utils/assertions'
 require_relative 'utils/skip_helpers'
 require_relative 'ext/fhir_client'
+require_relative 'ext/fhir_models'
 require_relative 'utils/logged_rest_client'
 require_relative 'utils/exceptions'
 require_relative 'utils/validation'
@@ -942,9 +943,9 @@ module Inferno
                 # We want all of the codes to be in their respective systems
                 else
                   el.coding.any? do |coding|
-                    Terminology.validate_code(valueset_url: nil,
-                                              code: coding.code,
-                                              system: coding.system)
+                    !Terminology.validate_code(valueset_url: nil,
+                                               code: coding.code,
+                                               system: coding.system)
                   end
                 end
               else

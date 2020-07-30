@@ -17,32 +17,22 @@ module Inferno
 
         The #{title} Sequence test looks for authorization endpoints and SMART
         capabilities as described by the [SMART App Launch
-        Framework](http://hl7.org/fhir/smart-app-launch/conformance/index.html).
-        The SMART launch framework uses OAuth 2.0 to *authorize* apps, like
-        Inferno, to access certain information on a FHIR server. The
-        authorization service accessed at the endpoint allows users to give
-        these apps permission without sharing their credentials with the
-        application itself. Instead, the application receives an access token
-        which allows it to access resources on the server. The access token
-        itself has a limited lifetime and permission scopes associated with it.
-        A refresh token may also be provided to the application in order to
-        obtain another access token. Unlike access tokens, a refresh token is
-        not shared with the resource server. If OpenID Connect is used, an id
-        token may be provided as well. The id token can be used to
-        *authenticate* the user. The id token is digitally signed and allows the
-        identity of the user to be verified.
+        Framework](http://hl7.org/fhir/smart-app-launch/).
 
         # Test Methodology
 
-        This test suite will examine the SMART on FHIR configuration contained
+        This test suite performs two HTTP GETs to examine the SMART on FHIR configuration contained
         in both the `/metadata` and `/.well-known/smart-configuration`
-        endpoints.
+        endpoints.  It ensures that all required fields are present, and that information
+        provided is consistent between the two endpoints.  These tests currently require both endpoints
+        to be implemented to ensure maximum compatibility with existing clients.
 
-        For more information see:
+        Optional fields are not required and these tests do NOT flag warnings if they are not
+        present.
+
+        For more information regarding SMART App Launch discovery, see:
 
         * [SMART App Launch Framework](http://hl7.org/fhir/smart-app-launch/index.html)
-        * [The OAuth 2.0 Authorization Framework](https://tools.ietf.org/html/rfc6749)
-        * [OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html)
       )
 
       def url_property
@@ -192,7 +182,7 @@ module Inferno
           url = oauth_metadata[:"#{endpoint[:url]}_url"]
           instance_variable_set(:"@conformance_#{endpoint[:url]}_url", url)
 
-          assert url.present?, "No #{endpoint[:description]} URI provided in Conformance/CapabilityStatement resource"
+          assert url.present?, "No #{endpoint[:description]} URI provided in CapabilityStatement resource"
           assert_valid_http_uri url, "Invalid #{endpoint[:description]} url: '#{url}'"
         end
 
@@ -206,8 +196,8 @@ module Inferno
             end
           end
 
-          assert !services.empty?, 'No security services listed. Conformance/CapabilityStatement.rest.security.service should be SMART-on-FHIR.'
-          assert services.any? { |service| service == 'SMART-on-FHIR' }, "Conformance/CapabilityStatement.rest.security.service set to #{services.map { |e| "'" + e + "'" }.join(', ')}.  It should contain 'SMART-on-FHIR'."
+          assert !services.empty?, 'No security services listed. CapabilityStatement.rest.security.service should be SMART-on-FHIR.'
+          assert services.any? { |service| service == 'SMART-on-FHIR' }, "CapabilityStatement.rest.security.service set to #{services.map { |e| "'" + e + "'" }.join(', ')}.  It should contain 'SMART-on-FHIR'."
         end
 
         security_extensions =
@@ -216,13 +206,20 @@ module Inferno
             &.extension
 
         OPTIONAL_OAUTH_ENDPOINTS.each do |endpoint|
-          warning do
-            url =
-              security_extensions
-                &.find { |extension| extension.url == endpoint[:url] }
-                &.value
+          url =
+            security_extensions
+              &.find { |extension| extension.url == endpoint[:url] }
+              &.value
 
-            assert url.present?, "No #{endpoint[:description]} endpoint in conformance."
+          # Many of the optional endpoints have very little specified and it is unrealistic
+          # to have them implemented in a standard way.  Therefore, instead of providing
+          # a warning if they do not exist, only validate that they are valid URLs when they
+          # are provided.  This is something we may want to expose in some kind of informational
+          # message in the future.
+
+          next unless url.present?
+
+          warning do
             assert_valid_http_uri url, "Invalid #{endpoint[:description]} url: '#{url}'"
             instance_variable_set(:"@conformance_#{endpoint[:url]}_url", url)
           end
@@ -247,7 +244,7 @@ module Inferno
           )
         end
 
-        (REQUIRED_OAUTH_ENDPOINTS + OPTIONAL_OAUTH_ENDPOINTS).each do |endpoint|
+        REQUIRED_OAUTH_ENDPOINTS.each do |endpoint|
           url = endpoint[:url]
           well_known_url = instance_variable_get(:"@well_known_#{url}_url")
           conformance_url = instance_variable_get(:"@conformance_#{url}_url")
@@ -257,7 +254,7 @@ module Inferno
             well-known configuration and the conformance statement:
 
             * Well-known #{url} url: #{well_known_url}
-            * Conformance #{url} url: #{conformance_url}
+            * CapabilityStatement #{url} url: #{conformance_url}
           )
         end
       end

@@ -129,6 +129,28 @@ Once the terminology building is done, the `.env` file should be deleted to remo
 
 Optionally, the files and folders in `tmp/terminology/` can be deleted after terminology building to free up space, as they are several GB in size. If you intend to re-run the terminology builder, these files can be left to speed up building in the future, since the builder will be able to skip the initial download/preprocessing steps.
 
+#### Spot Checking the Terminology Files
+You can use the following `rake` command to spot check the validators to make sure they are installed correctly:
+
+```ruby
+bundle exec rake "terminology:check_code[91935009,http://snomed.info/sct, http://hl7.org/fhir/us/core/ValueSet/us-core-allergy-substance]"
+```
+Should return:
+
+```shell
+X http://snomed.info/sct|91935009  is not in http://hl7.org/fhir/us/core/ValueSet/us-core-allergy-substance
+```
+And
+```ruby
+be rake "terminology:check_code[91935009,http://snomed.info/sct]"
+```
+Should return:
+
+```shell
+✓ http://snomed.info/sct|91935009  is in http://snomed.info/sct
+```
+
+
 #### Manual build instructions
 
 If this Docker-based method does not work based on your architecture, manual setup and creation of the terminology validators is documented [on this wiki page](https://github.com/onc-healthit/inferno/wiki/Installing-Terminology-Validators#building-the-validators-without-docker)
