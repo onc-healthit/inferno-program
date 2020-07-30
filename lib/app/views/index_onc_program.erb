@@ -198,6 +198,36 @@ For alternate installation options, please visit <a href='https://github.com/onc
   </div>
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.1.0</div>
+      <p>
+      The Inferno Program Edition v1.1.0 minor release provides the following test updates that may
+      alter the result of systems that were able to pass prior versions of these tests:
+      </p>
+      <ul>
+      <li>Refined behavior of the Resource Access Verification AVR-01 and AVU-01 tests that are performed after the Single Patient SMART launches to ensure that scopes granted by the system under test are consistent with the expectations of test. </li>
+      <li>Added visual inspection steps ATT-11, ATT-12, and ATT-13 to ensure that the Patient Demographics Suffix, Patient Demographics Previous Name, and Allergy and Intolerances Reaction USCDI v1 elements are supported by the system under test. These elements are required within USCDI but are not flagged as "must support" in US Core v3.1, so they must be manually checked during testing. </li>
+      </ul>
+      <p> Additionally, the following updates were made which fixed issues preventing correct implementations
+      from passing prior versions:
+      </p>
+      <ul>
+      <li>Fixed issue where resources using primitive extensions was incorrectly failing validation in certain cases.</li>
+      <li>Fixed issue where warnings were incorrectly raised for codes that were not in ValueSets but were in CodeSystems.</li>
+      <li>Removed warnings in SMART Discovery tests when optional SMART on FHIR capability metadata was not provided.</li>
+      <li>Removed validation errors resulting from canonical FHIR URLs not resolving.</li>
+      <li>Removed incorrect CapabilityStatement validation errors for the SMART revoke and introspect extensions.</li>
+
+      </ul>
+      <p>
+      <i>
+      NOTICE: If you are updating to Inferno Program Edition v1.1.0 from v1.0.0 in the same directory, please delete or
+      rename the files in /data/ (e.g. production.db; development.db; test.db).  Inferno will fail to load if these
+      files are not removed or renamed due to a change in the Inferno data schema.
+      </i>
+    <p>
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_1_0.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure.
+    </p>
     <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.0.2</div>
       <p>
       The Inferno Program Edition v1.0.2 patch release reverts an unintended change in testing behavior
