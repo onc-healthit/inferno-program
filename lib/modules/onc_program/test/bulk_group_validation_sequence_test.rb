@@ -753,6 +753,39 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
     end
   end
 
+  describe 'omit or skip empty resources test' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'skips Patient empty resource' do
+      klass = 'Patient'
+      error = assert_raises(Inferno::SkipException) do
+        @sequence.omit_or_skip_empty_resources(klass)
+      end
+
+      assert error.message == "Bulk Data Server export did not provide any #{klass} resources."
+    end
+
+    it 'omits Medication empty resource' do
+      klass = 'Medication'
+      error = assert_raises(Inferno::OmitException) do
+        @sequence.omit_or_skip_empty_resources(klass)
+      end
+
+      assert error.message == "No #{klass} resources provided, and #{klass} resources are optional."
+    end
+
+    it 'omits Location empty resource' do
+      klass = 'Location'
+      error = assert_raises(Inferno::OmitException) do
+        @sequence.omit_or_skip_empty_resources(klass)
+      end
+
+      assert error.message == "No #{klass} resources provided, and #{klass} resources are optional."
+    end
+  end
+
   describe 'predefined device type tests' do
     before do
       @sequence = @sequence_class.new(@instance, @client)

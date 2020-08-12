@@ -21,6 +21,9 @@ module Inferno
       MAX_RECENT_LINE_SIZE = 100
       MIN_RESOURCE_COUNT = 2
 
+      NonUsCoreKlass = ['Location', 'PractitionerRole', 'RelatedPerson']
+      OmitKlass = ['Medication'].concat(NonUsCoreKlass)
+
       US_CORE_R4_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
 
       include Inferno::USCore310ProfileDefinitions
@@ -66,7 +69,7 @@ module Inferno
       end
 
       def omit_or_skip_empty_resources(klass)
-        omit 'No Medication resources provided, and Medication resources are optional.' if klass == 'Medication'
+        omit "No #{klass} resources provided, and #{klass} resources are optional." if OmitKlass.include?(klass)
         skip "Bulk Data Server export did not provide any #{klass} resources."
       end
 
@@ -161,7 +164,7 @@ module Inferno
         return nil if resource.resourceType == 'Device' && !predefined_device_type?(resource)
 
         # validate Location using FHIR base profile
-        return nil if resource.resourceType == 'Location'
+        return nil if NonUsCoreKlass.include?(resource.resourceType)
 
         Inferno::ValidationUtil.guess_profile(resource, version)
       end
@@ -679,7 +682,7 @@ module Inferno
       test :validate_medicationrequest do
         metadata do
           id '15'
-          name 'MedicationRequest resources returned conform to the US Core MeidcationRequest Profile'
+          name 'MedicationRequest resources returned conform to the US Core MedicationRequest Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
@@ -917,6 +920,7 @@ module Inferno
           link 'http://hl7.org/fhir/StructureDefinition/Location'
           description %(
             This test verifies that the resources returned from bulk data export conform to the HL7 FHIR Specification. This includes checking for missing data elements.
+            This test is omitted if bulk data export does not return any Location resources.
 
             The following US Core profiles have "Must Support" data elements which reference Location resources:
 
@@ -944,6 +948,47 @@ module Inferno
 
         test_output_against_profile('Medication')
       end
+
+      test :validate_practitionerrole do
+        metadata do
+          id '24'
+          name 'PractitionerRole resources returned conform to the HL7 FHIR PractitionerRole Profile if FHIR server has PractitionerRole resources'
+          link 'http://hl7.org/fhir/StructureDefinition/PractitionerRole'
+          description %(
+            This test verifies that the resources returned from bulk data export conform to the HL7 FHIR Specification. This includes checking for missing data elements and value set verification.
+            This test is omitted if bulk data export does not return any PractitionerRole resources.
+
+            The following US Core profiles have "Must Support" data elements which reference PractitionerRole resources:
+
+            * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
+            * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
+            * [Provenance](http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance)
+          )
+        end
+
+        test_output_against_profile('PractitionerRole')
+      end
+
+      test :validate_relatedperson do
+        metadata do
+          id '25'
+          name 'Medication resources returned conform to the HL7 FHIR RelatedPerson Profile if FHIR server has RelatedPerson resources'
+          link 'http://hl7.org/fhir/StructureDefinition/RelatedPerson'
+          description %(
+            This test verifies that the resources returned from bulk data export conform to the HL7 FHIR Specification. This includes checking for missing data elements and value set verification.
+            This test is omitted if bulk data export does not return any RelatedPerson resources.
+
+            The following US Core profiles have "Must Support" data elements which reference RelatedPerson resources:
+
+            * [CareTeam](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam)
+            * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
+            * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
+            * [Provenance](http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance)
+          )
+        end
+
+        test_output_against_profile('RelatedPerson')
+      end      
     end
   end
 end
