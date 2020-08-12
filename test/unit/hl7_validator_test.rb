@@ -56,5 +56,11 @@ describe Inferno::HL7Validator do
 
       assert_equal '5.0.11-SNAPSHOT', @validator.version
     end
+
+    it 'Should return nil if /version is not found' do
+      stub_request(:get, "#{@validator_url}/version")
+        .to_return(status: 404)
+      assert_nil @validator.version
+    end
   end
 end
