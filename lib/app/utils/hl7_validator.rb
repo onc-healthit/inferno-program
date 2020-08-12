@@ -28,13 +28,17 @@ module Inferno
       issues_by_severity(outcome.issue)
     end
 
-    # @return [String] the version of the validator currently being used
+    # @return [String] the version of the validator currently being used or nil
+    #   if unable to reach the /version endpoint
     def version
       Inferno.logger.info('Fetching validator version')
       Inferno.logger.info("GET #{@validator_url}/version")
 
       result = RestClient.get "#{@validator_url}/version"
       result.body
+    rescue StandardError
+      Inferno.logger.error('Unable to reach the /version validator endpoint. Please ensure that the validator is up to date.')
+      nil
     end
 
     private
