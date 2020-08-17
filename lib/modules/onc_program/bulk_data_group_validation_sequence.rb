@@ -709,6 +709,13 @@ module Inferno
             * http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab
             * http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry
             * http://hl7.org/fhir/us/core/StructureDefinition/us-core-smokingstatus
+            * http://hl7.org/fhir/StructureDefinition/bp
+            * http://hl7.org/fhir/StructureDefinition/bodyheight
+            * http://hl7.org/fhir/StructureDefinition/bodytemp
+            * http://hl7.org/fhir/StructureDefinition/bodyweight
+            * http://hl7.org/fhir/StructureDefinition/headcircum
+            * http://hl7.org/fhir/StructureDefinition/heartrate
+            * http://hl7.org/fhir/StructureDefinition/resprate
           )
         end
 
@@ -737,6 +744,41 @@ module Inferno
             profile: US_CORE_R4_URIS[:smoking_status],
             must_support_info: USCore310SmokingstatusSequenceDefinitions::MUST_SUPPORTS.dup,
             binding_info: USCore310SmokingstatusSequenceDefinitions::BINDINGS.dup
+          },
+          {
+            profile: US_CORE_R4_URIS[:blood_pressure],
+            must_support_info: USCore310BpSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310BpSequenceDefinitions::BINDINGS.dup
+          },
+          {
+            profile: US_CORE_R4_URIS[:body_height],
+            must_support_info: USCore310BodyheightSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310BodyheightSequenceDefinitions::BINDINGS.dup
+          },
+          {
+            profile: US_CORE_R4_URIS[:body_temperature],
+            must_support_info: USCore310BodytempSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310BodytempSequenceDefinitions::BINDINGS.dup
+          },
+          {
+            profile: US_CORE_R4_URIS[:body_weight],
+            must_support_info: USCore310BodyweightSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310BodyweightSequenceDefinitions::BINDINGS.dup
+          },
+          {
+            profile: US_CORE_R4_URIS[:head_circumference],
+            must_support_info: USCore310HeadcircumSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310HeadcircumSequenceDefinitions::BINDINGS.dup
+          },
+          {
+            profile: US_CORE_R4_URIS[:heart_rate],
+            must_support_info: USCore310HeartrateSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310HeartrateSequenceDefinitions::BINDINGS.dup
+          },
+          {
+            profile: US_CORE_R4_URIS[:resp_rate],
+            must_support_info: USCore310ResprateSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310ResprateSequenceDefinitions::BINDINGS.dup
           }
         ]
 

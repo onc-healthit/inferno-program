@@ -66,15 +66,12 @@ module Inferno
       pediatric_bmi_age: 'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age',
       pediatric_weight_height: 'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height',
       pulse_oximetry: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry',
-      vitals_panel: 'http://hl7.org/fhir/StructureDefinition/vitalspanel',
       resp_rate: 'http://hl7.org/fhir/StructureDefinition/resprate',
       heart_rate: 'http://hl7.org/fhir/StructureDefinition/heartrate',
-      oxygen_saturation: 'http://hl7.org/fhir/StructureDefinition/oxygensat',
       body_temperature: 'http://hl7.org/fhir/StructureDefinition/bodytemp',
       body_height: 'http://hl7.org/fhir/StructureDefinition/bodyheight',
       head_circumference: 'http://hl7.org/fhir/StructureDefinition/headcircum',
       body_weight: 'http://hl7.org/fhir/StructureDefinition/bodyweight',
-      bmi: 'http://hl7.org/fhir/StructureDefinition/bmi',
       blood_pressure: 'http://hl7.org/fhir/StructureDefinition/bp'
     }.freeze
 
@@ -170,13 +167,24 @@ module Inferno
 
         return DEFINITIONS[US_CORE_R4_URIS[:pulse_oximetry]] if observation_contains_code(resource, '59408-5')
 
-        return DEFINITIONS[US_CORE_R4_URIS[:vitals_panel]] if observation_contains_code(resource, '85353-1')
+        # FHIR Vital Signs profiles: https://www.hl7.org/fhir/observation-vitalsigns.html
+        # Vital Signs Panel, Oxygen Saturation are not required by USCDI
+        # Body Mass Index is replaced by :pediatric_bmi_age Profile
+        # Systolic Blood Pressure, Diastolic Blood Pressure are covered by :blood_pressure Profile
+        # Head Circumference will be replaced by US Core Head Occipital-frontal Circumference Percentile Profile
+        return DEFINITIONS[US_CORE_R4_URIS[:blood_pressure]] if observation_contains_code(resource, '85354-9')
 
-        return DEFINITIONS[US_CORE_R4_URIS[:resp_rate]] if observation_contains_code(resource, '9279-1')
+        return DEFINITIONS[US_CORE_R4_URIS[:body_height]] if observation_contains_code(resource, '8302-2')
+
+        return DEFINITIONS[US_CORE_R4_URIS[:body_temperature]] if observation_contains_code(resource, '8310-5')
+
+        return DEFINITIONS[US_CORE_R4_URIS[:body_weight]] if observation_contains_code(resource, '29463-7')
+
+        return DEFINITIONS[US_CORE_R4_URIS[:head_circumference]] if observation_contains_code(resource, '9843-4')
 
         return DEFINITIONS[US_CORE_R4_URIS[:heart_rate]] if observation_contains_code(resource, '8867-4')
 
-        return DEFINITIONS[US_CORE_R4_URIS[:body_temperature]] if observation_contains_code(resource, '8310-5')
+        return DEFINITIONS[US_CORE_R4_URIS[:resp_rate]] if observation_contains_code(resource, '9279-1')
 
         # if none of the US Core profile matches, use FHIR base profile
         return
