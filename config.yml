@@ -95,7 +95,7 @@ bulk_data_jwks:
 # preset fhir servers: optional. Minimally requires name, uri, module, optional inferno_uri, client_id, client_secret, scopes, instructions link
 presets:
   localhost_reference_server:
-    inferno_uri: http://localhost:4567
+    inferno_uri: http://validator_service:4567
     name: Inferno Reference Server
     uri: https://inferno.healthit.gov/reference-server/r4
     module: onc_program
