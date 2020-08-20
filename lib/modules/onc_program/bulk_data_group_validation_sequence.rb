@@ -160,7 +160,7 @@ module Inferno
           resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, profile.url)
 
           # US Core 3.1.0 has both Reference(US Core Encounter) and Reference(Encounter).
-          # Bulk Data validation need to test if at least one Encounter output is validate with US Core Encounter profile.
+          # Bulk Data validation expects at least one Encounter validates to the with US Core Encounter profile, but not all.
           if klass == 'Encounter'
             if resource_validation_errors[:errors].empty?
               @us_core_encounter_count += 1
