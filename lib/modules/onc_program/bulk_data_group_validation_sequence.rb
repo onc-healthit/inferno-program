@@ -180,7 +180,7 @@ module Inferno
         # if Device type code is not in predefined type code list, validate using FHIR base profile
         return nil if resource.resourceType == 'Device' && !predefined_device_type?(resource)
 
-        # validate Location using FHIR base profile
+        # validate resources without a strong mapping to USCDI using the FHIR base profile instead of US Core
         return nil if NON_US_CORE_KLASS.include?(resource.resourceType)
 
         Inferno::ValidationUtil.guess_profile(resource, version)
