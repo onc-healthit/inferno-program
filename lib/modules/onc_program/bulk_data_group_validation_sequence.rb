@@ -849,7 +849,7 @@ module Inferno
         ]
         test_output_against_profile('Encounter', profile_definitions)
 
-        assert @us_core_encounter_count.positive?, 'Bulk data export did not have at least one US Core Encounter resources.'
+        assert @us_core_encounter_count.positive?, 'Bulk data export did not have at least one US Core Encounter resource.'
       end
 
       test :validate_organization do
