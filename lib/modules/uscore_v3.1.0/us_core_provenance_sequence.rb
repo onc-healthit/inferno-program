@@ -153,16 +153,16 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Provenance resources found previously for the following must support elements:
 
-            * target
             * recorded
             * agent
             * agent.type
-            * agent.who
-            * agent.onBehalfOf
             * agent.type.coding.code
             * agent.type.coding.code
             * Provenance.agent:ProvenanceAuthor
             * Provenance.agent:ProvenanceTransmitter
+            * target
+            * agent.who
+            * agent.onBehalfOf
           )
           versions :r4
         end
@@ -177,6 +177,18 @@ module Inferno
           end
         end
 
+        missing_must_support_references = must_supports[:references].each_with_object({}) do |reference, missing_types_by_path|
+          missing_resource_types = reference[:resource_types].reject do |resource_type|
+            @provenance_ary&.any? do |resource|
+              value_found = resolve_element_from_path(resource, reference[:path]) do |value|
+                value.is_a?(FHIR::Reference) && value.reference.include?("#{resource_type}/")
+              end
+              value_found.present?
+            end
+          end
+          missing_types_by_path[reference[:path]] = missing_resource_types if missing_resource_types.present?
+        end
+
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @provenance_ary&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
@@ -189,6 +201,9 @@ module Inferno
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@provenance_ary&.length} provided Provenance resource(s)"
+        skip_if missing_must_support_references.present?,
+                "Could not find the following resource type references: #{missing_must_support_references.map { |k, v| k + ':' + v.join(',') }.join(';')}"
+
         @instance.save!
       end
 

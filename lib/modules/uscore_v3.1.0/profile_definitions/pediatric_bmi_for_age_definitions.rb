@@ -24,6 +24,12 @@ module Inferno
             }
           }
         ],
+        references: [
+          {
+            path: 'subject',
+            resource_types: []
+          }
+        ],
         elements: [
           {
             path: 'status'
@@ -41,9 +47,6 @@ module Inferno
           {
             path: 'category.coding.code',
             fixed_value: 'vital-signs'
-          },
-          {
-            path: 'subject'
           },
           {
             path: 'effective'

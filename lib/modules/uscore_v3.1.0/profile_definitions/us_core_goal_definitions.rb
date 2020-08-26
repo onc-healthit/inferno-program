@@ -15,15 +15,20 @@ module Inferno
             }
           }
         ],
+        references: [
+          {
+            path: 'subject',
+            resource_types: [
+              'Patient'
+            ]
+          }
+        ],
         elements: [
           {
             path: 'lifecycleStatus'
           },
           {
             path: 'description'
-          },
-          {
-            path: 'subject'
           },
           {
             path: 'target'

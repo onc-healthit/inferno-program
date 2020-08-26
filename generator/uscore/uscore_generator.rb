@@ -607,7 +607,14 @@ module Inferno
             * #{slice[:name]})
         end
 
+        must_support_references = sequence[:must_supports][:references]
+        must_support_references.each do |reference|
+          test[:description] += %(
+            * #{reference[:path]})
+        end
+
         sequence[:must_supports][:elements].each { |must_support| must_support[:path]&.gsub!('[x]', '') }
+        sequence[:must_supports][:references].each { |must_support| must_support[:path]&.gsub!('[x]', '') }
         sequence[:must_supports][:slices].each { |must_support| must_support[:path]&.gsub!('[x]', '') }
 
         test[:test_code] += %(
@@ -637,6 +644,22 @@ module Inferno
           )
         end
 
+        if sequence[:must_supports][:references].present?
+          test[:test_code] += %(
+            missing_must_support_references = must_supports[:references].each_with_object({}) do |reference, missing_types_by_path|
+              missing_resource_types = reference[:resource_types].reject do |resource_type|
+                #{resource_array}&.any? do |resource|
+                  value_found = resolve_element_from_path(resource, reference[:path]) do |value|
+                    value.is_a?(FHIR::Reference) && value.reference.include?("\#{resource_type}/")
+                  end
+                  value_found.present?
+                end
+              end
+              missing_types_by_path[reference[:path]] = missing_resource_types if missing_resource_types.present?
+            end
+          )
+        end
+
         if sequence[:must_supports][:elements].present?
           test[:test_code] += %(
             missing_must_support_elements = must_supports[:elements].reject do |element|
@@ -662,6 +685,13 @@ module Inferno
           test[:test_code] += %(
             skip_if missing_must_support_elements.present?,
               "Could not find \#{missing_must_support_elements.join(', ')} in the \#{#{resource_array}&.length} provided #{sequence[:resource]} resource(s)")
+
+          if must_support_references.present?
+            test[:test_code] += %(
+              skip_if missing_must_support_references.present?,
+              "Could not find the following resource type references: \#{missing_must_support_references.map { |k,v| k + ':' + v.join(',')}.join(';')}"
+            )
+          end
         end
 
         test[:test_code] += %(

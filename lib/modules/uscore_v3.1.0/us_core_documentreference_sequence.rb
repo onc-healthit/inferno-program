@@ -676,10 +676,7 @@ module Inferno
             * status
             * type
             * category
-            * subject
             * date
-            * author
-            * custodian
             * content
             * content.attachment
             * content.attachment.contentType
@@ -687,14 +684,29 @@ module Inferno
             * content.attachment.url
             * content.format
             * context
-            * context.encounter
             * context.period
+            * subject
+            * author
+            * custodian
+            * context.encounter
           )
           versions :r4
         end
 
         skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
         must_supports = USCore310DocumentreferenceSequenceDefinitions::MUST_SUPPORTS
+
+        missing_must_support_references = must_supports[:references].each_with_object({}) do |reference, missing_types_by_path|
+          missing_resource_types = reference[:resource_types].reject do |resource_type|
+            @document_reference_ary&.values&.flatten&.any? do |resource|
+              value_found = resolve_element_from_path(resource, reference[:path]) do |value|
+                value.is_a?(FHIR::Reference) && value.reference.include?("#{resource_type}/")
+              end
+              value_found.present?
+            end
+          end
+          missing_types_by_path[reference[:path]] = missing_resource_types if missing_resource_types.present?
+        end
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @document_reference_ary&.values&.flatten&.any? do |resource|
@@ -706,6 +718,9 @@ module Inferno
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@document_reference_ary&.values&.flatten&.length} provided DocumentReference resource(s)"
+        skip_if missing_must_support_references.present?,
+                "Could not find the following resource type references: #{missing_must_support_references.map { |k, v| k + ':' + v.join(',') }.join(';')}"
+
         @instance.save!
       end
 

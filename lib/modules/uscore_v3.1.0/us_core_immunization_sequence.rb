@@ -436,15 +436,27 @@ module Inferno
             * status
             * statusReason
             * vaccineCode
-            * patient
             * occurrence[x]
             * primarySource
+            * patient
           )
           versions :r4
         end
 
         skip_if_not_found(resource_type: 'Immunization', delayed: false)
         must_supports = USCore310ImmunizationSequenceDefinitions::MUST_SUPPORTS
+
+        missing_must_support_references = must_supports[:references].each_with_object({}) do |reference, missing_types_by_path|
+          missing_resource_types = reference[:resource_types].reject do |resource_type|
+            @immunization_ary&.values&.flatten&.any? do |resource|
+              value_found = resolve_element_from_path(resource, reference[:path]) do |value|
+                value.is_a?(FHIR::Reference) && value.reference.include?("#{resource_type}/")
+              end
+              value_found.present?
+            end
+          end
+          missing_types_by_path[reference[:path]] = missing_resource_types if missing_resource_types.present?
+        end
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @immunization_ary&.values&.flatten&.any? do |resource|
@@ -456,6 +468,9 @@ module Inferno
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@immunization_ary&.values&.flatten&.length} provided Immunization resource(s)"
+        skip_if missing_must_support_references.present?,
+                "Could not find the following resource type references: #{missing_must_support_references.map { |k, v| k + ':' + v.join(',') }.join(';')}"
+
         @instance.save!
       end
 
