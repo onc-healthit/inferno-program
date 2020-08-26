@@ -349,6 +349,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
           must_support_info: {
             extensions: [],
             slices: [],
+            references: [],
             elements: [
               {
                 path: 'name'
@@ -376,6 +377,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
           must_support_info: {
             extensions: [],
             slices: [],
+            references: [],
             elements: [
               {
                 path: 'name'
