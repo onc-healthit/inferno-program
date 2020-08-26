@@ -191,6 +191,12 @@ module Inferno
             * address.country
             * Organization.identifier:NPI
             * Organization.identifier:CLIA
+
+
+            For elements of type 'reference' with one or more target profiles from US Core, this test will ensure that at least one of each resource type
+            associated with each US Core target profile is provided as a reference.  This test will not validate those references against their associated
+            US Core profile to reduce test complexity.
+
           )
           versions :r4
         end

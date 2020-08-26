@@ -38,7 +38,7 @@ module Inferno
             path: 'status'
           },
           {
-            path: 'local_class'
+            path: 'class'
           },
           {
             path: 'type'

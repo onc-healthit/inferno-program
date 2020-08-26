@@ -163,6 +163,12 @@ module Inferno
             * target
             * agent.who
             * agent.onBehalfOf
+
+
+            For elements of type 'reference' with one or more target profiles from US Core, this test will ensure that at least one of each resource type
+            associated with each US Core target profile is provided as a reference.  This test will not validate those references against their associated
+            US Core profile to reduce test complexity.
+
           )
           versions :r4
         end
@@ -202,7 +208,7 @@ module Inferno
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@provenance_ary&.length} provided Provenance resource(s)"
         skip_if missing_must_support_references.present?,
-                "Could not find the following resource type references: #{missing_must_support_references.map { |k, v| k + ':' + v.join(',') }.join(';')}"
+                "Could not find the following resource type references:#{missing_must_support_references.map { |path, resource_types| path + ':' + resource_types.join(',') }.join(';')}"
 
         @instance.save!
       end

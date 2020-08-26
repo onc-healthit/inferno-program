@@ -575,6 +575,10 @@ module Inferno
       end
 
       def create_must_support_test(sequence)
+        must_support_list = sequence[:must_supports][:elements].map { |element| "* #{element[:path]}" } +
+                            sequence[:must_supports][:extensions].map { |extension| "* #{extension[:id]}" } +
+                            sequence[:must_supports][:slices].map { |slice| "* #{slice[:name]}" } +
+                            sequence[:must_supports][:references].map { |reference| "* #{reference[:path]}" }
         test = {
           tests_that: "All must support elements are provided in the #{sequence[:resource]} resources returned.",
           index: sequence[:tests].length + 1,
@@ -583,39 +587,23 @@ module Inferno
           description: %(
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the #{sequence[:resource]} resources found previously for the following must support elements:
+
+            #{must_support_list.join("\n            ")}
+
+
+            For elements of type 'reference' with one or more target profiles from US Core, this test will ensure that at least one of each resource type
+            associated with each US Core target profile is provided as a reference.  This test will not validate those references against their associated
+            US Core profile to reduce test complexity.
           )
         }
-
-        sequence[:must_supports][:elements].each do |element|
-          test[:description] += %(
-            * #{element[:path]})
-          # class is mapped to local_class in fhir_models. Update this after it
-          # has been added to the description so that the description contains
-          # the original path
-          element[:path] = element[:path].gsub(/(?<!\w)class(?!\w)/, 'local_class')
-        end
-
         must_support_extensions = sequence[:must_supports][:extensions]
-        must_support_extensions.each do |extension|
-          test[:description] += %(
-            * #{extension[:id]})
-        end
-
-        must_support_slices = sequence[:must_supports][:slices]
-        must_support_slices.each do |slice|
-          test[:description] += %(
-            * #{slice[:name]})
-        end
-
         must_support_references = sequence[:must_supports][:references]
-        must_support_references.each do |reference|
-          test[:description] += %(
-            * #{reference[:path]})
-        end
+        must_support_slices = sequence[:must_supports][:slices]
+        must_support_elements = sequence[:must_supports][:elements]
 
-        sequence[:must_supports][:elements].each { |must_support| must_support[:path]&.gsub!('[x]', '') }
-        sequence[:must_supports][:references].each { |must_support| must_support[:path]&.gsub!('[x]', '') }
-        sequence[:must_supports][:slices].each { |must_support| must_support[:path]&.gsub!('[x]', '') }
+        must_support_elements.each { |must_support| must_support[:path]&.gsub!('[x]', '')&.gsub!(/(?<!\w)class(?!\w)/, 'local_class') }
+        must_support_references.each { |must_support| must_support[:path]&.gsub!('[x]', '')&.gsub!(/(?<!\w)class(?!\w)/, 'local_class') }
+        must_support_slices.each { |must_support| must_support[:path]&.gsub!('[x]', '')&.gsub!(/(?<!\w)class(?!\w)/, 'local_class') }
 
         test[:test_code] += %(
           #{skip_if_not_found_code(sequence)}
@@ -623,7 +611,7 @@ module Inferno
         )
         resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
 
-        if sequence[:must_supports][:extensions].present?
+        if must_support_extensions.present?
           test[:test_code] += %(
             missing_must_support_extensions = must_supports[:extensions].reject do |must_support_extension|
               #{resource_array}&.any? do |resource|
@@ -633,7 +621,7 @@ module Inferno
       )
         end
 
-        if sequence[:must_supports][:slices].present?
+        if must_support_slices.present?
           test[:test_code] += %(
             missing_slices = must_supports[:slices].reject do |slice|
               @#{sequence[:resource].underscore}_ary#{'&.values&.flatten' unless sequence[:delayed_sequence]}&.any? do |resource|
@@ -644,7 +632,7 @@ module Inferno
           )
         end
 
-        if sequence[:must_supports][:references].present?
+        if must_support_references.present?
           test[:test_code] += %(
             missing_must_support_references = must_supports[:references].each_with_object({}) do |reference, missing_types_by_path|
               missing_resource_types = reference[:resource_types].reject do |resource_type|
@@ -660,7 +648,7 @@ module Inferno
           )
         end
 
-        if sequence[:must_supports][:elements].present?
+        if must_support_elements.present?
           test[:test_code] += %(
             missing_must_support_elements = must_supports[:elements].reject do |element|
               #{resource_array}&.any? do |resource|
@@ -689,7 +677,7 @@ module Inferno
           if must_support_references.present?
             test[:test_code] += %(
               skip_if missing_must_support_references.present?,
-              "Could not find the following resource type references: \#{missing_must_support_references.map { |k,v| k + ':' + v.join(',')}.join(';')}"
+              "Could not find the following resource type references:\#{missing_must_support_references.map{|path,resource_types| path+':'+resource_types.join(',')}.join(';')}"
             )
           end
         end
