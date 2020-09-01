@@ -21,6 +21,9 @@ module Inferno
       MAX_RECENT_LINE_SIZE = 100
       MIN_RESOURCE_COUNT = 2
 
+      NON_US_CORE_KLASS = ['Location', 'PractitionerRole', 'RelatedPerson'].freeze
+      OMIT_KLASS = ['Medication'].concat(NON_US_CORE_KLASS)
+
       US_CORE_R4_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
 
       include Inferno::USCore310ProfileDefinitions
@@ -35,6 +38,7 @@ module Inferno
         requires_access_token = status_response['requiresAccessToken']
         @requires_access_token = requires_access_token.to_s.downcase == 'true' if requires_access_token.present?
         @patient_ids_seen = Set.new
+        @us_core_encounter_count = 0
       end
 
       def test_output_against_profile(klass,
@@ -66,8 +70,8 @@ module Inferno
       end
 
       def omit_or_skip_empty_resources(klass)
-        omit 'No Medication resources provided, and Medication resources are optional.' if klass == 'Medication'
-        skip "Bulk Data Server export did not provide any #{klass} resources."
+        omit "No #{klass} resources provided, and #{klass} resources are optional." if OMIT_KLASS.include?(klass)
+        skip "Bulk data export did not provide any #{klass} resources."
       end
 
       def get_lines_to_validate(input)
@@ -121,12 +125,7 @@ module Inferno
 
           p = guess_profile(resource, @instance.fhir_version.to_sym)
 
-          if p && @instance.fhir_version == 'r4'
-            resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, p.url)
-          else
-            warn { assert false, 'No profiles found for this Resource' }
-            resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
-          end
+          resource_validation_errors = validate(klass, resource, p)
 
           process_profile_definition(profile_definitions, p, resource, resource_validation_errors)
 
@@ -156,12 +155,33 @@ module Inferno
         line_count
       end
 
+      def validate(klass, resource, profile)
+        if profile && @instance.fhir_version == 'r4'
+          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, profile.url)
+
+          # US Core 3.1.0 has both Reference(US Core Encounter) and Reference(Encounter).
+          # Bulk Data validation expects at least one Encounter validates to the with US Core Encounter profile, but not all.
+          if klass == 'Encounter'
+            if resource_validation_errors[:errors].empty?
+              @us_core_encounter_count += 1
+            else
+              resource_validation_errors = validate(klass, resource, nil)
+            end
+          end
+        else
+          warn { assert false, 'No profiles found for this Resource' }
+          resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
+        end
+
+        resource_validation_errors
+      end
+
       def guess_profile(resource, version)
         # if Device type code is not in predefined type code list, validate using FHIR base profile
         return nil if resource.resourceType == 'Device' && !predefined_device_type?(resource)
 
-        # validate Location using FHIR base profile
-        return nil if resource.resourceType == 'Location'
+        # validate resources without a strong mapping to USCDI using the FHIR base profile instead of US Core
+        return nil if NON_US_CORE_KLASS.include?(resource.resourceType)
 
         Inferno::ValidationUtil.guess_profile(resource, version)
       end
@@ -462,9 +482,9 @@ module Inferno
           )
         end
 
-        skip 'Bulk Data Server export did not provide any Patient resources.' unless @patient_ids_seen.present?
+        skip 'Bulk data export did not provide any Patient resources.' unless @patient_ids_seen.present?
 
-        assert @patient_ids_seen.length >= MIN_RESOURCE_COUNT, 'Bulk Data Server export did not have multple Patient resources.'
+        assert @patient_ids_seen.length >= MIN_RESOURCE_COUNT, 'Bulk data export did not have multple Patient resources.'
       end
 
       test :validate_patient_ids_in_group do
@@ -679,7 +699,7 @@ module Inferno
       test :validate_medicationrequest do
         metadata do
           id '15'
-          name 'MedicationRequest resources returned conform to the US Core MeidcationRequest Profile'
+          name 'MedicationRequest resources returned conform to the US Core MedicationRequest Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
@@ -811,13 +831,12 @@ module Inferno
           name 'Encounter resources returned conform to the US Core Encounter Profile'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter'
           description %(
-            This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
+            This test verifies that at least one of the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
 
             The following US Core profiles have "Must Support" data element which reference Encounter resources:
 
             * [DiagnosticReport Note](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note)
             * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
-            * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
           )
         end
 
@@ -829,6 +848,8 @@ module Inferno
           }
         ]
         test_output_against_profile('Encounter', profile_definitions)
+
+        assert @us_core_encounter_count.positive?, 'Bulk data export did not have at least one US Core Encounter resource.'
       end
 
       test :validate_organization do
@@ -913,10 +934,11 @@ module Inferno
       test :validate_location do
         metadata do
           id '22'
-          name 'Location resources returned conform to the HL7 FHIR Specification Location Resource'
+          name 'Location resources returned conform to the HL7 FHIR Specification Location Resource if bulk data export has Location resources'
           link 'http://hl7.org/fhir/StructureDefinition/Location'
           description %(
             This test verifies that the resources returned from bulk data export conform to the HL7 FHIR Specification. This includes checking for missing data elements.
+            This test is omitted if bulk data export does not return any Location resources.
 
             The following US Core profiles have "Must Support" data elements which reference Location resources:
 
@@ -930,7 +952,7 @@ module Inferno
       test :validate_medication do
         metadata do
           id '23'
-          name 'Medication resources returned conform to the US Core Medication Profile if FHIR server has Medication resources'
+          name 'Medication resources returned conform to the US Core Medication Profile if bulk data export has Medication resources'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
@@ -943,6 +965,47 @@ module Inferno
         end
 
         test_output_against_profile('Medication')
+      end
+
+      test :validate_practitionerrole do
+        metadata do
+          id '24'
+          name 'PractitionerRole resources returned conform to the HL7 FHIR PractitionerRole Specification if bulk data export has PractitionerRole resources'
+          link 'http://hl7.org/fhir/StructureDefinition/PractitionerRole'
+          description %(
+            This test verifies that the resources returned from bulk data export conform to the HL7 FHIR Specification. This includes checking for missing data elements and value set verification.
+            This test is omitted if bulk data export does not return any PractitionerRole resources.
+
+            The following US Core profiles have "Must Support" data elements which reference PractitionerRole resources:
+
+            * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
+            * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
+            * [Provenance](http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance)
+          )
+        end
+
+        test_output_against_profile('PractitionerRole')
+      end
+
+      test :validate_relatedperson do
+        metadata do
+          id '25'
+          name 'Medication resources returned conform to the HL7 FHIR RelatedPerson Specification if bulk data export has RelatedPerson resources'
+          link 'http://hl7.org/fhir/StructureDefinition/RelatedPerson'
+          description %(
+            This test verifies that the resources returned from bulk data export conform to the HL7 FHIR Specification. This includes checking for missing data elements and value set verification.
+            This test is omitted if bulk data export does not return any RelatedPerson resources.
+
+            The following US Core profiles have "Must Support" data elements which reference RelatedPerson resources:
+
+            * [CareTeam](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam)
+            * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
+            * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
+            * [Provenance](http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance)
+          )
+        end
+
+        test_output_against_profile('RelatedPerson')
       end
     end
   end

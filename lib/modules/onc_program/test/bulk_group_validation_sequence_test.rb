@@ -302,7 +302,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
         @sequence.test_output_against_profile('Observation')
       end
 
-      assert error.message == 'Bulk Data Server export did not provide any Observation resources.'
+      assert error.message == 'Bulk data export did not provide any Observation resources.'
     end
 
     it 'select matched output file' do
@@ -619,7 +619,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       skip_exception = assert_raises(Inferno::SkipException) do
         @sequence.test_output_against_profile('Patient')
       end
-      assert skip_exception.message == 'Bulk Data Server export did not provide any Patient resources.'
+      assert skip_exception.message == 'Bulk data export did not provide any Patient resources.'
     end
 
     it 'passes when export is empty and lines_to_validate is zero' do
@@ -750,6 +750,39 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       resource = FHIR::Location.new
       actual = @sequence.guess_profile(resource, :r4)
       assert actual.nil?
+    end
+  end
+
+  describe 'omit or skip empty resources test' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'skips Patient empty resource' do
+      klass = 'Patient'
+      error = assert_raises(Inferno::SkipException) do
+        @sequence.omit_or_skip_empty_resources(klass)
+      end
+
+      assert error.message == "Bulk data export did not provide any #{klass} resources."
+    end
+
+    it 'omits Medication empty resource' do
+      klass = 'Medication'
+      error = assert_raises(Inferno::OmitException) do
+        @sequence.omit_or_skip_empty_resources(klass)
+      end
+
+      assert error.message == "No #{klass} resources provided, and #{klass} resources are optional."
+    end
+
+    it 'omits Location empty resource' do
+      klass = 'Location'
+      error = assert_raises(Inferno::OmitException) do
+        @sequence.omit_or_skip_empty_resources(klass)
+      end
+
+      assert error.message == "No #{klass} resources provided, and #{klass} resources are optional."
     end
   end
 

@@ -23,7 +23,7 @@ module Inferno
         # Testing Methodology
 
 
-        Because Encounter resources are not present o not exist in USCDI, no searches are performed on this test sequence. Instead, references to
+        Because Encounter resources are not required by USCDI, no searches are performed on this test sequence. Instead, references to
         this profile found in other resources are used for testing. If no references can be found this way, then all the tests
         in this sequence are skipped.
 
