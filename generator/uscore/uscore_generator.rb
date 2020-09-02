@@ -579,6 +579,12 @@ module Inferno
                             sequence[:must_supports][:extensions].map { |extension| "* #{extension[:id]}" } +
                             sequence[:must_supports][:slices].map { |slice| "* #{slice[:name]}" } +
                             sequence[:must_supports][:references].map { |reference| "* #{reference[:path]}" }
+
+        must_suport_reference_description = %(
+          For elements of type 'reference' with one or more target profiles from US Core, this test will ensure that at least one of each resource type
+          associated with each US Core target profile is provided as a reference.  This test will not validate those references against their associated
+          US Core profile to reduce test complexity.)
+
         test = {
           tests_that: "All must support elements are provided in the #{sequence[:resource]} resources returned.",
           index: sequence[:tests].length + 1,
@@ -588,12 +594,9 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the #{sequence[:resource]} resources found previously for the following must support elements:
 
-            #{must_support_list.join("\n            ")}
+            #{must_support_list.sort.join("\n            ")}
 
-
-            For elements of type 'reference' with one or more target profiles from US Core, this test will ensure that at least one of each resource type
-            associated with each US Core target profile is provided as a reference.  This test will not validate those references against their associated
-            US Core profile to reduce test complexity.
+            #{must_suport_reference_description if sequence[:must_supports][:references].present?}
           )
         }
         must_support_extensions = sequence[:must_supports][:extensions]

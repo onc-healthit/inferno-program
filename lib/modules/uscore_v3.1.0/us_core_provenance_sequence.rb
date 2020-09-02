@@ -153,21 +153,21 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Provenance resources found previously for the following must support elements:
 
-            * recorded
+            * Provenance.agent:ProvenanceAuthor
+            * Provenance.agent:ProvenanceTransmitter
             * agent
+            * agent.onBehalfOf
             * agent.type
             * agent.type.coding.code
             * agent.type.coding.code
-            * Provenance.agent:ProvenanceAuthor
-            * Provenance.agent:ProvenanceTransmitter
-            * target
             * agent.who
-            * agent.onBehalfOf
+            * recorded
+            * target
 
 
-            For elements of type 'reference' with one or more target profiles from US Core, this test will ensure that at least one of each resource type
-            associated with each US Core target profile is provided as a reference.  This test will not validate those references against their associated
-            US Core profile to reduce test complexity.
+          For elements of type 'reference' with one or more target profiles from US Core, this test will ensure that at least one of each resource type
+          associated with each US Core target profile is provided as a reference.  This test will not validate those references against their associated
+          US Core profile to reduce test complexity.
 
           )
           versions :r4

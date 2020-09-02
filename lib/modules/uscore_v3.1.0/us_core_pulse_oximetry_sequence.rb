@@ -589,45 +589,45 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Observation resources found previously for the following must support elements:
 
-            * status
+            * Observation.category:VSCat
+            * Observation.code.coding:PulseOx
+            * Observation.component:Concentration
+            * Observation.component:FlowRate
+            * Observation.value[x]:valueQuantity
             * category
             * category.coding
-            * category.coding.system
             * category.coding.code
+            * category.coding.system
             * code
             * code.coding
-            * code.coding.system
             * code.coding.code
-            * effective[x]
-            * value[x]
-            * value[x].value
-            * value[x].unit
-            * value[x].system
-            * value[x].code
-            * dataAbsentReason
+            * code.coding.system
             * component
             * component.code
             * component.code.coding.code
-            * component.value[x].system
-            * component.value[x].code
             * component.code.coding.code
-            * component.value[x]
-            * component.value[x].value
-            * component.value[x].unit
-            * component.value[x].system
-            * component.value[x].code
             * component.dataAbsentReason
-            * Observation.category:VSCat
-            * Observation.code.coding:PulseOx
-            * Observation.value[x]:valueQuantity
-            * Observation.component:FlowRate
-            * Observation.component:Concentration
+            * component.value[x]
+            * component.value[x].code
+            * component.value[x].code
+            * component.value[x].system
+            * component.value[x].system
+            * component.value[x].unit
+            * component.value[x].value
+            * dataAbsentReason
+            * effective[x]
+            * status
             * subject
+            * value[x]
+            * value[x].code
+            * value[x].system
+            * value[x].unit
+            * value[x].value
 
 
-            For elements of type 'reference' with one or more target profiles from US Core, this test will ensure that at least one of each resource type
-            associated with each US Core target profile is provided as a reference.  This test will not validate those references against their associated
-            US Core profile to reduce test complexity.
+          For elements of type 'reference' with one or more target profiles from US Core, this test will ensure that at least one of each resource type
+          associated with each US Core target profile is provided as a reference.  This test will not validate those references against their associated
+          US Core profile to reduce test complexity.
 
           )
           versions :r4

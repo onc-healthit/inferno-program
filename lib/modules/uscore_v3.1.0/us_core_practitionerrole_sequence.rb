@@ -180,19 +180,19 @@ module Inferno
             This will look through the PractitionerRole resources found previously for the following must support elements:
 
             * code
+            * endpoint
+            * location
+            * organization
+            * practitioner
             * specialty
             * telecom
             * telecom.system
             * telecom.value
-            * practitioner
-            * organization
-            * location
-            * endpoint
 
 
-            For elements of type 'reference' with one or more target profiles from US Core, this test will ensure that at least one of each resource type
-            associated with each US Core target profile is provided as a reference.  This test will not validate those references against their associated
-            US Core profile to reduce test complexity.
+          For elements of type 'reference' with one or more target profiles from US Core, this test will ensure that at least one of each resource type
+          associated with each US Core target profile is provided as a reference.  This test will not validate those references against their associated
+          US Core profile to reduce test complexity.
 
           )
           versions :r4
