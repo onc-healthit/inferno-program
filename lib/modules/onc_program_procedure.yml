@@ -309,20 +309,14 @@ procedure:
           * "Device";
           * "DiagnosticReport";
           * "DocumentReference";
-          * "Encounter";
           * "Goal";
           * "Immunization";
-          * "Location";
           * "Medication" (if supported);
           * "MedicationRequest";
           * "Observation";
-          * "Organization";
           * "Patient";
-          * “Practitioner";
-          * “PractitionerRole";
-          * “Procedure";
-          * “Provenance"; and
-          * “RelatedPerson";
+          * "Procedure"; and
+          * "Provenance".
         TLV: |
           [Both] The tester verifies the ability of the
           Health IT Module to evaluate the authorization request and
@@ -340,20 +334,14 @@ procedure:
           * "Device";
           * "DiagnosticReport";
           * "DocumentReference";
-          * "Encounter";
           * "Goal";
           * "Immunization";
-          * "Location";
           * "Medication" (if supported);
           * "MedicationRequest";
           * "Observation";
-          * "Organization";
           * "Patient";
-          * “Practitioner";
-          * “PractitionerRole";
-          * “Procedure";
-          * “Provenance"; and
-          * “RelatedPerson";
+          * "Procedure"; and
+          * "Provenance".
         inferno_supported: 'yes'
         inferno_tests:
           - SPB-OSLS-02
@@ -401,13 +389,13 @@ procedure:
         SUT: |
           [Both] The health IT developer demonstrates the ability of the Health
           IT Module to deny an application’s authorization request according to
-          a patient’s preferences selected in steps 9 and 10 of this section in
+          a patient’s preferences selected in steps 10 and 11 of this section in
           accordance with the implementation specification adopted in §
           170.215(a)(3).
         TLV: |
           [Both] The tester verifies the ability of the Health IT Module to deny
           an application’s authorization request according to a patient’s
-          preferences selected in steps 9 and 10 of this section in accordance
+          preferences selected in steps 10 and 11 of this section in accordance
           with the implementation specification adopted in § 170.215(a)(3).
         inferno_supported: 'yes'
         inferno_tests:
@@ -426,19 +414,19 @@ procedure:
           based on previously selected preferences.
       - id: AUTH-PATIENT-13
         SUT: |
-          [EHR-Launch] The health IT developer demonstrates the ability of
+          [Both] The health IT developer demonstrates the ability of
           the Health IT Module to return an error response if the following
           parameters provided by an application to the Health IT Module in
-          step 7 of this section do not match the parameters originally
+          step 8 of this section do not match the parameters originally
           provided to an application by the Health IT Module in step 2 of
           this section according to the implementation specification
           adopted in § 170.215(a)(3):
           * “launch”; and
           * “aud”.
         TLV: |
-          [EHR-Launch] The tester verifies the ability of the Health IT
+          [Both] The tester verifies the ability of the Health IT
           Module to return an error response if the following parameters
-          provided by an application to the Health IT Module in step 7 of
+          provided by an application to the Health IT Module in step 8 of
           this section do not match the parameters originally provided to an
           application by the Health IT Module in step 2 of this section
           according to the implementation specification adopted in §
@@ -579,12 +567,12 @@ procedure:
         SUT: |
           [Standalone-Launch] The health IT developer the ability of the Health IT
           Module to return a “Patient” FHIR resource that matches the
-          patient context provided in step 8 of this section according to the
+          patient context provided in step 9 of this section according to the
           implementation specification adopted in § 170.215(a)(2).
         TLV: |
           [Standalone-Launch] The tester verifies the ability of the Health IT
           Module to return a “Patient” FHIR resource that matches the
-          patient context provided in step 8 of this section according to the
+          patient context provided in step 9 of this section according to the
           implementation specification adopted in § 170.215(a)(2).
         inferno_supported: 'yes'
         inferno_tests:
@@ -1267,7 +1255,7 @@ procedure:
           profiles and Data Elements specified in and according to the 
           standard adopted in § 170.213 and implementation specification
           adopted in § 170.215(a)(2), including the following FHIR resources:
-          “AllergyIntolerance”;
+          * “AllergyIntolerance”;
           * “CarePlan”;
           * “CareTeam”;
           * “Condition”;
@@ -1296,7 +1284,7 @@ procedure:
           profiles and Data Elements specified in and according to the 
           standard adopted in § 170.213 and implementation specification
           adopted in § 170.215(a)(2), including the following FHIR resources:
-          “AllergyIntolerance”;
+          * “AllergyIntolerance”;
           * “CarePlan”;
           * “CareTeam”;
           * “Condition”;
