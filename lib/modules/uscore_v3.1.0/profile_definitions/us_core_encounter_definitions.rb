@@ -6,6 +6,24 @@ module Inferno
       MUST_SUPPORTS = {
         extensions: [],
         slices: [],
+        references: [
+          {
+            path: 'subject',
+            resource_types: [
+              'Patient'
+            ]
+          },
+          {
+            path: 'participant.individual',
+            resource_types: [
+              'Practitioner'
+            ]
+          },
+          {
+            path: 'location.location',
+            resource_types: []
+          }
+        ],
         elements: [
           {
             path: 'identifier'
@@ -20,13 +38,10 @@ module Inferno
             path: 'status'
           },
           {
-            path: 'local_class'
+            path: 'class'
           },
           {
             path: 'type'
-          },
-          {
-            path: 'subject'
           },
           {
             path: 'participant'
@@ -36,9 +51,6 @@ module Inferno
           },
           {
             path: 'participant.period'
-          },
-          {
-            path: 'participant.individual'
           },
           {
             path: 'period'
@@ -54,9 +66,6 @@ module Inferno
           },
           {
             path: 'location'
-          },
-          {
-            path: 'location.location'
           }
         ]
       }.freeze

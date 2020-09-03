@@ -17,6 +17,27 @@ module Inferno
             }
           }
         ],
+        references: [
+          {
+            path: 'subject',
+            resource_types: [
+              'Patient'
+            ]
+          },
+          {
+            path: 'performer',
+            resource_types: [
+              'Practitioner',
+              'Organization'
+            ]
+          },
+          {
+            path: 'result',
+            resource_types: [
+              'Observation'
+            ]
+          }
+        ],
         elements: [
           {
             path: 'status'
@@ -28,19 +49,10 @@ module Inferno
             path: 'code'
           },
           {
-            path: 'subject'
-          },
-          {
             path: 'effective'
           },
           {
             path: 'issued'
-          },
-          {
-            path: 'performer'
-          },
-          {
-            path: 'result'
           }
         ]
       }.freeze

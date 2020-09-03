@@ -238,6 +238,16 @@ module Inferno
         must_support_info[:slices].reject! do |ms_slice|
           find_slice(resource, ms_slice[:path], ms_slice[:discriminator])
         end
+
+        must_support_info[:references].each do |ms_reference|
+          ms_reference[:resource_types].reject! do |resource_type|
+            value_found = resolve_element_from_path(resource, ms_reference[:path]) do |value|
+              value.is_a?(FHIR::Reference) && value.reference.include?("#{resource_type}/")
+            end
+            value_found.present?
+          end
+        end
+        must_support_info[:references].delete_if { |ms_reference| ms_reference[:resource_types].empty? }
       end
 
       def validate_bindings(bindings, resources)
@@ -319,6 +329,9 @@ module Inferno
 
           missing_extensions_list = missing_must_supports[:extensions].map { |extension| extension[:id] }
           skip_if missing_extensions_list.present?, format(error_string, 'extensions', missing_extensions_list.join(', '))
+
+          missing_references_list = missing_must_supports[:references].map { |reference| "#{reference[:path]}: #{reference[:resource_types].join(',')}" }
+          skip_if missing_references_list.present?, format(error_string, 'reference elements', missing_references_list.join(';'))
         end
       end
 

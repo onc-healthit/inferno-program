@@ -6,6 +6,14 @@ module Inferno
       MUST_SUPPORTS = {
         extensions: [],
         slices: [],
+        references: [
+          {
+            path: 'subject',
+            resource_types: [
+              'Patient'
+            ]
+          }
+        ],
         elements: [
           {
             path: 'clinicalStatus'
@@ -18,9 +26,6 @@ module Inferno
           },
           {
             path: 'code'
-          },
-          {
-            path: 'subject'
           }
         ]
       }.freeze

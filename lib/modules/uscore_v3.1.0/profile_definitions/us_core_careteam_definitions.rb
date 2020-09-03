@@ -6,21 +6,31 @@ module Inferno
       MUST_SUPPORTS = {
         extensions: [],
         slices: [],
+        references: [
+          {
+            path: 'subject',
+            resource_types: [
+              'Patient'
+            ]
+          },
+          {
+            path: 'participant.member',
+            resource_types: [
+              'Patient',
+              'Practitioner',
+              'Organization'
+            ]
+          }
+        ],
         elements: [
           {
             path: 'status'
-          },
-          {
-            path: 'subject'
           },
           {
             path: 'participant'
           },
           {
             path: 'participant.role'
-          },
-          {
-            path: 'participant.member'
           }
         ]
       }.freeze

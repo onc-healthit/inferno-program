@@ -433,11 +433,17 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Goal resources found previously for the following must support elements:
 
-            * lifecycleStatus
+            * Goal.target.due[x]:dueDate
             * description
+            * lifecycleStatus
             * subject
             * target
-            * Goal.target.due[x]:dueDate
+
+
+          For elements of type 'reference' with one or more target profiles from US Core, this test will ensure that at least one of each resource type
+          associated with each US Core target profile is provided as a reference.  This test will not validate those references against their associated
+          US Core profile to reduce test complexity.
+
           )
           versions :r4
         end
@@ -450,6 +456,18 @@ module Inferno
             slice_found = find_slice(resource, slice[:path], slice[:discriminator])
             slice_found.present?
           end
+        end
+
+        missing_must_support_references = must_supports[:references].each_with_object({}) do |reference, missing_types_by_path|
+          missing_resource_types = reference[:resource_types].reject do |resource_type|
+            @goal_ary&.values&.flatten&.any? do |resource|
+              value_found = resolve_element_from_path(resource, reference[:path]) do |value|
+                value.is_a?(FHIR::Reference) && value.reference.include?("#{resource_type}/")
+              end
+              value_found.present?
+            end
+          end
+          missing_types_by_path[reference[:path]] = missing_resource_types if missing_resource_types.present?
         end
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
@@ -468,6 +486,9 @@ module Inferno
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@goal_ary&.values&.flatten&.length} provided Goal resource(s)"
+        skip_if missing_must_support_references.present?,
+                "Could not find the following resource type references:#{missing_must_support_references.map { |path, resource_types| path + ':' + resource_types.join(',') }.join(';')}"
+
         @instance.save!
       end
 

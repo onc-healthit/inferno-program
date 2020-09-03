@@ -564,6 +564,19 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Patient resources found previously for the following must support elements:
 
+            * Patient.extension:birthsex
+            * Patient.extension:ethnicity
+            * Patient.extension:race
+            * address
+            * address.city
+            * address.line
+            * address.period
+            * address.postalCode
+            * address.state
+            * birthDate
+            * communication
+            * communication.language
+            * gender
             * identifier
             * identifier.system
             * identifier.value
@@ -572,21 +585,11 @@ module Inferno
             * name.given
             * telecom
             * telecom.system
-            * telecom.value
             * telecom.use
-            * gender
-            * birthDate
-            * address
-            * address.line
-            * address.city
-            * address.state
-            * address.postalCode
-            * address.period
-            * communication
-            * communication.language
-            * Patient.extension:race
-            * Patient.extension:ethnicity
-            * Patient.extension:birthsex
+            * telecom.value
+
+
+
           )
           versions :r4
         end
