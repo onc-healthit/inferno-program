@@ -1008,7 +1008,7 @@ module Inferno
       test :validate_relatedperson do
         metadata do
           id '25'
-          name 'Medication resources returned conform to the HL7 FHIR RelatedPerson Specification if bulk data export has RelatedPerson resources'
+          name 'RelatedPerson resources returned conform to the HL7 FHIR RelatedPerson Specification if bulk data export has RelatedPerson resources'
           link 'http://hl7.org/fhir/StructureDefinition/RelatedPerson'
           description %(
             This test verifies that the resources returned from bulk data export conform to the HL7 FHIR Specification. This includes checking for missing data elements and value set verification.
