@@ -17,6 +17,14 @@ module Inferno
             }
           }
         ],
+        references: [
+          {
+            path: 'subject',
+            resource_types: [
+              'Patient'
+            ]
+          }
+        ],
         elements: [
           {
             path: 'status'
@@ -26,9 +34,6 @@ module Inferno
           },
           {
             path: 'code'
-          },
-          {
-            path: 'subject'
           },
           {
             path: 'effective'

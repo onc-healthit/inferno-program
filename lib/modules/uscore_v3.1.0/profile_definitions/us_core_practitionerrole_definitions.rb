@@ -6,21 +6,34 @@ module Inferno
       MUST_SUPPORTS = {
         extensions: [],
         slices: [],
+        references: [
+          {
+            path: 'practitioner',
+            resource_types: [
+              'Practitioner'
+            ]
+          },
+          {
+            path: 'organization',
+            resource_types: [
+              'Organization'
+            ]
+          },
+          {
+            path: 'location',
+            resource_types: []
+          },
+          {
+            path: 'endpoint',
+            resource_types: []
+          }
+        ],
         elements: [
-          {
-            path: 'practitioner'
-          },
-          {
-            path: 'organization'
-          },
           {
             path: 'code'
           },
           {
             path: 'specialty'
-          },
-          {
-            path: 'location'
           },
           {
             path: 'telecom'
@@ -30,9 +43,6 @@ module Inferno
           },
           {
             path: 'telecom.value'
-          },
-          {
-            path: 'endpoint'
           }
         ]
       }.freeze

@@ -17,6 +17,14 @@ module Inferno
             }
           }
         ],
+        references: [
+          {
+            path: 'subject',
+            resource_types: [
+              'Patient'
+            ]
+          }
+        ],
         elements: [
           {
             path: 'text'
@@ -32,9 +40,6 @@ module Inferno
           },
           {
             path: 'category'
-          },
-          {
-            path: 'subject'
           }
         ]
       }.freeze

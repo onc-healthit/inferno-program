@@ -27,10 +27,27 @@ module Inferno
             }
           }
         ],
-        elements: [
+        references: [
           {
-            path: 'target'
+            path: 'target',
+            resource_types: []
           },
+          {
+            path: 'agent.who',
+            resource_types: [
+              'Practitioner',
+              'Patient',
+              'Organization'
+            ]
+          },
+          {
+            path: 'agent.onBehalfOf',
+            resource_types: [
+              'Organization'
+            ]
+          }
+        ],
+        elements: [
           {
             path: 'recorded'
           },
@@ -39,12 +56,6 @@ module Inferno
           },
           {
             path: 'agent.type'
-          },
-          {
-            path: 'agent.who'
-          },
-          {
-            path: 'agent.onBehalfOf'
           },
           {
             path: 'agent.type.coding.code',

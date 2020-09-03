@@ -6,6 +6,34 @@ module Inferno
       MUST_SUPPORTS = {
         extensions: [],
         slices: [],
+        references: [
+          {
+            path: 'subject',
+            resource_types: [
+              'Patient'
+            ]
+          },
+          {
+            path: 'author',
+            resource_types: [
+              'Practitioner',
+              'Organization',
+              'Patient'
+            ]
+          },
+          {
+            path: 'custodian',
+            resource_types: [
+              'Organization'
+            ]
+          },
+          {
+            path: 'context.encounter',
+            resource_types: [
+              'Encounter'
+            ]
+          }
+        ],
         elements: [
           {
             path: 'identifier'
@@ -20,16 +48,7 @@ module Inferno
             path: 'category'
           },
           {
-            path: 'subject'
-          },
-          {
             path: 'date'
-          },
-          {
-            path: 'author'
-          },
-          {
-            path: 'custodian'
           },
           {
             path: 'content'
@@ -51,9 +70,6 @@ module Inferno
           },
           {
             path: 'context'
-          },
-          {
-            path: 'context.encounter'
           },
           {
             path: 'context.period'

@@ -181,12 +181,15 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Practitioner resources found previously for the following must support elements:
 
+            * Practitioner.identifier:NPI
             * identifier
             * identifier.system
             * identifier.value
             * name
             * name.family
-            * Practitioner.identifier:NPI
+
+
+
           )
           versions :r4
         end
