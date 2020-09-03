@@ -198,6 +198,28 @@ For alternate installation options, please visit <a href='https://github.com/onc
   </div>
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.2.0</div>
+      <p>
+      The Inferno Program Edition v1.2.0 minor release provides the following test updates that may
+      alter the result of systems that were able to pass prior versions of these tests:
+      </p>
+      <ul>
+      <li>Elements of any type within US Core Profiles flagged as 'must support' must contain a value in at least one resource returned in order to qualify as being 'populated'. In certain cases in previous versions, elements containing only a 'Data Absent Reason' qualified as being 'populated'.  Tests were updated to no longer allow 'Data Absent Reason' as proof of the ability to populate an element.</li>
+      <li>Systems must demonstrate the ability to populate reference type elements within US Core Profiles flagged as 'must support' with every US Core reference type listed for that reference element. Previous versions of tests considered populating the reference element with any valid reference as sufficient evidence that the system supports that reference element.</li>
+      <li>Improved consistency of data validation between the Single Patient API and Multi-Patient API tests.  This includes the addition of two tests that validate PractitionerRole and RelatedPerson resources, if provided as standalone resources.</li>
+      </ul>
+      <p> Additionally, the following updates were made which should not affect the outcome of tests:
+      </p>
+      <ul>
+      <li>Removed total number of references encountered during testing in final report because it was not accurate in all cases.</li>
+      <li>Fixed error in the default scopes that were pre-filled in the Multi-Patient API tests.</li>
+      <li>Updated internal mapping to the official ONC Test Procedure v1.1.</li>
+      </ul>
+      </p>
+    <p>
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_2_0.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure.
+    </p>
     <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.1.0</div>
       <p>
       The Inferno Program Edition v1.1.0 minor release provides the following test updates that may
@@ -224,6 +246,7 @@ For alternate installation options, please visit <a href='https://github.com/onc
       rename the files in /data/ (e.g. production.db; development.db; test.db).  Inferno will fail to load if these
       files are not removed or renamed due to a change in the Inferno data schema.
       </i>
+      </p>
     <p>
       Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_1_0.xlsx'>Test Procedure Matrix</a> to view a mapping
       between Inferno Tests and the 2015 Cures Update Test Procedure.
@@ -243,6 +266,7 @@ For alternate installation options, please visit <a href='https://github.com/onc
       rename the files in /data/ (e.g. production.db; development.db; test.db).  Inferno will fail to load if these
       files are not removed or renamed due to a change in the Inferno data schema.
       </i>
+      </p>
     <p>
       Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_0_2.xlsx'>Test Procedure Matrix</a> to view a mapping
       between Inferno Tests and the 2015 Cures Update Test Procedure.
