@@ -454,7 +454,11 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @goal_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              value_without_extensions.present? && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
             value_found.present?
           end
         end

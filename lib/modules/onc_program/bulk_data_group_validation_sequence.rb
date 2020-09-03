@@ -223,7 +223,12 @@ module Inferno
         return unless must_support_info.present?
 
         must_support_info[:elements].reject! do |ms_element|
-          resolve_element_from_path(resource, ms_element[:path]) { |value| ms_element[:fixed_value].blank? || value == ms_element[:fixed_value] }
+          value_found = resolve_element_from_path(resource, ms_element[:path]) do |value|
+            value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+            value_without_extensions.present? && (ms_element[:fixed_value].blank? || value == ms_element[:fixed_value])
+          end
+
+          value_found.present?
         end
 
         must_support_info[:extensions].reject! do |ms_extension|
