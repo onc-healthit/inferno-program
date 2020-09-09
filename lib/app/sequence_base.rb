@@ -30,6 +30,8 @@ module Inferno
       include SearchValidationUtil
       include Inferno::WebDriver
 
+      class InvalidReferenceResource < StandardError; end
+
       @@test_index = 0
 
       @@group = {}
@@ -708,10 +710,17 @@ module Inferno
                 next
               end
             end
-            value.read
+            reference = value.reference
+            reference_type = value.resource_type
+            resource = value.read
+
+            raise InvalidReferenceResource if resource.resourceType != reference_type
+
             resolved_references.add(value.reference)
           rescue ClientException => e
             problems << "#{path} did not resolve: #{e}"
+          rescue InvalidReferenceResource
+            problems << "Expected #{reference} to refer to a #{reference_type} resource, but found a #{resource.resourceType} resource."
           end
         end
 
