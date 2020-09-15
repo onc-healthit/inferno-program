@@ -148,10 +148,11 @@ module Inferno
       end
 
       def generate_profile_definition(sequence)
-        file_name = sequence_out_path + '/profile_definitions/' + sequence[:name].downcase + '_definitions.rb'
+        profile_definition_folder = File.join(sequence_out_path, '/profile_definitions')
+        file_name = File.join(profile_definition_folder, sequence[:name].downcase + '_definitions.rb')
         template = ERB.new(File.read(File.join(__dir__, 'templates/sequence_definition.rb.erb')))
         output = template.result_with_hash(sequence)
-        FileUtils.mkdir_p(sequence_out_path) unless File.directory?(sequence_out_path)
+        FileUtils.mkdir_p(profile_definition_folder) unless File.directory?(profile_definition_folder)
         File.write(file_name, output)
       end
 
