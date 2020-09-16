@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class ONCAccessVerifyUnrestrictedSequence < SequenceBase
+    class USCore311ONCAccessVerifyUnrestrictedSequence < SequenceBase
       title 'Unrestricted Resource Type Access'
 
       description 'Verify that patients can grant access to all necessary resource types.'
