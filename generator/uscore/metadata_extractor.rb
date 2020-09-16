@@ -75,7 +75,7 @@ module Inferno
           name: base_name.tr('-', '_'),
           class_name: class_name,
           version: metadata[:version],
-          reformatted_version: metadata[:reformatted_version],          
+          reformatted_version: metadata[:reformatted_version],
           test_id_prefix: test_id_prefix,
           resource: resource['type'],
           profile: profile,
@@ -477,7 +477,7 @@ module Inferno
         # Procedure's date search param definition says Procedure.occurenceDateTime even though Procedure doesn't have an occurenceDateTime
         procedure_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Procedure' }
         procedure_sequence[:search_param_descriptions][:date][:path] = 'Procedure.performed'
-        
+
         # add the ge comparator for USCore v3.1.0 - the metadata is missing it for some reason
         # This code segment has no impact for USCore v3.1.1 and forward.
         metadata[:sequences].each do |sequence|
