@@ -2,7 +2,7 @@
 
 module Inferno
   module Sequence
-    class ONCAccessVerifyRestrictedSequence < SequenceBase
+    class USCore311ONCAccessVerifyRestrictedSequence < SequenceBase
       title 'Restricted Resource Type Access'
 
       description 'Verify that patients have control over which resource types can be accessed.'
