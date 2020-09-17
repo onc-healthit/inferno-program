@@ -5,12 +5,12 @@
 
 require_relative '../../../../test/test_helper'
 
-describe Inferno::Sequence::ONCAccessVerifyRestrictedSequence do
+describe Inferno::Sequence::USCore311ONCAccessVerifyRestrictedSequence do
   before do
-    @sequence_class = Inferno::Sequence::ONCAccessVerifyRestrictedSequence
+    @sequence_class = Inferno::Sequence::USCore311ONCAccessVerifyRestrictedSequence
     @base_url = 'http://www.example.com/fhir'
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(url: @base_url, onc_sl_url: @base_url, token: @token, selected_module: 'uscore_v3.1.0')
+    @instance = Inferno::Models::TestingInstance.create(url: @base_url, onc_sl_url: @base_url, token: @token, selected_module: 'uscore_v3.1.1')
     @client = FHIR::Client.for_testing_instance(@instance)
     @patient_ids = 'example'
     @instance.patient_id = @instance.patient_ids = @patient_ids

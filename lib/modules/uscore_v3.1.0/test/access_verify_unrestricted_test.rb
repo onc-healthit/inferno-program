@@ -5,9 +5,9 @@
 
 require_relative '../../../../test/test_helper'
 
-describe Inferno::Sequence::ONCAccessVerifyUnrestrictedSequence do
+describe Inferno::Sequence::USCore310ONCAccessVerifyUnrestrictedSequence do
   before do
-    @sequence_class = Inferno::Sequence::ONCAccessVerifyUnrestrictedSequence
+    @sequence_class = Inferno::Sequence::USCore310ONCAccessVerifyUnrestrictedSequence
     @base_url = 'http://www.example.com/fhir'
     @token = 'ABC'
     @instance = Inferno::Models::TestingInstance.create(url: @base_url, onc_sl_url: @base_url, token: @token, selected_module: 'uscore_v3.1.0')
