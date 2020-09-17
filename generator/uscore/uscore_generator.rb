@@ -1396,14 +1396,24 @@ module Inferno
         }
 
         ['restricted', 'unrestricted'].each do |restriction|
+          module_info[:access_verify_restriction] = restriction
+
           file_name = "#{sequence_out_path}/access_verify_#{restriction}_sequence.rb"
 
           template = ERB.new(File.read(File.join(__dir__, 'templates/access_verify_sequence.rb.erb')))
 
-          module_info[:access_verify_restriction] = restriction
           output = template.result_with_hash(module_info)
           FileUtils.mkdir_p(sequence_out_path) unless File.directory?(sequence_out_path)
           File.write(file_name, output)
+
+          file_name = "#{sequence_out_path}/test/access_verify_#{restriction}_test.rb"
+
+          template = ERB.new(File.read(File.join(__dir__, "templates/unit_tests/access_verify_#{restriction}_unit_test.rb.erb")))
+
+          output = template.result_with_hash(module_info)
+          FileUtils.mkdir_p("#{sequence_out_path}/test") unless File.directory?("#{sequence_out_path}/test")
+          File.write(file_name, output)
+
         end
       end
 
