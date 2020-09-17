@@ -47,7 +47,7 @@ test_sets:
           - sequence: OncStandaloneTokenRefreshSequence
             prefix: SPD
             description: Use refresh token to get new access token and verify it can access resources.
-          - ONCAccessVerifyUnrestrictedSequence
+          - USCore311ONCAccessVerifyUnrestrictedSequence
       - name: Standalone Patient App - Limited Access
         short_label: Limited App
         run_all: true
@@ -80,7 +80,7 @@ test_sets:
             prefix: RPA
             title: Standalone Launch with Limited Scope
             description: Perform Standalone SMART launch expecting limited scope access.
-          - ONCAccessVerifyRestrictedSequence
+          - USCore311ONCAccessVerifyRestrictedSequence
       - name: EHR Practitioner App
         short_label: EHR Practitioner App
         run_all: true
@@ -146,36 +146,36 @@ test_sets:
           - token
         sequences:
           - UsCoreR4CapabilityStatementSequence
-          - USCore310PatientSequence
-          - USCore310AllergyintoleranceSequence
-          - USCore310CareplanSequence
-          - USCore310CareteamSequence
-          - USCore310ConditionSequence
-          - USCore310ImplantableDeviceSequence
-          - USCore310DiagnosticreportNoteSequence
-          - USCore310DiagnosticreportLabSequence
-          - USCore310DocumentreferenceSequence
-          - USCore310GoalSequence
-          - USCore310ImmunizationSequence
-          - USCore310MedicationrequestSequence
-          - USCore310SmokingstatusSequence
-          - USCore310PediatricWeightForHeightSequence
-          - USCore310ObservationLabSequence
-          - USCore310PediatricBmiForAgeSequence
-          - USCore310PulseOximetrySequence
-          - USCore310BodyheightSequence
-          - USCore310BodytempSequence
-          - USCore310BpSequence
-          - USCore310BodyweightSequence
-          - USCore310HeadcircumSequence
-          - USCore310HeartrateSequence
-          - USCore310ResprateSequence
-          - USCore310ProcedureSequence
+          - USCore311PatientSequence
+          - USCore311AllergyintoleranceSequence
+          - USCore311CareplanSequence
+          - USCore311CareteamSequence
+          - USCore311ConditionSequence
+          - USCore311ImplantableDeviceSequence
+          - USCore311DiagnosticreportNoteSequence
+          - USCore311DiagnosticreportLabSequence
+          - USCore311DocumentreferenceSequence
+          - USCore311GoalSequence
+          - USCore311ImmunizationSequence
+          - USCore311MedicationrequestSequence
+          - USCore311SmokingstatusSequence
+          - USCore311PediatricWeightForHeightSequence
+          - USCore311ObservationLabSequence
+          - USCore311PediatricBmiForAgeSequence
+          - USCore311PulseOximetrySequence
+          - USCore311BodyheightSequence
+          - USCore311BodytempSequence
+          - USCore311BpSequence
+          - USCore311BodyweightSequence
+          - USCore311HeadOccipitalFrontalCircumferencePercentileSequence
+          - USCore311HeartrateSequence
+          - USCore311ResprateSequence
+          - USCore311ProcedureSequence
           - USCoreR4ClinicalNotesSequence
-          - USCore310EncounterSequence
-          - USCore310OrganizationSequence
-          - USCore310PractitionerSequence
-          - USCore310ProvenanceSequence
+          - USCore311EncounterSequence
+          - USCore311OrganizationSequence
+          - USCore311PractitionerSequence
+          - USCore311ProvenanceSequence
           - USCoreR4DataAbsentReasonSequence
       - name: Multi-Patient Authorization and API
         short_label: Multi-Patient API

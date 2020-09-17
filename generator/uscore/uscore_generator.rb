@@ -1413,7 +1413,6 @@ module Inferno
           output = template.result_with_hash(module_info)
           FileUtils.mkdir_p("#{sequence_out_path}/test") unless File.directory?("#{sequence_out_path}/test")
           File.write(file_name, output)
-
         end
       end
 
