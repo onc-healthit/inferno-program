@@ -593,9 +593,22 @@ module Inferno
             * category
             * code
             * dataAbsentReason
+            * effectiveDateTime
+            * effectivePeriod
             * effective[x]
             * status
             * subject
+            * valueBoolean
+            * valueCodeableConcept
+            * valueDateTime
+            * valueInteger
+            * valuePeriod
+            * valueQuantity
+            * valueRange
+            * valueRatio
+            * valueSampledData
+            * valueString
+            * valueTime
             * value[x]
 
 

@@ -594,9 +594,12 @@ module Inferno
             * category.coding
             * category.coding.code
             * category.coding.system
+            * effectiveDateTime
+            * effectivePeriod
             * effective[x]
             * status
             * subject
+            * valueQuantity
             * value[x]
             * value[x].code
             * value[x].system

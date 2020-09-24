@@ -504,6 +504,8 @@ module Inferno
             This will look through the Procedure resources found previously for the following must support elements:
 
             * code
+            * performedDateTime
+            * performedPeriod
             * performed[x]
             * status
             * subject

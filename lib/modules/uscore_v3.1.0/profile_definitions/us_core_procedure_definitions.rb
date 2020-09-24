@@ -22,6 +22,12 @@ module Inferno
             path: 'code'
           },
           {
+            path: 'performedDateTime'
+          },
+          {
+            path: 'performedPeriod'
+          },
+          {
             path: 'performed'
           }
         ]
