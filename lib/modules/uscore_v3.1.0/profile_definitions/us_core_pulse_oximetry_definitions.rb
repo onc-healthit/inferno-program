@@ -108,7 +108,16 @@ module Inferno
             fixed_value: '59408-5'
           },
           {
+            path: 'effectiveDateTime'
+          },
+          {
+            path: 'effectivePeriod'
+          },
+          {
             path: 'effective'
+          },
+          {
+            path: 'valueQuantity'
           },
           {
             path: 'value'
@@ -137,8 +146,50 @@ module Inferno
             path: 'component.code'
           },
           {
+            path: 'component.valueQuantity'
+          },
+          {
+            path: 'component.valueCodeableConcept'
+          },
+          {
+            path: 'component.valueString'
+          },
+          {
+            path: 'component.valueBoolean'
+          },
+          {
+            path: 'component.valueInteger'
+          },
+          {
+            path: 'component.valueRange'
+          },
+          {
+            path: 'component.valueRatio'
+          },
+          {
+            path: 'component.valueSampledData'
+          },
+          {
+            path: 'component.valueTime'
+          },
+          {
+            path: 'component.valueDateTime'
+          },
+          {
+            path: 'component.valuePeriod'
+          },
+          {
+            path: 'component.value'
+          },
+          {
             path: 'component.code.coding.code',
             fixed_value: '3151-8'
+          },
+          {
+            path: 'component.valueQuantity'
+          },
+          {
+            path: 'component.value'
           },
           {
             path: 'component.value.system',
@@ -151,6 +202,9 @@ module Inferno
           {
             path: 'component.code.coding.code',
             fixed_value: '3150-0'
+          },
+          {
+            path: 'component.valueQuantity'
           },
           {
             path: 'component.value'

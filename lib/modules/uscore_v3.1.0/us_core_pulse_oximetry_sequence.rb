@@ -607,6 +607,21 @@ module Inferno
             * component.code.coding.code
             * component.code.coding.code
             * component.dataAbsentReason
+            * component.valueBoolean
+            * component.valueCodeableConcept
+            * component.valueDateTime
+            * component.valueInteger
+            * component.valuePeriod
+            * component.valueQuantity
+            * component.valueQuantity
+            * component.valueQuantity
+            * component.valueRange
+            * component.valueRatio
+            * component.valueSampledData
+            * component.valueString
+            * component.valueTime
+            * component.value[x]
+            * component.value[x]
             * component.value[x]
             * component.value[x].code
             * component.value[x].code
@@ -615,9 +630,12 @@ module Inferno
             * component.value[x].unit
             * component.value[x].value
             * dataAbsentReason
+            * effectiveDateTime
+            * effectivePeriod
             * effective[x]
             * status
             * subject
+            * valueQuantity
             * value[x]
             * value[x].code
             * value[x].system
