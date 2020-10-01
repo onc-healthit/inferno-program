@@ -314,7 +314,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results, USCore310AllergyintoleranceSequenceDefinitions::DELAYED_REFERENCES)
+        save_delayed_sequence_references(provenance_results, USCore310ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end

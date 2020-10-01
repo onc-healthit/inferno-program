@@ -89,7 +89,8 @@ module Inferno
             end
 
             create_include_test(sequence) if sequence[:include_params].any?
-            create_revinclude_test(sequence) if sequence[:revincludes].any?
+            provenance_definitions_name =  metadata[:sequences].find { |x| x[:resource] == 'Provenance' }[:class_name] + 'Definitions'
+            create_revinclude_test(sequence, provenance_definitions_name) if sequence[:revincludes].any?
           end
           create_resource_profile_test(sequence)
           create_must_support_test(sequence)
@@ -239,7 +240,7 @@ module Inferno
         sequence[:tests] << include_test
       end
 
-      def create_revinclude_test(sequence)
+      def create_revinclude_test(sequence, provenance_definitions_name)
         first_search = find_first_search(sequence)
         return if first_search.blank?
 
@@ -286,7 +287,7 @@ module Inferno
         revinclude_test[:test_code] += %(
           #{'end' unless sequence[:delayed_sequence]}
           save_resource_references(versioned_resource_class('#{resource_name}'), #{resource_variable})
-          save_delayed_sequence_references(#{resource_variable}, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
+          save_delayed_sequence_references(#{resource_variable}, #{provenance_definitions_name}::DELAYED_REFERENCES)
           #{skip_if_could_not_resolve(first_search[:names]) if resolve_param_from_resource && !sequence[:delayed_sequence]}
           skip 'No Provenance resources were returned from this search' unless #{resource_variable}.present?
         )
