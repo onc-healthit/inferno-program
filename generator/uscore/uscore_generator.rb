@@ -89,7 +89,7 @@ module Inferno
             end
 
             create_include_test(sequence) if sequence[:include_params].any?
-            provenance_definitions_name =  metadata[:sequences].find { |x| x[:resource] == 'Provenance' }[:class_name] + 'Definitions'
+            provenance_definitions_name = metadata[:sequences].find { |x| x[:resource] == 'Provenance' }[:class_name] + 'Definitions'
             create_revinclude_test(sequence, provenance_definitions_name) if sequence[:revincludes].any?
           end
           create_resource_profile_test(sequence)

@@ -728,7 +728,8 @@ module Inferno
               next unless reference.is_a? FHIR::Reference
 
               resource_class = reference.resource_class.name.demodulize
-              @instance.save_resource_reference_without_reloading(resource_class, reference.reference.split('/').last) if delayed_sequence_reference[:resources].include?(resource_class)
+              is_delayed = delayed_sequence_reference[:resources].include?(resource_class)
+              @instance.save_resource_reference_without_reloading(resource_class, reference.reference.split('/').last) if is_delayed
             end
           end
         end
