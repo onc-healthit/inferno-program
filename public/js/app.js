@@ -359,13 +359,6 @@ $(function(){
 
   $('#WaitModal').modal('show');
 
-  var autoRun = $.getQueryParameters().autoRun;
-  if(autoRun) {
-    var url = window.location.pathname;
-    window.history.replaceState({}, null, url);
-    $("button[data-sequence='" + autoRun + "']").click()
-  }
-
   // Create a handler to handle the animation of the logo
   function handleScroll(_) {
     /* remove the animation duration if we are loaded to the middle of the page because it is distracting */
