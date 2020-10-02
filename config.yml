@@ -130,6 +130,8 @@ bulk_data_jwks:
 #   'bulk_url'.
 # - bulk_group_export_endpoint: Relative path to group export endpoint from
 #   'bulk_url'.
+# - bulk_scope: The SMART scopes which will be requested for bulk data.
+# - group_id: Group id that will be used for group level export.
 presets:
   localhost_reference_server:
     inferno_uri: http://localhost:4567
