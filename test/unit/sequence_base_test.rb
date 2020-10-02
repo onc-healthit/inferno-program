@@ -3,30 +3,6 @@
 require_relative '../test_helper'
 
 class SequenceBaseTest < MiniTest::Test
-  def setup
-    allergy_intolerance_bundle = FHIR.from_contents(load_fixture(:us_core_r4_allergy_intolerance))
-    @allergy_intolerance_resource = allergy_intolerance_bundle.entry.first.resource
-    @instance = Inferno::Models::TestingInstance.new(
-      url: 'http://www.example.com',
-      client_name: 'Inferno',
-      base_url: 'http://localhost:4567',
-      client_endpoint_key: Inferno::SecureRandomBase62.generate(32),
-      client_id: SecureRandom.uuid,
-      selected_module: 'us_core_r4',
-      oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
-      oauth_token_endpoint: 'http://oauth_reg.example.com/token',
-      scopes: 'launch openid patient/*.* profile',
-      token: 99_897_979
-    )
-
-    @instance.save!
-
-    client = FHIR::Client.new(@instance.url)
-    client.use_r4
-    client.default_json
-    @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
-  end
-
   describe '#validate_reply_entries' do
     before do
       @instance = Inferno::Models::TestingInstance.create
@@ -86,7 +62,7 @@ class SequenceBaseTest < MiniTest::Test
 
   describe '#date_comparator_value' do
     before do
-      @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
+      @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.0')
       client = FHIR::Client.new('')
       @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
     end
@@ -115,7 +91,7 @@ class SequenceBaseTest < MiniTest::Test
 
   describe '#save_delayed_sequence_references' do
     before do
-      @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
+      @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.0')
       client = FHIR::Client.new('')
       @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
       @diagnostic_report_resource = FHIR.from_contents(load_fixture(:us_core_r4_diagnostic_report_note))
@@ -146,7 +122,7 @@ class SequenceBaseTest < MiniTest::Test
 
   describe '#get_value_for_search_param' do
     before do
-      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
+      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.0')
       client = FHIR::Client.new('')
       @sequence = Inferno::Sequence::SequenceBase.new(instance, client, true)
     end
@@ -209,12 +185,40 @@ class SequenceBaseTest < MiniTest::Test
     end
   end
 
+  describe '#validate_reference_resolutions' do
+    before do
+      @base_url = 'https://example.com/fhir'
+      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.0', url: @base_url)
+      client = FHIR::Client.for_testing_instance(instance)
+
+      @sequence = Inferno::Sequence::SequenceBase.new(instance, client, true)
+      @reference_url = 'Practitioner/123'
+      @reference = FHIR::Reference.new(reference: @reference_url)
+      @resource = FHIR::Patient.new(generalPractitioner: [@reference])
+      @resource.client = client
+    end
+
+    it 'raises an error if a reference returns the wrong resource type' do
+      stub_request(:get, "#{@base_url}/#{@reference_url}")
+        .to_return(status: 200, body: FHIR::Patient.new.to_json)
+
+      assert_raises(Inferno::AssertionException) { @sequence.validate_reference_resolutions(@resource) }
+    end
+
+    it 'does not raise an error if a reference returns the correct resource type' do
+      stub_request(:get, "#{@base_url}/#{@reference_url}")
+        .to_return(status: 200, body: FHIR::Practitioner.new.to_json)
+
+      @sequence.validate_reference_resolutions(@resource)
+    end
+  end
+
   describe '#fetch_all_bundled_resources' do
     before do
       @bundle1 = FHIR.from_contents(load_fixture(:bundle_1))
       @bundle2 = load_fixture(:bundle_2)
 
-      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.0.0')
+      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.0')
       client = FHIR::Client.new('')
       @bundle1.client = client
       @sequence = Inferno::Sequence::SequenceBase.new(instance, client, true)
