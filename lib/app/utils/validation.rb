@@ -70,7 +70,7 @@ module Inferno
       heart_rate: 'http://hl7.org/fhir/StructureDefinition/heartrate',
       body_temperature: 'http://hl7.org/fhir/StructureDefinition/bodytemp',
       body_height: 'http://hl7.org/fhir/StructureDefinition/bodyheight',
-      head_circumference: 'http://hl7.org/fhir/StructureDefinition/headcircum',
+      head_circumference: 'http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile',
       body_weight: 'http://hl7.org/fhir/StructureDefinition/bodyweight',
       blood_pressure: 'http://hl7.org/fhir/StructureDefinition/bp'
     }.freeze
@@ -167,6 +167,9 @@ module Inferno
 
         return DEFINITIONS[US_CORE_R4_URIS[:pulse_oximetry]] if observation_contains_code(resource, '59408-5')
 
+        return DEFINITIONS[US_CORE_R4_URIS[:head_circumference]] if observation_contains_code(resource, '8289-1')
+
+
         # FHIR Vital Signs profiles: https://www.hl7.org/fhir/observation-vitalsigns.html
         # Vital Signs Panel, Oxygen Saturation are not required by USCDI
         # Body Mass Index is replaced by :pediatric_bmi_age Profile
@@ -179,8 +182,6 @@ module Inferno
         return DEFINITIONS[US_CORE_R4_URIS[:body_temperature]] if observation_contains_code(resource, '8310-5')
 
         return DEFINITIONS[US_CORE_R4_URIS[:body_weight]] if observation_contains_code(resource, '29463-7')
-
-        return DEFINITIONS[US_CORE_R4_URIS[:head_circumference]] if observation_contains_code(resource, '9843-4')
 
         return DEFINITIONS[US_CORE_R4_URIS[:heart_rate]] if observation_contains_code(resource, '8867-4')
 
