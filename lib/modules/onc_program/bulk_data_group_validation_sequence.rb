@@ -747,11 +747,11 @@ module Inferno
             * http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab
             * http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry
             * http://hl7.org/fhir/us/core/StructureDefinition/us-core-smokingstatus
+            * http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
             * http://hl7.org/fhir/StructureDefinition/bp
             * http://hl7.org/fhir/StructureDefinition/bodyheight
             * http://hl7.org/fhir/StructureDefinition/bodytemp
             * http://hl7.org/fhir/StructureDefinition/bodyweight
-            * http://hl7.org/fhir/StructureDefinition/headcircum
             * http://hl7.org/fhir/StructureDefinition/heartrate
             * http://hl7.org/fhir/StructureDefinition/resprate
           )
@@ -805,8 +805,8 @@ module Inferno
           },
           {
             profile: US_CORE_R4_URIS[:head_circumference],
-            must_support_info: USCore310HeadcircumSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310HeadcircumSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore310HeadOccipitalFrontalCircumferencePercentileSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore310HeadOccipitalFrontalCircumferencePercentileSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:heart_rate],

@@ -167,7 +167,7 @@ test_sets:
           - USCore310BodytempSequence
           - USCore310BpSequence
           - USCore310BodyweightSequence
-          - USCore310HeadcircumSequence
+          - USCore310HeadOccipitalFrontalCircumferencePercentileSequence
           - USCore310HeartrateSequence
           - USCore310ResprateSequence
           - USCore310ProcedureSequence

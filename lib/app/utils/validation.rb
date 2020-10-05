@@ -169,7 +169,6 @@ module Inferno
 
         return DEFINITIONS[US_CORE_R4_URIS[:head_circumference]] if observation_contains_code(resource, '8289-1')
 
-
         # FHIR Vital Signs profiles: https://www.hl7.org/fhir/observation-vitalsigns.html
         # Vital Signs Panel, Oxygen Saturation are not required by USCDI
         # Body Mass Index is replaced by :pediatric_bmi_age Profile
