@@ -35,11 +35,11 @@ test_sets:
         - USCore310ObservationLabSequence
         - USCore310PediatricBmiForAgeSequence
         - USCore310PulseOximetrySequence
+        - USCore310HeadOccipitalFrontalCircumferencePercentileSequence
         - USCore310BodyheightSequence
         - USCore310BodytempSequence
         - USCore310BpSequence
         - USCore310BodyweightSequence
-        - USCore310HeadOccipitalFrontalCircumferencePercentileSequence
         - USCore310HeartrateSequence
         - USCore310ResprateSequence
         - USCore310ProcedureSequence
@@ -723,6 +723,54 @@ value_sets:
   profile: http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry
 - value_set_url: http://hl7.org/fhir/ValueSet/languages
   strength: preferred
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/observation-status
+  strength: required
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/observation-category
+  strength: preferred
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/observation-category
+  strength: preferred
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/observation-vitalsignresult
+  strength: extensible
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/quantity-comparator
+  strength: required
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/data-absent-reason
+  strength: extensible
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/observation-interpretation
+  strength: extensible
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/body-site
+  strength: example
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/observation-methods
+  strength: example
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/referencerange-meaning
+  strength: preferred
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/referencerange-appliesto
+  strength: example
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/observation-vitalsignresult
+  strength: extensible
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/ucum-vitals-common
+  strength: required
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/data-absent-reason
+  strength: extensible
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/observation-interpretation
+  strength: extensible
+  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
+- value_set_url: http://hl7.org/fhir/ValueSet/languages
+  strength: preferred
   profile: http://hl7.org/fhir/StructureDefinition/bodyheight
 - value_set_url: http://hl7.org/fhir/ValueSet/observation-status
   strength: required
@@ -940,54 +988,6 @@ value_sets:
 - value_set_url: http://hl7.org/fhir/ValueSet/observation-interpretation
   strength: extensible
   profile: http://hl7.org/fhir/StructureDefinition/bodyweight
-- value_set_url: http://hl7.org/fhir/ValueSet/languages
-  strength: preferred
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-- value_set_url: http://hl7.org/fhir/ValueSet/observation-status
-  strength: required
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-- value_set_url: http://hl7.org/fhir/ValueSet/observation-category
-  strength: preferred
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-- value_set_url: http://hl7.org/fhir/ValueSet/observation-category
-  strength: preferred
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-- value_set_url: http://hl7.org/fhir/ValueSet/observation-vitalsignresult
-  strength: extensible
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-- value_set_url: http://hl7.org/fhir/ValueSet/quantity-comparator
-  strength: required
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-- value_set_url: http://hl7.org/fhir/ValueSet/data-absent-reason
-  strength: extensible
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-- value_set_url: http://hl7.org/fhir/ValueSet/observation-interpretation
-  strength: extensible
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-- value_set_url: http://hl7.org/fhir/ValueSet/body-site
-  strength: example
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-- value_set_url: http://hl7.org/fhir/ValueSet/observation-methods
-  strength: example
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-- value_set_url: http://hl7.org/fhir/ValueSet/referencerange-meaning
-  strength: preferred
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-- value_set_url: http://hl7.org/fhir/ValueSet/referencerange-appliesto
-  strength: example
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-- value_set_url: http://hl7.org/fhir/ValueSet/observation-vitalsignresult
-  strength: extensible
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-- value_set_url: http://hl7.org/fhir/ValueSet/ucum-vitals-common
-  strength: required
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-- value_set_url: http://hl7.org/fhir/ValueSet/data-absent-reason
-  strength: extensible
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-- value_set_url: http://hl7.org/fhir/ValueSet/observation-interpretation
-  strength: extensible
-  profile: http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
 - value_set_url: http://hl7.org/fhir/ValueSet/languages
   strength: preferred
   profile: http://hl7.org/fhir/StructureDefinition/heartrate

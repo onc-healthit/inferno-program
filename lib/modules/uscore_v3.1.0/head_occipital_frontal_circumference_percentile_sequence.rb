@@ -63,7 +63,7 @@ module Inferno
         and will fail if any attempted read fails.
       )
 
-      test_id_prefix 'USCPHO-CP'
+      test_id_prefix 'USCPHOCP'
 
       requires :token, :patient_ids
       conformance_supports :Observation
