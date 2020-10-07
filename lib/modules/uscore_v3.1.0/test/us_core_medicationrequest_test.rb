@@ -116,7 +116,7 @@ describe Inferno::Sequence::USCore310MedicationrequestSequence do
         }
         body =
           if @sequence.resolve_element_from_path(@medication_request, 'intent') == value
-            wrap_resources_in_bundle(@medication_request_ary.values.flatten).to_json
+            wrap_resources_in_bundle([@medication_request]).to_json
           else
             FHIR::Bundle.new.to_json
           end
