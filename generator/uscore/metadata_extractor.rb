@@ -557,6 +557,12 @@ module Inferno
             set_first_search(sequence, ['patient', 'category'])
           end
 
+        pulse_ox_sequence = metadata[:sequences].find { |sequence| sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry' }
+        pulse_ox_sequence[:must_supports][:elements].delete_if do |element|
+          path = element[:path]
+          (path.start_with? 'component.value') && (!path.include? '[x]') && (path != 'component.valueQuantity')
+        end
+
         metadata
       end
 
