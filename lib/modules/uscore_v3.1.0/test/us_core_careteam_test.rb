@@ -116,7 +116,7 @@ describe Inferno::Sequence::USCore310CareteamSequence do
         }
         body =
           if @sequence.resolve_element_from_path(@care_team, 'status') == value
-            wrap_resources_in_bundle(@care_team_ary.values.flatten).to_json
+            wrap_resources_in_bundle([@care_team]).to_json
           else
             FHIR::Bundle.new.to_json
           end

@@ -152,7 +152,7 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
       }
       body =
         if @sequence.resolve_element_from_path(@<%= resource_var_name %>, '<%= fixed_value_search_path %>') == value
-          wrap_resources_in_bundle(@<%= resource_var_name %>_ary<%='.values.flatten' unless delayed_sequence %>).to_json
+          wrap_resources_in_bundle([@<%= resource_var_name %>]).to_json
         else
           FHIR::Bundle.new.to_json
         end
