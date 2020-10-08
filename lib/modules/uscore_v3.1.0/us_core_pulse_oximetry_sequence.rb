@@ -608,14 +608,9 @@ module Inferno
             * component.code.coding.code
             * component.dataAbsentReason
             * component.valueQuantity
-            * component.valueQuantity
-            * component.valueQuantity
-            * component.value[x]
-            * component.value[x]
             * component.value[x]
             * component.value[x].code
             * component.value[x].code
-            * component.value[x].system
             * component.value[x].system
             * component.value[x].unit
             * component.value[x].value

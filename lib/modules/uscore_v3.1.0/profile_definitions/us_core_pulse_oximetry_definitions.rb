@@ -156,12 +156,6 @@ module Inferno
             fixed_value: '3151-8'
           },
           {
-            path: 'component.valueQuantity'
-          },
-          {
-            path: 'component.value'
-          },
-          {
             path: 'component.value.system',
             fixed_value: 'http://unitsofmeasure.org'
           },
@@ -174,20 +168,10 @@ module Inferno
             fixed_value: '3150-0'
           },
           {
-            path: 'component.valueQuantity'
-          },
-          {
-            path: 'component.value'
-          },
-          {
             path: 'component.value.value'
           },
           {
             path: 'component.value.unit'
-          },
-          {
-            path: 'component.value.system',
-            fixed_value: 'http://unitsofmeasure.org'
           },
           {
             path: 'component.value.code',

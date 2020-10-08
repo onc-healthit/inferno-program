@@ -366,6 +366,7 @@ module Inferno
             sequence[:must_supports][:elements] << must_support_element
           end
         end
+        sequence[:must_supports][:elements].uniq!
       end
 
       def add_mandatory_elements(profile_definition, sequence)
