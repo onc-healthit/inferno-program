@@ -89,7 +89,8 @@ module Inferno
             end
 
             create_include_test(sequence) if sequence[:include_params].any?
-            create_revinclude_test(sequence) if sequence[:revincludes].any?
+            provenance_definitions_name = metadata[:sequences].find { |x| x[:resource] == 'Provenance' }[:class_name] + 'Definitions'
+            create_revinclude_test(sequence, provenance_definitions_name) if sequence[:revincludes].any?
           end
           create_resource_profile_test(sequence)
           create_must_support_test(sequence)
@@ -239,7 +240,7 @@ module Inferno
         sequence[:tests] << include_test
       end
 
-      def create_revinclude_test(sequence)
+      def create_revinclude_test(sequence, provenance_definitions_name)
         first_search = find_first_search(sequence)
         return if first_search.blank?
 
@@ -286,7 +287,7 @@ module Inferno
         revinclude_test[:test_code] += %(
           #{'end' unless sequence[:delayed_sequence]}
           save_resource_references(versioned_resource_class('#{resource_name}'), #{resource_variable})
-          save_delayed_sequence_references(#{resource_variable}, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
+          save_delayed_sequence_references(#{resource_variable}, #{provenance_definitions_name}::DELAYED_REFERENCES)
           #{skip_if_could_not_resolve(first_search[:names]) if resolve_param_from_resource && !sequence[:delayed_sequence]}
           skip 'No Provenance resources were returned from this search' unless #{resource_variable}.present?
         )
@@ -1092,13 +1093,12 @@ module Inferno
       def get_first_search_with_fixed_values(sequence, search_parameters, save_resource_references_arguments)
         # assume only patient + one other parameter
         search_param = fixed_value_search_param(search_parameters, sequence)
-        find_two_values = get_multiple_or_params(sequence).include? search_param[:name]
         values_variable_name = "#{search_param[:name].tr('-', '_')}_val"
         %(
           #{skip_if_search_not_supported_code(sequence, search_parameters)}
           @#{sequence[:resource].underscore}_ary = {}
           @resources_found = false
-          #{'values_found = 0' if find_two_values}
+          search_query_variants_tested_once = false
           #{values_variable_name} = [#{search_param[:values].map { |val| "'#{val}'" }.join(', ')}]
           patient_ids.each do |patient|
             @#{sequence[:resource].underscore}_ary[patient] = []
@@ -1115,11 +1115,12 @@ module Inferno
               resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
               @#{sequence[:resource].underscore} = resources_returned.first
               @#{sequence[:resource].underscore}_ary[patient] += resources_returned
-              #{'values_found += 1' if find_two_values}
 
               save_resource_references(#{save_resource_references_arguments})
               save_delayed_sequence_references(resources_returned, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
               validate_reply_entries(resources_returned, search_params)
+
+              next if search_query_variants_tested_once
               #{get_token_system_search_code(search_parameters, sequence)}
 
               search_params_with_type = search_params.merge('patient': "Patient/\#{patient}")
@@ -1131,7 +1132,8 @@ module Inferno
               assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
               #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
-              break#{' if values_found == 2' if find_two_values}
+
+              search_query_variants_tested_once = true
             end
           end
           #{skip_if_not_found_code(sequence)})

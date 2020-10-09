@@ -428,7 +428,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results, USCore310ProcedureSequenceDefinitions::DELAYED_REFERENCES)
+        save_delayed_sequence_references(provenance_results, USCore310ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -504,6 +504,8 @@ module Inferno
             This will look through the Procedure resources found previously for the following must support elements:
 
             * code
+            * performedDateTime
+            * performedPeriod
             * performed[x]
             * status
             * subject

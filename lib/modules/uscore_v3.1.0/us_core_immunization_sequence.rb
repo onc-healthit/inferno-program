@@ -358,7 +358,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results, USCore310ImmunizationSequenceDefinitions::DELAYED_REFERENCES)
+        save_delayed_sequence_references(provenance_results, USCore310ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -433,6 +433,8 @@ module Inferno
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Immunization resources found previously for the following must support elements:
 
+            * occurrenceDateTime
+            * occurrenceString
             * occurrence[x]
             * patient
             * primarySource

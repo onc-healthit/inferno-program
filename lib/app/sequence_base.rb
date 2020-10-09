@@ -30,6 +30,8 @@ module Inferno
       include SearchValidationUtil
       include Inferno::WebDriver
 
+      class InvalidReferenceResource < StandardError; end
+
       @@test_index = 0
 
       @@group = {}
@@ -708,10 +710,17 @@ module Inferno
                 next
               end
             end
-            value.read
+            reference = value.reference
+            reference_type = value.resource_type
+            resource = value.read
+
+            raise InvalidReferenceResource if resource.resourceType != reference_type
+
             resolved_references.add(value.reference)
           rescue ClientException => e
             problems << "#{path} did not resolve: #{e}"
+          rescue InvalidReferenceResource
+            problems << "Expected #{reference} to refer to a #{reference_type} resource, but found a #{resource.resourceType} resource."
           end
         end
 
@@ -722,22 +731,17 @@ module Inferno
 
       def save_delayed_sequence_references(resources, delayed_sequence_references)
         resources.each do |resource|
-          walk_resource(resource) do |value, meta, path|
-            next if meta['type'] != 'Reference'
+          delayed_sequence_references.each do |delayed_sequence_reference|
+            reference_elements = resolve_path(resource, delayed_sequence_reference[:path])
+            reference_elements.each do |reference|
+              next unless reference.is_a? FHIR::Reference
 
-            if value.relative?
-              begin
-                resource_class = value.resource_class.name.demodulize
-                delayed_sequence_reference = delayed_sequence_references.find { |ref| ref[:path] == path }
-                is_delayed = delayed_sequence_reference.present? && delayed_sequence_reference[:resources].include?(resource_class)
-                @instance.save_resource_reference_without_reloading(resource_class, value.reference.split('/').last) if is_delayed
-              rescue NameError
-                next
-              end
+              resource_class = reference.resource_class.name.demodulize
+              is_delayed = delayed_sequence_reference[:resources].include?(resource_class)
+              @instance.save_resource_reference_without_reloading(resource_class, reference.reference.split('/').last) if is_delayed
             end
           end
         end
-
         @instance.reload
       end
 
