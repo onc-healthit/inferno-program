@@ -198,6 +198,33 @@ For alternate installation options, please visit <a href='https://github.com/onc
   </div>
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.3.0</div>
+      <p>
+      The Inferno Program Edition v1.3.0 minor release provides the following test updates that may
+      alter the result of systems that were able to pass prior versions of these tests:
+      </p>
+      <ul>
+      <li>
+        Systems must demonstrate the ability to populate choice type elements within US Core Profiles flagged as 'must support' with every US Core choice type 
+        listed for that choice element, unless the Profile flags one or more of the choices type of that element specifically as 'must support'. Previous versions of tests considered
+        populating the choice type element with any valid choice type as sufficient evidence that the system supports that choice type element.
+        </li>
+      <li>Reference resolution tests were updated to verify that references to resources resolve to the correct FHIR type.</li>
+      </ul>
+      <p> Additionally, the following updates were made which make tests less restrictive or do not affect the outcome of tests:
+      </p>
+      <ul>
+      <li>Fixed issue where tests did not properly save US Core references for the Encounter, Organization and Practitioner resources in certain cases.</li>
+      <li>Updated the Inferno configuration file (config.yml) to provide more descriptive detail on the various configuration parameters of Inferno.</li>
+      <li>For profiles that do not allow searching only by Patient ID and require at least one other field, tests now are more thorough in crafting queries that retrieve all resources for that profile.  This is important to ensure that all available resources are used to verify all 'must support' elements.</li>
+      <li>Fixes to presets for the Inferno FHIR Reference Server.</li>
+      </ul>
+      </p>
+    <p>
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_3_0.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure.
+    </p>
+
     <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.2.0</div>
       <p>
       The Inferno Program Edition v1.2.0 minor release provides the following test updates that may
