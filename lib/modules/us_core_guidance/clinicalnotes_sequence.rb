@@ -56,30 +56,60 @@ module Inferno
 
         resource_class = 'DocumentReference'
         patient_ids = @instance.patient_ids.split(',')
+        self.document_attachments = {} if document_attachments.nil?
+        attachments = {}
 
-        resources_found = patient_ids.any? do |patient_id|
+        patient_ids.each do |patient_id|
           search_params = { 'patient': patient_id, 'type': category_code }
 
           reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
-          assert_response_ok(reply)
-          assert_bundle_response(reply)
 
-          next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == resource_class }
-
-          self.document_attachments = ClinicalNoteAttachment.new(resource_class) if document_attachments.nil?
-
-          document_references = fetch_all_bundled_resources(reply)
-
-          document_references&.each do |document|
-            document&.content&.select { |content| !document_attachments.attachment.key?(content&.attachment&.url) }&.each do |content|
-              document_attachments.attachment[content.attachment.url] = document.id
+          # If server require status, server shall return 400
+          # https://www.hl7.org/fhir/us/core/general-guidance.html#search-for-servers-requiring-status
+          if reply.code == 400
+            begin
+              parsed_reply = JSON.parse(reply.body)
+              assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
+            rescue JSON::ParserError
+              assert false, 'Server returned a status of 400 without an OperationOutcome.'
             end
-          end
 
-          true
+            warning do
+              assert @instance.server_capabilities&.search_documented?('Observation'),
+                     %(Server returned a status of 400 with an OperationOutcome, but the
+                      search interaction for this resource is not documented in the
+                      CapabilityStatement. If this response was due to the server
+                      requiring a status parameter, the server must document this
+                      requirement in its CapabilityStatement.)
+            end
+
+            ['current,superseded,entered-in-error'].each do |status_value|
+              params_with_status = search_param.merge('status': status_value)
+              reply = get_resource_by_params(versioned_resource_class(resource_class), params_with_status)
+              parse_document_reference_reply(reply, attachments)
+            end
+          else
+            parse_document_reference_reply(reply, attachments)
+          end
         end
 
-        skip "No #{resource_class} resources with type #{category_code} appear to be available. Please use patients with more information." unless resources_found
+        skip "No #{resource_class} resources with type #{category_code} appear to be available. Please use patients with more information." if attachments.empty?
+        document_attachments.merge!(attachments) { |_key, v1, _v2| v1 }
+      end
+
+      def parse_document_reference_reply(reply, attachments)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+
+        return unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'DocumentReference' }
+
+        document_references = fetch_all_bundled_resources(reply)
+
+        document_references&.each do |document|
+          document&.content&.select { |content| !attachments.key?(content&.attachment&.url) }&.each do |content|
+            attachments[content.attachment.url] = document.id
+          end
+        end
       end
 
       def test_clinical_notes_diagnostic_report(category_code)
@@ -87,30 +117,60 @@ module Inferno
 
         resource_class = 'DiagnosticReport'
         patient_ids = @instance.patient_ids.split(',')
+        self.report_attachments = {} if report_attachments.nil?
+        attachments = {}
 
-        resources_found = patient_ids.any? do |patient_id|
+        patient_ids.each do |patient_id|
           search_params = { 'patient': patient_id, 'category': category_code }
 
           reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
-          assert_response_ok(reply)
-          assert_bundle_response(reply)
 
-          next unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == resource_class }
-
-          self.report_attachments = ClinicalNoteAttachment.new(resource_class) if report_attachments.nil?
-
-          diagnostic_reports = fetch_all_bundled_resources(reply)
-
-          diagnostic_reports&.each do |report|
-            report&.presentedForm&.select { |attachment| !report_attachments.attachment.key?(attachment&.url) }&.each do |attachment|
-              report_attachments.attachment[attachment.url] = report.id
+          # If server require status, server shall return 400
+          # https://www.hl7.org/fhir/us/core/general-guidance.html#search-for-servers-requiring-status
+          if reply.code == 400
+            begin
+              parsed_reply = JSON.parse(reply.body)
+              assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
+            rescue JSON::ParserError
+              assert false, 'Server returned a status of 400 without an OperationOutcome.'
             end
-          end
 
-          true
+            warning do
+              assert @instance.server_capabilities&.search_documented?('Observation'),
+                     %(Server returned a status of 400 with an OperationOutcome, but the
+                    search interaction for this resource is not documented in the
+                    CapabilityStatement. If this response was due to the server
+                    requiring a status parameter, the server must document this
+                    requirement in its CapabilityStatement.)
+            end
+
+            ['registered,partial,preliminary,final,amended,corrected,appended,cancelled,entered-in-error,unknown'].each do |status_value|
+              params_with_status = search_param.merge('status': status_value)
+              reply = get_resource_by_params(versioned_resource_class(resource_class), params_with_status)
+              parse_document_reference_reply(reply, attachments)
+            end
+          else
+            parse_diagnostic_report_reply(reply, attachments)
+          end
         end
 
-        skip "No #{resource_class} resources with category #{category_code} appear to be available. Please use patients with more information." unless resources_found
+        skip "No #{resource_class} resources with category #{category_code} appear to be available. Please use patients with more information." if attachments.empty?
+        report_attachments.merge!(attachments) { |_key, v1, _v2| v1 }
+      end
+
+      def parse_diagnostic_report_reply(reply, attachments)
+        assert_response_ok(reply)
+        assert_bundle_response(reply)
+
+        return unless reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == 'DiagnosticReport' }
+
+        diagnostic_reports = fetch_all_bundled_resources(reply)
+
+        diagnostic_reports&.each do |report|
+          report&.presentedForm&.select { |attachment| !attachments.key?(attachment&.url) }&.each do |attachment|
+            attachments[attachment.url] = report.id
+          end
+        end
       end
 
       test :have_consultation_note do
@@ -235,17 +295,17 @@ module Inferno
           versions :r4
         end
 
-        skip 'There is no attachement in DocumentReference. Please select another patient.' unless document_attachments&.attachment&.any?
-        skip 'There is no attachement in DiagnosticReport. Please select another patient.' unless report_attachments&.attachment&.any?
+        skip 'There is no attachment in DocumentReference. Please select another patient.' unless document_attachments&.any?
+        skip 'There is no attachment in DiagnosticReport. Please select another patient.' unless report_attachments&.any?
 
-        assert_attachment_matched(report_attachments, document_attachments)
+        assert_attachment_matched(report_attachments, document_attachments, 'DiagnosticReport', 'DocumentReference')
       end
 
-      def assert_attachment_matched(source_attachments, target_attachments)
-        not_matched_urls = source_attachments.attachment.keys - target_attachments.attachment.keys
-        not_matched_attachments = not_matched_urls.map { |url| "#{url} in #{source_attachments.resource_class}/#{source_attachments.attachment[url]}" }
+      def assert_attachment_matched(source_attachments, target_attachments, source_class, target_class)
+        not_matched_urls = source_attachments.keys - target_attachments.keys
+        not_matched_attachments = not_matched_urls.map { |url| "#{url} in #{source_class}/#{source_attachments[url]}" }
 
-        assert not_matched_attachments.empty?, "Attachments #{not_matched_attachments.join(', ')} are not referenced in any #{target_attachments.resource_class}."
+        assert not_matched_attachments.empty?, "Attachments #{not_matched_attachments.join(', ')} are not referenced in any #{target_class}."
       end
     end
   end

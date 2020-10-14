@@ -23,7 +23,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
       stub_request(:get, @query_url)
         .with(query: @search_params)
         .to_return(
-          status: 400
+          status: 401
         )
 
       error = assert_raises(Inferno::AssertionException) do
@@ -31,6 +31,21 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
       end
 
       assert_match(/^Bad response code/, error.message)
+    end
+
+    it 'fails with http status 400 without OperationOutcome' do
+      stub_request(:get, @query_url)
+        .with(query: @search_params)
+        .to_return(
+          status: 400,
+          body: FHIR::Bundle.new.to_json
+        )
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert error.message == 'Server returned a status of 400 without an OperationOutcome.'
     end
 
     it 'fails if returned resource is not Bundle' do
@@ -78,7 +93,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
         )
 
       @sequence.run_test(@test)
-      assert @sequence.document_attachments.attachment.keys.any?
+      assert @sequence.document_attachments.keys.any?
     end
   end
 
@@ -96,7 +111,18 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
         )
 
       @sequence.run_test(@test)
-      assert @sequence.report_attachments.attachment.keys.any?
+      assert @sequence.report_attachments.keys.any?
+    end
+  end
+
+  describe 'Server requires status tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+      @test = @sequence_class[:have_consultation_note]
+      @category_code = 'http://loinc.org|11488-4'
+      @resource_class = 'DocumentReference'
+      @query_url = "#{@instance.url}/#{@resource_class}"
+      @search_params = { 'patient': @instance.patient_id, 'type': @category_code }
     end
   end
 
@@ -216,36 +242,36 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
     before do
       @sequence = @sequence_class.new(@instance, @client)
       @test = @sequence_class[:have_matched_attachments]
-      @sequence.document_attachments = Inferno::Sequence::ClinicalNoteAttachment.new('DocumentReference')
-      @sequence.document_attachments.attachment['/Binary/SMART-Binary-1-note'] = 'SMART-DiagnosticReport-1-note'
-      @sequence.document_attachments.attachment['/Binary/SMART-Binary-2-note'] = 'SMART-DiagnosticReport-2-note'
-      @sequence.report_attachments = Inferno::Sequence::ClinicalNoteAttachment.new('DiagnosticReport')
-      @sequence.report_attachments.attachment['/Binary/SMART-Binary-1-note'] = 'SMART-DiagnosticReport-1-note'
-      @sequence.report_attachments.attachment['/Binary/SMART-Binary-2-note'] = 'SMART-DiagnosticReport-2-note'
+      @sequence.document_attachments = {}
+      @sequence.document_attachments['/Binary/SMART-Binary-1-note'] = 'SMART-DiagnosticReport-1-note'
+      @sequence.document_attachments['/Binary/SMART-Binary-2-note'] = 'SMART-DiagnosticReport-2-note'
+      @sequence.report_attachments = {}
+      @sequence.report_attachments['/Binary/SMART-Binary-1-note'] = 'SMART-DiagnosticReport-1-note'
+      @sequence.report_attachments['/Binary/SMART-Binary-2-note'] = 'SMART-DiagnosticReport-2-note'
     end
 
     it 'skips if skip_document_reference is true' do
-      @sequence.document_attachments.attachment.clear
+      @sequence.document_attachments.clear
 
       error = assert_raises(Inferno::SkipException) do
         @sequence.run_test(@test)
       end
 
-      assert_match(/^There is no attachement in DocumentReference/, error.message)
+      assert_match(/^There is no attachment in DocumentReference/, error.message)
     end
 
     it 'skips if report_attachments is empty' do
-      @sequence.report_attachments.attachment.clear
+      @sequence.report_attachments.clear
 
       error = assert_raises(Inferno::SkipException) do
         @sequence.run_test(@test)
       end
 
-      assert_match(/^There is no attachement in DiagnosticReport/, error.message)
+      assert_match(/^There is no attachment in DiagnosticReport/, error.message)
     end
 
     it 'fails if one attachment does not have a match' do
-      @sequence.document_attachments.attachment.delete('/Binary/SMART-Binary-2-note')
+      @sequence.document_attachments.delete('/Binary/SMART-Binary-2-note')
 
       error = assert_raises(Inferno::AssertionException) do
         @sequence.run_test(@test)
