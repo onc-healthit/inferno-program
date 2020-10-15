@@ -2,16 +2,6 @@
 
 module Inferno
   module Sequence
-    class ClinicalNoteAttachment
-      attr_reader :resource_class
-      attr_reader :attachment
-
-      def initialize(resource_class)
-        @resource_class = resource_class
-        @attachment = {}
-      end
-    end
-
     class USCoreR4ClinicalNotesSequence < SequenceBase
       group 'US Core R4 Profile Conformance'
 
