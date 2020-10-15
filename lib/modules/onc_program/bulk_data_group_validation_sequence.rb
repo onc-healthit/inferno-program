@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'http' # for streaming http client
 Dir['lib/modules/uscore_v3.1.0/profile_definitions/*'].sort.each { |file| require './' + file }
 
 module Inferno
@@ -107,12 +106,12 @@ module Inferno
         }
 
         streamed_ndjson_get(file['url'], headers) do |response, resource|
-          assert response.headers['Content-Type'] == 'application/fhir+ndjson', "Content type must be 'application/fhir+ndjson' but is '#{response.headers['Content-type']}'"
+          assert response.header['Content-Type'] == 'application/fhir+ndjson', "Content type must be 'application/fhir+ndjson' but is '#{response.header['Content-type']}'"
 
           break if !validate_all && line_count >= lines_to_validate && (klass != 'Patient' || @patient_ids_seen.length >= MIN_RESOURCE_COUNT)
 
           response_for_log[:code] = response.code unless response_for_log.key?(:code)
-          response_for_log[:headers] = response.headers unless response_for_log.key?(:headers)
+          response_for_log[:headers] = response.header unless response_for_log.key?(:headers)
           line_collection << resource if line_count < MAX_RECENT_LINE_SIZE
 
           line_count += 1
@@ -344,14 +343,12 @@ module Inferno
       end
 
       def streamed_ndjson_get(url, headers)
-        ctx = OpenSSL::SSL::SSLContext.new
-        ctx.verify_mode = OpenSSL::SSL::VERIFY_PEER # set globally to VERIFY_NONE if disable_verify_peer set
-        ctx.set_params unless OpenSSL::SSL::VERIFY_PEER == OpenSSL::SSL::VERIFY_NONE
-        response = HTTP.headers(headers).get(url, ssl_context: ctx)
+        # We don't want to keep a huge log of everything that came through,
+        # but we also want to show up to a reasonable number.
+        recent_lines = []
+        line_count = 0
 
-        # We need to log the request, but don't know what will be in the body
-        # until later.  These serve as simple summaries to get turned into
-        # logged requests.
+        next_block = String.new
 
         request_for_log = {
           method: 'GET',
@@ -359,48 +356,55 @@ module Inferno
           headers: headers
         }
 
+        response_block = proc { |response|
+          response.read_body do |chunk|
+            next_block << chunk
+            resource_list = next_block.lines
+
+            response_for_log = {
+              code: response.code,
+              headers: response.header,
+              body: String.new,
+              truncated: false
+            }
+
+            # Skip processing the last line since the it may not be complete (still appending from stream)
+            next_block = resource_list.pop
+            # Skip if the last_line is empty
+            # Cannot use .blank? since docker-compose complains "invalid byte sequence in US-ASCII" during unit test
+            next_block = String.new next_block unless next_block.nil? || next_block.strip.empty?
+
+            resource_list.each do |resource|
+              # NDJSON does not specify that empty lines are NOT allowed.
+              # So just skip an empty line.
+              next if resource.nil? || resource.strip.empty?
+
+              recent_lines << resource if line_count < MAX_RECENT_LINE_SIZE
+              line_count += 1
+
+              response_for_log[:body] = recent_lines.join
+              log_and_reraise_if_error(request_for_log, response_for_log, line_count > MAX_RECENT_LINE_SIZE) do
+                yield(response, resource)
+              end
+            end
+          end
+        }
+
+        response = RestClient::Request.execute(
+          method: :get,
+          url: url,
+          headers: headers,
+          block_response: response_block
+        )
+
         response_for_log = {
-          code: response.status,
-          headers: response.headers,
+          code: response.code,
+          headers: response.header,
           body: String.new,
           truncated: false
         }
 
-        # We don't want to keep a huge log of everything that came through,
-        # but we also want to show up to a reasonable number.
-        recent_lines = []
-        line_count = 0
-
-        body = response.body
-
-        next_block = String.new
-
-        until (chunk = body.readpartial).nil?
-          next_block << chunk
-          resource_list = next_block.lines
-
-          # Skip process the last line since the it may not complete (still appending from stream)
-          next_block = resource_list.pop
-          # Skip if the last_line is empty
-          # Cannot use .blank? since docker-compose complains "invalid byte sequence in US-ASCII" during unit test
-          next_block = String.new next_block unless next_block.nil? || next_block.strip.empty?
-
-          resource_list.each do |resource|
-            # NDJSON does not specify empty line is NOT allowed.
-            # So just skip an empty line.
-            next if resource.nil? || resource.strip.empty?
-
-            recent_lines << resource if line_count < MAX_RECENT_LINE_SIZE
-            line_count += 1
-
-            response_for_log[:body] = recent_lines.join
-            log_and_reraise_if_error(request_for_log, response_for_log, line_count > MAX_RECENT_LINE_SIZE) do
-              yield(response, resource)
-            end
-          end
-        end
-
-        # NDJSON does not specify empty line is NOT allowed.
+        # NDJSON does not specify that empty lines are NOT allowed.
         # So just skip if last line is empty.
         unless next_block.nil? || next_block.strip.empty?
           recent_lines << next_block if line_count < MAX_RECENT_LINE_SIZE
