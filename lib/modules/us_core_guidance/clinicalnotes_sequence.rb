@@ -57,22 +57,7 @@ module Inferno
           # If server require status, server shall return 400
           # https://www.hl7.org/fhir/us/core/general-guidance.html#search-for-servers-requiring-status
           if reply.code == 400
-            begin
-              parsed_reply = JSON.parse(reply.body)
-              assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
-            rescue JSON::ParserError
-              assert false, 'Server returned a status of 400 without an OperationOutcome.'
-            end
-
-            warning do
-              assert @instance.server_capabilities&.search_documented?('Observation'),
-                     %(Server returned a status of 400 with an OperationOutcome, but the
-                      search interaction for this resource is not documented in the
-                      CapabilityStatement. If this response was due to the server
-                      requiring a status parameter, the server must document this
-                      requirement in its CapabilityStatement.)
-            end
-
+            validate_operationoutcome(reply, resource_class)
             ['current,superseded,entered-in-error'].each do |status_value|
               params_with_status = search_param.merge('status': status_value)
               reply = get_resource_by_params(versioned_resource_class(resource_class), params_with_status)
@@ -85,6 +70,24 @@ module Inferno
 
         skip "No #{resource_class} resources with type #{category_code} appear to be available. Please use patients with more information." if attachments.empty?
         document_attachments.merge!(attachments) { |_key, v1, _v2| v1 }
+      end
+
+      def validate_operationoutcome(reply, resource_class)
+        begin
+          parsed_reply = JSON.parse(reply.body)
+          assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
+        rescue JSON::ParserError
+          assert false, 'Server returned a status of 400 without an OperationOutcome.'
+        end
+
+        warning do
+          assert @instance.server_capabilities&.search_documented?(resource_class),
+                 %(Server returned a status of 400 with an OperationOutcome, but the
+                  search interaction for this resource is not documented in the
+                  CapabilityStatement. If this response was due to the server
+                  requiring a status parameter, the server must document this
+                  requirement in its CapabilityStatement.)
+        end
       end
 
       def parse_document_reference_reply(reply, attachments)
@@ -118,26 +121,12 @@ module Inferno
           # If server require status, server shall return 400
           # https://www.hl7.org/fhir/us/core/general-guidance.html#search-for-servers-requiring-status
           if reply.code == 400
-            begin
-              parsed_reply = JSON.parse(reply.body)
-              assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
-            rescue JSON::ParserError
-              assert false, 'Server returned a status of 400 without an OperationOutcome.'
-            end
-
-            warning do
-              assert @instance.server_capabilities&.search_documented?('Observation'),
-                     %(Server returned a status of 400 with an OperationOutcome, but the
-                    search interaction for this resource is not documented in the
-                    CapabilityStatement. If this response was due to the server
-                    requiring a status parameter, the server must document this
-                    requirement in its CapabilityStatement.)
-            end
+            validate_operationoutcome(reply, resource_class)
 
             ['registered,partial,preliminary,final,amended,corrected,appended,cancelled,entered-in-error,unknown'].each do |status_value|
               params_with_status = search_param.merge('status': status_value)
               reply = get_resource_by_params(versioned_resource_class(resource_class), params_with_status)
-              parse_document_reference_reply(reply, attachments)
+              parse_diagnostic_report_reply(reply, attachments)
             end
           else
             parse_diagnostic_report_reply(reply, attachments)
