@@ -48,23 +48,15 @@ module Inferno
         patient_ids = @instance.patient_ids.split(',')
         self.document_attachments = {} if document_attachments.nil?
         attachments = {}
+        all_status = ['current,superseded,entered-in-error']
 
         patient_ids.each do |patient_id|
           search_params = { 'patient': patient_id, 'type': category_code }
 
           reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
 
-          # If server require status, server shall return 400
-          # https://www.hl7.org/fhir/us/core/general-guidance.html#search-for-servers-requiring-status
-          if reply.code == 400
-            validate_operationoutcome(reply, resource_class)
-            ['current,superseded,entered-in-error'].each do |status_value|
-              params_with_status = search_param.merge('status': status_value)
-              reply = get_resource_by_params(versioned_resource_class(resource_class), params_with_status)
-              parse_document_reference_reply(reply, attachments)
-            end
-          else
-            parse_document_reference_reply(reply, attachments)
+          parse_reply_with_source_search(reply, resource_class, attachments, all_status) do |the_reply, the_attachments|
+            parse_document_reference_reply(the_reply, the_attachments)
           end
         end
 
@@ -72,21 +64,33 @@ module Inferno
         document_attachments.merge!(attachments) { |_key, v1, _v2| v1 }
       end
 
-      def validate_operationoutcome(reply, resource_class)
-        begin
-          parsed_reply = JSON.parse(reply.body)
-          assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
-        rescue JSON::ParserError
-          assert false, 'Server returned a status of 400 without an OperationOutcome.'
-        end
+      def parse_reply_with_source_search(reply, resource_class, attachments, source)
+        # If server require status, server shall return 400
+        # https://www.hl7.org/fhir/us/core/general-guidance.html#search-for-servers-requiring-status
+        if reply.code == 400
+          begin
+            parsed_reply = JSON.parse(reply.body)
+            assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
+          rescue JSON::ParserError
+            assert false, 'Server returned a status of 400 without an OperationOutcome.'
+          end
 
-        warning do
-          assert @instance.server_capabilities&.search_documented?(resource_class),
-                 %(Server returned a status of 400 with an OperationOutcome, but the
-                  search interaction for this resource is not documented in the
-                  CapabilityStatement. If this response was due to the server
-                  requiring a status parameter, the server must document this
-                  requirement in its CapabilityStatement.)
+          warning do
+            assert @instance.server_capabilities&.search_documented?(resource_class),
+                   %(Server returned a status of 400 with an OperationOutcome, but the
+                      search interaction for this resource is not documented in the
+                      CapabilityStatement. If this response was due to the server
+                      requiring a status parameter, the server must document this
+                      requirement in its CapabilityStatement.)
+          end
+
+          source.each do |status_value|
+            params_with_status = search_param.merge('status': status_value)
+            reply = get_resource_by_params(versioned_resource_class(resource_class), params_with_status)
+            yield(reply, attachments)
+          end
+        else
+          yield(reply, attachments)
         end
       end
 
@@ -112,24 +116,15 @@ module Inferno
         patient_ids = @instance.patient_ids.split(',')
         self.report_attachments = {} if report_attachments.nil?
         attachments = {}
+        all_status = ['registered,partial,preliminary,final,amended,corrected,appended,cancelled,entered-in-error,unknown']
 
         patient_ids.each do |patient_id|
           search_params = { 'patient': patient_id, 'category': category_code }
 
           reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
 
-          # If server require status, server shall return 400
-          # https://www.hl7.org/fhir/us/core/general-guidance.html#search-for-servers-requiring-status
-          if reply.code == 400
-            validate_operationoutcome(reply, resource_class)
-
-            ['registered,partial,preliminary,final,amended,corrected,appended,cancelled,entered-in-error,unknown'].each do |status_value|
-              params_with_status = search_param.merge('status': status_value)
-              reply = get_resource_by_params(versioned_resource_class(resource_class), params_with_status)
-              parse_diagnostic_report_reply(reply, attachments)
-            end
-          else
-            parse_diagnostic_report_reply(reply, attachments)
+          parse_reply_with_source_search(reply, resource_class, attachments, all_status) do |the_reply, the_attachments|
+            parse_diagnostic_report_reply(the_reply, the_attachments)
           end
         end
 
