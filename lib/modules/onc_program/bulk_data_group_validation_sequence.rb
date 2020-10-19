@@ -370,9 +370,6 @@ module Inferno
 
             # Skip processing the last line since the it may not be complete (still appending from stream)
             next_block = resource_list.pop
-            # Skip if the last_line is empty
-            # Cannot use .blank? since docker-compose complains "invalid byte sequence in US-ASCII" during unit test
-            next_block = String.new next_block unless next_block.nil? || next_block.strip.empty?
 
             resource_list.each do |resource|
               # NDJSON does not specify that empty lines are NOT allowed.
