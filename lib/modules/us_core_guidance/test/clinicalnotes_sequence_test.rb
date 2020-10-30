@@ -18,7 +18,51 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
     @client = FHIR::Client.new(@instance.url)
   end
 
-  def self.it_tests_failed_return
+  def self.it_tests_required_docref
+    it 'passes with correct DocumentReference in Bundle' do
+      code = @category_code.split('|')[1]
+      source = FHIR::Bundle.new
+      source.entry = @docref_bundle.entry.select { |item| item.resource.type.coding[0].code == code }
+
+      stub_request(:get, @query_url)
+        .with(query: @search_params)
+        .to_return(
+          status: 200,
+          body: source.to_json
+        )
+
+      @sequence.run_test(@test)
+      assert @sequence.document_attachments.keys.any?
+    end
+  end
+
+  def self.it_tests_required_diagrpt
+    it 'passes with correct DiagnosticReport in Bundle' do
+      code = @category_code.split('|')[1]
+      source = FHIR::Bundle.new
+      source.entry = @diagrpt_bundle.entry.select { |item| item.resource.category[0].coding[0].code == code }
+
+      stub_request(:get, @query_url)
+        .with(query: @search_params)
+        .to_return(
+          status: 200,
+          body: source.to_json
+        )
+
+      @sequence.run_test(@test)
+      assert @sequence.report_attachments.keys.any?
+    end
+  end
+
+  describe 'Server requires status tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+      @test = @sequence_class[:have_clinical_notes]
+      @resource_class = 'DocumentReference'
+      @query_url = "#{@instance.url}/#{@resource_class}"
+      @search_params = { 'patient': @instance.patient_id }
+    end
+
     it 'fails with http status 4xx' do
       stub_request(:get, @query_url)
         .with(query: @search_params)
@@ -62,34 +106,28 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
 
       assert_match(/^Expected FHIR Bundle but found/, error.message)
     end
-
-    it 'skips with empty bundle' do
-      stub_request(:get, @query_url)
-        .with(query: @search_params)
-        .to_return(
-          status: 200,
-          body: FHIR::Bundle.new.to_json
-        )
-
-      error = assert_raises(Inferno::SkipException) do
-        @sequence.run_test(@test)
-      end
-
-      assert_match(/^No #{@resource_class} resources with (type|category)/, error.message)
-    end
   end
 
-  def self.it_tests_required_docref
-    it 'passes with correct DocumentReference in Bundle' do
-      code = @category_code.split('|')[1]
-      source = FHIR::Bundle.new
-      source.entry = @docref_bundle.entry.select { |item| item.resource.type.coding[0].code == code }
+  describe 'Clinical Notes tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+      @test = @sequence_class[:have_clinical_notes]
+      @search_params = { 'patient': @instance.patient_id }
+    end
 
-      stub_request(:get, @query_url)
+    it 'passes with correct DocumentReference and DiagnosticReport in Bundle' do
+      stub_request(:get, "#{@instance.url}/DocumentReference")
         .with(query: @search_params)
         .to_return(
           status: 200,
-          body: source.to_json
+          body: @docref_bundle.to_json
+        )
+
+      stub_request(:get, "#{@instance.url}/DiagnosticReport")
+        .with(query: @search_params)
+        .to_return(
+          status: 200,
+          body: @diagrpt_bundle.to_json
         )
 
       @sequence.run_test(@test)
@@ -97,11 +135,25 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
     end
   end
 
-  def self.it_tests_required_diagrpt
-    it 'passes with correct DiagnosticReport in Bundle' do
-      code = @category_code.split('|')[1]
+  describe 'DocumentReference tests' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+      @test = @sequence_class[:have_clinical_notes]
+      @query_url = "#{@instance.url}/DocumentReference"
+      @search_params = { 'patient': @instance.patient_id }
+
+      stub_request(:get, "#{@instance.url}/DiagnosticReport")
+        .with(query: @search_params)
+        .to_return(
+          status: 200,
+          body: @diagrpt_bundle.to_json
+        )
+    end
+
+    it 'skips when DocumentReference does not have Consultation Note' do
+      code = '11488-4'
       source = FHIR::Bundle.new
-      source.entry = @diagrpt_bundle.entry.select { |item| item.resource.category[0].coding[0].code == code }
+      source.entry = @docref_bundle.entry.reject { |item| item.resource.type.coding[0].code == code }
 
       stub_request(:get, @query_url)
         .with(query: @search_params)
@@ -110,132 +162,199 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
           body: source.to_json
         )
 
-      @sequence.run_test(@test)
-      assert @sequence.report_attachments.keys.any?
+      error = assert_raises(Inferno::SkipException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/required DocumentReference types #{code}/, error.message)
+    end
+
+    it 'skips when DocumentReference does not have Discharge Summary' do
+      code = '18842-5'
+      source = FHIR::Bundle.new
+      source.entry = @docref_bundle.entry.reject { |item| item.resource.type.coding.first.code == code }
+
+      stub_request(:get, @query_url)
+        .with(query: @search_params)
+        .to_return(
+          status: 200,
+          body: source.to_json
+        )
+
+      error = assert_raises(Inferno::SkipException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/required DocumentReference types #{code}/, error.message)
+    end
+
+    it 'skips when DocumentReference does not have History & Physical Note' do
+      code = '34117-2'
+      source = FHIR::Bundle.new
+      source.entry = @docref_bundle.entry.reject { |item| item.resource.type.coding.first.code == code }
+
+      stub_request(:get, @query_url)
+        .with(query: @search_params)
+        .to_return(
+          status: 200,
+          body: source.to_json
+        )
+
+      error = assert_raises(Inferno::SkipException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/required DocumentReference types #{code}/, error.message)
+    end
+
+    it 'skips when DocumentReference does not have Procedure Note' do
+      code = '28570-0'
+      source = FHIR::Bundle.new
+      source.entry = @docref_bundle.entry.reject { |item| item.resource.type.coding.first.code == code }
+
+      stub_request(:get, @query_url)
+        .with(query: @search_params)
+        .to_return(
+          status: 200,
+          body: source.to_json
+        )
+
+      error = assert_raises(Inferno::SkipException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/required DocumentReference types #{code}/, error.message)
+    end
+
+    it 'skips when DocumentReference does not have Progress Note' do
+      code = '11506-3'
+      source = FHIR::Bundle.new
+      source.entry = @docref_bundle.entry.reject { |item| item.resource.type.coding.first.code == code }
+
+      stub_request(:get, @query_url)
+        .with(query: @search_params)
+        .to_return(
+          status: 200,
+          body: source.to_json
+        )
+
+      error = assert_raises(Inferno::SkipException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/required DocumentReference types #{code}/, error.message)
+    end
+
+    it 'skips when DocumentReference does not more than one types' do
+      code = ['11488-4', '11506-3']
+      source = FHIR::Bundle.new
+      source.entry = @docref_bundle.entry.select { |item| code.exclude?(item.resource.type.coding.first.code) }
+
+      stub_request(:get, @query_url)
+        .with(query: @search_params)
+        .to_return(
+          status: 200,
+          body: source.to_json
+        )
+
+      error = assert_raises(Inferno::SkipException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/required DocumentReference types #{code.join(', ')}/, error.message)
     end
   end
 
-  describe 'Server requires status tests' do
+  describe 'DiagnosticReport tests' do
     before do
       @sequence = @sequence_class.new(@instance, @client)
-      @test = @sequence_class[:have_consultation_note]
-      @category_code = 'http://loinc.org|11488-4'
-      @resource_class = 'DocumentReference'
-      @query_url = "#{@instance.url}/#{@resource_class}"
-      @search_params = { 'patient': @instance.patient_id, 'type': @category_code }
-    end
-  end
+      @test = @sequence_class[:have_clinical_notes]
+      @query_url = "#{@instance.url}/DiagnosticReport"
+      @search_params = { 'patient': @instance.patient_id }
 
-  describe 'Consultation Note tests' do
-    before do
-      @sequence = @sequence_class.new(@instance, @client)
-      @test = @sequence_class[:have_consultation_note]
-      @category_code = 'http://loinc.org|11488-4'
-      @resource_class = 'DocumentReference'
-      @query_url = "#{@instance.url}/#{@resource_class}"
-      @search_params = { 'patient': @instance.patient_id, 'type': @category_code }
+      stub_request(:get, "#{@instance.url}/DocumentReference")
+        .with(query: @search_params)
+        .to_return(
+          status: 200,
+          body: @docref_bundle.to_json
+        )
     end
 
-    it_tests_failed_return
-    it_tests_required_docref
-  end
+    it 'skips when DiagnosticReport does not have Cardiology' do
+      code = 'LP29708-2'
+      source = FHIR::Bundle.new
+      source.entry = @diagrpt_bundle.entry.reject { |item| item.resource.category.first.coding.first.code == code }
 
-  describe 'Discharge Summary tests' do
-    before do
-      @sequence = @sequence_class.new(@instance, @client)
-      @test = @sequence_class[:have_discharge_summary]
-      @category_code = 'http://loinc.org|18842-5'
-      @resource_class = 'DocumentReference'
-      @query_url = "#{@instance.url}/#{@resource_class}"
-      @search_params = { 'patient': @instance.patient_id, 'type': @category_code }
+      stub_request(:get, @query_url)
+        .with(query: @search_params)
+        .to_return(
+          status: 200,
+          body: source.to_json
+        )
+
+      error = assert_raises(Inferno::SkipException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/required DiagnosticReport categories #{code}/, error.message)
     end
 
-    it_tests_failed_return
-    it_tests_required_docref
-  end
+    it 'skips when DiagnosticReport does not have Pathology' do
+      code = 'LP7839-6'
+      source = FHIR::Bundle.new
+      source.entry = @diagrpt_bundle.entry.reject { |item| item.resource.category.first.coding.first.code == code }
 
-  describe 'History and Physical Note tests' do
-    before do
-      @sequence = @sequence_class.new(@instance, @client)
-      @test = @sequence_class[:have_history_note]
-      @category_code = 'http://loinc.org|34117-2'
-      @resource_class = 'DocumentReference'
-      @query_url = "#{@instance.url}/#{@resource_class}"
-      @search_params = { 'patient': @instance.patient_id, 'type': @category_code }
+      stub_request(:get, @query_url)
+        .with(query: @search_params)
+        .to_return(
+          status: 200,
+          body: source.to_json
+        )
+
+      error = assert_raises(Inferno::SkipException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/required DiagnosticReport categories #{code}/, error.message)
     end
 
-    it_tests_failed_return
-    it_tests_required_docref
-  end
+    it 'skips when DiagnosticReport does not have Radiology' do
+      code = 'LP29684-5'
+      source = FHIR::Bundle.new
+      source.entry = @diagrpt_bundle.entry.reject { |item| item.resource.category.first.coding.first.code == code }
 
-  describe 'Procedures Note tests' do
-    before do
-      @sequence = @sequence_class.new(@instance, @client)
-      @test = @sequence_class[:have_procedures_note]
-      @category_code = 'http://loinc.org|28570-0'
-      @resource_class = 'DocumentReference'
-      @query_url = "#{@instance.url}/#{@resource_class}"
-      @search_params = { 'patient': @instance.patient_id, 'type': @category_code }
+      stub_request(:get, @query_url)
+        .with(query: @search_params)
+        .to_return(
+          status: 200,
+          body: source.to_json
+        )
+
+      error = assert_raises(Inferno::SkipException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/required DiagnosticReport categories #{code}/, error.message)
     end
 
-    it_tests_failed_return
-    it_tests_required_docref
-  end
+    it 'skips when DiagnosticReport does not more than one categories' do
+      code = ['LP29708-2', 'LP29684-5']
+      source = FHIR::Bundle.new
+      source.entry = @diagrpt_bundle.entry.select { |item| code.exclude?(item.resource.category.first.coding.first.code) }
 
-  describe 'Progress Note tests' do
-    before do
-      @sequence = @sequence_class.new(@instance, @client)
-      @test = @sequence_class[:have_progress_note]
-      @category_code = 'http://loinc.org|11506-3'
-      @resource_class = 'DocumentReference'
-      @query_url = "#{@instance.url}/#{@resource_class}"
-      @search_params = { 'patient': @instance.patient_id, 'type': @category_code }
+      stub_request(:get, @query_url)
+        .with(query: @search_params)
+        .to_return(
+          status: 200,
+          body: source.to_json
+        )
+
+      error = assert_raises(Inferno::SkipException) do
+        @sequence.run_test(@test)
+      end
+
+      assert_match(/required DiagnosticReport categories #{code.join(', ')}/, error.message)
     end
-
-    it_tests_failed_return
-    it_tests_required_docref
-  end
-
-  describe 'Cardioogy Report tests' do
-    before do
-      @sequence = @sequence_class.new(@instance, @client)
-      @test = @sequence_class[:have_cardiology_report]
-      @category_code = 'http://loinc.org|LP29708-2'
-      @resource_class = 'DiagnosticReport'
-      @query_url = "#{@instance.url}/#{@resource_class}"
-      @search_params = { 'patient': @instance.patient_id, 'category': @category_code }
-    end
-
-    it_tests_failed_return
-    it_tests_required_diagrpt
-  end
-
-  describe 'Pathology Report tests' do
-    before do
-      @sequence = @sequence_class.new(@instance, @client)
-      @test = @sequence_class[:have_pathology_report]
-      @category_code = 'http://loinc.org|LP7839-6'
-      @resource_class = 'DiagnosticReport'
-      @query_url = "#{@instance.url}/#{@resource_class}"
-      @search_params = { 'patient': @instance.patient_id, 'category': @category_code }
-    end
-
-    it_tests_failed_return
-    it_tests_required_diagrpt
-  end
-
-  describe 'Radiology Report tests' do
-    before do
-      @sequence = @sequence_class.new(@instance, @client)
-      @test = @sequence_class[:have_radiology_report]
-      @category_code = 'http://loinc.org|LP29684-5'
-      @resource_class = 'DiagnosticReport'
-      @query_url = "#{@instance.url}/#{@resource_class}"
-      @search_params = { 'patient': @instance.patient_id, 'category': @category_code }
-    end
-
-    it_tests_failed_return
-    it_tests_required_diagrpt
   end
 
   describe 'Matched Attachments tests' do
