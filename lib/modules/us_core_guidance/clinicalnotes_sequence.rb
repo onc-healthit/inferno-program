@@ -115,13 +115,13 @@ module Inferno
       end
 
       def parse_document_reference_reply(resources, resource_class)
-        missing_types = ['11488-4', '18842-5', '34117-2', '28570-0', '11506-3']
+        type_required = ['11488-4', '18842-5', '34117-2', '28570-0', '11506-3']
+        type_found = []
 
         resources&.select { |r| r.resourceType == resource_class }&.each do |resource|
-          # Remove type code from miss_type array if the bundle contains such category
-          code = resource.type.coding.map { |coding| coding.code if missing_types.include?(coding.code) }.compact
+          code = resource.type.coding.map { |coding| coding.code if type_required.include?(coding.code) }.compact
 
-          missing_types.delete(code.first) unless code.empty?
+          type_found << code.first unless code.empty? || type_found.include?(code.first)
 
           # Save DocumentReference.content.attachment.url for later test
           resource.content&.select { |content| !document_attachments.key?(content.attachment&.url) }&.each do |content|
@@ -129,7 +129,7 @@ module Inferno
           end
         end
 
-        missing_types
+        type_required - type_found
       end
 
       def check_diagnostic_report_required_category(patient_id)
@@ -143,14 +143,15 @@ module Inferno
       end
 
       def parse_diagnostic_report_reply(resources, resource_class)
-        missing_categories = ['LP29708-2', 'LP7839-6', 'LP29684-5']
+        category_required = ['LP29708-2', 'LP7839-6', 'LP29684-5']
+        category_found = []
 
         resources&.select { |r| r.resourceType == resource_class }&.each do |resource|
-          # Remove category code from missing_categories array if the bundle contains such category
           resource.category&.each do |category|
-            code = category.coding.map { |coding| coding.code if missing_categories.include?(coding.code) }.compact
+            code = category.coding.map { |coding| coding.code if category_required.include?(coding.code) }.compact
+
             unless code.empty?
-              missing_categories.delete(code.first)
+              category_found << code.first unless category_found.include?(code.first)
 
               # Save DiagnosticReport.presentedForm.url for later test.
               # Our current understanding is that Inferno only need to test the attachment for the three required DiagonistcReport
@@ -163,7 +164,7 @@ module Inferno
           end
         end
 
-        missing_categories
+        category_required - category_found
       end
 
       test :have_clinical_notes do
