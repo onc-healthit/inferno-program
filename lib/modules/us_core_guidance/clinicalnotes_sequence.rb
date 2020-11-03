@@ -41,35 +41,38 @@ module Inferno
 
       attr_accessor :document_attachments, :report_attachments
 
+      TYPE_REQUIRED = ['11488-4', '18842-5', '34117-2', '28570-0', '11506-3'].freeze
+      CATEGORY_REQUIRED = ['LP29708-2', 'LP7839-6', 'LP29684-5'].freeze
+
       def test_clinical_notes
         skip_if_known_not_supported(:DocumentReference, [:search])
         skip_if_known_not_supported(:DiagnosticReport, [:search])
 
         patient_ids = @instance.patient_ids.split(',')
-        clinical_note_errors = []
+        type_missing = TYPE_REQUIRED.dup
+        category_missing = CATEGORY_REQUIRED.dup
+        self.document_attachments = {}
+        self.report_attachments = {}
 
         patient_ids.each do |patient_id|
-          self.document_attachments = {}
-          self.report_attachments = {}
+          type_missing -= check_document_reference_required_type(patient_id)
+          category_missing -= check_diagnostic_report_required_category(patient_id)
 
-          missing_types = check_document_reference_required_type(patient_id)
-          missing_categories = check_diagnostic_report_required_category(patient_id)
-
-          break if missing_types.empty? && missing_categories.empty?
-
-          message = "Patient/#{patient_id} does NOT have these required "
-
-          unless missing_types.empty?
-            message += "DocumentReference types #{missing_types.join(', ')}"
-            message += ' and required ' unless missing_categories.empty?
-          end
-
-          message += "DiagnosticReport categories #{missing_categories.join(', ')}"
-
-          clinical_note_errors << message
+          break if type_missing.empty? && category_missing.empty? && !document_attachments.empty? && !report_attachments.empty?
         end
 
-        skip clinical_note_errors.join("\n* ").to_s if clinical_note_errors.size == patient_ids.size
+        return if type_missing.empty? && category_missing.empty?
+
+        message = 'Could not find these '
+
+        unless type_missing.empty?
+          message += "DocumentReference types #{type_missing.join(', ')}"
+          message += ' and ' unless category_missing.empty?
+        end
+
+        message += "DiagnosticReport categories #{category_missing.join(', ')}." unless category_missing.empty?
+
+        skip message
       end
 
       def reply_with_status_search(search_params, resource_class, all_status)
@@ -111,25 +114,27 @@ module Inferno
 
         resources = reply_with_status_search(search_params, resource_class, all_status)
 
-        parse_document_reference_reply(resources, resource_class)
+        parse_document_reference_resources(resources, resource_class, patient_id)
       end
 
-      def parse_document_reference_reply(resources, resource_class)
-        type_required = ['11488-4', '18842-5', '34117-2', '28570-0', '11506-3']
+      def parse_document_reference_resources(resources, resource_class, patient_id)
         type_found = []
+        attachments = {}
 
         resources&.select { |r| r.resourceType == resource_class }&.each do |resource|
-          code = resource.type.coding.map { |coding| coding.code if type_required.include?(coding.code) }.compact
+          code = resource.type.coding.map { |coding| coding.code if TYPE_REQUIRED.include?(coding.code) }.compact
 
           type_found << code.first unless code.empty? || type_found.include?(code.first)
 
           # Save DocumentReference.content.attachment.url for later test
-          resource.content&.select { |content| !document_attachments.key?(content.attachment&.url) }&.each do |content|
-            document_attachments[content.attachment.url] = resource.id
+          resource.content&.select { |content| !attachments.key?(content.attachment&.url) }&.each do |content|
+            attachments[content.attachment.url] = resource.id
           end
         end
 
-        type_required - type_found
+        document_attachments[patient_id] = attachments unless attachments.empty?
+
+        type_found
       end
 
       def check_diagnostic_report_required_category(patient_id)
@@ -139,24 +144,24 @@ module Inferno
 
         resources = reply_with_status_search(search_params, resource_class, all_status)
 
-        parse_diagnostic_report_reply(resources, resource_class)
+        parse_diagnostic_report_resources(resources, resource_class, patient_id)
       end
 
-      def parse_diagnostic_report_reply(resources, resource_class)
-        category_required = ['LP29708-2', 'LP7839-6', 'LP29684-5']
+      def parse_diagnostic_report_resources(resources, resource_class, patient_id)
         category_found = []
+        attachments = {}
 
         resources&.select { |r| r.resourceType == resource_class }&.each do |resource|
           resource.category&.each do |category|
-            code = category.coding.map { |coding| coding.code if category_required.include?(coding.code) }.compact
+            code = category.coding.map { |coding| coding.code if CATEGORY_REQUIRED.include?(coding.code) }.compact
 
             unless code.empty?
               category_found << code.first unless category_found.include?(code.first)
 
               # Save DiagnosticReport.presentedForm.url for later test.
               # Our current understanding is that Inferno only need to test the attachment for the three required DiagonistcReport
-              resource.presentedForm&.select { |attachment| !report_attachments.key?(attachment&.url) }&.each do |attachment|
-                report_attachments[attachment.url] = resource.id
+              resource.presentedForm&.select { |attachment| !attachments.key?(attachment&.url) }&.each do |attachment|
+                attachments[attachment.url] = resource.id
               end
 
               break
@@ -164,7 +169,9 @@ module Inferno
           end
         end
 
-        category_required - category_found
+        report_attachments[patient_id] = attachments unless attachments.empty?
+
+        category_found
       end
 
       test :have_clinical_notes do
@@ -214,12 +221,21 @@ module Inferno
         skip 'There is no attachment in DocumentReference. Please select another patient.' unless document_attachments&.any?
         skip 'There is no attachment in DiagnosticReport. Please select another patient.' unless report_attachments&.any?
 
-        assert_attachment_matched(report_attachments, document_attachments, 'DiagnosticReport', 'DocumentReference')
+        assert_attachment_matched(report_attachments, document_attachments, :DiagnosticReport, :DocumentReference)
       end
 
       def assert_attachment_matched(source_attachments, target_attachments, source_class, target_class)
-        not_matched_urls = source_attachments.keys - target_attachments.keys
-        not_matched_attachments = not_matched_urls.map { |url| "#{url} in #{source_class}/#{source_attachments[url]}" }
+        not_matched_attachments = []
+
+        source_attachments.each_key do |patient_id|
+          not_matched_urls = if target_attachments.key?(patient_id)
+                               source_attachments[patient_id].keys - target_attachments[patient_id].keys
+                             else
+                               source_attachments[patient_id].keys
+                             end
+
+          not_matched_attachments += not_matched_urls.map { |url| "#{url} in #{source_class}/#{source_attachments[patient_id][url]} for Patient #{patient_id}" }
+        end
 
         assert not_matched_attachments.empty?, "Attachments #{not_matched_attachments.join(', ')} are not referenced in any #{target_class}."
       end

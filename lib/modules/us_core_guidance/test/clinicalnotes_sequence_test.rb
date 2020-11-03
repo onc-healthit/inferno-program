@@ -166,7 +166,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
         @sequence.run_test(@test)
       end
 
-      assert_match(/required DocumentReference types #{code}/, error.message)
+      assert_match(/ DocumentReference types #{code}/, error.message)
     end
 
     it 'skips when DocumentReference does not have Discharge Summary' do
@@ -185,7 +185,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
         @sequence.run_test(@test)
       end
 
-      assert_match(/required DocumentReference types #{code}/, error.message)
+      assert_match(/ DocumentReference types #{code}/, error.message)
     end
 
     it 'skips when DocumentReference does not have History & Physical Note' do
@@ -204,7 +204,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
         @sequence.run_test(@test)
       end
 
-      assert_match(/required DocumentReference types #{code}/, error.message)
+      assert_match(/ DocumentReference types #{code}/, error.message)
     end
 
     it 'skips when DocumentReference does not have Procedure Note' do
@@ -223,7 +223,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
         @sequence.run_test(@test)
       end
 
-      assert_match(/required DocumentReference types #{code}/, error.message)
+      assert_match(/ DocumentReference types #{code}/, error.message)
     end
 
     it 'skips when DocumentReference does not have Progress Note' do
@@ -242,7 +242,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
         @sequence.run_test(@test)
       end
 
-      assert_match(/required DocumentReference types #{code}/, error.message)
+      assert_match(/ DocumentReference types #{code}/, error.message)
     end
 
     it 'skips when DocumentReference does not more than one types' do
@@ -261,7 +261,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
         @sequence.run_test(@test)
       end
 
-      assert_match(/required DocumentReference types #{code.join(', ')}/, error.message)
+      assert_match(/ DocumentReference types #{code.join(', ')}/, error.message)
     end
   end
 
@@ -296,7 +296,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
         @sequence.run_test(@test)
       end
 
-      assert_match(/required DiagnosticReport categories #{code}/, error.message)
+      assert_match(/ DiagnosticReport categories #{code}/, error.message)
     end
 
     it 'skips when DiagnosticReport does not have Pathology' do
@@ -315,7 +315,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
         @sequence.run_test(@test)
       end
 
-      assert_match(/required DiagnosticReport categories #{code}/, error.message)
+      assert_match(/ DiagnosticReport categories #{code}/, error.message)
     end
 
     it 'skips when DiagnosticReport does not have Radiology' do
@@ -334,7 +334,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
         @sequence.run_test(@test)
       end
 
-      assert_match(/required DiagnosticReport categories #{code}/, error.message)
+      assert_match(/ DiagnosticReport categories #{code}/, error.message)
     end
 
     it 'skips when DiagnosticReport does not more than one categories' do
@@ -353,7 +353,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
         @sequence.run_test(@test)
       end
 
-      assert_match(/required DiagnosticReport categories #{code.join(', ')}/, error.message)
+      assert_match(/ DiagnosticReport categories #{code.join(', ')}/, error.message)
     end
   end
 
@@ -361,12 +361,18 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
     before do
       @sequence = @sequence_class.new(@instance, @client)
       @test = @sequence_class[:have_matched_attachments]
-      @sequence.document_attachments = {}
-      @sequence.document_attachments['/Binary/SMART-Binary-1-note'] = 'SMART-DiagnosticReport-1-note'
-      @sequence.document_attachments['/Binary/SMART-Binary-2-note'] = 'SMART-DiagnosticReport-2-note'
-      @sequence.report_attachments = {}
-      @sequence.report_attachments['/Binary/SMART-Binary-1-note'] = 'SMART-DiagnosticReport-1-note'
-      @sequence.report_attachments['/Binary/SMART-Binary-2-note'] = 'SMART-DiagnosticReport-2-note'
+      @sequence.document_attachments = {
+        '1234' => {
+          '/Binary/SMART-Binary-1-note' => 'SMART-DocumentReference-1-note',
+          '/Binary/SMART-Binary-2-note' => 'SMART-DocumentReference-2-note'
+        }
+      }
+      @sequence.report_attachments = {
+        '1234' => {
+          '/Binary/SMART-Binary-1-note' => 'SMART-DiagnosticReport-1-note',
+          '/Binary/SMART-Binary-2-note' => 'SMART-DiagnosticReport-2-note'
+        }
+      }
     end
 
     it 'skips if skip_document_reference is true' do
@@ -390,13 +396,13 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
     end
 
     it 'fails if one attachment does not have a match' do
-      @sequence.document_attachments.delete('/Binary/SMART-Binary-2-note')
+      @sequence.document_attachments['1234'].delete('/Binary/SMART-Binary-2-note')
 
       error = assert_raises(Inferno::AssertionException) do
         @sequence.run_test(@test)
       end
 
-      assert_equal 'Attachments /Binary/SMART-Binary-2-note in DiagnosticReport/SMART-DiagnosticReport-2-note are not referenced in any DocumentReference.', error.message
+      assert_equal 'Attachments /Binary/SMART-Binary-2-note in DiagnosticReport/SMART-DiagnosticReport-2-note for Patient 1234 are not referenced in any DocumentReference.', error.message
     end
 
     it 'passes if all attachments are matched' do
