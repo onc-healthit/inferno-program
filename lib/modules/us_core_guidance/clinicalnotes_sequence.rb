@@ -108,7 +108,7 @@ module Inferno
       end
 
       def check_document_reference_required_type(patient_id)
-        resource_class = :DocumentReference.to_s
+        resource_class = 'DocumentReference'
         all_status = 'current,superseded,entered-in-error'
         search_params = { 'patient': patient_id }
 
