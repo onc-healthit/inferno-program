@@ -58,7 +58,7 @@ module Inferno
           type_missing -= check_document_reference_required_type(patient_id)
           category_missing -= check_diagnostic_report_required_category(patient_id)
 
-          break if type_missing.empty? && category_missing.empty? && !document_attachments.empty? && !report_attachments.empty?
+          break if type_missing.empty? && category_missing.empty? && document_attachments.present? && report_attachments.present?
         end
 
         return if type_missing.empty? && category_missing.empty?
