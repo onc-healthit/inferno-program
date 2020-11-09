@@ -138,7 +138,7 @@ module Inferno
       end
 
       def check_diagnostic_report_required_category(patient_id)
-        resource_class = :DiagnosticReport.to_s
+        resource_class = 'DiagnosticReport'
         all_status = 'registered,partial,preliminary,final,amended,corrected,appended,cancelled,entered-in-error,unknown'
         search_params = { 'patient': patient_id }
 
