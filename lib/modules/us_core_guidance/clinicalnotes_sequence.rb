@@ -122,9 +122,9 @@ module Inferno
         attachments = {}
 
         resources&.select { |r| r.resourceType == resource_class }&.each do |resource|
-          code = resource.type.coding.map { |coding| coding.code if TYPE_REQUIRED.include?(coding.code) }.compact
+          code = resource.type&.coding&.map { |coding| coding.code if TYPE_REQUIRED.include?(coding.code) }&.compact
 
-          type_found << code.first unless code.empty? || type_found.include?(code.first)
+          type_found << code.first if code.present? && type_found.exclude?(code.first)
 
           # Save DocumentReference.content.attachment.url for later test
           resource.content&.select { |content| !attachments.key?(content.attachment&.url) }&.each do |content|
@@ -153,10 +153,10 @@ module Inferno
 
         resources&.select { |r| r.resourceType == resource_class }&.each do |resource|
           resource.category&.each do |category|
-            code = category.coding.map { |coding| coding.code if CATEGORY_REQUIRED.include?(coding.code) }.compact
+            code = category.coding&.map { |coding| coding.code if CATEGORY_REQUIRED.include?(coding.code) }&.compact
 
-            unless code.empty?
-              category_found << code.first unless category_found.include?(code.first)
+            if code.present?
+              category_found << code.first if category_found.exclude?(code.first)
 
               # Save DiagnosticReport.presentedForm.url for later test.
               # Our current understanding is that Inferno only need to test the attachment for the three required DiagonistcReport

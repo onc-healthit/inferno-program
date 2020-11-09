@@ -245,7 +245,7 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
       assert_match(/ DocumentReference types #{code}/, error.message)
     end
 
-    it 'skips when DocumentReference does not more than one types' do
+    it 'skips when DocumentReference does not have more than one types' do
       code = ['11488-4', '11506-3']
       source = FHIR::Bundle.new
       source.entry = @docref_bundle.entry.select { |item| code.exclude?(item.resource.type.coding.first.code) }
