@@ -156,7 +156,7 @@ module Inferno
             code = category.coding&.map { |coding| coding.code if CATEGORY_REQUIRED.include?(coding.code) }&.compact
 
             if code.present?
-              category_found << code.first if category_found.exclude?(code.first)
+              code.each { |c| category_found << c if category_found.exclude?(c) }
 
               # Save DiagnosticReport.presentedForm.url for later test.
               # Our current understanding is that Inferno only need to test the attachment for the three required DiagonistcReport
