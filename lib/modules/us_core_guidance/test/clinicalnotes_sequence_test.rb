@@ -355,6 +355,23 @@ describe Inferno::Sequence::USCoreR4ClinicalNotesSequence do
 
       assert_match(/ DiagnosticReport categories #{code.join(', ')}/, error.message)
     end
+
+    it 'pass when one DiagnosticReport instance has more than one categories' do
+      code = 'LP29684-5' # Radiology
+      source = FHIR::Bundle.new
+      radiology_report = @diagrpt_bundle.entry.select { |item| item.resource.category.first.coding.first.code == code }
+      source.entry = @diagrpt_bundle.entry - radiology_report
+      source.entry.first.resource.category << radiology_report.first.resource.category.first
+
+      stub_request(:get, @query_url)
+        .with(query: @search_params)
+        .to_return(
+          status: 200,
+          body: source.to_json
+        )
+
+      @sequence.test_clinical_notes
+    end
   end
 
   describe 'Matched Attachments tests' do
