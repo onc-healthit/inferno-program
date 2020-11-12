@@ -621,8 +621,6 @@ module Inferno
             * DiagnosticReport.category:LaboratorySlice
             * category
             * code
-            * effectiveDateTime
-            * effectivePeriod
             * effective[x]
             * issued
             * performer

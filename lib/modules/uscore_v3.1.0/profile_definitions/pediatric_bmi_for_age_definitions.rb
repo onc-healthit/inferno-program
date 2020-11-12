@@ -49,16 +49,7 @@ module Inferno
             fixed_value: 'vital-signs'
           },
           {
-            path: 'effectiveDateTime'
-          },
-          {
-            path: 'effectivePeriod'
-          },
-          {
             path: 'effective'
-          },
-          {
-            path: 'valueQuantity'
           },
           {
             path: 'value'

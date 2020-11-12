@@ -52,12 +52,6 @@ module Inferno
             path: 'code'
           },
           {
-            path: 'effectiveDateTime'
-          },
-          {
-            path: 'effectivePeriod'
-          },
-          {
             path: 'effective'
           },
           {

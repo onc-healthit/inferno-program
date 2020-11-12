@@ -598,8 +598,6 @@ module Inferno
             * category.coding.system
             * code
             * dataAbsentReason
-            * effectiveDateTime
-            * effectivePeriod
             * effective[x]
             * status
             * subject

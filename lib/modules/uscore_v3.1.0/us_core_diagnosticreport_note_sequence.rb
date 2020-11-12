@@ -620,8 +620,6 @@ module Inferno
 
             * category
             * code
-            * effectiveDateTime
-            * effectivePeriod
             * effective[x]
             * encounter
             * issued

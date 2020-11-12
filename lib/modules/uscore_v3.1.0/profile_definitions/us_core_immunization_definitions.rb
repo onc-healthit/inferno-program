@@ -25,12 +25,6 @@ module Inferno
             path: 'vaccineCode'
           },
           {
-            path: 'occurrenceDateTime'
-          },
-          {
-            path: 'occurrenceString'
-          },
-          {
             path: 'occurrence'
           },
           {

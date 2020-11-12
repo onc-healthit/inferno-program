@@ -108,16 +108,7 @@ module Inferno
             fixed_value: '59408-5'
           },
           {
-            path: 'effectiveDateTime'
-          },
-          {
-            path: 'effectivePeriod'
-          },
-          {
             path: 'effective'
-          },
-          {
-            path: 'valueQuantity'
           },
           {
             path: 'value'
@@ -146,12 +137,6 @@ module Inferno
             path: 'component.code'
           },
           {
-            path: 'component.valueQuantity'
-          },
-          {
-            path: 'component.value'
-          },
-          {
             path: 'component.code.coding.code',
             fixed_value: '3151-8'
           },
@@ -166,6 +151,9 @@ module Inferno
           {
             path: 'component.code.coding.code',
             fixed_value: '3150-0'
+          },
+          {
+            path: 'component.value'
           },
           {
             path: 'component.value.value'

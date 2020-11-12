@@ -36,46 +36,7 @@ module Inferno
             path: 'code'
           },
           {
-            path: 'effectiveDateTime'
-          },
-          {
-            path: 'effectivePeriod'
-          },
-          {
             path: 'effective'
-          },
-          {
-            path: 'valueQuantity'
-          },
-          {
-            path: 'valueCodeableConcept'
-          },
-          {
-            path: 'valueString'
-          },
-          {
-            path: 'valueBoolean'
-          },
-          {
-            path: 'valueInteger'
-          },
-          {
-            path: 'valueRange'
-          },
-          {
-            path: 'valueRatio'
-          },
-          {
-            path: 'valueSampledData'
-          },
-          {
-            path: 'valueTime'
-          },
-          {
-            path: 'valueDateTime'
-          },
-          {
-            path: 'valuePeriod'
           },
           {
             path: 'value'

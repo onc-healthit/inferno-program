@@ -341,13 +341,6 @@ module Inferno
               resource_types: resource_types
             }
             sequence[:must_supports][:references] << must_support_element
-          elsif element['path'].end_with? '[x]'
-            element['type'].each do |type|
-              path = element['path'].gsub(sequence[:resource] + '.', '').gsub('[x]', '') + type['code'].upcase_first
-              must_support_element = { path: path }
-              sequence[:must_supports][:elements] << must_support_element
-            end
-            sequence[:must_supports][:elements] << { path: element['path'].gsub(sequence[:resource] + '.', '') }
           else
             path = element['path'].gsub(sequence[:resource] + '.', '')
             must_support_element = { path: path }
@@ -522,7 +515,7 @@ module Inferno
               end
 
               any_mandatory_elements = sequence[:mandatory_elements].any? do |element|
-                element == path || element == "#{path}[x]"
+                element == path
               end
 
               any_must_support_elements || any_must_support_slices || any_mandatory_elements
