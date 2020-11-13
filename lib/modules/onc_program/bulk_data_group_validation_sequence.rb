@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Dir['lib/modules/uscore_v3.1.0/profile_definitions/*'].sort.each { |file| require './' + file }
+Dir['lib/modules/uscore_v3.1.1/profile_definitions/*'].sort.each { |file| require './' + file }
 
 module Inferno
   module Sequence
@@ -25,7 +25,7 @@ module Inferno
 
       US_CORE_R4_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
 
-      include Inferno::USCore310ProfileDefinitions
+      include Inferno::USCore311ProfileDefinitions
 
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
         super(instance, client, disable_tls_tests, sequence_result)
