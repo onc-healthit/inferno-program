@@ -175,7 +175,7 @@ module Inferno
       test :have_clinical_notes do
         metadata do
           id '01'
-          name 'Server shall have minmum five types of DocumentReference and three categories of DiagnosticReport'
+          name 'Server demonstrates support for the required DocumentReference types and DiagnosticReport categories.'
           link 'https://www.hl7.org/fhir/us/core/clinical-notes-guidance.html'
           description %(
             US Core Implementation Guide Clinical Notes Guidance defines system SHALL support the following five “Common Clinical Notes”:
