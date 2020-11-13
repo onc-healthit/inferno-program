@@ -133,8 +133,8 @@ module Inferno
       end
 
       def find_first_search(sequence)
-        sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' } ||
-          sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' }
+        sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' && search_param[:must_support_or_mandatory] } ||
+          sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' && search_param[:must_support_or_mandatory] }
       end
 
       def generate_sequence(sequence)
@@ -149,10 +149,11 @@ module Inferno
       end
 
       def generate_profile_definition(sequence)
-        file_name = sequence_out_path + '/profile_definitions/' + sequence[:name].downcase + '_definitions.rb'
+        profile_definition_folder = File.join(sequence_out_path, '/profile_definitions')
+        file_name = File.join(profile_definition_folder, sequence[:name].downcase + '_definitions.rb')
         template = ERB.new(File.read(File.join(__dir__, 'templates/sequence_definition.rb.erb')))
         output = template.result_with_hash(sequence)
-        FileUtils.mkdir_p(sequence_out_path) unless File.directory?(sequence_out_path)
+        FileUtils.mkdir_p(profile_definition_folder) unless File.directory?(profile_definition_folder)
         File.write(file_name, output)
       end
 
@@ -817,7 +818,7 @@ module Inferno
 
         if sequence[:resource] == 'MedicationRequest'
           medication_test = {
-            tests_that: 'Medication resources returned conform to US Core v3.1.0 profiles',
+            tests_that: "Medication resources returned conform to US Core #{sequence[:version]} profiles",
             key: :validate_medication_resources,
             index: sequence[:tests].length + 1,
             link: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest',
@@ -1397,13 +1398,22 @@ module Inferno
         }
 
         ['restricted', 'unrestricted'].each do |restriction|
+          module_info[:access_verify_restriction] = restriction
+
           file_name = "#{sequence_out_path}/access_verify_#{restriction}_sequence.rb"
 
           template = ERB.new(File.read(File.join(__dir__, 'templates/access_verify_sequence.rb.erb')))
 
-          module_info[:access_verify_restriction] = restriction
           output = template.result_with_hash(module_info)
           FileUtils.mkdir_p(sequence_out_path) unless File.directory?(sequence_out_path)
+          File.write(file_name, output)
+
+          file_name = "#{sequence_out_path}/test/access_verify_#{restriction}_test.rb"
+
+          template = ERB.new(File.read(File.join(__dir__, "templates/unit_tests/access_verify_#{restriction}_unit_test.rb.erb")))
+
+          output = template.result_with_hash(module_info)
+          FileUtils.mkdir_p("#{sequence_out_path}/test") unless File.directory?("#{sequence_out_path}/test")
           File.write(file_name, output)
         end
       end
