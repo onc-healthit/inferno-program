@@ -6,14 +6,6 @@ module Inferno
       MUST_SUPPORTS = {
         extensions: [],
         slices: [],
-        references: [
-          {
-            path: 'subject',
-            resource_types: [
-              'Patient'
-            ]
-          }
-        ],
         elements: [
           {
             path: 'status'
@@ -22,10 +14,7 @@ module Inferno
             path: 'code'
           },
           {
-            path: 'performedDateTime'
-          },
-          {
-            path: 'performedPeriod'
+            path: 'subject'
           },
           {
             path: 'performed'

@@ -6,14 +6,6 @@ module Inferno
       MUST_SUPPORTS = {
         extensions: [],
         slices: [],
-        references: [
-          {
-            path: 'managingOrganization',
-            resource_types: [
-              'Organization'
-            ]
-          }
-        ],
         elements: [
           {
             path: 'status'
@@ -38,6 +30,9 @@ module Inferno
           },
           {
             path: 'address.postalCode'
+          },
+          {
+            path: 'managingOrganization'
           }
         ]
       }.freeze

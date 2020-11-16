@@ -24,12 +24,6 @@ module Inferno
             }
           }
         ],
-        references: [
-          {
-            path: 'subject',
-            resource_types: []
-          }
-        ],
         elements: [
           {
             path: 'status'
@@ -49,16 +43,10 @@ module Inferno
             fixed_value: 'vital-signs'
           },
           {
-            path: 'effectiveDateTime'
-          },
-          {
-            path: 'effectivePeriod'
+            path: 'subject'
           },
           {
             path: 'effective'
-          },
-          {
-            path: 'valueQuantity'
           },
           {
             path: 'value'

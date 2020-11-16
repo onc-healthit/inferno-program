@@ -6,14 +6,6 @@ module Inferno
       MUST_SUPPORTS = {
         extensions: [],
         slices: [],
-        references: [
-          {
-            path: 'patient',
-            resource_types: [
-              'Patient'
-            ]
-          }
-        ],
         elements: [
           {
             path: 'udiCarrier'
@@ -44,6 +36,9 @@ module Inferno
           },
           {
             path: 'type'
+          },
+          {
+            path: 'patient'
           }
         ]
       }.freeze

@@ -17,14 +17,6 @@ module Inferno
             }
           }
         ],
-        references: [
-          {
-            path: 'subject',
-            resource_types: [
-              'Patient'
-            ]
-          }
-        ],
         elements: [
           {
             path: 'status'
@@ -36,46 +28,10 @@ module Inferno
             path: 'code'
           },
           {
-            path: 'effectiveDateTime'
-          },
-          {
-            path: 'effectivePeriod'
+            path: 'subject'
           },
           {
             path: 'effective'
-          },
-          {
-            path: 'valueQuantity'
-          },
-          {
-            path: 'valueCodeableConcept'
-          },
-          {
-            path: 'valueString'
-          },
-          {
-            path: 'valueBoolean'
-          },
-          {
-            path: 'valueInteger'
-          },
-          {
-            path: 'valueRange'
-          },
-          {
-            path: 'valueRatio'
-          },
-          {
-            path: 'valueSampledData'
-          },
-          {
-            path: 'valueTime'
-          },
-          {
-            path: 'valueDateTime'
-          },
-          {
-            path: 'valuePeriod'
           },
           {
             path: 'value'

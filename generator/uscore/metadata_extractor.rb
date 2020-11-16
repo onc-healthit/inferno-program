@@ -86,7 +86,6 @@ module Inferno
           must_supports: {
             extensions: [],
             slices: [],
-            references: [],
             elements: []
           },
           mandatory_elements: [],
@@ -330,24 +329,6 @@ module Inferno
               end
             end
             sequence[:must_supports][:slices] << must_support_element
-          elsif element['type'].any? { |type| type['code'] == 'Reference' }
-            reference_type = element['type'].find { |type| type['code'] == 'Reference' }
-            profiles = reference_type['targetProfile']
-            resource_types = profiles
-              .select { |profile| resources_by_type['StructureDefinition'].find { |stdef| stdef['url'] == profile } }
-              .map { |profile| resources_by_type['StructureDefinition'].find { |stdef| stdef['url'] == profile }['type'] }
-            must_support_element = {
-              path: element['path'].gsub(sequence[:resource] + '.', ''),
-              resource_types: resource_types
-            }
-            sequence[:must_supports][:references] << must_support_element
-          elsif element['path'].end_with? '[x]'
-            element['type'].each do |type|
-              path = element['path'].gsub(sequence[:resource] + '.', '').gsub('[x]', '') + type['code'].upcase_first
-              must_support_element = { path: path }
-              sequence[:must_supports][:elements] << must_support_element
-            end
-            sequence[:must_supports][:elements] << { path: element['path'].gsub(sequence[:resource] + '.', '') }
           else
             path = element['path'].gsub(sequence[:resource] + '.', '')
             must_support_element = { path: path }
@@ -504,7 +485,7 @@ module Inferno
           sequence[:searches].each do |search|
             search[:names_not_must_support_or_mandatory] = search[:names].reject do |name|
               path = sequence[:search_param_descriptions][name.to_sym][:path]
-              any_must_support_elements = (sequence[:must_supports][:elements] + sequence[:must_supports][:references]).any? do |element|
+              any_must_support_elements = (sequence[:must_supports][:elements]).any? do |element|
                 full_must_support_path = "#{sequence[:resource]}.#{element[:path]}"
 
                 # allow for non-choice, choice types, and _id
@@ -522,7 +503,7 @@ module Inferno
               end
 
               any_mandatory_elements = sequence[:mandatory_elements].any? do |element|
-                element == path || element == "#{path}[x]"
+                element == path
               end
 
               any_must_support_elements || any_must_support_slices || any_mandatory_elements
