@@ -158,7 +158,7 @@ module Inferno
         if profile && @instance.fhir_version == 'r4'
           resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, profile.url)
 
-          # US Core 3.1.0 has both Reference(US Core Encounter) and Reference(Encounter).
+          # US Core 3.1.1 has both Reference(US Core Encounter) and Reference(Encounter).
           # Bulk Data validation expects at least one Encounter validates to the with US Core Encounter profile, but not all.
           if klass == 'Encounter'
             if resource_validation_errors[:errors].empty?
@@ -483,8 +483,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310PatientSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310PatientSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311PatientSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311PatientSequenceDefinitions::BINDINGS.dup
           }
         ]
 
@@ -539,8 +539,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310AllergyintoleranceSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310AllergyintoleranceSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311AllergyintoleranceSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311AllergyintoleranceSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('AllergyIntolerance', profile_definitions)
@@ -559,8 +559,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310CareplanSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310CareplanSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311CareplanSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311CareplanSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('CarePlan', profile_definitions)
@@ -579,8 +579,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310CareteamSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310CareteamSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311CareteamSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311CareteamSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('CareTeam', profile_definitions)
@@ -599,8 +599,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310ConditionSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310ConditionSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311ConditionSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311ConditionSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Condition', profile_definitions)
@@ -619,8 +619,8 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: USCore310ImplantableDeviceSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310ImplantableDeviceSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311ImplantableDeviceSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311ImplantableDeviceSequenceDefinitions::BINDINGS.dup
           }
         ]
 
@@ -643,13 +643,13 @@ module Inferno
         profile_definitions = [
           {
             profile: US_CORE_R4_URIS[:diagnostic_report_lab],
-            must_support_info: USCore310DiagnosticreportLabSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310DiagnosticreportLabSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311DiagnosticreportLabSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311DiagnosticreportLabSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:diagnostic_report_note],
-            must_support_info: USCore310DiagnosticreportNoteSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310DiagnosticreportNoteSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311DiagnosticreportNoteSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311DiagnosticreportNoteSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('DiagnosticReport', profile_definitions)
@@ -668,8 +668,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310DocumentreferenceSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310DocumentreferenceSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311DocumentreferenceSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311DocumentreferenceSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('DocumentReference', profile_definitions)
@@ -688,8 +688,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310GoalSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310GoalSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311GoalSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311GoalSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Goal', profile_definitions)
@@ -708,8 +708,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310ImmunizationSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310ImmunizationSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311ImmunizationSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311ImmunizationSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Immunization', profile_definitions)
@@ -728,8 +728,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310MedicationrequestSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310MedicationrequestSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311MedicationrequestSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311MedicationrequestSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('MedicationRequest', profile_definitions)
@@ -761,63 +761,63 @@ module Inferno
         profile_definitions = [
           {
             profile: US_CORE_R4_URIS[:pediatric_bmi_age],
-            must_support_info: USCore310PediatricBmiForAgeSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310PediatricBmiForAgeSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311PediatricBmiForAgeSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311PediatricBmiForAgeSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:pediatric_weight_height],
-            must_support_info: USCore310PediatricWeightForHeightSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310PediatricWeightForHeightSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311PediatricWeightForHeightSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311PediatricWeightForHeightSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:pulse_oximetry],
-            must_support_info: USCore310PulseOximetrySequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310PulseOximetrySequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311PulseOximetrySequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311PulseOximetrySequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:lab_results],
-            must_support_info: USCore310ObservationLabSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310ObservationLabSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311ObservationLabSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311ObservationLabSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:smoking_status],
-            must_support_info: USCore310SmokingstatusSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310SmokingstatusSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311SmokingstatusSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311SmokingstatusSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:blood_pressure],
-            must_support_info: USCore310BpSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310BpSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311BpSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311BpSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:body_height],
-            must_support_info: USCore310BodyheightSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310BodyheightSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311BodyheightSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311BodyheightSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:body_temperature],
-            must_support_info: USCore310BodytempSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310BodytempSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311BodytempSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311BodytempSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:body_weight],
-            must_support_info: USCore310BodyweightSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310BodyweightSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311BodyweightSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311BodyweightSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:head_circumference],
-            must_support_info: USCore310HeadcircumSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310HeadcircumSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311HeadcircumSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311HeadcircumSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:heart_rate],
-            must_support_info: USCore310HeartrateSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310HeartrateSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311HeartrateSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311HeartrateSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:resp_rate],
-            must_support_info: USCore310ResprateSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310ResprateSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311ResprateSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311ResprateSequenceDefinitions::BINDINGS.dup
           }
         ]
 
@@ -837,8 +837,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310ProcedureSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310ProcedureSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311ProcedureSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311ProcedureSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Procedure', profile_definitions)
@@ -862,8 +862,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310EncounterSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310EncounterSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311EncounterSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311EncounterSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Encounter', profile_definitions)
@@ -893,8 +893,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310OrganizationSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310OrganizationSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311OrganizationSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311OrganizationSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Organization', profile_definitions)
@@ -923,8 +923,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310PractitionerSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310PractitionerSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311PractitionerSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311PractitionerSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Practitioner', profile_definitions)
@@ -943,8 +943,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310ProvenanceSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310ProvenanceSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311ProvenanceSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311ProvenanceSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Provenance', profile_definitions)
