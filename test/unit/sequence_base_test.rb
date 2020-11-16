@@ -62,7 +62,7 @@ class SequenceBaseTest < MiniTest::Test
 
   describe '#date_comparator_value' do
     before do
-      @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.0')
+      @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.1')
       client = FHIR::Client.new('')
       @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
     end
@@ -91,7 +91,7 @@ class SequenceBaseTest < MiniTest::Test
 
   describe '#save_delayed_sequence_references' do
     before do
-      @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.0')
+      @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.1')
       client = FHIR::Client.new('')
       @sequence = Inferno::Sequence::SequenceBase.new(@instance, client, true)
       @diagnostic_report_resource = FHIR.from_contents(load_fixture(:us_core_r4_diagnostic_report_note))
@@ -122,7 +122,7 @@ class SequenceBaseTest < MiniTest::Test
 
   describe '#get_value_for_search_param' do
     before do
-      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.0')
+      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.1')
       client = FHIR::Client.new('')
       @sequence = Inferno::Sequence::SequenceBase.new(instance, client, true)
     end
@@ -188,7 +188,7 @@ class SequenceBaseTest < MiniTest::Test
   describe '#validate_reference_resolutions' do
     before do
       @base_url = 'https://example.com/fhir'
-      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.0', url: @base_url)
+      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.1', url: @base_url)
       client = FHIR::Client.for_testing_instance(instance)
 
       @sequence = Inferno::Sequence::SequenceBase.new(instance, client, true)
@@ -218,7 +218,7 @@ class SequenceBaseTest < MiniTest::Test
       @bundle1 = FHIR.from_contents(load_fixture(:bundle_1))
       @bundle2 = load_fixture(:bundle_2)
 
-      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.0')
+      instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.1')
       client = FHIR::Client.new('')
       @bundle1.client = client
       @sequence = Inferno::Sequence::SequenceBase.new(instance, client, true)
