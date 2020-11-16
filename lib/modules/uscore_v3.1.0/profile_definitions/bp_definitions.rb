@@ -24,12 +24,6 @@ module Inferno
             }
           }
         ],
-        references: [
-          {
-            path: 'subject',
-            resource_types: []
-          }
-        ],
         elements: [
           {
             path: 'status'
@@ -50,6 +44,9 @@ module Inferno
           },
           {
             path: 'code'
+          },
+          {
+            path: 'subject'
           },
           {
             path: 'effective'

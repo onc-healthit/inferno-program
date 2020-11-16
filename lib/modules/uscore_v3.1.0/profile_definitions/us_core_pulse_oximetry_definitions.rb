@@ -69,12 +69,6 @@ module Inferno
             }
           }
         ],
-        references: [
-          {
-            path: 'subject',
-            resource_types: []
-          }
-        ],
         elements: [
           {
             path: 'status'
@@ -106,6 +100,9 @@ module Inferno
           {
             path: 'code.coding.code',
             fixed_value: '59408-5'
+          },
+          {
+            path: 'subject'
           },
           {
             path: 'effective'

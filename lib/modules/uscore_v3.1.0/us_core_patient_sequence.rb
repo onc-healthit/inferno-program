@@ -588,8 +588,6 @@ module Inferno
             * telecom.use
             * telecom.value
 
-
-
           )
           versions :r4
         end

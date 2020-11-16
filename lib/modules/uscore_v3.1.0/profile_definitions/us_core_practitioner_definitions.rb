@@ -16,7 +16,6 @@ module Inferno
             }
           }
         ],
-        references: [],
         elements: [
           {
             path: 'identifier'
