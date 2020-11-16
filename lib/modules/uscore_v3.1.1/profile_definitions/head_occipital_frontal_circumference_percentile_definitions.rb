@@ -32,14 +32,6 @@ module Inferno
             }
           }
         ],
-        references: [
-          {
-            path: 'subject',
-            resource_types: [
-              'Patient'
-            ]
-          }
-        ],
         elements: [
           {
             path: 'status'
@@ -63,24 +55,12 @@ module Inferno
             fixed_value: '8289-1'
           },
           {
-<<<<<<< HEAD
-            path: 'effective'
-          },
-          {
-=======
-            path: 'effectiveDateTime'
-          },
-          {
-            path: 'effectivePeriod'
+            path: 'subject'
           },
           {
             path: 'effective'
           },
           {
-            path: 'valueQuantity'
-          },
-          {
->>>>>>> cb5da4fa16dccf8aa3d592009dc7bcd7bdc164b0
             path: 'value'
           },
           {

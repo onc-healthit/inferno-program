@@ -188,8 +188,6 @@ module Inferno
             * name
             * name.family
 
-
-
           )
           versions :r4
         end

@@ -581,11 +581,7 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-<<<<<<< HEAD:lib/modules/uscore_v3.1.1/us_core_documentreference_sequence.rb
-        save_delayed_sequence_references(provenance_results, USCore311DocumentreferenceSequenceDefinitions::DELAYED_REFERENCES)
-=======
         save_delayed_sequence_references(provenance_results, USCore311ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
->>>>>>> cb5da4fa16dccf8aa3d592009dc7bcd7bdc164b0:lib/modules/uscore_v3.1.1/us_core_documentreference_sequence.rb
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -694,29 +690,12 @@ module Inferno
             * subject
             * type
 
-
-          For elements of type 'reference' with one or more target profiles from US Core, this test will ensure that at least one of each resource type
-          associated with each US Core target profile is provided as a reference.  This test will not validate those references against their associated
-          US Core profile to reduce test complexity.
-
           )
           versions :r4
         end
 
         skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
         must_supports = USCore311DocumentreferenceSequenceDefinitions::MUST_SUPPORTS
-
-        missing_must_support_references = must_supports[:references].each_with_object({}) do |reference, missing_types_by_path|
-          missing_resource_types = reference[:resource_types].reject do |resource_type|
-            @document_reference_ary&.values&.flatten&.any? do |resource|
-              value_found = resolve_element_from_path(resource, reference[:path]) do |value|
-                value.is_a?(FHIR::Reference) && value.reference.include?("#{resource_type}/")
-              end
-              value_found.present?
-            end
-          end
-          missing_types_by_path[reference[:path]] = missing_resource_types if missing_resource_types.present?
-        end
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @document_reference_ary&.values&.flatten&.any? do |resource|
@@ -732,9 +711,6 @@ module Inferno
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@document_reference_ary&.values&.flatten&.length} provided DocumentReference resource(s)"
-        skip_if missing_must_support_references.present?,
-                "Could not find the following resource type references:#{missing_must_support_references.map { |path, resource_types| path + ':' + resource_types.join(',') }.join(';')}"
-
         @instance.save!
       end
 

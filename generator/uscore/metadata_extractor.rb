@@ -65,10 +65,6 @@ module Inferno
         base_path = get_base_path(profile)
         base_name = profile.split('StructureDefinition/').last
         profile_json = @resource_by_path[base_path]
-<<<<<<< HEAD
-=======
-        reformatted_version = metadata[:reformatted_version]
->>>>>>> cb5da4fa16dccf8aa3d592009dc7bcd7bdc164b0
         profile_title = profile_json['title'].gsub(/US\s*Core\s*/, '').gsub(/\s*Profile/, '').strip
         test_id_prefix = generate_unique_test_id_prefix(profile_title)
         class_name = base_name.split('-').map(&:capitalize).join.gsub('UsCore', "USCore#{metadata[:reformatted_version]}") + 'Sequence'
