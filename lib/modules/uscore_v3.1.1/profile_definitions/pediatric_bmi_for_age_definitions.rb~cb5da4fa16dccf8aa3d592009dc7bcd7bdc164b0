@@ -2,7 +2,7 @@
 
 module Inferno
   module USCore311ProfileDefinitions
-    class USCore311HeadOccipitalFrontalCircumferencePercentileSequenceDefinitions
+    class USCore311PediatricBmiForAgeSequenceDefinitions
       MUST_SUPPORTS = {
         extensions: [],
         slices: [
@@ -60,14 +60,9 @@ module Inferno
           },
           {
             path: 'code.coding.code',
-            fixed_value: '8289-1'
+            fixed_value: '59576-9'
           },
           {
-<<<<<<< HEAD
-            path: 'effective'
-          },
-          {
-=======
             path: 'effectiveDateTime'
           },
           {
@@ -80,7 +75,6 @@ module Inferno
             path: 'valueQuantity'
           },
           {
->>>>>>> cb5da4fa16dccf8aa3d592009dc7bcd7bdc164b0
             path: 'value'
           },
           {

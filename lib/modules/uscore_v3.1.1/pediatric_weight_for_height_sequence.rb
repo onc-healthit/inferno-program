@@ -177,7 +177,11 @@ module Inferno
         skip_if_known_search_not_supported('Observation', ['patient', 'category', 'date'])
         @observation_ary = {}
         @resources_found = false
+<<<<<<< HEAD:lib/modules/uscore_v3.1.1/pediatric_weight_for_height_sequence.rb
 
+=======
+        search_query_variants_tested_once = false
+>>>>>>> cb5da4fa16dccf8aa3d592009dc7bcd7bdc164b0:lib/modules/uscore_v3.1.1/pediatric_weight_for_height_sequence.rb
         category_val = ['social-history', 'vital-signs', 'imaging', 'laboratory', 'procedure', 'survey', 'exam', 'therapy', 'activity']
         patient_ids.each do |patient|
           @observation_ary[patient] = []
@@ -201,6 +205,11 @@ module Inferno
             save_delayed_sequence_references(resources_returned, USCore311PediatricWeightForHeightSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
 
+<<<<<<< HEAD:lib/modules/uscore_v3.1.1/pediatric_weight_for_height_sequence.rb
+=======
+            next if search_query_variants_tested_once
+
+>>>>>>> cb5da4fa16dccf8aa3d592009dc7bcd7bdc164b0:lib/modules/uscore_v3.1.1/pediatric_weight_for_height_sequence.rb
             value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category'), true)
             token_with_system_search_params = search_params.merge('category': value_with_system)
             reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
@@ -507,7 +516,11 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
+<<<<<<< HEAD:lib/modules/uscore_v3.1.1/pediatric_weight_for_height_sequence.rb
         save_delayed_sequence_references(provenance_results, USCore311PediatricWeightForHeightSequenceDefinitions::DELAYED_REFERENCES)
+=======
+        save_delayed_sequence_references(provenance_results, USCore311ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
+>>>>>>> cb5da4fa16dccf8aa3d592009dc7bcd7bdc164b0:lib/modules/uscore_v3.1.1/pediatric_weight_for_height_sequence.rb
         skip 'Could not resolve all parameters (patient, category, date) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
@@ -589,6 +602,11 @@ module Inferno
             * category.coding.code
             * category.coding.system
             * code.coding.code
+<<<<<<< HEAD:lib/modules/uscore_v3.1.1/pediatric_weight_for_height_sequence.rb
+=======
+            * effectiveDateTime
+            * effectivePeriod
+>>>>>>> cb5da4fa16dccf8aa3d592009dc7bcd7bdc164b0:lib/modules/uscore_v3.1.1/pediatric_weight_for_height_sequence.rb
             * effective[x]
             * status
             * subject

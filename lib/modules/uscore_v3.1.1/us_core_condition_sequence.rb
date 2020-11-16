@@ -435,7 +435,11 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
+<<<<<<< HEAD:lib/modules/uscore_v3.1.1/us_core_condition_sequence.rb
         save_delayed_sequence_references(provenance_results, USCore311ConditionSequenceDefinitions::DELAYED_REFERENCES)
+=======
+        save_delayed_sequence_references(provenance_results, USCore311ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
+>>>>>>> cb5da4fa16dccf8aa3d592009dc7bcd7bdc164b0:lib/modules/uscore_v3.1.1/us_core_condition_sequence.rb
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
