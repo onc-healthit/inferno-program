@@ -19,7 +19,7 @@ HTTP requests that mimic a real world client to ensure that the API supports all
 required
 standards, including:
 * FHIR Release 4.0.1
-* FHIR US Core Implementation Guide (IG) STU 3.1.0
+* FHIR US Core Implementation Guide (IG) STU 3.1.1
 * SMART Application Launch Framework Implementation Guide Release 1.0.0
 * HL7 FHIR Bulk Data Access (Flat FHIR) (v1.0.0: STU 1)
 

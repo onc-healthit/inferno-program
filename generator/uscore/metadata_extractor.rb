@@ -31,6 +31,8 @@ module Inferno
       def add_metadata_from_ig(metadata, implementation_guide)
         metadata[:title] = "#{implementation_guide['title']} v#{implementation_guide['version']}"
         metadata[:description] = "#{implementation_guide['title']} v#{implementation_guide['version']}"
+        metadata[:version] = "v#{implementation_guide['version']}"
+        metadata[:reformatted_version] = implementation_guide['version'].delete('.')
       end
 
       def generate_unique_test_id_prefix(title)
@@ -59,20 +61,21 @@ module Inferno
         end
       end
 
-      def build_new_sequence(resource, profile)
+      def build_new_sequence(resource, profile, metadata)
         base_path = get_base_path(profile)
         base_name = profile.split('StructureDefinition/').last
         profile_json = @resource_by_path[base_path]
-        reformatted_version = ig_resource['version'].delete('.')
         profile_title = profile_json['title'].gsub(/US\s*Core\s*/, '').gsub(/\s*Profile/, '').strip
         test_id_prefix = generate_unique_test_id_prefix(profile_title)
-        class_name = base_name.split('-').map(&:capitalize).join.gsub('UsCore', "USCore#{reformatted_version}") + 'Sequence'
+        class_name = base_name.split('-').map(&:capitalize).join.gsub('UsCore', "USCore#{metadata[:reformatted_version]}") + 'Sequence'
 
         # In case the profile doesn't start with US Core
-        class_name = "USCore#{reformatted_version}#{class_name}" unless class_name.start_with? 'USCore'
+        class_name = "USCore#{metadata[:reformatted_version]}#{class_name}" unless class_name.start_with? 'USCore'
         {
           name: base_name.tr('-', '_'),
           class_name: class_name,
+          version: metadata[:version],
+          reformatted_version: metadata[:reformatted_version],
           test_id_prefix: test_id_prefix,
           resource: resource['type'],
           profile: profile,
@@ -101,7 +104,7 @@ module Inferno
           # because it is to check ValueSet expansion
           # We should update this to get that
           resource['supportedProfile']&.each do |supported_profile|
-            new_sequence = build_new_sequence(resource, supported_profile)
+            new_sequence = build_new_sequence(resource, supported_profile, metadata)
 
             add_basic_searches(resource, new_sequence)
             add_combo_searches(resource, new_sequence)
@@ -462,15 +465,21 @@ module Inferno
       end
 
       def fix_metadata_errors(metadata)
-        # Procedure's date search param definition says Procedure.occurenceDateTime even though Procedure doesn't have an occurenceDateTime
-        procedure_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Procedure' }
-        procedure_sequence[:search_param_descriptions][:date][:path] = 'Procedure.performed'
-
+        # This should be fixed in v3.1.1 but the code generator removes all Goal.target.dueDate search.
+        # should be investigate further
         goal_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Goal' }
         goal_sequence[:search_param_descriptions][:'target-date'][:path] = 'Goal.target.dueDate'
         goal_sequence[:search_param_descriptions][:'target-date'][:type] = 'date'
 
-        # add the ge comparator - the metadata is missing it for some reason
+        # Only v3.1.0 contains the following issues
+        return unless metadata[:version] == 'v3.1.0'
+
+        # Procedure's date search param definition says Procedure.occurenceDateTime even though Procedure doesn't have an occurenceDateTime
+        procedure_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Procedure' }
+        procedure_sequence[:search_param_descriptions][:date][:path] = 'Procedure.performed'
+
+        # add the ge comparator for USCore v3.1.0 - the metadata is missing it for some reason
+        # This code segment has no impact for USCore v3.1.1 and forward.
         metadata[:sequences].each do |sequence|
           sequence[:search_param_descriptions].each do |_param, description|
             param_comparators = description[:comparators]
@@ -516,7 +525,9 @@ module Inferno
 
       def add_special_cases(metadata)
         category_first_profiles = [
-          PROFILE_URIS[:lab_results]
+          PROFILE_URIS[:lab_results],
+          PROFILE_URIS[:diagnostic_report_lab],
+          PROFILE_URIS[:diagnostic_report_note]
         ]
 
         # search by patient first
@@ -524,20 +535,23 @@ module Inferno
           set_first_search(sequence, ['patient'])
         end
 
+        # search by patient + code first for Observation resources except Lab Result which is handled in the next block
+        metadata[:sequences]
+          .select { |sequence| sequence[:resource] == 'Observation' }
+          .each do |sequence|
+          set_first_search(sequence, ['patient', 'code'])
+        end
+
         # search by patient + category first for these specific profiles
-        metadata[:sequences].select { |sequence| category_first_profiles.include?(sequence[:profile]) }.each do |sequence|
+        metadata[:sequences]
+          .select { |sequence| category_first_profiles.include?(sequence[:profile]) }
+          .each do |sequence|
           set_first_search(sequence, ['patient', 'category'])
         end
 
         # search by patient + intent first for medication request sequence
         medication_request_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'MedicationRequest' }
         set_first_search(medication_request_sequence, ['patient', 'intent'])
-
-        metadata[:sequences]
-          .select { |sequence| sequence[:resource] == 'DiagnosticReport' }
-          .each do |sequence|
-            set_first_search(sequence, ['patient', 'category'])
-          end
 
         pulse_ox_sequence = metadata[:sequences].find { |sequence| sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry' }
         pulse_ox_sequence[:must_supports][:elements].delete_if do |element|
