@@ -793,8 +793,8 @@ module Inferno
           },
           {
             profile: US_CORE_R4_URIS[:head_circumference],
-            must_support_info: USCore311HeadcircumSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore311HeadcircumSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311HeadOccipitalFrontalCircumferencePercentileSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311HeadOccipitalFrontalCircumferencePercentileSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:heart_rate],

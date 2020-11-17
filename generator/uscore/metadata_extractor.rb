@@ -525,7 +525,9 @@ module Inferno
 
       def add_special_cases(metadata)
         category_first_profiles = [
-          PROFILE_URIS[:lab_results]
+          PROFILE_URIS[:lab_results],
+          PROFILE_URIS[:diagnostic_report_lab],
+          PROFILE_URIS[:diagnostic_report_note]
         ]
 
         # search by patient first
@@ -533,20 +535,23 @@ module Inferno
           set_first_search(sequence, ['patient'])
         end
 
+        # search by patient + code first for Observation resources except Lab Result which is handled in the next block
+        metadata[:sequences]
+          .select { |sequence| sequence[:resource] == 'Observation' }
+          .each do |sequence|
+          set_first_search(sequence, ['patient', 'code'])
+        end
+
         # search by patient + category first for these specific profiles
-        metadata[:sequences].select { |sequence| category_first_profiles.include?(sequence[:profile]) }.each do |sequence|
+        metadata[:sequences]
+          .select { |sequence| category_first_profiles.include?(sequence[:profile]) }
+          .each do |sequence|
           set_first_search(sequence, ['patient', 'category'])
         end
 
         # search by patient + intent first for medication request sequence
         medication_request_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'MedicationRequest' }
         set_first_search(medication_request_sequence, ['patient', 'intent'])
-
-        metadata[:sequences]
-          .select { |sequence| sequence[:resource] == 'DiagnosticReport' }
-          .each do |sequence|
-            set_first_search(sequence, ['patient', 'category'])
-          end
 
         pulse_ox_sequence = metadata[:sequences].find { |sequence| sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry' }
         pulse_ox_sequence[:must_supports][:elements].delete_if do |element|

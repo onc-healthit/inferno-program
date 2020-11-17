@@ -739,8 +739,7 @@ module Inferno
 
         params = {
           patient: @instance.patient_id,
-          category: '',
-          date: ''
+          code: '2708-6'
         }
 
         options = {

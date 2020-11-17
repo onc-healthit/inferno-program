@@ -28,8 +28,8 @@ module Inferno
         with the following parameters:
 
           * patient + category
-          * patient + category + date
           * patient + code
+          * patient + category + date
 
 
 
@@ -220,9 +220,53 @@ module Inferno
         skip_if_not_found(resource_type: 'Observation', delayed: false)
       end
 
-      test :search_by_patient_category_date do
+      test :search_by_patient_code do
         metadata do
           id '02'
+          name 'Server returns valid results for Observation search by patient+code.'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          description %(
+
+            A server SHALL support searching by patient+code on the Observation resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
+
+          )
+          versions :r4
+        end
+
+        skip_if_known_search_not_supported('Observation', ['patient', 'code'])
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
+
+        resolved_one = false
+
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code') { |el| get_value_for_search_param(el).present? })
+          }
+
+          next if search_params.any? { |_param, value| value.nil? }
+
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code'), true)
+          token_with_system_search_params = search_params.merge('code': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
+        end
+
+        skip 'Could not resolve all parameters (patient, code) in any resource.' unless resolved_one
+      end
+
+      test :search_by_patient_category_date do
+        metadata do
+          id '03'
           name 'Server returns valid results for Observation search by patient+category+date.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -274,50 +318,6 @@ module Inferno
         end
 
         skip 'Could not resolve all parameters (patient, category, date) in any resource.' unless resolved_one
-      end
-
-      test :search_by_patient_code do
-        metadata do
-          id '03'
-          name 'Server returns valid results for Observation search by patient+code.'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          description %(
-
-            A server SHALL support searching by patient+code on the Observation resource.
-            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
-
-          )
-          versions :r4
-        end
-
-        skip_if_known_search_not_supported('Observation', ['patient', 'code'])
-        skip_if_not_found(resource_type: 'Observation', delayed: false)
-
-        resolved_one = false
-
-        patient_ids.each do |patient|
-          search_params = {
-            'patient': patient,
-            'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code') { |el| get_value_for_search_param(el).present? })
-          }
-
-          next if search_params.any? { |_param, value| value.nil? }
-
-          resolved_one = true
-
-          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-
-          reply = perform_search_with_status(reply, search_params) if reply.code == 400
-
-          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code'), true)
-          token_with_system_search_params = search_params.merge('code': value_with_system)
-          reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
-        end
-
-        skip 'Could not resolve all parameters (patient, code) in any resource.' unless resolved_one
       end
 
       test :search_by_patient_category_status do
