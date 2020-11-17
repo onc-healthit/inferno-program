@@ -728,18 +728,20 @@ module Inferno
           name 'Observation resources returned conform to the US Core Observation Profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab'
           description %(
-            This test verifies that the resources returned from bulk data export conform to the following US Core profiles. This includes checking for missing data elements and value set verification.
+            This test verifies that the resources returned from bulk data
+            export conform to the following US Core profiles. This includes
+            checking for missing data elements and value set verification.
 
             * http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age
             * http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height
             * http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab
             * http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry
             * http://hl7.org/fhir/us/core/StructureDefinition/us-core-smokingstatus
+            * http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
             * http://hl7.org/fhir/StructureDefinition/bp
             * http://hl7.org/fhir/StructureDefinition/bodyheight
             * http://hl7.org/fhir/StructureDefinition/bodytemp
             * http://hl7.org/fhir/StructureDefinition/bodyweight
-            * http://hl7.org/fhir/StructureDefinition/headcircum
             * http://hl7.org/fhir/StructureDefinition/heartrate
             * http://hl7.org/fhir/StructureDefinition/resprate
           )
@@ -792,7 +794,7 @@ module Inferno
             binding_info: USCore311BodyweightSequenceDefinitions::BINDINGS.dup
           },
           {
-            profile: US_CORE_R4_URIS[:head_circumference],
+            profile: US_CORE_R4_URIS[:head_circumference_percentile],
             must_support_info: USCore311HeadOccipitalFrontalCircumferencePercentileSequenceDefinitions::MUST_SUPPORTS.dup,
             binding_info: USCore311HeadOccipitalFrontalCircumferencePercentileSequenceDefinitions::BINDINGS.dup
           },

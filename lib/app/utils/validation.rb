@@ -65,12 +65,12 @@ module Inferno
       lab_results: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab',
       pediatric_bmi_age: 'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age',
       pediatric_weight_height: 'http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height',
+      head_circumference_percentile: 'http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile',
       pulse_oximetry: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry',
       resp_rate: 'http://hl7.org/fhir/StructureDefinition/resprate',
       heart_rate: 'http://hl7.org/fhir/StructureDefinition/heartrate',
       body_temperature: 'http://hl7.org/fhir/StructureDefinition/bodytemp',
       body_height: 'http://hl7.org/fhir/StructureDefinition/bodyheight',
-      head_circumference: 'http://hl7.org/fhir/StructureDefinition/headcircum',
       body_weight: 'http://hl7.org/fhir/StructureDefinition/bodyweight',
       blood_pressure: 'http://hl7.org/fhir/StructureDefinition/bp'
     }.freeze
@@ -167,11 +167,13 @@ module Inferno
 
         return DEFINITIONS[US_CORE_R4_URIS[:pulse_oximetry]] if observation_contains_code(resource, '59408-5')
 
+        return DEFINITIONS[US_CORE_R4_URIS[:head_circumference_percentile]] if observation_contains_code(resource, '8289-1')
+
         # FHIR Vital Signs profiles: https://www.hl7.org/fhir/observation-vitalsigns.html
         # Vital Signs Panel, Oxygen Saturation are not required by USCDI
         # Body Mass Index is replaced by :pediatric_bmi_age Profile
         # Systolic Blood Pressure, Diastolic Blood Pressure are covered by :blood_pressure Profile
-        # Head Circumference will be replaced by US Core Head Occipital-frontal Circumference Percentile Profile
+        # Head Circumference is replaced by US Core Head Occipital-frontal Circumference Percentile Profile
         return DEFINITIONS[US_CORE_R4_URIS[:blood_pressure]] if observation_contains_code(resource, '85354-9')
 
         return DEFINITIONS[US_CORE_R4_URIS[:body_height]] if observation_contains_code(resource, '8302-2')
@@ -179,8 +181,6 @@ module Inferno
         return DEFINITIONS[US_CORE_R4_URIS[:body_temperature]] if observation_contains_code(resource, '8310-5')
 
         return DEFINITIONS[US_CORE_R4_URIS[:body_weight]] if observation_contains_code(resource, '29463-7')
-
-        return DEFINITIONS[US_CORE_R4_URIS[:head_circumference]] if observation_contains_code(resource, '9843-4')
 
         return DEFINITIONS[US_CORE_R4_URIS[:heart_rate]] if observation_contains_code(resource, '8867-4')
 
