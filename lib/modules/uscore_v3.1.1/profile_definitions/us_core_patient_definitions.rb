@@ -19,7 +19,6 @@ module Inferno
           }
         ],
         slices: [],
-        references: [],
         elements: [
           {
             path: 'identifier'

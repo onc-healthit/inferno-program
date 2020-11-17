@@ -191,8 +191,6 @@ module Inferno
             * name
             * telecom
 
-
-
           )
           versions :r4
         end

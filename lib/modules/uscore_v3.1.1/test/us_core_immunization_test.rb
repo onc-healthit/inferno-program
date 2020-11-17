@@ -126,7 +126,7 @@ describe Inferno::Sequence::USCore311ImmunizationSequence do
           .with(query: @query, headers: @auth_header)
           .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
         stub_request(:get, "#{@base_url}/Immunization")
-          .with(query: @query.merge('status': ['completed', 'entered-in-error', 'not-done', 'preparation', 'in-progress', 'on-hold', 'stopped', 'unknown'].first), headers: @auth_header)
+          .with(query: @query.merge('status': ['completed', 'entered-in-error', 'not-done'].first), headers: @auth_header)
           .to_return(status: 500)
 
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
@@ -139,7 +139,7 @@ describe Inferno::Sequence::USCore311ImmunizationSequence do
           .with(query: @query, headers: @auth_header)
           .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
         stub_request(:get, "#{@base_url}/Immunization")
-          .with(query: @query.merge('status': ['completed', 'entered-in-error', 'not-done', 'preparation', 'in-progress', 'on-hold', 'stopped', 'unknown'].first), headers: @auth_header)
+          .with(query: @query.merge('status': ['completed', 'entered-in-error', 'not-done'].first), headers: @auth_header)
           .to_return(status: 200, body: FHIR::Immunization.new.to_json)
 
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
@@ -152,11 +152,11 @@ describe Inferno::Sequence::USCore311ImmunizationSequence do
           .with(query: @query, headers: @auth_header)
           .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
         stub_request(:get, "#{@base_url}/Immunization")
-          .with(query: @query.merge('status': ['completed', 'entered-in-error', 'not-done', 'preparation', 'in-progress', 'on-hold', 'stopped', 'unknown'].first), headers: @auth_header)
+          .with(query: @query.merge('status': ['completed', 'entered-in-error', 'not-done'].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@immunization]).to_json)
 
         stub_request(:get, "#{@base_url}/Immunization")
-          .with(query: @query.merge('patient': 'Patient/' + @query[:patient], 'status': ['completed', 'entered-in-error', 'not-done', 'preparation', 'in-progress', 'on-hold', 'stopped', 'unknown'].first), headers: @auth_header)
+          .with(query: @query.merge('patient': 'Patient/' + @query[:patient], 'status': ['completed', 'entered-in-error', 'not-done'].first), headers: @auth_header)
           .to_return(status: 200, body: wrap_resources_in_bundle([@immunization]).to_json)
 
         @sequence.run_test(@test)
@@ -269,7 +269,7 @@ describe Inferno::Sequence::USCore311ImmunizationSequence do
           .with(query: @query, headers: @auth_header)
           .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
         stub_request(:get, "#{@base_url}/Immunization")
-          .with(query: @query.merge('status': ['completed', 'entered-in-error', 'not-done', 'preparation', 'in-progress', 'on-hold', 'stopped', 'unknown'].first), headers: @auth_header)
+          .with(query: @query.merge('status': ['completed', 'entered-in-error', 'not-done'].first), headers: @auth_header)
           .to_return(status: 500)
 
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
@@ -282,7 +282,7 @@ describe Inferno::Sequence::USCore311ImmunizationSequence do
           .with(query: @query, headers: @auth_header)
           .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
         stub_request(:get, "#{@base_url}/Immunization")
-          .with(query: @query.merge('status': ['completed', 'entered-in-error', 'not-done', 'preparation', 'in-progress', 'on-hold', 'stopped', 'unknown'].first), headers: @auth_header)
+          .with(query: @query.merge('status': ['completed', 'entered-in-error', 'not-done'].first), headers: @auth_header)
           .to_return(status: 200, body: FHIR::Immunization.new.to_json)
 
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }

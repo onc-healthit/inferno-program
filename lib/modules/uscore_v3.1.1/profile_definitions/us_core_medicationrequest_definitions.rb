@@ -6,40 +6,6 @@ module Inferno
       MUST_SUPPORTS = {
         extensions: [],
         slices: [],
-        references: [
-          {
-            path: 'reported',
-            resource_types: [
-              'Patient',
-              'Practitioner',
-              'Organization'
-            ]
-          },
-          {
-            path: 'medication',
-            resource_types: [
-              'Medication'
-            ]
-          },
-          {
-            path: 'subject',
-            resource_types: [
-              'Patient'
-            ]
-          },
-          {
-            path: 'encounter',
-            resource_types: []
-          },
-          {
-            path: 'requester',
-            resource_types: [
-              'Practitioner',
-              'Organization',
-              'Patient'
-            ]
-          }
-        ],
         elements: [
           {
             path: 'status'
@@ -48,7 +14,22 @@ module Inferno
             path: 'intent'
           },
           {
+            path: 'reported'
+          },
+          {
+            path: 'medication'
+          },
+          {
+            path: 'subject'
+          },
+          {
+            path: 'encounter'
+          },
+          {
             path: 'authoredOn'
+          },
+          {
+            path: 'requester'
           },
           {
             path: 'dosageInstruction'

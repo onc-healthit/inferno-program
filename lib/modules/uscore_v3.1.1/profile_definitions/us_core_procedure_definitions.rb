@@ -6,20 +6,15 @@ module Inferno
       MUST_SUPPORTS = {
         extensions: [],
         slices: [],
-        references: [
-          {
-            path: 'subject',
-            resource_types: [
-              'Patient'
-            ]
-          }
-        ],
         elements: [
           {
             path: 'status'
           },
           {
             path: 'code'
+          },
+          {
+            path: 'subject'
           },
           {
             path: 'performed'
