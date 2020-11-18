@@ -83,7 +83,7 @@ module Inferno
           'http://hl7.org/fhir/StructureDefinition/heartrate',
           'http://hl7.org/fhir/StructureDefinition/resprate',
           'http://hl7.org/fhir/StructureDefinition/bodytemp',
-          'http://hl7.org/fhir/StructureDefinition/headcircum'
+          'http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile'
         ],
         'Organization' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'],
         'Patient' => ['http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'],
