@@ -593,18 +593,31 @@ procedure:
         inferno_tests:
           - SPD-TR-03 - SPD-TR-05
           - EHD-TR-03 - EHD-TR-05
+      - id: AUTH-PATIENT-21
+        SUT: |
+          [Both] The health IT developer demonstrates the ability of the
+          Health IT Module to grant a refresh token valid for a period of no
+          less than three months to native applications capable of storing a
+          refresh token.
+        TLV: |
+          [Both] The tester verifies the ability of the Health IT Module to
+          grant a refresh token valid for a period of no less than three
+          months to native applications capable of storing a refresh token.
+        inferno_supported: 'yes'
+        inferno_tests:
+          - ATT-13
       - group: 'Subsequent Connections: Authentication and Authorization for Patient and User Scopes'
-        id: AUTH-PATIENT-21
+        id: AUTH-PATIENT-22
         SUT: | 
           The health IT developer demonstrates the ability of the Health IT
-          Module to issue a new refresh token valid for a period of no
+          Module to issue a new refresh token valid for a new period of no
           shorter than three months without requiring re-authentication
           and re-authorization when a valid refresh token is supplied by the
           application according to the implementation specification adopted
           in § 170.215(a)(3).
         TLV: | 
           The tester verifies the ability of the Health IT
-          Module to issue a new refresh token valid for a period of no
+          Module to issue a new refresh token valid for a new period of no
           shorter than three months without requiring re-authentication
           and re-authorization when a valid refresh token is supplied by the
           application according to the implementation specification adopted
@@ -620,7 +633,7 @@ procedure:
           as part of the certification criteria.  Inferno cannot verify the
           three month token expiration requirement, but the tester can
           register an attestation that this requirement is met.
-      - id: AUTH-PATIENT-22
+      - id: AUTH-PATIENT-23
         SUT: |
           The health IT developer demonstrates the ability of the Health IT
           Module to return an error response when supplied an invalid
@@ -749,7 +762,7 @@ procedure:
           This test requires the tester to register an attestation from the
           Health IT Module that the "cache-control" header is obeyed.
         inferno_tests:
-          - ATT-11
+          - ATT-10
       - id: AUTH-SYSTEM-6
         SUT: |
           The health IT developer demonstrates the ability of the Health IT
@@ -1061,9 +1074,8 @@ procedure:
         inferno_supported: 'yes'
         inferno_tests:
           - ATT-07
+          - ATT-11
           - ATT-12
-          - ATT-13
-          - ATT-14
           - USCP-02
           - USCAI-02
           - USCCP-02

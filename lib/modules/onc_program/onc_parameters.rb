@@ -52,6 +52,8 @@ module Inferno
 
       property :onc_visual_token_revocation, String, default: 'false'
       property :onc_visual_token_revocation_notes, String
+      property :onc_visual_native_application, String, default: 'false'
+      property :onc_visual_native_application_notes, String
     end
   end
 end
