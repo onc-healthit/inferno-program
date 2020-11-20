@@ -32,13 +32,15 @@ module Inferno
         'http://loinc.org' => 'LNC',
         'http://snomed.info/sct' => 'SNOMEDCT_US',
         'http://www.icd10data.com/icd10pcs' => 'ICD10PCS',
+        'http://www.cms.gov/Medicare/Coding/ICD10' => 'ICD10PCS',
         'http://hl7.org/fhir/sid/cvx' => 'CVX',
         'http://hl7.org/fhir/sid/icd-10-cm' => 'ICD10CM',
         'http://hl7.org/fhir/sid/icd-9-cm' => 'ICD9CM',
         'http://unitsofmeasure.org' => 'NCI_UCUM',
         'http://nucc.org/provider-taxonomy' => 'NUCCPT',
         'http://www.ama-assn.org/go/cpt' => 'CPT',
-        'urn:oid:2.16.840.1.113883.6.285' => 'HCPCS'
+        'urn:oid:2.16.840.1.113883.6.285' => 'HCPCS',
+        'urn:oid:2.16.840.1.113883.6.13' => 'CDT'
       }.freeze
 
       CODE_SYS = {
@@ -301,6 +303,10 @@ module Inferno
         elsif ['=', 'in', nil].include? filter&.op
           if FILTER_PROP[filter.property]
             @db.execute("SELECT code FROM mrsat WHERE SAB = '#{SAB[system]}' AND ATN = '#{fp_self(filter.property)}' AND ATV = '#{fp_self(filter.value)}'") do |row|
+              filtered_set.add(system: system, code: row[0])
+            end
+          elsif system == 'http://nucc.org/provider-taxonomy' && filter.property == 'abstract' && filter.value == 'false'
+            @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}' AND TTY = 'PT'") do |row|
               filtered_set.add(system: system, code: row[0])
             end
           else
