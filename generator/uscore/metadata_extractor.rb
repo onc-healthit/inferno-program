@@ -23,7 +23,7 @@ module Inferno
         capability_statement_json = capability_statement('server')
         add_metadata_from_ig(metadata, ig_resource)
         add_metadata_from_resources(metadata, capability_statement_json['rest'][0]['resource'])
-        fix_metadata_errors(metadata)
+        # fix_metadata_errors(metadata)
         add_mandatory_and_must_support_search_exclusions(metadata)
         add_special_cases(metadata)
       end
@@ -465,27 +465,7 @@ module Inferno
       end
 
       def fix_metadata_errors(metadata)
-        # This should be fixed in v3.1.1 but the code generator removes all Goal.target.dueDate search.
-        # should be investigate further
-        goal_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Goal' }
-        goal_sequence[:search_param_descriptions][:'target-date'][:path] = 'Goal.target.dueDate'
-        goal_sequence[:search_param_descriptions][:'target-date'][:type] = 'date'
-
-        # Only v3.1.0 contains the following issues
-        return unless metadata[:version] == 'v3.1.0'
-
-        # Procedure's date search param definition says Procedure.occurenceDateTime even though Procedure doesn't have an occurenceDateTime
-        procedure_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Procedure' }
-        procedure_sequence[:search_param_descriptions][:date][:path] = 'Procedure.performed'
-
-        # add the ge comparator for USCore v3.1.0 - the metadata is missing it for some reason
-        # This code segment has no impact for USCore v3.1.1 and forward.
-        metadata[:sequences].each do |sequence|
-          sequence[:search_param_descriptions].each do |_param, description|
-            param_comparators = description[:comparators]
-            param_comparators[:ge] = param_comparators[:le] if param_comparators.key? :le
-          end
-        end
+        # All metadata errors in US Core 3.1.0 are fixed in US Core 3.1.1
       end
 
       def add_mandatory_and_must_support_search_exclusions(metadata)

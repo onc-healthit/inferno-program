@@ -974,47 +974,6 @@ module Inferno
 
         test_output_against_profile('Medication')
       end
-
-      test :validate_practitionerrole do
-        metadata do
-          id '24'
-          name 'PractitionerRole resources returned conform to the HL7 FHIR PractitionerRole Specification if bulk data export has PractitionerRole resources'
-          link 'http://hl7.org/fhir/StructureDefinition/PractitionerRole'
-          description %(
-            This test verifies that the resources returned from bulk data export conform to the HL7 FHIR Specification. This includes checking for missing data elements and value set verification.
-            This test is omitted if bulk data export does not return any PractitionerRole resources.
-
-            The following US Core profiles have "Must Support" data elements which reference PractitionerRole resources:
-
-            * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
-            * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
-            * [Provenance](http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance)
-          )
-        end
-
-        test_output_against_profile('PractitionerRole')
-      end
-
-      test :validate_relatedperson do
-        metadata do
-          id '25'
-          name 'RelatedPerson resources returned conform to the HL7 FHIR RelatedPerson Specification if bulk data export has RelatedPerson resources'
-          link 'http://hl7.org/fhir/StructureDefinition/RelatedPerson'
-          description %(
-            This test verifies that the resources returned from bulk data export conform to the HL7 FHIR Specification. This includes checking for missing data elements and value set verification.
-            This test is omitted if bulk data export does not return any RelatedPerson resources.
-
-            The following US Core profiles have "Must Support" data elements which reference RelatedPerson resources:
-
-            * [CareTeam](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam)
-            * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
-            * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
-            * [Provenance](http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance)
-          )
-        end
-
-        test_output_against_profile('RelatedPerson')
-      end
     end
   end
 end
