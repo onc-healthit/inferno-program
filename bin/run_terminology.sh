@@ -57,7 +57,7 @@ else
   echo "UMLS Subset already exists; skipping Metamorphosys Rake task."
 fi
 
-if [[ ! -f "$temp_folder/fhir" ]]; then
+if [[ ! -e "$temp_folder/fhir" ]]; then
   function control_c_packages {
     kill -INT "$child"
     rm -rf "$temp_folder/fhir"
