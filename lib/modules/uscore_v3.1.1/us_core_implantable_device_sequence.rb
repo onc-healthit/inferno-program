@@ -374,8 +374,7 @@ module Inferno
             * serialNumber
             * type
             * udiCarrier
-            * udiCarrier.carrierAIDC
-            * udiCarrier.carrierHRF
+            * udiCarrier.carrierAIDC or udiCarrier.carrierHRF
             * udiCarrier.deviceIdentifier
 
           )
@@ -396,6 +395,10 @@ module Inferno
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        carrierAIDC_found = @device_ary&.values&.flatten&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierAIDC').present? }
+        carrierHRF_found = @device_ary&.values&.flatten&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierHRF').present? }
+        missing_must_support_elements.append('udiCarrier.carrierAIDC or udiCarrier.carrierHRF') unless (carrierAIDC_found || carrierHRF_found)
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@device_ary&.values&.flatten&.length} provided Device resource(s)"
