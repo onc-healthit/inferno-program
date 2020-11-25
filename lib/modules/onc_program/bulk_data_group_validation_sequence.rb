@@ -20,7 +20,7 @@ module Inferno
       MAX_RECENT_LINE_SIZE = 100
       MIN_RESOURCE_COUNT = 2
 
-      NON_US_CORE_KLASS = ['Location', 'PractitionerRole', 'RelatedPerson'].freeze
+      NON_US_CORE_KLASS = ['Location'].freeze
       OMIT_KLASS = ['Medication'].concat(NON_US_CORE_KLASS)
 
       US_CORE_R4_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
