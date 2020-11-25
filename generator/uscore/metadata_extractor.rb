@@ -23,7 +23,6 @@ module Inferno
         capability_statement_json = capability_statement('server')
         add_metadata_from_ig(metadata, ig_resource)
         add_metadata_from_resources(metadata, capability_statement_json['rest'][0]['resource'])
-        # fix_metadata_errors(metadata)
         add_mandatory_and_must_support_search_exclusions(metadata)
         add_special_cases(metadata)
       end
@@ -462,10 +461,6 @@ module Inferno
             profiles: ref_def['type'].first['targetProfile']
           }
         end
-      end
-
-      def fix_metadata_errors(metadata)
-        # All metadata errors in US Core 3.1.0 are fixed in US Core 3.1.1
       end
 
       def add_mandatory_and_must_support_search_exclusions(metadata)
