@@ -70,8 +70,8 @@ describe Inferno::Sequence::USCore<%=reformatted_version%>ONCAccessVerifyRestric
       assert_raises(Inferno::PassException) { @sequence.run_test(@test) }
     end
 
-    it 'passes if Practitioner, Organization, Encounter, PractitionerRole, Location, RelatedPerson scope provided' do
-      @instance.received_scopes = 'patient/PractitionerRole.read patient/Location.read patient/RelatedPerson.read launch/patient openid fhirUser patient/Observation.read '\
+    it 'passes if Practitioner, Organization, Encounter, Location scope provided' do
+      @instance.received_scopes = 'patient/Location.read launch/patient openid fhirUser patient/Observation.read '\
                                   'patient/Condition.read patient/Patient.read patient/Encounter.read patient/Practitioner.read patient/Organization.read'
       assert_raises(Inferno::PassException) { @sequence.run_test(@test) }
     end
@@ -99,8 +99,8 @@ describe Inferno::Sequence::USCore<%=reformatted_version%>ONCAccessVerifyRestric
       @instance.received_scopes = 'launch/patient openid fhirUser offline_access patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read '\
                                   'patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read '\
                                   'patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read '\
-                                  'patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read '\
-                                  'patient/Procedure.read patient/Provenance.read patient/RelatedPerson.read'
+                                  'patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read '\
+                                  'patient/Procedure.read patient/Provenance.read'
       @instance.onc_sl_expected_resources = 'Observation, Condition, Patient'
     end
 

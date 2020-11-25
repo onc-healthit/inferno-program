@@ -38,7 +38,7 @@ module Inferno
         test will perform an additional search with the required status search parameter.
 
         This set of tests does not attempt to access resources that do not directly map to USCDI v1, including Encounter, Location,
-        Organization, Practitioner, PractionerRole, and RelatedPerson.  It also does not test Provenance, as this
+        Organization, and Practitioner.  It also does not test Provenance, as this
         resource type is accessed by queries through other resource types. These resources types are accessed in the more
         comprehensive Single Patient Query tests.
 
@@ -111,7 +111,7 @@ module Inferno
 
         # Consider all directly-mapped USCDI resources, as well as Encounter, Practitioner and Organization
         # because they have US Core Profile references in the other US Core Profiles.  This excludes
-        # PractionerRole, Location and RelatedPerson because they do not have US Core Profile references
+        # Location because it does not have US Core Profile references
         # and therefore could be 'contained' and do not have a read interaction requirement.
         all_resources = [
           'AllergyIntolerance',

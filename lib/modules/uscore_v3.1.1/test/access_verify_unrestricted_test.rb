@@ -27,8 +27,8 @@ describe Inferno::Sequence::USCore311ONCAccessVerifyUnrestrictedSequence do
       @instance.received_scopes = 'launch/patient openid fhirUser offline_access patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read '\
                                   'patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read '\
                                   'patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read '\
-                                  'patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read '\
-                                  'patient/Procedure.read patient/Provenance.read patient/RelatedPerson.read'
+                                  'patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read '\
+                                  'patient/Procedure.read patient/Provenance.read'
       assert_raises(Inferno::PassException) { @sequence.run_test(@test) }
     end
 
@@ -47,11 +47,11 @@ describe Inferno::Sequence::USCore311ONCAccessVerifyUnrestrictedSequence do
                                   'patient/CareTeam.* patient/Condition.* patient/Device.* patient/DiagnosticReport.* patient/DocumentReference.* '\
                                   'patient/Encounter.* patient/Goal.* patient/Immunization.* patient/Location.* patient/MedicationRequest.* '\
                                   'patient/Observation.* patient/Organization.* patient/Patient.* patient/Practitioner.* patient/PractitionerRole.* '\
-                                  'patient/Procedure.* patient/Provenance.* patient/RelatedPerson.*'
+                                  'patient/Procedure.* patient/Provenance.*'
       assert_raises(Inferno::PassException) { @sequence.run_test(@test) }
     end
 
-    it 'passes if Medication, PractitionerRole, Location and RelatedPerson are omitted' do
+    it 'passes if Medication and Location are omitted' do
       @instance.received_scopes = 'launch/patient openid fhirUser offline_access patient/AllergyIntolerance.read patient/CarePlan.read '\
                                   'patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read '\
                                   'patient/Encounter.read patient/Goal.read patient/Immunization.read patient/MedicationRequest.read '\
@@ -64,8 +64,8 @@ describe Inferno::Sequence::USCore311ONCAccessVerifyUnrestrictedSequence do
       @instance.received_scopes = 'launch/patient openid fhirUser offline_access patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read '\
                                   'patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read '\
                                   'patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read '\
-                                  'patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read '\
-                                  'patient/Procedure.read patient/Provenance.read patient/RelatedPerson.read proprietary_scope'
+                                  'patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read '\
+                                  'patient/Procedure.read patient/Provenance.read proprietary_scope'
       assert_raises(Inferno::PassException) { @sequence.run_test(@test) }
     end
 
@@ -73,8 +73,8 @@ describe Inferno::Sequence::USCore311ONCAccessVerifyUnrestrictedSequence do
       @instance.received_scopes = 'launch/patient openid fhirUser offline_access patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read '\
                                   'patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read '\
                                   'patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read '\
-                                  'patient/Observation.read patient/Organization.read patient/Practitioner.read patient/PractitionerRole.read '\
-                                  'patient/Procedure.read patient/Provenance.read patient/RelatedPerson.read'
+                                  'patient/Observation.read patient/Organization.read patient/Practitioner.read '\
+                                  'patient/Procedure.read patient/Provenance.read'
       assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
     end
 
@@ -82,8 +82,8 @@ describe Inferno::Sequence::USCore311ONCAccessVerifyUnrestrictedSequence do
       @instance.received_scopes = 'launch/patient openid fhirUser offline_access patient/Medication.read patient/CarePlan.read '\
                                   'patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read '\
                                   'patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read '\
-                                  'patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read '\
-                                  'patient/Procedure.read patient/Provenance.read patient/RelatedPerson.read'
+                                  'patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read '\
+                                  'patient/Procedure.read patient/Provenance.read'
       assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
     end
 
@@ -91,8 +91,8 @@ describe Inferno::Sequence::USCore311ONCAccessVerifyUnrestrictedSequence do
       @instance.received_scopes = 'launch/patient openid fhirUser offline_access patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read '\
                                   'patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read '\
                                   'patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read '\
-                                  'patient/Observation.read patient/Organization.read patient/Patient.read patient/PractitionerRole.read '\
-                                  'patient/Procedure.read patient/Provenance.read patient/RelatedPerson.read'
+                                  'patient/Observation.read patient/Organization.read patient/Patient.read '\
+                                  'patient/Procedure.read patient/Provenance.read'
       assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
     end
   end
@@ -104,8 +104,8 @@ describe Inferno::Sequence::USCore311ONCAccessVerifyUnrestrictedSequence do
       @instance.received_scopes = 'launch/patient openid fhirUser offline_access patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read '\
                                   'patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read '\
                                   'patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read '\
-                                  'patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read '\
-                                  'patient/Procedure.read patient/Provenance.read patient/RelatedPerson.read'
+                                  'patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read '\
+                                  'patient/Procedure.read patient/Provenance.read'
     end
 
     it 'passes if success response received' do
@@ -139,8 +139,8 @@ describe Inferno::Sequence::USCore311ONCAccessVerifyUnrestrictedSequence do
       @instance.received_scopes = 'launch/patient openid fhirUser offline_access patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read '\
                                   'patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read '\
                                   'patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read '\
-                                  'patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read '\
-                                  'patient/Procedure.read patient/Provenance.read patient/RelatedPerson.read'
+                                  'patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read '\
+                                  'patient/Procedure.read patient/Provenance.read'
     end
 
     it 'passes if success response received' do
