@@ -8,12 +8,15 @@ module Inferno
       description 'Verify that patients have control over which resource types can be accessed.'
       test_id_prefix 'AVR'
       details %(
-        This test ensures that patients are able to grant or deny access to a subset of resources to an app.
-        It also verifies that patients can prevent issuance of a refresh token by denying the `offline_access` scope.  The tester provides a list of resources
-        that will be granted during the SMART App Launch process, and this test verifies that the scopes granted
-        are consistent with what the tester provided.  It also formulates queries to ensure that the app
-        is either given access to, or denied access to, the appropriate resource types based on those chosen
-        by the tester.
+        This test ensures that patients are able to grant or deny access to a
+        subset of resources to an app. It also verifies that patients can
+        prevent issuance of a refresh token by denying the `offline_access`
+        scope. The tester provides a list of resources that will be granted
+        during the SMART App Launch process, and this test verifies that the
+        scopes granted are consistent with what the tester provided. It also
+        formulates queries to ensure that the app is either given access to,
+        or denied access to, the appropriate resource types based on those
+        chosen by the tester.
 
         Resources that can be mapped to USCDI are checked in this test, including:
 
@@ -30,21 +33,27 @@ module Inferno
           * Observation
           * Procedure
 
-        For each of the resources that can be mapped to USCDI data class or elements, this set of tests
-        performs a minimum number of requests to determine if access to the resource type is appropriately allowed or denied given the
-        scope granted.  In the case of the Patient resource, this test simply performs a read request.
-        For other resources, it performs a search by patient that must be supported by the server.  In some cases,
-        servers can return an error message if a status search parameter is not provided.  For these, the
-        test will perform an additional search with the required status search parameter.
+        For each of the resources that can be mapped to USCDI data class or
+        elements, this set of tests performs a minimum number of requests to
+        determine if access to the resource type is appropriately allowed or
+        denied given the scope granted. In the case of the Patient resource,
+        this test simply performs a read request. For other resources, it
+        performs a search by patient that must be supported by the server. In
+        some cases, servers can return an error message if a status search
+        parameter is not provided. For these, the test will perform an
+        additional search with the required status search parameter.
 
-        This set of tests does not attempt to access resources that do not directly map to USCDI v1, including Encounter, Location,
-        Organization, Practitioner, PractionerRole, and RelatedPerson.  It also does not test Provenance, as this
-        resource type is accessed by queries through other resource types.  These resource types are accessed in the more
-        comprehensive Single Patient Query tests.
+        This set of tests does not attempt to access resources that do not
+        directly map to USCDI v1, including Encounter, Location,
+        Organization, and Practitioner. It also does not test Provenance, as
+        this resource type is accessed by queries through other resource
+        types. These resource types are accessed in the more comprehensive
+        Single Patient Query tests.
 
-        If the tester chooses to not grant access to a resource, the queries associated with that resource must
-        result in either a 401 (Unauthorized) or 403 (Forbidden) status code.  The flexiblity provided here
-        is due to some ambiguity in the specifications tested.
+        If the tester chooses to not grant access to a resource, the queries
+        associated with that resource must result in either a 401
+        (Unauthorized) or 403 (Forbidden) status code. The flexiblity
+        provided here is due to some ambiguity in the specifications tested.
       )
 
       requires :onc_sl_url, :token, :patient_id, :received_scopes, :onc_sl_expected_resources
@@ -95,10 +104,13 @@ module Inferno
 
         skip_if @instance.received_scopes.nil?, 'A list of granted scopes was not provided to this test as required.'
 
-        # Consider all directly-mapped USCDI resources only.  Do not fail based on the inclusion/Exclusion of Encounter, Practitioner
-        # PractitionerRole, Location, Organization, or RelatedPerson because the SUT has flexibility to decide if those
-        # should be included or not based on whether other resources are selected (e.g. if Observation then maybe it makes
-        # sense to include Encounter scope) without having the user be in charge of that particular choice.
+        # Consider all directly-mapped USCDI resources only. Do not fail based
+        # on the inclusion/Exclusion of Encounter, Practitioner, Location or
+        # Organization, because the SUT has flexibility to decide if those
+        # should be included or not based on whether other resources are
+        # selected (e.g. if Observation then maybe it makes sense to include
+        # Encounter scope) without having the user be in charge of that
+        # particular choice.
 
         all_resources = [
           'AllergyIntolerance',
