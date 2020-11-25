@@ -193,7 +193,7 @@ module Inferno
             @observation = resources_returned.first
             @observation_ary[patient] += resources_returned
 
-            save_resource_references(versioned_resource_class('Observation'), @observation_ary[patient])
+            save_resource_references(versioned_resource_class('Observation'), @observation_ary[patient], Inferno::ValidationUtil::US_CORE_R4_URIS[:head_circumference_percentile])
             save_delayed_sequence_references(resources_returned, USCore311HeadOccipitalFrontalCircumferencePercentileSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
 
@@ -538,7 +538,7 @@ module Inferno
         end
 
         skip_if_not_found(resource_type: 'Observation', delayed: false)
-        test_resources_against_profile('Observation')
+        test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:head_circumference_percentile])
         bindings = USCore311HeadOccipitalFrontalCircumferencePercentileSequenceDefinitions::BINDINGS
         invalid_binding_messages = []
         invalid_binding_resources = Set.new
