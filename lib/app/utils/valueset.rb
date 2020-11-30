@@ -305,6 +305,7 @@ module Inferno
             @db.execute("SELECT code FROM mrsat WHERE SAB = '#{SAB[system]}' AND ATN = '#{fp_self(filter.property)}' AND ATV = '#{fp_self(filter.value)}'") do |row|
               filtered_set.add(system: system, code: row[0])
             end
+          # Fix for some weirdness around UMLS and provider taxonomy subsetting
           elsif system == 'http://nucc.org/provider-taxonomy' && filter.property == 'abstract' && filter.value == 'false'
             @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}' AND TTY = 'PT'") do |row|
               filtered_set.add(system: system, code: row[0])
