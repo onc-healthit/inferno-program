@@ -94,6 +94,18 @@ bundle exec rackup -p 3000
 
 ### Terminology Support
 
+#### 2020-November-30 UMLS Auth Workaround
+
+IMPORTANT: As of November 2020, UMLS login now requires the use of a federated login provider, such as Google, Microsoft, or https://login.gov. This change breaks the first step of the terminology build process outlined below.
+
+As a temporary workaround, if you download https://download.nlm.nih.gov/umls/kss/2019AB/umls-2019AB-full.zip (note: this file is several GB in size), rename it `umls.zip` and place it in `<inferno root>/tmp/terminology`, that should allow the terminology processing to skip the download step and continue normally. This also eliminates the need to create the `.env` file (outlined below).
+
+We hope to have this login system supported in the near future, which will re-enable the ability to do a completely automated terminology build from start to finish.
+
+For more information on the UTS sign-in process changes, visit https://www.nlm.nih.gov/research/umls/uts-changes.html.
+
+#### Terminology prerequisites
+
 In order to validate terminologies, Inferno must be loaded with files generated
 from the Unified Medical Language System (UMLS).  The UMLS is distributed by the
 National Library of Medicine (NLM) and requires an account to access.
