@@ -560,10 +560,10 @@ module Inferno
         end
 
         # remove carrierAIDC and carrierHRF from implantable device must supports
-        implantable_device_sequence = metadata[:sequences].find { |sequence| sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'}
-          implantable_device_sequence[:must_supports][:elements].delete_if do |element|
-            ['udiCarrier.carrierAIDC', 'udiCarrier.carrierHRF'].include? element[:path]
-          end
+        implantable_device_sequence = metadata[:sequences].find { |sequence| sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device' }
+        implantable_device_sequence[:must_supports][:elements].delete_if do |element|
+          ['udiCarrier.carrierAIDC', 'udiCarrier.carrierHRF'].include? element[:path]
+        end
         metadata
       end
 

@@ -647,9 +647,9 @@ module Inferno
 
           if is_implantable_device_sequence
             test[:test_code] += %(
-              carrierAIDC_found = #{resource_array}&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierAIDC').present? }
-              carrierHRF_found = #{resource_array}&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierHRF').present? }
-              missing_must_support_elements.append('udiCarrier.carrierAIDC or udiCarrier.carrierHRF') unless (carrierAIDC_found || carrierHRF_found)
+              carrier_aidc_found = #{resource_array}&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierAIDC').present? }
+              carrier_hrf_found = #{resource_array}&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierHRF').present? }
+              missing_must_support_elements.append('udiCarrier.carrierAIDC or udiCarrier.carrierHRF') unless carrier_aidc_found || carrier_hrf_found
             )
           end
 
