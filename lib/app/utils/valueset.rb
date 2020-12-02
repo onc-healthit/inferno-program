@@ -31,7 +31,6 @@ module Inferno
         'http://www.nlm.nih.gov/research/umls/rxnorm' => 'RXNORM',
         'http://loinc.org' => 'LNC',
         'http://snomed.info/sct' => 'SNOMEDCT_US',
-        'http://www.icd10data.com/icd10pcs' => 'ICD10PCS',
         'http://www.cms.gov/Medicare/Coding/ICD10' => 'ICD10PCS',
         'http://hl7.org/fhir/sid/cvx' => 'CVX',
         'http://hl7.org/fhir/sid/icd-10-cm' => 'ICD10CM',
