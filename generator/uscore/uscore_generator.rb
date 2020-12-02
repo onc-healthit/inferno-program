@@ -581,6 +581,9 @@ module Inferno
                             sequence[:must_supports][:extensions].map { |extension| "* #{extension[:id]}" } +
                             sequence[:must_supports][:slices].map { |slice| "* #{slice[:name]}" }
 
+        is_implantable_device_sequence = sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
+        must_support_list.append('* udiCarrier.carrierAIDC or udiCarrier.carrierHRF') if is_implantable_device_sequence
+
         test = {
           tests_that: "All must support elements are provided in the #{sequence[:resource]} resources returned.",
           index: sequence[:tests].length + 1,
@@ -641,6 +644,14 @@ module Inferno
             end
             missing_must_support_elements.map! { |must_support| "\#{must_support[:path]}\#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
           )
+
+          if is_implantable_device_sequence
+            test[:test_code] += %(
+              carrier_aidc_found = #{resource_array}&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierAIDC').present? }
+              carrier_hrf_found = #{resource_array}&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierHRF').present? }
+              missing_must_support_elements.append('udiCarrier.carrierAIDC or udiCarrier.carrierHRF') unless carrier_aidc_found || carrier_hrf_found
+            )
+          end
 
           if must_support_extensions.present?
             test[:test_code] += %(
