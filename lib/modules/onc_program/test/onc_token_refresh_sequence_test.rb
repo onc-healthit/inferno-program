@@ -314,18 +314,6 @@ class OncTokenRefreshSequenceTest < MiniTest::Test
       body_response_code = 400
     when :disallows_scope
       body_with_scope_response_code = 400
-    when :stale_refresh_token
-      @instance.update(
-        client_secret: @confidential_client_secret,
-        confidential_client: true
-      )
-      exchange_response['refresh_token'] = @instance.refresh_token
-    when :no_refresh_token
-      @instance.update(
-        client_secret: @confidential_client_secret,
-        confidential_client: true
-      )
-      exchange_response.delete('refresh_token')
     end
 
     # can't do this above because we are altering the content of hash in other error modes
@@ -460,20 +448,6 @@ class OncTokenRefreshSequenceTest < MiniTest::Test
 
   def test_fail_if_scope_cannot_be_in_payload
     setup_mocks(:disallows_scope)
-
-    sequence_result = @sequence.start
-    assert sequence_result.fail?
-  end
-
-  def test_fail_if_stale_refresh_token
-    setup_mocks(:stale_refresh_token)
-
-    sequence_result = @sequence.start
-    assert sequence_result.fail?
-  end
-
-  def test_fail_if_no_refresh_token
-    setup_mocks(:no_refresh_token)
 
     sequence_result = @sequence.start
     assert sequence_result.fail?
