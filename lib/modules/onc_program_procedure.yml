@@ -624,7 +624,6 @@ procedure:
           in § 170.215(a)(3).
         inferno_supported: 'yes'
         inferno_tests:
-          - SPD-TR-06
           - ATT-05
         inferno_notes: |
           Inferno requires that a new refresh token is presented along with

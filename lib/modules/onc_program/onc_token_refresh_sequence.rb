@@ -195,31 +195,6 @@ module Inferno
       end
 
       patient_context_test(index: '05', refresh: true)
-
-      test :refresh_token_refreshed do
-        metadata do
-          id '06'
-          name 'Server supplies new refresh token as required by ONC certification criteria.'
-          link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
-          description %(
-            The ONC certification criteria requires that refresh tokens can be refreshed.  While `refresh_token`
-            is optional in the refresh token response in the OAuth 2.0 specification, this test requires that a
-            new refresh token is provided that does not match the previous refresh token.
-
-            ```
-            An application capable of storing a client secret must be issued a new refresh token valid for a new
-            period of no less than three months.
-            ```
-
-          )
-        end
-
-        omit 'Applies to confidential clients only' unless instance_confidential_client
-
-        skip_if @previous_refresh_token.blank? && @instance.refresh_token.blank?, 'No refresh token was received during the SMART launch'
-
-        assert @previous_refresh_token != @instance.refresh_token, "Refresh response did not provide a new refresh token as required by ONC certification criteria.  Old Refresh Token: `#{@previous_refresh_token}`; New Refresh Token: `#{@instance.refresh_token}`"
-      end
     end
   end
 end
