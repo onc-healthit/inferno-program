@@ -626,11 +626,8 @@ procedure:
         inferno_tests:
           - ATT-05
         inferno_notes: |
-          Inferno requires that a new refresh token is presented along with
-          a new access token during a successful token refresh.  This is not
-          strictly required by the OAuth 2.0 specification but is required
-          as part of the certification criteria.  Inferno cannot verify the
-          three month token expiration requirement, but the tester can
+          Inferno cannot verify the three month token expiration requirement
+          automatically during the token refresh tests, but the tester can
           register an attestation that this requirement is met.
       - id: AUTH-PATIENT-23
         SUT: |
