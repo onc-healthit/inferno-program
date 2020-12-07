@@ -173,7 +173,7 @@ module Inferno
             ONC certification criteria states that all USCDI v1 data classes and elements need to be supported, including Patient
             Demographics - Suffix.However, US Core v3.1.1 does not tag the relevant element
             (Patient.name.suffix) as MUST SUPPORT. The Health IT developer must demonstrate support
-            for this USCDI v1 element.
+            for this USCDI v1 element as described in the US Core Patient Profile implementation guidance.
           )
         end
 
@@ -189,7 +189,7 @@ module Inferno
             ONC certification criteria states that all USCDI v1 data classes and elements need to be supported, including Patient
             Demographics - Previous Name. However, US Core v3.1.1 does not tag the relevant element
             (Patient.name.period) as MUST SUPPORT. The Health IT developer must demonstrate support
-            for this USCDI v1 element.
+            for this USCDI v1 element as described in the US Core Patient Profile implementation guidance.
           )
         end
 
