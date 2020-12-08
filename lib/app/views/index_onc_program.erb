@@ -41,9 +41,9 @@
               Or test Inferno against
             </label>
             <select class="custom-select custom-select-lg" name="preset" style="padding-left: 5px;margin: 0 0;border: 0;text-decoration: underline;" id="preset-select">
-              <option value="" data-module_names=<%=module_names.join(',')%> data-all=<%=presets.to_json.tr(' ', '_')%> data-selected="">a public sandbox</option>
+              <option value="" data-module_names=<%=module_names.join(',')%> data-all='<%=presets.to_json%>' data-selected="">a public sandbox</option>
               <% presets.each do |preset| %>
-                <option value="" data-module_names=<%=module_names.join(',')%> data-all=<%=presets.to_json.tr(' ', '_')%> data-selected=<%=preset.at(0)%>><%=preset.at(1)["name"]%></option>
+                <option value="" data-module_names=<%=module_names.join(',')%> data-all='<%=presets.to_json%>' data-selected=<%=preset.at(0)%>><%=preset.at(1)["name"]%></option>
               <% end %>
               <input type="hidden" name="preset" id="preset" value="" />
             </select>
@@ -206,10 +206,15 @@ For alternate installation options, please visit <a href='https://github.com/onc
       These changes will likely alter testing results for systems from Inferno Program Edition v1.3.0.
       </p>
       <p>
-      Users that run Inferno Program Edition locally must download new copies of terminology used within tests, as US Core v3.1.1 altered some ValueSet
+      <i>Notice: Users that run Inferno Program Edition locally must download new copies of terminology used within tests, as US Core v3.1.1 altered some ValueSet
       definitions.  Please see <a href="https://github.com/onc-healthit/inferno-program/#terminology-support">the README</a> for instructions on how to
-      update your local copy of terminology files.
+      update your local copy of terminology files.</i>
       </p>
+      <p><i>Notice: If you are installing v1.4.0 in the same directory as a previous
+      v1.3.0 installation, please delete or rename the files in /data/ (e.g.
+      production.db; development.db; test.db). Inferno will fail to load if
+      these files are not removed or renamed due to a change in the Inferno
+      data schema. </i><p>
       <p>Updates in this version include:</p>
       <ul>
       <li>Updated all Single Patient API tests to reflect changes in US Core v3.1.1 to required searches, profiles and terminology.</li>
@@ -221,6 +226,7 @@ For alternate installation options, please visit <a href='https://github.com/onc
       <li>Updated "must support" checking for the Implantable Device Profile to require demonstrating support for either HRC or AIDC representations of the Unique Device Identifier, instead of both.</li>
       <li>Updated Clinical Notes Guidance test to allow servers to reject searches that do not contain a status parameter.</li>
       <li>Ignore validation errors for the incorrect <a href="http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition-pediatric-bmi-for-age-definitions.html#Observation.effective[x]">Vital Signs vs-1</a> and <a href="http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition-us-core-observation-lab-definitions.html#Observation.effective[x]">Laboratory Results us-core-1</a> invariants, as they improperly return errors when Observation.effectivePeriod populated.</li>
+      <li>Fixed bug that prevented requests and responses from being displayed in certain cases.</li>
       </ul>
       </p>
     <p>
