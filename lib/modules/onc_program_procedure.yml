@@ -902,34 +902,34 @@ procedure:
           adopted in § 170.213.
         inferno_supported: 'yes'
         inferno_tests:
-          - USCP-02
-          - USCAI-02
-          - USCCP-02
-          - USCCT-02
-          - USCC-02
-          - USCID-02
-          - USCDRRN-02
-          - USCDRLRR-02
-          - USCDR-02
-          - USCG-02
-          - USCI-02
-          - USCMR-02
-          - USCSSO-02
-          - USCPWHO-02
-          - USCLRO-02
-          - USCPBMIAO-02
-          - USCPO-02
-          - USCOBH-02
-          - USCOBT-02
-          - USCOBP-02
-          - USCOBW-02
-          - USCOHC-02
-          - USCOHR-02
-          - USCORR-02
-          - USCPROC-02
-          - USCCN-02
-          - USCO-02
-          - USCPROV-02
+          - USCP-01
+          - USCAI-01
+          - USCCP-01
+          - USCCT-01
+          - USCC-01
+          - USCID-01
+          - USCDRRN-01
+          - USCDRLRR-01
+          - USCDR-01
+          - USCG-01
+          - USCI-01
+          - USCMR-01
+          - USCSSO-01
+          - USCPWHO-01
+          - USCLRO-01
+          - USCPBMIAO-01
+          - USCPO-01
+          - USCOBH-01
+          - USCOBT-01
+          - USCOBP-01
+          - USCOBW-01
+          - USCPHOCP-01
+          - USCOHR-01
+          - USCORR-01
+          - USCPROC-01
+          - USCCN-01
+          - USCO-01
+          - USCPROV-01
       - id: SEARCH-3
         SUT: |
           The health IT developer demonstrates the ability of the Health IT
@@ -970,10 +970,10 @@ procedure:
           - USCOBT-09
           - USCOBP-09
           - USCOBW-09
-          - USCOHC-09
+          - USCPHOCP-09
           - USCOHR-09
           - USCORR-09
-          - USCPROC-02
+          - USCPROC-08
       - group: Supported Search Operations for Multiple Patients’ Data
         id: SEARCH-4
         SUT: |
@@ -1019,35 +1019,34 @@ procedure:
           adopted in § 170.215(a)(2), including the following steps.
         inferno_supported: 'yes'
         inferno_tests:
-          - USCP-02
+          - USCP-08
           - USCAI-02
           - USCCP-02
           - USCCT-02
-          - USCC-02
-          - USCID-02
-          - USCDRRN-02
-          - USCDRLRR-02
-          - USCDR-02
-          - USCG-02
-          - USCI-02
-          - USCMR-02
+          - USCC-05
+          - USCID-03
+          - USCDRRN-07
+          - USCDRLRR-07
+          - USCDR-08
+          - USCG-03
+          - USCI-04
+          - USCMR-05
           - USCSSO-02
-          - USCPWHO-02
-          - USCLRO-02
-          - USCPBMIAO-02
-          - USCPO-02
-          - USCOBH-02
-          - USCOBT-02
-          - USCOBP-02
-          - USCOBW-02
-          - USCOHC-02
-          - USCOHR-02
-          - USCORR-02
-          - USCPROC-02
-          - USCCN-02
+          - USCPWHO-06
+          - USCLRO-06
+          - USCPBMIAO-06
+          - USCPO-06
+          - USCOBH-06
+          - USCOBT-06
+          - USCOBP-06
+          - USCOBW-06
+          - USCPHOCP-06
+          - USCOHR-06
+          - USCORR-06
+          - USCPROC-05
           - USCO-02
-          - USCPROV-02
-          - BDGV-01
+          - USCPROV-01
+          - BDGV-06 - BDGV-23
       - id: RESPONSE-2
         SUT: |
           The health IT developer demonstrates the ability of the Health IT
@@ -1072,35 +1071,35 @@ procedure:
           - ATT-07
           - ATT-11
           - ATT-12
-          - USCP-02
-          - USCAI-02
-          - USCCP-02
-          - USCCT-02
-          - USCC-02
-          - USCID-02
-          - USCDRRN-02
-          - USCDRLRR-02
-          - USCDR-02
-          - USCG-02
-          - USCI-02
-          - USCMR-02
-          - USCSSO-02
-          - USCPWHO-02
-          - USCLRO-02
-          - USCPBMIAO-02
-          - USCPO-02
-          - USCOBH-02
-          - USCOBT-02
-          - USCOBP-02
-          - USCOBW-02
-          - USCOHC-02
-          - USCOHR-02
-          - USCORR-02
-          - USCPROC-02
-          - USCCN-02
-          - USCO-02
-          - USCPROV-02
-          - BDGV-01
+          - USCP-01
+          - USCAI-01
+          - USCCP-01
+          - USCCT-01
+          - USCC-01
+          - USCID-01
+          - USCDRRN-01
+          - USCDRLRR-01
+          - USCDR-01
+          - USCG-01
+          - USCI-01
+          - USCMR-01
+          - USCSSO-01
+          - USCPWHO-01
+          - USCLRO-01
+          - USCPBMIAO-01
+          - USCPO-01
+          - USCOBH-01
+          - USCOBT-01
+          - USCOBP-01
+          - USCOBW-01
+          - USCPHOCP-01
+          - USCOHR-01
+          - USCORR-01
+          - USCPROC-01
+          - USCCN-01
+          - USCO-01
+          - USCPROV-01
+          - BDGV-02
         inferno_notes: |
           The requirement "all information is accurate and without omission"
           cannot be verified automatically by Inferno, as Inferno only has
@@ -1150,7 +1149,7 @@ procedure:
           - USCOBT-09
           - USCOBP-09
           - USCOBW-09
-          - USCOHC-09
+          - USCPHOCP-09
           - USCOHR-09
           - USCORR-09
           - USCPROC-08
@@ -1171,7 +1170,7 @@ procedure:
           implementation specification adopted in § 170.215(a)(2).
         inferno_supported: 'yes'
         inferno_tests:
-          - USCCN-01 - USCCN-09
+          - USCCN-01 - USCCN-02
       - id: RESPONSE-5
         SUT: |
           If supported, and for responses to data for a single patient only, the
@@ -1224,35 +1223,34 @@ procedure:
           adopted in § 170.213.
         inferno_supported: 'yes'
         inferno_tests:
-          - USCP-02
-          - USCAI-02
-          - USCCP-02
-          - USCCT-02
-          - USCC-02
-          - USCID-02
-          - USCDRRN-02
-          - USCDRLRR-02
-          - USCDR-02
-          - USCG-02
-          - USCI-02
-          - USCMR-02
-          - USCSSO-02
-          - USCPWHO-02
-          - USCLRO-02
-          - USCPBMIAO-02
-          - USCPO-02
-          - USCOBH-02
-          - USCOBT-02
-          - USCOBP-02
-          - USCOBW-02
-          - USCOHC-02
-          - USCOHR-02
-          - USCORR-02
-          - USCPROC-02
-          - USCCN-02
-          - USCO-02
-          - USCPR-02
-          - USCPROV-02
+          - USCP-01
+          - USCAI-01
+          - USCCP-01
+          - USCCT-01
+          - USCC-01
+          - USCID-01
+          - USCDRRN-01
+          - USCDRLRR-01
+          - USCDR-01
+          - USCG-01
+          - USCI-01
+          - USCMR-01
+          - USCSSO-01
+          - USCPWHO-01
+          - USCLRO-01
+          - USCPBMIAO-01
+          - USCPO-01
+          - USCOBH-01
+          - USCOBT-01
+          - USCOBP-01
+          - USCOBW-01
+          - USCPHOCP-01
+          - USCOHR-01
+          - USCORR-01
+          - USCPROC-01
+          - USCCN-01
+          - USCO-01
+          - USCPROV-01
       - group: Response to Requests for Multiple Patients’ Data
         id: RESPONSE-8
         SUT: |
