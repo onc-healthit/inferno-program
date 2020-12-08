@@ -25,7 +25,15 @@ module Inferno
                :onc_visual_multi_scopes_no_greater,
                :onc_visual_multi_scopes_no_greater_notes,
                :onc_visual_documentation,
-               :onc_visual_documentation_notes
+               :onc_visual_documentation_notes,
+               :onc_visual_jwks_cache,
+               :onc_visual_jwks_cache_notes,
+               :onc_visual_jwks_token_revocation,
+               :onc_visual_jwks_token_revocation_notes,
+               :onc_visual_patient_period,
+               :onc_visual_patient_period_notes,
+               :onc_visual_native_application,
+               :onc_visual_native_application_notes
 
       test 'Health IT Module demonstrated support for application registration for single patients.' do
         metadata do
@@ -144,22 +152,9 @@ module Inferno
         pass @instance.onc_visual_documentation_notes if @instance.onc_visual_documentation_notes.present?
       end
 
-      test 'Health IT developer confirms support for the PractitionerRole and RelatedPerson resources to fulfill must support requirements of referenced elements within US Core profiles.' do
-        metadata do
-          id '10'
-          link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
-          description %(
-            Health IT developer confirms support for the PractitionerRole and RelatedPerson resources to fulfill must support requirements of referenced elements within US Core profiles.
-          )
-        end
-
-        assert @instance.onc_visual_other_resources == 'true', 'Health IT developer did not confirm support for the PractitionerRole and RelatedPerson resources.'
-        pass @instance.onc_visual_other_resources_notes if @instance.onc_visual_other_resources_notes.present?
-      end
-
       test 'Health IT developer confirms the Health IT module does not cache the JWK Set received via a TLS-protected URL for longer than the cache-control header received by an application indicates.' do
         metadata do
-          id '11'
+          id '10'
           link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
           description %(
             The Health IT developer confirms the Health IT module does not cache the JWK Set received via a TLS-protected URL for longer than the cache-control header indicates.
@@ -172,13 +167,13 @@ module Inferno
 
       test 'Health IT developer demonstrates support for the Patient Demographics Suffix USCDI v1 element.' do
         metadata do
-          id '12'
+          id '11'
           link 'https://www.healthit.gov/isa/united-states-core-data-interoperability-uscdi'
           description %(
             ONC certification criteria states that all USCDI v1 data classes and elements need to be supported, including Patient
-            Demographics - Suffix.However, US Core v3.1 does not currently tag the relevant element
+            Demographics - Suffix.However, US Core v3.1.1 does not tag the relevant element
             (Patient.name.suffix) as MUST SUPPORT. The Health IT developer must demonstrate support
-            for this USCDI v1 element.
+            for this USCDI v1 element as described in the US Core Patient Profile implementation guidance.
           )
         end
 
@@ -188,13 +183,13 @@ module Inferno
 
       test 'Health IT developer demonstrates support for the Patient Demographics Previous Name USCDI v1 element.' do
         metadata do
-          id '13'
+          id '12'
           link 'https://www.healthit.gov/isa/united-states-core-data-interoperability-uscdi'
           description %(
             ONC certification criteria states that all USCDI v1 data classes and elements need to be supported, including Patient
-            Demographics - Previous Name. However, US Core v3.1 does not currently tag the relevant element
+            Demographics - Previous Name. However, US Core v3.1.1 does not tag the relevant element
             (Patient.name.period) as MUST SUPPORT. The Health IT developer must demonstrate support
-            for this USCDI v1 element.
+            for this USCDI v1 element as described in the US Core Patient Profile implementation guidance.
           )
         end
 
@@ -202,20 +197,25 @@ module Inferno
         pass @instance.onc_visual_patient_period_notes if @instance.onc_visual_patient_period_notes.present?
       end
 
-      test 'Health IT developer demonstrates support for the Allergy and Intolerances Reaction USCDI v1 element.' do
+      test 'Health IT developer demonstrates support for issuing refresh tokens to native applications.' do
         metadata do
-          id '14'
-          link 'https://www.healthit.gov/isa/united-states-core-data-interoperability-uscdi'
+          id '13'
+          link 'https://www.federalregister.gov/documents/2020/11/04/2020-24376/information-blocking-and-the-onc-health-it-certification-program-extension-of-compliance-dates-and'
           description %(
-            ONC certification criteria states that all USCDI v1 needs to be supported, including Allergies
-            and Intolerances - Reaction. However, US Core v3.1 does not currently tag the relevant element
-            (AllergyIntolerance.reaction) as MUST SUPPORT. The Health IT developer must demonstrate support
-            for this USCDI v1 element.
+            The health IT developer demonstrates the ability of the Health IT
+            Module to grant a refresh token valid for a period of no less
+            than three months to native applications capable of storing a
+            refresh token.
+
+            This cannot be tested in an automated way because the health IT
+            developer may require use of additional security mechanisms within
+            the OAuth 2.0 authorization flow to ensure authorization is sufficiently
+            secure for native applications.
           )
         end
 
-        assert @instance.onc_visual_allergy_reaction == 'true', 'Health IT developer did not demonstrate that Allergy and Intolerance Reaction is supported.'
-        pass @instance.onc_visual_allergy_reaction_notes if @instance.onc_visual_allergy_reaction_notes.present?
+        assert @instance.onc_visual_native_application == 'true', 'Health IT developer did not demonstrate support for issuing refresh tokens to native applications.'
+        pass @instance.onc_visual_native_application_notes if @instance.onc_visual_native_application_notes.present?
       end
     end
   end

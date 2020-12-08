@@ -364,12 +364,6 @@
             description: ''
           },
           {
-            field: :onc_visual_other_resources,
-            notes_field: :onc_visual_other_resources_notes, 
-            label: 'Health IT developer confirms support for the PractitionerRole and RelatedPerson resources to fulfill must support requirements of referenced elements within US Core profiles.',
-            description: ''
-          },
-          {
             field: :onc_visual_jwks_cache,
             notes_field: :onc_visual_jwks_cache_notes, 
             label: 'Health IT developer confirms the Health IT module does not cache the JWK Set received via a TLS-protected URL for longer than the cache-control header indicates.',
@@ -395,9 +389,9 @@
             description: ''
           },
           {
-            field: :onc_visual_allergy_reaction,
-            notes_field: :onc_visual_allergy_reaction_notes,
-            label: 'Health IT developer demonstrates support for the Allergy and Intolerances Reaction USCDI v1 element.',
+            field: :onc_visual_native_application,
+            notes_field: :onc_visual_native_application_notes,
+            label: 'Health IT developer demonstrates support for issuing refresh tokens to native applications.',
             description: ''
           }
             ].each do |field| %>
@@ -566,7 +560,7 @@
               label: 'EHR-launched Scope',
               description: 'OAuth 2.0 scope provided by system to enable all required functionality',
               instance: instance,
-              value: instance.scopes || 'launch openid fhirUser offline_access user/Medication.read user/AllergyIntolerance.read user/CarePlan.read user/CareTeam.read user/Condition.read user/Device.read user/DiagnosticReport.read user/DocumentReference.read user/Encounter.read user/Goal.read user/Immunization.read user/Location.read user/MedicationRequest.read user/Observation.read user/Organization.read user/Patient.read user/Practitioner.read user/PractitionerRole.read user/Procedure.read user/Provenance.read user/RelatedPerson.read',
+              value: instance.scopes || 'launch openid fhirUser offline_access user/Medication.read user/AllergyIntolerance.read user/CarePlan.read user/CareTeam.read user/Condition.read user/Device.read user/DiagnosticReport.read user/DocumentReference.read user/Encounter.read user/Goal.read user/Immunization.read user/Location.read user/MedicationRequest.read user/Observation.read user/Organization.read user/Patient.read user/Practitioner.read user/Procedure.read user/Provenance.read',
               type: 'textarea',
               required: true,
               })%>
@@ -576,7 +570,7 @@
               description: 'OAuth 2.0 scope provided by system to enable all required functionality',
               instance: instance,
               type: 'textarea',
-              value: instance.onc_sl_scopes || 'launch/patient openid fhirUser offline_access patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read patient/Procedure.read patient/Provenance.read patient/RelatedPerson.read'
+              value: instance.onc_sl_scopes || 'launch/patient openid fhirUser offline_access patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/Procedure.read patient/Provenance.read'
                })%>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :onc_public_scopes,
@@ -584,7 +578,7 @@
               description: 'OAuth 2.0 scope provided by system to enable public client access for a patient standalone launch',
               instance: instance,
               type: 'textarea',
-              value: instance.onc_public_scopes || 'launch/patient openid fhirUser patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/PractitionerRole.read patient/Procedure.read patient/Provenance.read patient/RelatedPerson.read'
+              value: instance.onc_public_scopes || 'launch/patient openid fhirUser patient/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read patient/Procedure.read patient/Provenance.read'
                })%>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_expected_resources,
@@ -673,7 +667,7 @@
               description: 'Bulk Data Scopes provided at registration to the Inferno application.',
               instance: instance,
               type: 'textarea',
-              value: instance.bulk_scope || 'system/Medication.read system/AllergyIntolerance.read system/CarePlan.read system/CareTeam.read system/Condition.read system/Device.read system/DiagnosticReport.read system/DocumentReference.read system/Encounter.read system/Goal.read system/Immunization.read system/Location.read system/MedicationRequest.read system/Observation.read system/Organization.read system/Practitioner.read system/PractitionerRole.read system/Procedure.read system/Provenance.read system/RelatedPerson.read',
+              value: instance.bulk_scope || 'system/Medication.read system/AllergyIntolerance.read system/CarePlan.read system/CareTeam.read system/Condition.read system/Device.read system/DiagnosticReport.read system/DocumentReference.read system/Encounter.read system/Goal.read system/Immunization.read system/Location.read system/MedicationRequest.read system/Observation.read system/Organization.read system/Practitioner.read system/Procedure.read system/Provenance.read',
               })%>  
 
         <div class="form-group"

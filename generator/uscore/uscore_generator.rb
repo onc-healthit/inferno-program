@@ -133,8 +133,8 @@ module Inferno
       end
 
       def find_first_search(sequence)
-        sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' } ||
-          sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' }
+        sequence[:searches].find { |search_param| search_param[:expectation] == 'SHALL' && search_param[:must_support_or_mandatory] } ||
+          sequence[:searches].find { |search_param| search_param[:expectation] == 'SHOULD' && search_param[:must_support_or_mandatory] }
       end
 
       def generate_sequence(sequence)
@@ -149,10 +149,11 @@ module Inferno
       end
 
       def generate_profile_definition(sequence)
-        file_name = sequence_out_path + '/profile_definitions/' + sequence[:name].downcase + '_definitions.rb'
+        profile_definition_folder = File.join(sequence_out_path, '/profile_definitions')
+        file_name = File.join(profile_definition_folder, sequence[:name].downcase + '_definitions.rb')
         template = ERB.new(File.read(File.join(__dir__, 'templates/sequence_definition.rb.erb')))
         output = template.result_with_hash(sequence)
-        FileUtils.mkdir_p(sequence_out_path) unless File.directory?(sequence_out_path)
+        FileUtils.mkdir_p(profile_definition_folder) unless File.directory?(profile_definition_folder)
         File.write(file_name, output)
       end
 
@@ -578,13 +579,10 @@ module Inferno
       def create_must_support_test(sequence)
         must_support_list = sequence[:must_supports][:elements].map { |element| "* #{element[:path]}" } +
                             sequence[:must_supports][:extensions].map { |extension| "* #{extension[:id]}" } +
-                            sequence[:must_supports][:slices].map { |slice| "* #{slice[:name]}" } +
-                            sequence[:must_supports][:references].map { |reference| "* #{reference[:path]}" }
+                            sequence[:must_supports][:slices].map { |slice| "* #{slice[:name]}" }
 
-        must_suport_reference_description = %(
-          For elements of type 'reference' with one or more target profiles from US Core, this test will ensure that at least one of each resource type
-          associated with each US Core target profile is provided as a reference.  This test will not validate those references against their associated
-          US Core profile to reduce test complexity.)
+        is_implantable_device_sequence = sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
+        must_support_list.append('* udiCarrier.carrierAIDC or udiCarrier.carrierHRF') if is_implantable_device_sequence
 
         test = {
           tests_that: "All must support elements are provided in the #{sequence[:resource]} resources returned.",
@@ -596,17 +594,13 @@ module Inferno
             This will look through the #{sequence[:resource]} resources found previously for the following must support elements:
 
             #{must_support_list.sort.join("\n            ")}
-
-            #{must_suport_reference_description if sequence[:must_supports][:references].present?}
           )
         }
         must_support_extensions = sequence[:must_supports][:extensions]
-        must_support_references = sequence[:must_supports][:references]
         must_support_slices = sequence[:must_supports][:slices]
         must_support_elements = sequence[:must_supports][:elements]
 
         must_support_elements.each { |must_support| must_support[:path]&.gsub!('[x]', '')&.gsub!(/(?<!\w)class(?!\w)/, 'local_class') }
-        must_support_references.each { |must_support| must_support[:path]&.gsub!('[x]', '')&.gsub!(/(?<!\w)class(?!\w)/, 'local_class') }
         must_support_slices.each { |must_support| must_support[:path]&.gsub!('[x]', '')&.gsub!(/(?<!\w)class(?!\w)/, 'local_class') }
 
         test[:test_code] += %(
@@ -636,22 +630,6 @@ module Inferno
           )
         end
 
-        if must_support_references.present?
-          test[:test_code] += %(
-            missing_must_support_references = must_supports[:references].each_with_object({}) do |reference, missing_types_by_path|
-              missing_resource_types = reference[:resource_types].reject do |resource_type|
-                #{resource_array}&.any? do |resource|
-                  value_found = resolve_element_from_path(resource, reference[:path]) do |value|
-                    value.is_a?(FHIR::Reference) && value.reference.include?("\#{resource_type}/")
-                  end
-                  value_found.present?
-                end
-              end
-              missing_types_by_path[reference[:path]] = missing_resource_types if missing_resource_types.present?
-            end
-          )
-        end
-
         if must_support_elements.present?
           test[:test_code] += %(
             missing_must_support_elements = must_supports[:elements].reject do |element|
@@ -667,6 +645,14 @@ module Inferno
             missing_must_support_elements.map! { |must_support| "\#{must_support[:path]}\#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
           )
 
+          if is_implantable_device_sequence
+            test[:test_code] += %(
+              carrier_aidc_found = #{resource_array}&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierAIDC').present? }
+              carrier_hrf_found = #{resource_array}&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierHRF').present? }
+              missing_must_support_elements.append('udiCarrier.carrierAIDC or udiCarrier.carrierHRF') unless carrier_aidc_found || carrier_hrf_found
+            )
+          end
+
           if must_support_extensions.present?
             test[:test_code] += %(
               missing_must_support_elements += missing_must_support_extensions.map { |must_support| must_support[:id] }
@@ -681,13 +667,6 @@ module Inferno
           test[:test_code] += %(
             skip_if missing_must_support_elements.present?,
               "Could not find \#{missing_must_support_elements.join(', ')} in the \#{#{resource_array}&.length} provided #{sequence[:resource]} resource(s)")
-
-          if must_support_references.present?
-            test[:test_code] += %(
-              skip_if missing_must_support_references.present?,
-              "Could not find the following resource type references:\#{missing_must_support_references.map{|path,resource_types| path+':'+resource_types.join(',')}.join(';')}"
-            )
-          end
         end
 
         test[:test_code] += %(
@@ -817,7 +796,7 @@ module Inferno
 
         if sequence[:resource] == 'MedicationRequest'
           medication_test = {
-            tests_that: 'Medication resources returned conform to US Core v3.1.0 profiles',
+            tests_that: "Medication resources returned conform to US Core #{sequence[:version]} profiles",
             key: :validate_medication_resources,
             index: sequence[:tests].length + 1,
             link: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest',
@@ -1397,13 +1376,22 @@ module Inferno
         }
 
         ['restricted', 'unrestricted'].each do |restriction|
+          module_info[:access_verify_restriction] = restriction
+
           file_name = "#{sequence_out_path}/access_verify_#{restriction}_sequence.rb"
 
           template = ERB.new(File.read(File.join(__dir__, 'templates/access_verify_sequence.rb.erb')))
 
-          module_info[:access_verify_restriction] = restriction
           output = template.result_with_hash(module_info)
           FileUtils.mkdir_p(sequence_out_path) unless File.directory?(sequence_out_path)
+          File.write(file_name, output)
+
+          file_name = "#{sequence_out_path}/test/access_verify_#{restriction}_test.rb"
+
+          template = ERB.new(File.read(File.join(__dir__, "templates/unit_tests/access_verify_#{restriction}_unit_test.rb.erb")))
+
+          output = template.result_with_hash(module_info)
+          FileUtils.mkdir_p("#{sequence_out_path}/test") unless File.directory?("#{sequence_out_path}/test")
           File.write(file_name, output)
         end
       end

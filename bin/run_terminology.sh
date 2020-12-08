@@ -57,7 +57,7 @@ else
   echo "UMLS Subset already exists; skipping Metamorphosys Rake task."
 fi
 
-if [[ ! -f "$temp_folder/fhir" ]]; then
+if [[ ! -e "$temp_folder/fhir" ]]; then
   function control_c_packages {
     kill -INT "$child"
     rm -rf "$temp_folder/fhir"
@@ -90,4 +90,4 @@ fi
 
 trap - SIGHUP SIGINT SIGTERM SIGQUIT SIGKILL SIGTSTP
 
-exec bundle exec rake terminology:create_module_vs_validators["uscore_v3.1.0","preferred"]
+exec bundle exec rake terminology:create_module_vs_validators["uscore_v3.1.1","preferred"]

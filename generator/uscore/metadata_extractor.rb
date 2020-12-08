@@ -23,7 +23,6 @@ module Inferno
         capability_statement_json = capability_statement('server')
         add_metadata_from_ig(metadata, ig_resource)
         add_metadata_from_resources(metadata, capability_statement_json['rest'][0]['resource'])
-        fix_metadata_errors(metadata)
         add_mandatory_and_must_support_search_exclusions(metadata)
         add_special_cases(metadata)
       end
@@ -31,11 +30,13 @@ module Inferno
       def add_metadata_from_ig(metadata, implementation_guide)
         metadata[:title] = "#{implementation_guide['title']} v#{implementation_guide['version']}"
         metadata[:description] = "#{implementation_guide['title']} v#{implementation_guide['version']}"
+        metadata[:version] = "v#{implementation_guide['version']}"
+        metadata[:reformatted_version] = implementation_guide['version'].delete('.')
       end
 
       def generate_unique_test_id_prefix(title)
         module_prefix = 'USC'
-        test_id_prefix = module_prefix + title.chars.select { |c| c.upcase == c && c != ' ' }.join
+        test_id_prefix = module_prefix + title.chars.select { |c| ('A'..'Z').include?(c) }.join
         last_title_word = title.split(test_id_prefix.last).last
         index = 0
 
@@ -59,20 +60,21 @@ module Inferno
         end
       end
 
-      def build_new_sequence(resource, profile)
+      def build_new_sequence(resource, profile, metadata)
         base_path = get_base_path(profile)
         base_name = profile.split('StructureDefinition/').last
         profile_json = @resource_by_path[base_path]
-        reformatted_version = ig_resource['version'].delete('.')
         profile_title = profile_json['title'].gsub(/US\s*Core\s*/, '').gsub(/\s*Profile/, '').strip
         test_id_prefix = generate_unique_test_id_prefix(profile_title)
-        class_name = base_name.split('-').map(&:capitalize).join.gsub('UsCore', "USCore#{reformatted_version}") + 'Sequence'
+        class_name = base_name.split('-').map(&:capitalize).join.gsub('UsCore', "USCore#{metadata[:reformatted_version]}") + 'Sequence'
 
         # In case the profile doesn't start with US Core
-        class_name = "USCore#{reformatted_version}#{class_name}" unless class_name.start_with? 'USCore'
+        class_name = "USCore#{metadata[:reformatted_version]}#{class_name}" unless class_name.start_with? 'USCore'
         {
           name: base_name.tr('-', '_'),
           class_name: class_name,
+          version: metadata[:version],
+          reformatted_version: metadata[:reformatted_version],
           test_id_prefix: test_id_prefix,
           resource: resource['type'],
           profile: profile,
@@ -86,7 +88,6 @@ module Inferno
           must_supports: {
             extensions: [],
             slices: [],
-            references: [],
             elements: []
           },
           mandatory_elements: [],
@@ -102,7 +103,7 @@ module Inferno
           # because it is to check ValueSet expansion
           # We should update this to get that
           resource['supportedProfile']&.each do |supported_profile|
-            new_sequence = build_new_sequence(resource, supported_profile)
+            new_sequence = build_new_sequence(resource, supported_profile, metadata)
 
             add_basic_searches(resource, new_sequence)
             add_combo_searches(resource, new_sequence)
@@ -330,24 +331,6 @@ module Inferno
               end
             end
             sequence[:must_supports][:slices] << must_support_element
-          elsif element['type'].any? { |type| type['code'] == 'Reference' }
-            reference_type = element['type'].find { |type| type['code'] == 'Reference' }
-            profiles = reference_type['targetProfile']
-            resource_types = profiles
-              .select { |profile| resources_by_type['StructureDefinition'].find { |stdef| stdef['url'] == profile } }
-              .map { |profile| resources_by_type['StructureDefinition'].find { |stdef| stdef['url'] == profile }['type'] }
-            must_support_element = {
-              path: element['path'].gsub(sequence[:resource] + '.', ''),
-              resource_types: resource_types
-            }
-            sequence[:must_supports][:references] << must_support_element
-          elsif element['path'].end_with? '[x]'
-            element['type'].each do |type|
-              path = element['path'].gsub(sequence[:resource] + '.', '').gsub('[x]', '') + type['code'].upcase_first
-              must_support_element = { path: path }
-              sequence[:must_supports][:elements] << must_support_element
-            end
-            sequence[:must_supports][:elements] << { path: element['path'].gsub(sequence[:resource] + '.', '') }
           else
             path = element['path'].gsub(sequence[:resource] + '.', '')
             must_support_element = { path: path }
@@ -480,31 +463,13 @@ module Inferno
         end
       end
 
-      def fix_metadata_errors(metadata)
-        # Procedure's date search param definition says Procedure.occurenceDateTime even though Procedure doesn't have an occurenceDateTime
-        procedure_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Procedure' }
-        procedure_sequence[:search_param_descriptions][:date][:path] = 'Procedure.performed'
-
-        goal_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'Goal' }
-        goal_sequence[:search_param_descriptions][:'target-date'][:path] = 'Goal.target.dueDate'
-        goal_sequence[:search_param_descriptions][:'target-date'][:type] = 'date'
-
-        # add the ge comparator - the metadata is missing it for some reason
-        metadata[:sequences].each do |sequence|
-          sequence[:search_param_descriptions].each do |_param, description|
-            param_comparators = description[:comparators]
-            param_comparators[:ge] = param_comparators[:le] if param_comparators.key? :le
-          end
-        end
-      end
-
       def add_mandatory_and_must_support_search_exclusions(metadata)
         # must be performed after we fix the metadata
         metadata[:sequences].each do |sequence|
           sequence[:searches].each do |search|
             search[:names_not_must_support_or_mandatory] = search[:names].reject do |name|
               path = sequence[:search_param_descriptions][name.to_sym][:path]
-              any_must_support_elements = (sequence[:must_supports][:elements] + sequence[:must_supports][:references]).any? do |element|
+              any_must_support_elements = (sequence[:must_supports][:elements]).any? do |element|
                 full_must_support_path = "#{sequence[:resource]}.#{element[:path]}"
 
                 # allow for non-choice, choice types, and _id
@@ -522,7 +487,7 @@ module Inferno
               end
 
               any_mandatory_elements = sequence[:mandatory_elements].any? do |element|
-                element == path || element == "#{path}[x]"
+                element == path
               end
 
               any_must_support_elements || any_must_support_slices || any_mandatory_elements
@@ -535,7 +500,9 @@ module Inferno
 
       def add_special_cases(metadata)
         category_first_profiles = [
-          PROFILE_URIS[:lab_results]
+          PROFILE_URIS[:lab_results],
+          PROFILE_URIS[:diagnostic_report_lab],
+          PROFILE_URIS[:diagnostic_report_note]
         ]
 
         # search by patient first
@@ -543,8 +510,17 @@ module Inferno
           set_first_search(sequence, ['patient'])
         end
 
+        # search by patient + code first for Observation resources except Lab Result which is handled in the next block
+        metadata[:sequences]
+          .select { |sequence| sequence[:resource] == 'Observation' }
+          .each do |sequence|
+          set_first_search(sequence, ['patient', 'code'])
+        end
+
         # search by patient + category first for these specific profiles
-        metadata[:sequences].select { |sequence| category_first_profiles.include?(sequence[:profile]) }.each do |sequence|
+        metadata[:sequences]
+          .select { |sequence| category_first_profiles.include?(sequence[:profile]) }
+          .each do |sequence|
           set_first_search(sequence, ['patient', 'category'])
         end
 
@@ -552,18 +528,17 @@ module Inferno
         medication_request_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'MedicationRequest' }
         set_first_search(medication_request_sequence, ['patient', 'intent'])
 
-        metadata[:sequences]
-          .select { |sequence| sequence[:resource] == 'DiagnosticReport' }
-          .each do |sequence|
-            set_first_search(sequence, ['patient', 'category'])
-          end
-
         pulse_ox_sequence = metadata[:sequences].find { |sequence| sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry' }
         pulse_ox_sequence[:must_supports][:elements].delete_if do |element|
           path = element[:path]
           (path.start_with? 'component.value') && (!path.include? '[x]') && (path != 'component.valueQuantity')
         end
 
+        # remove carrierAIDC and carrierHRF from implantable device must supports
+        implantable_device_sequence = metadata[:sequences].find { |sequence| sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device' }
+        implantable_device_sequence[:must_supports][:elements].delete_if do |element|
+          ['udiCarrier.carrierAIDC', 'udiCarrier.carrierHRF'].include? element[:path]
+        end
         metadata
       end
 

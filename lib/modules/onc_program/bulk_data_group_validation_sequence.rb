@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-require 'http' # for streaming http client
-Dir['lib/modules/uscore_v3.1.0/profile_definitions/*'].sort.each { |file| require './' + file }
+Dir['lib/modules/uscore_v3.1.1/profile_definitions/*'].sort.each { |file| require './' + file }
 
 module Inferno
   module Sequence
@@ -21,12 +20,12 @@ module Inferno
       MAX_RECENT_LINE_SIZE = 100
       MIN_RESOURCE_COUNT = 2
 
-      NON_US_CORE_KLASS = ['Location', 'PractitionerRole', 'RelatedPerson'].freeze
+      NON_US_CORE_KLASS = ['Location'].freeze
       OMIT_KLASS = ['Medication'].concat(NON_US_CORE_KLASS)
 
       US_CORE_R4_URIS = Inferno::ValidationUtil::US_CORE_R4_URIS
 
-      include Inferno::USCore310ProfileDefinitions
+      include Inferno::USCore311ProfileDefinitions
 
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
         super(instance, client, disable_tls_tests, sequence_result)
@@ -107,12 +106,12 @@ module Inferno
         }
 
         streamed_ndjson_get(file['url'], headers) do |response, resource|
-          assert response.headers['Content-Type'] == 'application/fhir+ndjson', "Content type must be 'application/fhir+ndjson' but is '#{response.headers['Content-type']}'"
+          assert response.header['Content-Type'] == 'application/fhir+ndjson', "Content type must be 'application/fhir+ndjson' but is '#{response.header['Content-type']}'"
 
           break if !validate_all && line_count >= lines_to_validate && (klass != 'Patient' || @patient_ids_seen.length >= MIN_RESOURCE_COUNT)
 
           response_for_log[:code] = response.code unless response_for_log.key?(:code)
-          response_for_log[:headers] = response.headers unless response_for_log.key?(:headers)
+          response_for_log[:headers] = response.header unless response_for_log.key?(:headers)
           line_collection << resource if line_count < MAX_RECENT_LINE_SIZE
 
           line_count += 1
@@ -159,7 +158,7 @@ module Inferno
         if profile && @instance.fhir_version == 'r4'
           resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, profile.url)
 
-          # US Core 3.1.0 has both Reference(US Core Encounter) and Reference(Encounter).
+          # US Core 3.1.1 has both Reference(US Core Encounter) and Reference(Encounter).
           # Bulk Data validation expects at least one Encounter validates to the with US Core Encounter profile, but not all.
           if klass == 'Encounter'
             if resource_validation_errors[:errors].empty?
@@ -238,16 +237,6 @@ module Inferno
         must_support_info[:slices].reject! do |ms_slice|
           find_slice(resource, ms_slice[:path], ms_slice[:discriminator])
         end
-
-        must_support_info[:references].each do |ms_reference|
-          ms_reference[:resource_types].reject! do |resource_type|
-            value_found = resolve_element_from_path(resource, ms_reference[:path]) do |value|
-              value.is_a?(FHIR::Reference) && value.reference.include?("#{resource_type}/")
-            end
-            value_found.present?
-          end
-        end
-        must_support_info[:references].delete_if { |ms_reference| ms_reference[:resource_types].empty? }
       end
 
       def validate_bindings(bindings, resources)
@@ -329,9 +318,6 @@ module Inferno
 
           missing_extensions_list = missing_must_supports[:extensions].map { |extension| extension[:id] }
           skip_if missing_extensions_list.present?, format(error_string, 'extensions', missing_extensions_list.join(', '))
-
-          missing_references_list = missing_must_supports[:references].map { |reference| "#{reference[:path]}: #{reference[:resource_types].join(',')}" }
-          skip_if missing_references_list.present?, format(error_string, 'reference elements', missing_references_list.join(';'))
         end
       end
 
@@ -344,14 +330,12 @@ module Inferno
       end
 
       def streamed_ndjson_get(url, headers)
-        ctx = OpenSSL::SSL::SSLContext.new
-        ctx.verify_mode = OpenSSL::SSL::VERIFY_PEER # set globally to VERIFY_NONE if disable_verify_peer set
-        ctx.set_params unless OpenSSL::SSL::VERIFY_PEER == OpenSSL::SSL::VERIFY_NONE
-        response = HTTP.headers(headers).get(url, ssl_context: ctx)
+        # We don't want to keep a huge log of everything that came through,
+        # but we also want to show up to a reasonable number.
+        recent_lines = []
+        line_count = 0
 
-        # We need to log the request, but don't know what will be in the body
-        # until later.  These serve as simple summaries to get turned into
-        # logged requests.
+        next_block = String.new
 
         request_for_log = {
           method: 'GET',
@@ -359,48 +343,52 @@ module Inferno
           headers: headers
         }
 
+        response_block = proc { |response|
+          response.read_body do |chunk|
+            next_block << chunk
+            resource_list = next_block.lines
+
+            response_for_log = {
+              code: response.code,
+              headers: response.header,
+              body: String.new,
+              truncated: false
+            }
+
+            # Skip processing the last line since the it may not be complete (still appending from stream)
+            next_block = resource_list.pop
+
+            resource_list.each do |resource|
+              # NDJSON does not specify that empty lines are NOT allowed.
+              # So just skip an empty line.
+              next if resource.nil? || resource.strip.empty?
+
+              recent_lines << resource if line_count < MAX_RECENT_LINE_SIZE
+              line_count += 1
+
+              response_for_log[:body] = recent_lines.join
+              log_and_reraise_if_error(request_for_log, response_for_log, line_count > MAX_RECENT_LINE_SIZE) do
+                yield(response, resource)
+              end
+            end
+          end
+        }
+
+        response = RestClient::Request.execute(
+          method: :get,
+          url: url,
+          headers: headers,
+          block_response: response_block
+        )
+
         response_for_log = {
-          code: response.status,
-          headers: response.headers,
+          code: response.code,
+          headers: response.header,
           body: String.new,
           truncated: false
         }
 
-        # We don't want to keep a huge log of everything that came through,
-        # but we also want to show up to a reasonable number.
-        recent_lines = []
-        line_count = 0
-
-        body = response.body
-
-        next_block = String.new
-
-        until (chunk = body.readpartial).nil?
-          next_block << chunk
-          resource_list = next_block.lines
-
-          # Skip process the last line since the it may not complete (still appending from stream)
-          next_block = resource_list.pop
-          # Skip if the last_line is empty
-          # Cannot use .blank? since docker-compose complains "invalid byte sequence in US-ASCII" during unit test
-          next_block = String.new next_block unless next_block.nil? || next_block.strip.empty?
-
-          resource_list.each do |resource|
-            # NDJSON does not specify empty line is NOT allowed.
-            # So just skip an empty line.
-            next if resource.nil? || resource.strip.empty?
-
-            recent_lines << resource if line_count < MAX_RECENT_LINE_SIZE
-            line_count += 1
-
-            response_for_log[:body] = recent_lines.join
-            log_and_reraise_if_error(request_for_log, response_for_log, line_count > MAX_RECENT_LINE_SIZE) do
-              yield(response, resource)
-            end
-          end
-        end
-
-        # NDJSON does not specify empty line is NOT allowed.
+        # NDJSON does not specify that empty lines are NOT allowed.
         # So just skip if last line is empty.
         unless next_block.nil? || next_block.strip.empty?
           recent_lines << next_block if line_count < MAX_RECENT_LINE_SIZE
@@ -482,8 +470,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310PatientSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310PatientSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311PatientSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311PatientSequenceDefinitions::BINDINGS.dup
           }
         ]
 
@@ -538,8 +526,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310AllergyintoleranceSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310AllergyintoleranceSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311AllergyintoleranceSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311AllergyintoleranceSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('AllergyIntolerance', profile_definitions)
@@ -558,8 +546,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310CareplanSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310CareplanSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311CareplanSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311CareplanSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('CarePlan', profile_definitions)
@@ -578,8 +566,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310CareteamSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310CareteamSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311CareteamSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311CareteamSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('CareTeam', profile_definitions)
@@ -598,8 +586,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310ConditionSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310ConditionSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311ConditionSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311ConditionSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Condition', profile_definitions)
@@ -618,8 +606,8 @@ module Inferno
         must_supports = [
           {
             profile: nil,
-            must_support_info: USCore310ImplantableDeviceSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310ImplantableDeviceSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311ImplantableDeviceSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311ImplantableDeviceSequenceDefinitions::BINDINGS.dup
           }
         ]
 
@@ -642,13 +630,13 @@ module Inferno
         profile_definitions = [
           {
             profile: US_CORE_R4_URIS[:diagnostic_report_lab],
-            must_support_info: USCore310DiagnosticreportLabSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310DiagnosticreportLabSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311DiagnosticreportLabSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311DiagnosticreportLabSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:diagnostic_report_note],
-            must_support_info: USCore310DiagnosticreportNoteSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310DiagnosticreportNoteSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311DiagnosticreportNoteSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311DiagnosticreportNoteSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('DiagnosticReport', profile_definitions)
@@ -667,8 +655,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310DocumentreferenceSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310DocumentreferenceSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311DocumentreferenceSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311DocumentreferenceSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('DocumentReference', profile_definitions)
@@ -687,8 +675,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310GoalSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310GoalSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311GoalSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311GoalSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Goal', profile_definitions)
@@ -707,8 +695,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310ImmunizationSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310ImmunizationSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311ImmunizationSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311ImmunizationSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Immunization', profile_definitions)
@@ -727,8 +715,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310MedicationrequestSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310MedicationrequestSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311MedicationrequestSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311MedicationrequestSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('MedicationRequest', profile_definitions)
@@ -740,18 +728,20 @@ module Inferno
           name 'Observation resources returned conform to the US Core Observation Profiles'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab'
           description %(
-            This test verifies that the resources returned from bulk data export conform to the following US Core profiles. This includes checking for missing data elements and value set verification.
+            This test verifies that the resources returned from bulk data
+            export conform to the following US Core profiles. This includes
+            checking for missing data elements and value set verification.
 
             * http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age
             * http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height
             * http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab
             * http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry
             * http://hl7.org/fhir/us/core/StructureDefinition/us-core-smokingstatus
+            * http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
             * http://hl7.org/fhir/StructureDefinition/bp
             * http://hl7.org/fhir/StructureDefinition/bodyheight
             * http://hl7.org/fhir/StructureDefinition/bodytemp
             * http://hl7.org/fhir/StructureDefinition/bodyweight
-            * http://hl7.org/fhir/StructureDefinition/headcircum
             * http://hl7.org/fhir/StructureDefinition/heartrate
             * http://hl7.org/fhir/StructureDefinition/resprate
           )
@@ -760,63 +750,63 @@ module Inferno
         profile_definitions = [
           {
             profile: US_CORE_R4_URIS[:pediatric_bmi_age],
-            must_support_info: USCore310PediatricBmiForAgeSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310PediatricBmiForAgeSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311PediatricBmiForAgeSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311PediatricBmiForAgeSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:pediatric_weight_height],
-            must_support_info: USCore310PediatricWeightForHeightSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310PediatricWeightForHeightSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311PediatricWeightForHeightSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311PediatricWeightForHeightSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:pulse_oximetry],
-            must_support_info: USCore310PulseOximetrySequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310PulseOximetrySequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311PulseOximetrySequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311PulseOximetrySequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:lab_results],
-            must_support_info: USCore310ObservationLabSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310ObservationLabSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311ObservationLabSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311ObservationLabSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:smoking_status],
-            must_support_info: USCore310SmokingstatusSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310SmokingstatusSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311SmokingstatusSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311SmokingstatusSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:blood_pressure],
-            must_support_info: USCore310BpSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310BpSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311BpSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311BpSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:body_height],
-            must_support_info: USCore310BodyheightSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310BodyheightSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311BodyheightSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311BodyheightSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:body_temperature],
-            must_support_info: USCore310BodytempSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310BodytempSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311BodytempSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311BodytempSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:body_weight],
-            must_support_info: USCore310BodyweightSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310BodyweightSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311BodyweightSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311BodyweightSequenceDefinitions::BINDINGS.dup
           },
           {
-            profile: US_CORE_R4_URIS[:head_circumference],
-            must_support_info: USCore310HeadcircumSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310HeadcircumSequenceDefinitions::BINDINGS.dup
+            profile: US_CORE_R4_URIS[:head_circumference_percentile],
+            must_support_info: USCore311HeadOccipitalFrontalCircumferencePercentileSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311HeadOccipitalFrontalCircumferencePercentileSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:heart_rate],
-            must_support_info: USCore310HeartrateSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310HeartrateSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311HeartrateSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311HeartrateSequenceDefinitions::BINDINGS.dup
           },
           {
             profile: US_CORE_R4_URIS[:resp_rate],
-            must_support_info: USCore310ResprateSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310ResprateSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311ResprateSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311ResprateSequenceDefinitions::BINDINGS.dup
           }
         ]
 
@@ -836,8 +826,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310ProcedureSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310ProcedureSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311ProcedureSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311ProcedureSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Procedure', profile_definitions)
@@ -861,8 +851,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310EncounterSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310EncounterSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311EncounterSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311EncounterSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Encounter', profile_definitions)
@@ -892,8 +882,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310OrganizationSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310OrganizationSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311OrganizationSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311OrganizationSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Organization', profile_definitions)
@@ -922,8 +912,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310PractitionerSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310PractitionerSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311PractitionerSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311PractitionerSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Practitioner', profile_definitions)
@@ -942,8 +932,8 @@ module Inferno
         profile_definitions = [
           {
             profile: nil,
-            must_support_info: USCore310ProvenanceSequenceDefinitions::MUST_SUPPORTS.dup,
-            binding_info: USCore310ProvenanceSequenceDefinitions::BINDINGS.dup
+            must_support_info: USCore311ProvenanceSequenceDefinitions::MUST_SUPPORTS.dup,
+            binding_info: USCore311ProvenanceSequenceDefinitions::BINDINGS.dup
           }
         ]
         test_output_against_profile('Provenance', profile_definitions)
@@ -983,47 +973,6 @@ module Inferno
         end
 
         test_output_against_profile('Medication')
-      end
-
-      test :validate_practitionerrole do
-        metadata do
-          id '24'
-          name 'PractitionerRole resources returned conform to the HL7 FHIR PractitionerRole Specification if bulk data export has PractitionerRole resources'
-          link 'http://hl7.org/fhir/StructureDefinition/PractitionerRole'
-          description %(
-            This test verifies that the resources returned from bulk data export conform to the HL7 FHIR Specification. This includes checking for missing data elements and value set verification.
-            This test is omitted if bulk data export does not return any PractitionerRole resources.
-
-            The following US Core profiles have "Must Support" data elements which reference PractitionerRole resources:
-
-            * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
-            * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
-            * [Provenance](http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance)
-          )
-        end
-
-        test_output_against_profile('PractitionerRole')
-      end
-
-      test :validate_relatedperson do
-        metadata do
-          id '25'
-          name 'RelatedPerson resources returned conform to the HL7 FHIR RelatedPerson Specification if bulk data export has RelatedPerson resources'
-          link 'http://hl7.org/fhir/StructureDefinition/RelatedPerson'
-          description %(
-            This test verifies that the resources returned from bulk data export conform to the HL7 FHIR Specification. This includes checking for missing data elements and value set verification.
-            This test is omitted if bulk data export does not return any RelatedPerson resources.
-
-            The following US Core profiles have "Must Support" data elements which reference RelatedPerson resources:
-
-            * [CareTeam](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam)
-            * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
-            * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
-            * [Provenance](http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance)
-          )
-        end
-
-        test_output_against_profile('RelatedPerson')
       end
     end
   end
