@@ -786,7 +786,7 @@ module Inferno
 
         path_ary = path.split('.')
         cur_path_part = path_ary.shift.to_sym
-        return nil if el_as_array.none? { |el| el.send(cur_path_part).present? }
+        return nil if el_as_array.none? { |el| el.send(cur_path_part).present? || el.send(cur_path_part) == false }
 
         el_as_array.each do |el|
           el_found = if block_given?
