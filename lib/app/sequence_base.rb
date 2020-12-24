@@ -698,6 +698,17 @@ module Inferno
           next if resolved_references.include?(value.reference)
           break if resolved_references.length > max_resolutions
 
+          if value.contained?
+
+            # if reference_id is blank it is referring to itself, so we know it exists
+            next if value.reference_id.blank?
+
+            # otherwise check to make sure the base resource has the contained element
+            valid_contained = resource.contained.any? {|contained_resource| contained_resource&.id == value.reference_id}
+            problems << "#{path} has contained reference to id '#{value.reference_id}' that does not exist" unless valid_contained
+            next
+          end
+
           begin
             # Should potentially update valid? method in fhir_dstu2_models
             # to check for this type of thing
@@ -712,15 +723,15 @@ module Inferno
             end
             reference = value.reference
             reference_type = value.resource_type
-            resource = value.read
+            resolved_resource = value.read
 
-            raise InvalidReferenceResource if resource.resourceType != reference_type
+            raise InvalidReferenceResource if resolved_resource.resourceType != reference_type
 
             resolved_references.add(value.reference)
           rescue ClientException => e
             problems << "#{path} did not resolve: #{e}"
           rescue InvalidReferenceResource
-            problems << "Expected #{reference} to refer to a #{reference_type} resource, but found a #{resource.resourceType} resource."
+            problems << "Expected #{reference} to refer to a #{reference_type} resource, but found a #{resolved_resource.resourceType} resource."
           end
         end
 
