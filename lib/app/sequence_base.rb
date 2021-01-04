@@ -725,13 +725,13 @@ module Inferno
             reference_type = value.resource_type
             resolved_resource = value.read
 
-            raise InvalidReferenceResource if resolved_resource.resourceType != reference_type
+            raise InvalidReferenceResource if resolved_resource&.resourceType != reference_type
 
             resolved_references.add(value.reference)
           rescue ClientException => e
             problems << "#{path} did not resolve: #{e}"
           rescue InvalidReferenceResource
-            problems << "Expected #{reference} to refer to a #{reference_type} resource, but found a #{resolved_resource.resourceType} resource."
+            problems << "Expected #{reference} to refer to a #{reference_type} resource, but found a #{resolved_resource&.resourceType} resource."
           end
         end
 
