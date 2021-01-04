@@ -794,7 +794,7 @@ module Inferno
                      else
                        resolve_element_from_path(el.send(cur_path_part), path_ary.join('.'))
                      end
-          return el_found unless el_found.blank?
+          return el_found if el_found.present? || el_found == false
         end
 
         nil
