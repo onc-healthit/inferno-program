@@ -192,21 +192,51 @@ class SequenceBaseTest < MiniTest::Test
       client = FHIR::Client.for_testing_instance(instance)
 
       @sequence = Inferno::Sequence::SequenceBase.new(instance, client, true)
-      @reference_url = 'Practitioner/123'
-      @reference = FHIR::Reference.new(reference: @reference_url)
-      @resource = FHIR::Patient.new(generalPractitioner: [@reference])
+      @practitioner_reference_url = 'Practitioner/123'
+      @practitioner_reference = FHIR::Reference.new(reference: @practitioner_reference_url)
+      @organization_reference_id = 'organization_reference'
+      @organization_reference = FHIR::Reference.new(reference: "##{@organization_reference_id}")
+      @organization = FHIR::Organization.new(name: 'Contained Organization Reference', id: @organization_reference_id)
+      @resource = FHIR::Patient.new(generalPractitioner: [@practitioner_reference],
+                                    managingOrganization: @organization_reference,
+                                    contained: [@organization])
       @resource.client = client
     end
 
-    it 'raises an error if a reference returns the wrong resource type' do
-      stub_request(:get, "#{@base_url}/#{@reference_url}")
+    it 'raises an error if an external reference returns the wrong resource type' do
+      stub_request(:get, "#{@base_url}/#{@practitioner_reference_url}")
         .to_return(status: 200, body: FHIR::Patient.new.to_json)
 
       assert_raises(Inferno::AssertionException) { @sequence.validate_reference_resolutions(@resource) }
     end
 
-    it 'does not raise an error if a reference returns the correct resource type' do
-      stub_request(:get, "#{@base_url}/#{@reference_url}")
+    it 'raises an error if an external reference does not resolve' do
+      stub_request(:get, "#{@base_url}/#{@practitioner_reference_url}")
+        .to_return(status: 404, body: FHIR::OperationOutcome.new.to_json)
+
+      assert_raises(Inferno::AssertionException) { @sequence.validate_reference_resolutions(@resource) }
+    end
+
+    it 'raises an error if a contained reference does not exist' do
+      invalid_contained_resource = FHIR.from_contents(@resource.to_json)
+      invalid_contained_resource.managingOrganization.reference = '#bad_reference'
+      stub_request(:get, "#{@base_url}/#{@practitioner_reference_url}")
+        .to_return(status: 200, body: FHIR::Practitioner.new.to_json)
+
+      assert_raises(Inferno::AssertionException) { @sequence.validate_reference_resolutions(invalid_contained_resource) }
+    end
+
+    it 'raises an error if contained reference is missing leading #' do
+      malformed_contained_reference = FHIR.from_contents(@resource.to_json)
+      malformed_contained_reference.managingOrganization.reference = @organization_reference_id # no leading "#"
+      stub_request(:get, "#{@base_url}/#{@practitioner_reference_url}")
+        .to_return(status: 200, body: FHIR::Practitioner.new.to_json)
+
+      assert_raises(Inferno::AssertionException) { @sequence.validate_reference_resolutions(malformed_contained_reference) }
+    end
+
+    it 'does not raise an error if an external reference returns the correct resource type and contained reference exists' do
+      stub_request(:get, "#{@base_url}/#{@practitioner_reference_url}")
         .to_return(status: 200, body: FHIR::Practitioner.new.to_json)
 
       @sequence.validate_reference_resolutions(@resource)
