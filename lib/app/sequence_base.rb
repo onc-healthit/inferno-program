@@ -704,7 +704,7 @@ module Inferno
             next if value.reference_id.blank?
 
             # otherwise check to make sure the base resource has the contained element
-            valid_contained = resource.contained.any? {|contained_resource| contained_resource&.id == value.reference_id}
+            valid_contained = resource.contained.any? { |contained_resource| contained_resource&.id == value.reference_id }
             problems << "#{path} has contained reference to id '#{value.reference_id}' that does not exist" unless valid_contained
             next
           end
