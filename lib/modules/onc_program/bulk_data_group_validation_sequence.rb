@@ -357,6 +357,7 @@ module Inferno
 
             # Skip processing the last line since the it may not be complete (still appending from stream)
             next_block = resource_list.pop
+            next_block = String.new if next_block.nil?
 
             resource_list.each do |resource|
               # NDJSON does not specify that empty lines are NOT allowed.
