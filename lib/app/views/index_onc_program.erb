@@ -198,6 +198,23 @@ For alternate installation options, please visit <a href='https://github.com/onc
   </div>
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.4.1</div>
+    <p>
+    The Inferno Program Edition v1.4.1 release fixes two issues that may incorrectly cause systems to fail tests.
+    Systems that passed tests in Inferno Program Edition v1.4.0 should continue to pass in v1.4.1.
+    </p>
+    <p>Updates in this version include:</p>
+    <ul>
+    <li>Fixes issue where systems that use 'contained' references incorrectly produce an error within the Single Patient API tests.</li>
+    <li>Fixes issue where elements with a value of 'false' were not correctly counted during MUST SUPPORT tabluation.</li>
+    <li>Fixes issue that occurs if bulk data response streams back chunk with no body data.</li>
+    </ul>
+    </p>
+  <p>
+
+    Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_4_1.xlsx'>Test Procedure Matrix</a> to view a mapping
+    between Inferno Tests and the 2015 Cures Update Test Procedure.
+  </p>
     <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.4.0</div>
       <p>
       The Inferno Program Edition v1.4.0 release updates tests to reflect changes made to the testing criteria
