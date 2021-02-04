@@ -25,6 +25,20 @@ describe Inferno::Sequence::UsCoreR4CapabilityStatementSequence do
 
       assert test_result.fail?, "Test result should be fail but is #{test_result.result}"
     end
+
+    it 'fail if Content-Type is not application/fhir+json' do
+      stub_request(:get, /metadata/)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/json' }
+        )
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      assert error.message == 'Expected content-type application/fhir+json but found application/json'
+    end
   end
 
   describe 'JSON support test' do

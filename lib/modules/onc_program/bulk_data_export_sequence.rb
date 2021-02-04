@@ -39,6 +39,7 @@ module Inferno
         headers = { accept: 'application/fhir+json' }
         reply = LoggedRestClient.get(url, headers)
         assert_response_ok(reply)
+        assert_response_content_type(reply, 'application/fhir+json')
 
         conformance = versioned_resource_class.from_contents(reply.body)
         assert conformance.present?, 'Cannot read server CapabilityStatement.'

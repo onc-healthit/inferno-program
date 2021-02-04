@@ -146,6 +146,7 @@ module Inferno
         @client.set_no_auth
         @conformance = @client.conformance_statement
         assert_response_ok @client.reply
+        assert_response_content_type(@client.reply, 'application/fhir+json')
 
         assert_valid_conformance
 

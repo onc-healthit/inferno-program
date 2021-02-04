@@ -57,6 +57,7 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
       @sequence = @sequence_class.new(@instance, @client)
       @headers = { accept: 'application/fhir+json' }
       @conformance = load_json_fixture('bulk_data_conformance')
+      @response_headers = { content_type: 'application/fhir+json' }
     end
 
     it 'fail if status code is not 200' do
@@ -71,12 +72,29 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
       assert error.message == 'Bad response code: expected 200, 201, but found 400. '
     end
 
+    it 'fail if Content-Type is not application/fhir+json' do
+      stub_request(:get, @instance.bulk_url + '/metadata')
+        .with(headers: @headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/json' },
+          body: @conformance.to_json
+        )
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.check_capability_statement
+      end
+
+      assert error.message == 'Expected content-type application/fhir+json but found application/json'
+    end
+
     it 'fail if CapabilityStatement does not declare Group resoure' do
       @conformance['rest'][0]['resource'].delete_at(0)
       stub_request(:get, @instance.bulk_url + '/metadata')
         .with(headers: @headers)
         .to_return(
           status: 200,
+          headers: @response_headers,
           body: @conformance.to_json
         )
 
@@ -93,6 +111,7 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
         .with(headers: @headers)
         .to_return(
           status: 200,
+          headers: @response_headers,
           body: @conformance.to_json
         )
 
@@ -109,6 +128,7 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
         .with(headers: @headers)
         .to_return(
           status: 200,
+          headers: @response_headers,
           body: @conformance.to_json
         )
 
@@ -124,6 +144,7 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
         .with(headers: @headers)
         .to_return(
           status: 200,
+          headers: @response_headers,
           body: @conformance.to_json
         )
 
@@ -277,6 +298,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       .with(headers: { accept: 'application/fhir+json' })
       .to_return(
         status: 200,
+        headers: { content_type: 'application/fhir+json' },
         body: @conformance.to_json
       )
   end
