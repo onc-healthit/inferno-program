@@ -248,7 +248,10 @@ bundle exec rake inferno:tests_to_csv[onc_program]
 
 ## Running Tests from the Command Line
 Inferno provides two methods of running tests via the command line: by directly
-providing the sequences or running automated scripts
+providing the sequences or running automated scripts.  You can either run these commands
+within docker containers through `docker-compose`, or directly in your own environment
+using ruby natively.  We recommend using the `docker-compose` approach because it
+ensures that the appropriate validation services are in place.
 
 _Note: This feature is still in development and we are looking for feedback on
 features and improvements in ways it can be used_
@@ -258,17 +261,17 @@ features and improvements in ways it can be used_
 Testing sequences can be run from the command line via a rake task which takes
 the sequence (or sequences) to be run and server url as arguments:
 ```sh
-bundle exec rake inferno:execute[https://my-server.org/data,onc_program,ArgonautConformance]
+docker-compose run inferno bundle exec rake inferno:execute[https://inferno.healthit.gov/reference-server/r4,onc_program,UsCoreR4CapabilityStatement,USCore311Patient]
 ```
 
 ### Running Automated Command Line Interface Scripts
 For more complicated testing where passing arguments is unwieldy, Inferno
 provides the ability to use a script containing parameters to drive test
-execution. The provided `script_example.json` shows an example of this script
+execution. The provided `./batch/inferno.healthit.gov.json` shows an example of this script
 and how it can be used.  The `execute_batch` task runs the script:
 
 ```sh
-bundle exec rake inferno:execute_batch[script.json]
+docker-compose run inferno bundle exec rake inferno:execute_batch[./batch/inferno.healthit.gov.json]
 ```
 
 Inferno also provides a  `generate_script` rake task which prompts the user for
@@ -276,7 +279,7 @@ a series of inputs which are then used to generate a script. The user is
 expected to provide a url for the FHIR Server to be tested and the module name
 from which sequences will be pulled.
 ```sh
-bundle exec rake inferno:generate_script[https://my-server.org/data,onc]
+bundle exec rake inferno:generate_script[https://my-server.org/data,onc_program]
 ```
 
 ## Using with Continuous Integration Systems
