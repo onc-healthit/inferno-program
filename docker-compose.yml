@@ -9,6 +9,8 @@ services:
       - type: bind
         source: "./resources/terminology/validators"
         target: "/var/www/inferno/resources/terminology/validators"
+    depends_on:
+      - validator_service
   validator_service:
     image: infernocommunity/fhir-validator-service:v0.1.1
     environment:
