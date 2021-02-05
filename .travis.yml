@@ -8,7 +8,7 @@ before_install:
   - docker-compose build
 script:
   - bundle exec rake
-  - docker-compose run ruby_server bundle exec rake
+  - docker-compose run inferno bundle exec rake
   - bundle exec rubocop
 notifications:
   email:
