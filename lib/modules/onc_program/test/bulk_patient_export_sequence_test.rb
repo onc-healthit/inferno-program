@@ -60,7 +60,7 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
       @response_headers = { content_type: 'application/fhir+json' }
     end
 
-    it 'fail if status code is not 200' do
+    it 'fails if status code is not 200' do
       stub_request(:get, @instance.bulk_url + '/metadata')
         .to_return(status: 400)
 
@@ -71,7 +71,7 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
       assert error.message == 'Bad response code: expected 200, 201, but found 400. '
     end
 
-    it 'fail if Content-Type is not application/fhir+json' do
+    it 'fails if Content-Type is not application/fhir+json' do
       stub_request(:get, @instance.bulk_url + '/metadata')
         .with(headers: @headers)
         .to_return(
@@ -87,7 +87,7 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
       assert error.message == 'Expected content-type application/fhir+json but found application/json'
     end
 
-    it 'fail if CapabilityStatement does not declare Group resoure' do
+    it 'fails if CapabilityStatement does not declare Group resoure' do
       @conformance['rest'][0]['resource'].delete_at(0)
       stub_request(:get, @instance.bulk_url + '/metadata')
         .with(headers: @headers)
@@ -104,7 +104,7 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
       assert error.message == 'Server CapabilityStatement did not declare support for export operation in Group resource.'
     end
 
-    it 'fail if CapabilityStatement does not declare operation in Group resoure' do
+    it 'fails if CapabilityStatement does not declare operation in Group resoure' do
       @conformance['rest'][0]['resource'][0].delete('operation')
       stub_request(:get, @instance.bulk_url + '/metadata')
         .with(headers: @headers)
@@ -121,7 +121,7 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
       assert error.message == 'Server CapabilityStatement did not declare support for export operation in Group resource.'
     end
 
-    it 'fail if CapabilityStatement does not declare export in Group resoure' do
+    it 'fails if CapabilityStatement does not declare export in Group resoure' do
       @conformance['rest'][0]['resource'][0]['operation'].delete_at(0)
       stub_request(:get, @instance.bulk_url + '/metadata')
         .with(headers: @headers)
@@ -138,7 +138,7 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
       assert error.message == 'Server CapabilityStatement did not declare support for export operation in Group resource.'
     end
 
-    it 'pass if CapabilityStatement declares export in Group resoure' do
+    it 'passes if CapabilityStatement declares export in Group resoure' do
       stub_request(:get, @instance.bulk_url + '/metadata')
         .with(headers: @headers)
         .to_return(
