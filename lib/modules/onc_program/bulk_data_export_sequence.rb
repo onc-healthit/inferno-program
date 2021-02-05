@@ -28,21 +28,10 @@ module Inferno
       end
 
       def check_capability_statement
-        if @instance.bulk_url.present?
-          url = @instance.bulk_url
-          url = url.chop if url.end_with?('/')
-        else
-          url = ''
-        end
-
-        url += '/metadata'
-        headers = { accept: 'application/fhir+json' }
-        reply = LoggedRestClient.get(url, headers)
-        assert_response_ok(reply)
-        assert_response_content_type(reply, 'application/fhir+json')
-
-        conformance = versioned_resource_class.from_contents(reply.body)
-        assert conformance.present?, 'Cannot read server CapabilityStatement.'
+        @client = FHIR::Client.for_testing_instance(@instance, url_property: 'bulk_url')
+        conformance = @client.conformance_statement
+        assert_response_ok @client.reply
+        assert_response_content_type(@client.reply, 'application/fhir+json')
 
         operation = nil
 

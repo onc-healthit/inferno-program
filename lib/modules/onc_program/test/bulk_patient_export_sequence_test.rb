@@ -62,7 +62,6 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
 
     it 'fail if status code is not 200' do
       stub_request(:get, @instance.bulk_url + '/metadata')
-        .with(headers: @headers)
         .to_return(status: 400)
 
       error = assert_raises(Inferno::AssertionException) do
