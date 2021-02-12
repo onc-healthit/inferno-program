@@ -869,7 +869,10 @@ module Inferno
         resources = []
         bundle = reply.resource
         until bundle.nil? || page_count == 20
-          resources += bundle&.entry&.map { |entry| entry&.resource }
+          resources += bundle
+                        &.entry
+                        &.map { |entry| entry&.resource }
+                        &.reject { |resource| resource.resourceType == 'OperationOutcome' }
           next_bundle_link = bundle&.link&.find { |link| link.relation == 'next' }&.url
           reply_handler&.call(reply)
           break if next_bundle_link.blank?
