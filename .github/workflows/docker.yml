@@ -13,6 +13,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build Docker image
-      run: docker-compose build
+      run: |
+        mkdir -p resources/terminology/validators
+        docker-compose build
     - name: Run Tests in Docker
       run: docker-compose run inferno bundle exec rake
