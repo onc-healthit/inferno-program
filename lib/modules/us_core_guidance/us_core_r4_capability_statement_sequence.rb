@@ -115,7 +115,7 @@ module Inferno
         metadata do
           id '02'
           name 'FHIR server supports the conformance interaction'
-          link 'http://hl7.org/fhir/DSTU2/http.html#conformance'
+          link 'http://hl7.org/fhir/R4/http.html#conformance'
           description %(
             The conformance 'whole system' interaction provides a method to get
             the conformance statement for the FHIR server. This test checks that

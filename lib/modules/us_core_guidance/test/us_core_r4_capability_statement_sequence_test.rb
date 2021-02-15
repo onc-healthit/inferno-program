@@ -26,7 +26,7 @@ describe Inferno::Sequence::UsCoreR4CapabilityStatementSequence do
       assert test_result.fail?, "Test result should be fail but is #{test_result.result}"
     end
 
-    it 'fail if Content-Type is not application/fhir+json' do
+    it 'fails if Content-Type is not application/fhir+json' do
       stub_request(:get, /metadata/)
         .to_return(
           status: 200,
