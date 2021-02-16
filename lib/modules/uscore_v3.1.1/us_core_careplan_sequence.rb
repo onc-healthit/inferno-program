@@ -175,6 +175,9 @@ module Inferno
 
             @resources_found = true
             resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert(resources_returned.all? { |resource| ['CarePlan', 'OperationOutcome'].include? resource.resourceType },
+                   'All resources returned must be of the type CarePlan or OperationOutcome')
+            resources_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
             @care_plan = resources_returned.first
             @care_plan_ary[patient] += resources_returned
 
@@ -197,6 +200,9 @@ module Inferno
             assert_response_ok(reply)
             assert_bundle_response(reply)
             search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert(search_with_type.all? { |resource| ['CarePlan', 'OperationOutcome'].include? resource.resourceType },
+                   'All resources returned must be of the type CarePlan or OperationOutcome.')
+            search_with_type.reject! { |resource| resource.resourceType == 'OperationOutcome' }
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
             search_query_variants_tested_once = true
@@ -239,6 +245,10 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
 
           validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['CarePlan', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type CarePlan or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           value_with_system = get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'category'), true)
           token_with_system_search_params = search_params.merge('category': value_with_system)

@@ -130,7 +130,11 @@ module Inferno
 
           next unless any_resources
 
-          @device_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Device', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Device or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+          @device_ary[patient] = resource_returned
 
           @device_ary[patient], non_implantable_devices = @device_ary[patient].partition do |resource|
             device_codes = @instance&.device_codes&.split(',')&.map(&:strip)
@@ -156,6 +160,9 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
           search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(search_with_type.all? { |resource| ['Device', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Device or OperationOutcome')
+          search_with_type.reject! { |resource| resource.resourceType == 'OperationOutcome' }
           assert search_with_type.length == @device_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
         end
 
@@ -195,6 +202,10 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
 
           validate_search_reply(versioned_resource_class('Device'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Device', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Device or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           value_with_system = get_value_for_search_param(resolve_element_from_path(@device_ary[patient], 'type'), true)
           token_with_system_search_params = search_params.merge('type': value_with_system)

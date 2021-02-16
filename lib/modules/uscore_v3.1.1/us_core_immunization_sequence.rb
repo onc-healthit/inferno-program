@@ -160,7 +160,11 @@ module Inferno
 
           next unless any_resources
 
-          @immunization_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Immunization', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Immunization or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+          @immunization_ary[patient] = resource_returned
 
           @immunization = @immunization_ary[patient]
             .find { |resource| resource.resourceType == 'Immunization' }
@@ -175,6 +179,9 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
           search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(search_with_type.all? { |resource| ['Immunization', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Immunization or OperationOutcome')
+          search_with_type.reject! { |resource| resource.resourceType == 'OperationOutcome' }
           assert search_with_type.length == @immunization_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
         end
 
@@ -220,6 +227,10 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Immunization', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Immunization or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           ['gt', 'ge', 'lt', 'le'].each do |comparator|
             comparator_val = date_comparator_value(comparator, resolve_element_from_path(@immunization_ary[patient], 'occurrence') { |el| get_value_for_search_param(el).present? })
@@ -265,6 +276,10 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
 
           validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Immunization', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Immunization or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
         end
 
         skip 'Could not resolve all parameters (patient, status) in any resource.' unless resolved_one

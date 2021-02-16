@@ -210,6 +210,9 @@ module Inferno
 
             @resources_found = true
             resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert(resources_returned.all? { |resource| ['MedicationRequest', 'OperationOutcome'].include? resource.resourceType },
+                   'All resources returned must be of the type MedicationRequest or OperationOutcome')
+            resources_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
             @medication_request = resources_returned.first
             @medication_request_ary[patient] += resources_returned
 
@@ -227,6 +230,9 @@ module Inferno
             assert_response_ok(reply)
             assert_bundle_response(reply)
             search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert(search_with_type.all? { |resource| ['MedicationRequest', 'OperationOutcome'].include? resource.resourceType },
+                   'All resources returned must be of the type MedicationRequest or OperationOutcome.')
+            search_with_type.reject! { |resource| resource.resourceType == 'OperationOutcome' }
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
             test_medication_inclusion(@medication_request_ary[patient], search_params)
@@ -274,7 +280,11 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
 
           validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-          test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['MedicationRequest', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type MedicationRequest or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+          test_medication_inclusion(resource_returned, search_params)
         end
 
         skip 'Could not resolve all parameters (patient, intent, status) in any resource.' unless resolved_one
@@ -320,7 +330,11 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-          test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['MedicationRequest', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type MedicationRequest or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+          test_medication_inclusion(resource_returned, search_params)
         end
 
         skip 'Could not resolve all parameters (patient, intent, encounter) in any resource.' unless resolved_one
@@ -370,7 +384,11 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-          test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['MedicationRequest', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type MedicationRequest or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+          test_medication_inclusion(resource_returned, search_params)
         end
 
         skip 'Could not resolve all parameters (patient, intent, authoredon) in any resource.' unless resolved_one

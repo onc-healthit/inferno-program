@@ -155,6 +155,9 @@ module Inferno
 
             @resources_found = true
             resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert(resources_returned.all? { |resource| ['CareTeam', 'OperationOutcome'].include? resource.resourceType },
+                   'All resources returned must be of the type CareTeam or OperationOutcome')
+            resources_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
             @care_team = resources_returned.first
             @care_team_ary[patient] += resources_returned
 
@@ -170,6 +173,9 @@ module Inferno
             assert_response_ok(reply)
             assert_bundle_response(reply)
             search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert(search_with_type.all? { |resource| ['CareTeam', 'OperationOutcome'].include? resource.resourceType },
+                   'All resources returned must be of the type CareTeam or OperationOutcome.')
+            search_with_type.reject! { |resource| resource.resourceType == 'OperationOutcome' }
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
             search_query_variants_tested_once = true

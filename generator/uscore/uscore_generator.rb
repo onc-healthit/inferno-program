@@ -422,7 +422,11 @@ module Inferno
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               #{status_search_code(sequence, search_param[:names])}
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-              #{'test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)' if sequence[:resource] == 'MedicationRequest'}
+              resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              assert(resource_returned.all? { |resource| ['#{sequence[:resource]}', 'OperationOutcome'].include? resource.resourceType },
+                'All resources returned must be of the type #{sequence[:resource]} or OperationOutcome')
+              resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome'}
+              #{'test_medication_inclusion(resource_returned, search_params)' if sequence[:resource] == 'MedicationRequest'}
               #{comparator_search_code}
               #{token_system_search_code}
             )
@@ -1008,7 +1012,11 @@ module Inferno
 
               next unless any_resources
 
-              @#{sequence[:resource].underscore}_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              assert(resource_returned.all? { |resource| ['#{sequence[:resource]}', 'OperationOutcome'].include? resource.resourceType },
+                'All resources returned must be of the type #{sequence[:resource]} or OperationOutcome')
+              resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome'}
+              @#{sequence[:resource].underscore}_ary[patient] = resource_returned
           )
 
           if sequence[:resource] == 'Device'
@@ -1032,6 +1040,9 @@ module Inferno
             assert_response_ok(reply)
             assert_bundle_response(reply)
             search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert(search_with_type.all? { |resource| ['#{sequence[:resource]}', 'OperationOutcome'].include? resource.resourceType },
+              'All resources returned must be of the type #{sequence[:resource]} or OperationOutcome')
+            search_with_type.reject! { |resource| resource.resourceType == 'OperationOutcome'}
             assert search_with_type.length == @#{sequence[:resource].underscore}_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
           )
 
@@ -1093,6 +1104,9 @@ module Inferno
 
               @resources_found = true
               resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              assert(resources_returned.all? { |resource| ['#{sequence[:resource]}', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type #{sequence[:resource]} or OperationOutcome' )
+              resources_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
               @#{sequence[:resource].underscore} = resources_returned.first
               @#{sequence[:resource].underscore}_ary[patient] += resources_returned
 
@@ -1109,6 +1123,9 @@ module Inferno
               assert_response_ok(reply)
               assert_bundle_response(reply)
               search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              assert(search_with_type.all? { |resource| ['#{sequence[:resource]}', 'OperationOutcome'].include? resource.resourceType },
+                'All resources returned must be of the type #{sequence[:resource]} or OperationOutcome.')
+              search_with_type.reject! { |resource| resource.resourceType == 'OperationOutcome' }
               assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
               #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}

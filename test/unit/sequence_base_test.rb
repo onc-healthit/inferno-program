@@ -254,7 +254,7 @@ class SequenceBaseTest < MiniTest::Test
       @sequence = Inferno::Sequence::SequenceBase.new(instance, client, true)
     end
 
-    it 'returns non-OperationOutcome resources from all bundles' do
+    it 'returns resources from all bundles' do
       stub_request(:get, @bundle1.link.first.url)
         .to_return(body: @bundle2)
 

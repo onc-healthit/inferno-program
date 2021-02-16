@@ -160,7 +160,11 @@ module Inferno
 
           next unless any_resources
 
-          @goal_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Goal', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Goal or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+          @goal_ary[patient] = resource_returned
 
           @goal = @goal_ary[patient]
             .find { |resource| resource.resourceType == 'Goal' }
@@ -175,6 +179,9 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
           search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(search_with_type.all? { |resource| ['Goal', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Goal or OperationOutcome')
+          search_with_type.reject! { |resource| resource.resourceType == 'OperationOutcome' }
           assert search_with_type.length == @goal_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
         end
 
@@ -214,6 +221,10 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
 
           validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Goal', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Goal or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
         end
 
         skip 'Could not resolve all parameters (patient, lifecycle-status) in any resource.' unless resolved_one

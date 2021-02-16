@@ -162,7 +162,11 @@ module Inferno
 
           next unless any_resources
 
-          @patient_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Patient', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Patient or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+          @patient_ary[patient] = resource_returned
 
           @patient = @patient_ary[patient]
             .find { |resource| resource.resourceType == 'Patient' }
@@ -207,6 +211,10 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
 
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Patient', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Patient or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           value_with_system = get_value_for_search_param(resolve_element_from_path(@patient_ary[patient], 'identifier'), true)
           token_with_system_search_params = search_params.merge('identifier': value_with_system)
@@ -248,6 +256,10 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
 
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Patient', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Patient or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
         end
 
         skip 'Could not resolve all parameters (name) in any resource.' unless resolved_one
@@ -285,6 +297,10 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
 
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Patient', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Patient or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
         end
 
         skip 'Could not resolve all parameters (birthdate, name) in any resource.' unless resolved_one
@@ -322,6 +338,10 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
 
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Patient', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Patient or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
         end
 
         skip 'Could not resolve all parameters (gender, name) in any resource.' unless resolved_one
@@ -360,6 +380,10 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
 
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Patient', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Patient or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
         end
 
         skip 'Could not resolve all parameters (birthdate, family) in any resource.' unless resolved_one
@@ -398,6 +422,10 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Patient'), search_params)
 
           validate_search_reply(versioned_resource_class('Patient'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Patient', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Patient or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
         end
 
         skip 'Could not resolve all parameters (family, gender) in any resource.' unless resolved_one

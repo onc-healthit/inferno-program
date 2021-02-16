@@ -108,7 +108,25 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
       assert_match(/Invalid \w+:/, exception.message)
     end
 
+    it 'fails if the bundle contains a resource which is not the searched for resource nor an OperationOutcome' do
+      ['proposal', 'plan', 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order', 'option'].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          'intent': value
+        }
+        stub_request(:get, "#{@base_url}/MedicationRequest")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::MedicationRequest.new, FHIR::Specimen.new]).to_json)
+      end
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'All resources returned must be of the type MedicationRequest or OperationOutcome', exception.message
+    end
+
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      operation_outcome = FHIR.from_contents(load_fixture(:operationoutcome_example))
+
       ['proposal', 'plan', 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order', 'option'].each do |value|
         query_params = {
           'patient': @sequence.patient_ids.first,
@@ -116,7 +134,7 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
         }
         body =
           if @sequence.resolve_element_from_path(@medication_request, 'intent') == value
-            wrap_resources_in_bundle([@medication_request]).to_json
+            wrap_resources_in_bundle([@medication_request, operation_outcome]).to_json
           else
             FHIR::Bundle.new.to_json
           end
@@ -338,9 +356,11 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
     end
 
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      operation_outcome = FHIR.from_contents(load_fixture(:operationoutcome_example))
+
       stub_request(:get, "#{@base_url}/MedicationRequest")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@medication_request_ary.values.flatten).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@medication_request_ary.values.flatten.append(operation_outcome)).to_json)
 
       @sequence.run_test(@test)
     end
@@ -449,9 +469,11 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
     end
 
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      operation_outcome = FHIR.from_contents(load_fixture(:operationoutcome_example))
+
       stub_request(:get, "#{@base_url}/MedicationRequest")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@medication_request_ary.values.flatten).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@medication_request_ary.values.flatten.append(operation_outcome)).to_json)
 
       @sequence.run_test(@test)
     end
@@ -623,9 +645,11 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
     end
 
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      operation_outcome = FHIR.from_contents(load_fixture(:operationoutcome_example))
+
       stub_request(:get, "#{@base_url}/MedicationRequest")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@medication_request_ary.values.flatten).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@medication_request_ary.values.flatten.append(operation_outcome)).to_json)
 
       @sequence.run_test(@test)
     end

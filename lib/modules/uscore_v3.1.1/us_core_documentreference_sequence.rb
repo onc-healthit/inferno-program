@@ -202,7 +202,11 @@ module Inferno
 
           next unless any_resources
 
-          @document_reference_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['DocumentReference', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type DocumentReference or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+          @document_reference_ary[patient] = resource_returned
 
           @document_reference = @document_reference_ary[patient]
             .find { |resource| resource.resourceType == 'DocumentReference' }
@@ -217,6 +221,9 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
           search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(search_with_type.all? { |resource| ['DocumentReference', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type DocumentReference or OperationOutcome')
+          search_with_type.reject! { |resource| resource.resourceType == 'OperationOutcome' }
           assert search_with_type.length == @document_reference_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
         end
 
@@ -256,6 +263,10 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['DocumentReference', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type DocumentReference or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
         end
 
         skip 'Could not resolve all parameters (_id) in any resource.' unless resolved_one
@@ -295,6 +306,10 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['DocumentReference', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type DocumentReference or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           value_with_system = get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'type'), true)
           token_with_system_search_params = search_params.merge('type': value_with_system)
@@ -344,6 +359,10 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['DocumentReference', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type DocumentReference or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           value_with_system = get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'category'), true)
           token_with_system_search_params = search_params.merge('category': value_with_system)
@@ -388,6 +407,10 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['DocumentReference', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type DocumentReference or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           value_with_system = get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'category'), true)
           token_with_system_search_params = search_params.merge('category': value_with_system)
@@ -438,6 +461,10 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['DocumentReference', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type DocumentReference or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           ['gt', 'ge', 'lt', 'le'].each do |comparator|
             comparator_val = date_comparator_value(comparator, resolve_element_from_path(@document_reference_ary[patient], 'context.period') { |el| get_value_for_search_param(el).present? })
@@ -488,6 +515,10 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
 
           validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['DocumentReference', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type DocumentReference or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
         end
 
         skip 'Could not resolve all parameters (patient, status) in any resource.' unless resolved_one

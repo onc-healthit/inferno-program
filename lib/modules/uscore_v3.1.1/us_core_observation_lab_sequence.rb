@@ -190,6 +190,9 @@ module Inferno
 
             @resources_found = true
             resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert(resources_returned.all? { |resource| ['Observation', 'OperationOutcome'].include? resource.resourceType },
+                   'All resources returned must be of the type Observation or OperationOutcome')
+            resources_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
             @observation = resources_returned.first
             @observation_ary[patient] += resources_returned
 
@@ -212,6 +215,9 @@ module Inferno
             assert_response_ok(reply)
             assert_bundle_response(reply)
             search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert(search_with_type.all? { |resource| ['Observation', 'OperationOutcome'].include? resource.resourceType },
+                   'All resources returned must be of the type Observation or OperationOutcome.')
+            search_with_type.reject! { |resource| resource.resourceType == 'OperationOutcome' }
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
             search_query_variants_tested_once = true
@@ -254,6 +260,10 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Observation', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Observation or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code'), true)
           token_with_system_search_params = search_params.merge('code': value_with_system)
@@ -303,6 +313,10 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Observation', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Observation or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           ['gt', 'ge', 'lt', 'le'].each do |comparator|
             comparator_val = date_comparator_value(comparator, resolve_element_from_path(@observation_ary[patient], 'effective') { |el| get_value_for_search_param(el).present? })
@@ -354,6 +368,10 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
 
           validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Observation', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Observation or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category'), true)
           token_with_system_search_params = search_params.merge('category': value_with_system)
@@ -404,6 +422,10 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Observation', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Observation or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           ['gt', 'ge', 'lt', 'le'].each do |comparator|
             comparator_val = date_comparator_value(comparator, resolve_element_from_path(@observation_ary[patient], 'effective') { |el| get_value_for_search_param(el).present? })

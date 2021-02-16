@@ -524,7 +524,7 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
 
-        entries = fetch_all_bundled_resources(reply).select { |entry| entry.class == klass }
+        entries = fetch_all_bundled_resources(reply).select { |entry| entry.class == klass }.reject { |resource| resource.resourceType == 'OperationOutcome' }
         validate_reply_entries(entries, search_params)
         assert entries.present?, 'No resources of this type were returned'
       end
@@ -869,10 +869,7 @@ module Inferno
         resources = []
         bundle = reply.resource
         until bundle.nil? || page_count == 20
-          resources += bundle
-                        &.entry
-                        &.map { |entry| entry&.resource }
-                        &.reject { |resource| resource.resourceType == 'OperationOutcome' }
+          resources += bundle&.entry&.map { |entry| entry&.resource }
           next_bundle_link = bundle&.link&.find { |link| link.relation == 'next' }&.url
           reply_handler&.call(reply)
           break if next_bundle_link.blank?

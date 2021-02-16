@@ -193,7 +193,11 @@ module Inferno
 
           next unless any_resources
 
-          @condition_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Condition', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Condition or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+          @condition_ary[patient] = resource_returned
 
           @condition = @condition_ary[patient]
             .find { |resource| resource.resourceType == 'Condition' }
@@ -208,6 +212,9 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
           search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(search_with_type.all? { |resource| ['Condition', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Condition or OperationOutcome')
+          search_with_type.reject! { |resource| resource.resourceType == 'OperationOutcome' }
           assert search_with_type.length == @condition_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
         end
 
@@ -249,6 +256,10 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Condition', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Condition or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           value_with_system = get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'category'), true)
           token_with_system_search_params = search_params.merge('category': value_with_system)
@@ -292,6 +303,10 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Condition'), search_params)
 
           validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Condition', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Condition or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           value_with_system = get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'clinicalStatus'), true)
           token_with_system_search_params = search_params.merge('clinical-status': value_with_system)
@@ -337,6 +352,10 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('Condition'), reply, search_params)
+          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resource_returned.all? { |resource| ['Condition', 'OperationOutcome'].include? resource.resourceType },
+                 'All resources returned must be of the type Condition or OperationOutcome')
+          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           value_with_system = get_value_for_search_param(resolve_element_from_path(@condition_ary[patient], 'code'), true)
           token_with_system_search_params = search_params.merge('code': value_with_system)

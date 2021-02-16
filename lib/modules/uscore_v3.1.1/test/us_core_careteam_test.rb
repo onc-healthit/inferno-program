@@ -108,7 +108,25 @@ describe Inferno::Sequence::USCore311CareteamSequence do
       assert_match(/Invalid \w+:/, exception.message)
     end
 
+    it 'fails if the bundle contains a resource which is not the searched for resource nor an OperationOutcome' do
+      ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error'].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          'status': value
+        }
+        stub_request(:get, "#{@base_url}/CareTeam")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::CareTeam.new, FHIR::Specimen.new]).to_json)
+      end
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'All resources returned must be of the type CareTeam or OperationOutcome', exception.message
+    end
+
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      operation_outcome = FHIR.from_contents(load_fixture(:operationoutcome_example))
+
       ['proposed', 'active', 'suspended', 'inactive', 'entered-in-error'].each do |value|
         query_params = {
           'patient': @sequence.patient_ids.first,
@@ -116,7 +134,7 @@ describe Inferno::Sequence::USCore311CareteamSequence do
         }
         body =
           if @sequence.resolve_element_from_path(@care_team, 'status') == value
-            wrap_resources_in_bundle([@care_team]).to_json
+            wrap_resources_in_bundle([@care_team, operation_outcome]).to_json
           else
             FHIR::Bundle.new.to_json
           end
