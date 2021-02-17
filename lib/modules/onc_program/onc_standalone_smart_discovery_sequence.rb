@@ -48,6 +48,18 @@ module Inferno
         @instance.onc_sl_oauth_authorize_endpoint = oauth_authorize_endpoint
         @instance.save!
       end
+
+      def self.required_smart_capabilities
+        [
+          'launch-standalone',
+          'client-public',
+          'client-confidential-symmetric',
+          'sso-openid-connect',
+          'context-standalone-patient',
+          'permission-offline',
+          'permission-patient'
+        ]
+      end
     end
   end
 end

@@ -47,7 +47,27 @@ module Inferno
         # run after the oauth endpoints are saved
       end
 
-      REQUIRED_SMART_CAPABILITIES = [
+      # Only require EHR launch related capabilities
+      # A separate sequence handles standalone launch
+
+      def self.required_smart_capabilities
+        [
+          'launch-ehr',
+          'client-confidential-symmetric',
+          'sso-openid-connect',
+          'context-banner',
+          'context-style',
+          'context-ehr-patient',
+          'permission-offline',
+          'permission-user'
+        ]
+      end
+
+      def required_smart_capabilities
+        self.class.required_smart_capabilities
+      end
+
+      SMART_CAPABILITIES = [
         'launch-ehr',
         'launch-standalone',
         'client-public',
@@ -267,7 +287,7 @@ module Inferno
           description %(
             A SMART on FHIR server SHALL convey its capabilities to app
             developers by listing a set of the capabilities. The following
-            capabilities are required: #{REQUIRED_SMART_CAPABILITIES.join(', ')}
+            capabilities are required: #{OncSMARTDiscoverySequence.required_smart_capabilities.join(', ')}
           )
         end
 
@@ -276,7 +296,7 @@ module Inferno
         capabilities = @well_known_configuration['capabilities']
         assert capabilities.is_a?(Array), 'The well-known capabilities are not an array'
 
-        missing_capabilities = REQUIRED_SMART_CAPABILITIES - capabilities
+        missing_capabilities = required_smart_capabilities - capabilities
         assert missing_capabilities.empty?, "The following required capabilities are missing: #{missing_capabilities.join(', ')}"
       end
     end

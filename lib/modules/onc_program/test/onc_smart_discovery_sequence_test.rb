@@ -9,6 +9,18 @@ describe Inferno::Sequence::OncSMARTDiscoverySequence do
     @instance = Inferno::Models::TestingInstance.new
   end
 
+  it 'must require a a subset of all capabilities' do
+    # Our ONC program tests allow for multiple endpoints, so we cannot require
+    # all capabilities to be supported by all endpoints.  This test ensures our
+    # test only requires a subset.
+
+    all_capabilities = @sequence_class::SMART_CAPABILITIES.to_set
+    required_capabilities = @sequence_class.required_smart_capabilities.to_set
+
+    assert required_capabilities.include? 'launch-ehr'
+    assert required_capabilities.proper_subset?(all_capabilities)
+  end
+
   describe 'required capabilities test' do
     before do
       @test = @sequence_class[:required_capabilities]
@@ -32,8 +44,8 @@ describe Inferno::Sequence::OncSMARTDiscoverySequence do
     end
 
     it 'fails if a required capability is missing' do
-      @sequence_class::REQUIRED_SMART_CAPABILITIES.each do |capability|
-        capabilities = @sequence_class::REQUIRED_SMART_CAPABILITIES.dup
+      @sequence_class.required_smart_capabilities.each do |capability|
+        capabilities = @sequence_class.required_smart_capabilities.dup
         capabilities.delete(capability)
 
         @sequence.instance_variable_set(:@well_known_configuration, 'capabilities' => capabilities)
@@ -45,7 +57,14 @@ describe Inferno::Sequence::OncSMARTDiscoverySequence do
     end
 
     it 'succeeds if all required capabilities are present' do
-      capabilities = @sequence_class::REQUIRED_SMART_CAPABILITIES
+      capabilities = @sequence_class.required_smart_capabilities
+      @sequence.instance_variable_set(:@well_known_configuration, 'capabilities' => capabilities)
+
+      @sequence.run_test(@test)
+    end
+
+    it 'succeeds if all capabilities are present' do
+      capabilities = @sequence_class::SMART_CAPABILITIES
       @sequence.instance_variable_set(:@well_known_configuration, 'capabilities' => capabilities)
 
       @sequence.run_test(@test)
