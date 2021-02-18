@@ -52,7 +52,7 @@ describe Inferno::Sequence::OncSMARTDiscoverySequence do
 
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-        assert_equal "The following required capabilities are missing: #{capability}", exception.message
+        assert_equal "The following capabilities required for this scenario are missing: #{capability}", exception.message
       end
     end
 
