@@ -221,10 +221,6 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Goal'), search_params)
 
           validate_search_reply(versioned_resource_class('Goal'), reply, search_params)
-          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          assert(resource_returned.all? { |resource| ['Goal', 'OperationOutcome'].include? resource.resourceType },
-                 'All resources returned must be of the type Goal or OperationOutcome')
-          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
         end
 
         skip 'Could not resolve all parameters (patient, lifecycle-status) in any resource.' unless resolved_one

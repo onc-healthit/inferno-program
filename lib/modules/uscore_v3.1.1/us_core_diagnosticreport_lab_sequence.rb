@@ -256,10 +256,6 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
-          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          assert(resource_returned.all? { |resource| ['DiagnosticReport', 'OperationOutcome'].include? resource.resourceType },
-                 'All resources returned must be of the type DiagnosticReport or OperationOutcome')
-          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
         end
       end
 
@@ -302,10 +298,6 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
-          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          assert(resource_returned.all? { |resource| ['DiagnosticReport', 'OperationOutcome'].include? resource.resourceType },
-                 'All resources returned must be of the type DiagnosticReport or OperationOutcome')
-          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           ['gt', 'ge', 'lt', 'le'].each do |comparator|
             comparator_val = date_comparator_value(comparator, resolve_element_from_path(@diagnostic_report_ary[patient], 'effective') { |el| get_value_for_search_param(el).present? })
@@ -357,10 +349,6 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
-          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          assert(resource_returned.all? { |resource| ['DiagnosticReport', 'OperationOutcome'].include? resource.resourceType },
-                 'All resources returned must be of the type DiagnosticReport or OperationOutcome')
-          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           value_with_system = get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary[patient], 'code'), true)
           token_with_system_search_params = search_params.merge('code': value_with_system)
@@ -404,10 +392,6 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), search_params)
 
           validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
-          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          assert(resource_returned.all? { |resource| ['DiagnosticReport', 'OperationOutcome'].include? resource.resourceType },
-                 'All resources returned must be of the type DiagnosticReport or OperationOutcome')
-          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
         end
 
         skip 'Could not resolve all parameters (patient, status) in any resource.' unless resolved_one
@@ -453,10 +437,6 @@ module Inferno
           reply = perform_search_with_status(reply, search_params) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
-          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          assert(resource_returned.all? { |resource| ['DiagnosticReport', 'OperationOutcome'].include? resource.resourceType },
-                 'All resources returned must be of the type DiagnosticReport or OperationOutcome')
-          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           ['gt', 'ge', 'lt', 'le'].each do |comparator|
             comparator_val = date_comparator_value(comparator, resolve_element_from_path(@diagnostic_report_ary[patient], 'effective') { |el| get_value_for_search_param(el).present? })

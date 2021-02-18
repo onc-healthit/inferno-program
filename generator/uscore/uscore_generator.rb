@@ -422,11 +422,7 @@ module Inferno
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               #{status_search_code(sequence, search_param[:names])}
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-              resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-              assert(resource_returned.all? { |resource| ['#{sequence[:resource]}', 'OperationOutcome'].include? resource.resourceType },
-                'All resources returned must be of the type #{sequence[:resource]} or OperationOutcome')
-              resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome'}
-              #{'test_medication_inclusion(resource_returned, search_params)' if sequence[:resource] == 'MedicationRequest'}
+              #{check_medication_inclusion if sequence[:resource] == 'MedicationRequest'}
               #{comparator_search_code}
               #{token_system_search_code}
             )
@@ -1228,6 +1224,16 @@ module Inferno
           comparators = param_info[:comparators].select { |_comparator, expectation| ['SHALL', 'SHOULD'].include? expectation }
           param_comparators[param] = comparators if comparators.present?
         end
+      end
+
+      def check_medication_inclusion
+        %(
+          resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resources_returned.all? { |resource| ['MedicationRequest', 'OperationOutcome'].include? resource.resourceType },
+              'All resources returned must be of the type MedicationRequest or OperationOutcome' )
+          resources_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+          test_medication_inclusion(resources_returned, search_params)
+        )
       end
 
       def skip_if_not_found_code(sequence)

@@ -202,10 +202,6 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
 
           validate_search_reply(versioned_resource_class('Device'), reply, search_params)
-          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          assert(resource_returned.all? { |resource| ['Device', 'OperationOutcome'].include? resource.resourceType },
-                 'All resources returned must be of the type Device or OperationOutcome')
-          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
 
           value_with_system = get_value_for_search_param(resolve_element_from_path(@device_ary[patient], 'type'), true)
           token_with_system_search_params = search_params.merge('type': value_with_system)
