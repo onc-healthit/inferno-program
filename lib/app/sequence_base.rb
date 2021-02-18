@@ -524,7 +524,8 @@ module Inferno
         assert_response_ok(reply)
         assert_bundle_response(reply)
         entries = fetch_all_bundled_resources(reply)
-        assert entries.all? { |entry| entry.class == klass || entry.class == FHIR::OperationOutcome }
+        assert(entries.all? { |entry| entry.class == klass || entry.class == FHIR::OperationOutcome },
+               "All resources returned must be of the type #{klass.to_s.demodulize} or OperationOutcome")
         validate_reply_entries(entries.reject { |entry| entry.class == FHIR::OperationOutcome }, search_params)
         assert entries.present?, 'No resources of this type were returned'
       end
