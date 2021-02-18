@@ -286,8 +286,10 @@ module Inferno
           link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#core-capabilities'
           description %(
             A SMART on FHIR server SHALL convey its capabilities to app
-            developers by listing a set of the capabilities. The following
-            capabilities are required: #{OncSMARTDiscoverySequence.required_smart_capabilities.join(', ')}
+            developers by listing the SMART core capabilities supported by
+            their implementation within the Well-known configuration file.
+            This test ensures that the capabilities required by this scenario
+            are properly documented in the Well-known file.
           )
         end
 
@@ -297,7 +299,7 @@ module Inferno
         assert capabilities.is_a?(Array), 'The well-known capabilities are not an array'
 
         missing_capabilities = required_smart_capabilities - capabilities
-        assert missing_capabilities.empty?, "The following required capabilities are missing: #{missing_capabilities.join(', ')}"
+        assert missing_capabilities.empty?, "The following capabilities required for this scenario are missing: #{missing_capabilities.join(', ')}"
       end
     end
   end
