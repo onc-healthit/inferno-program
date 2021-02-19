@@ -264,6 +264,23 @@ describe Inferno::Sequence::USCore311PatientSequence do
 
       @sequence.run_test(@test)
     end
+
+    it 'succeeds when name has comma in text' do
+      # remove patient's family name and give name so that
+      # inferno has to use the name.text for search
+      @patient.name.first.family = nil
+      @patient.name.first.given = nil
+
+      @query = {
+        'name': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@patient_ary[@sequence.patient_ids.first], 'name'))
+      }
+
+      stub_request(:get, "#{@base_url}/Patient")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@patient_ary.values.flatten).to_json)
+
+      @sequence.run_test(@test)
+    end
   end
 
   describe 'Patient search by birthdate+name test' do
