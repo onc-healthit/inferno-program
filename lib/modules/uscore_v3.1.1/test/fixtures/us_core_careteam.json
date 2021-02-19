@@ -54,6 +54,16 @@
     {
       "role": [
         {
+          "text": "Healthcare Proxy"
+        }
+      ],
+      "member": {
+        "reference": "#199951"
+      }
+    },
+    {
+      "role": [
+        {
           "coding": [
             {
               "system": "http://snomed.info/sct",
@@ -67,6 +77,54 @@
         "reference": "Patient/example",
         "display": "Amy V. Shaw"
       }
+    }
+  ],
+  "contained": [
+    {
+      "resourceType": "RelatedPerson",
+      "id": "199951",
+      "patient": {
+        "reference": "Patient/75C0BB942A5F475D8F931C2B1A3A04A4",
+        "display": "Elson,Carmine-CareTeam Theresia"
+      },
+      "relationship": [
+        {
+          "text": "Oth"
+        }
+      ],
+      "name": [
+        {
+          "use": "official",
+          "text": "Stalone,Rick",
+          "family": "Stalone",
+          "given": [
+            "Rick"
+          ]
+        }
+      ]
+    },
+    {
+      "resourceType": "RelatedPerson",
+      "id": "199952",
+      "patient": {
+        "reference": "Patient/75C0BB942A5F475D8F931C2B1A3A04A4",
+        "display": "Elson,Carmine-CareTeam Theresia"
+      },
+      "relationship": [
+        {
+          "text": "Oth"
+        }
+      ],
+      "name": [
+        {
+          "use": "official",
+          "text": "Stalone,Bobbie",
+          "family": "Stalone",
+          "given": [
+            "Bobbie"
+          ]
+        }
+      ]
     }
   ]
 }

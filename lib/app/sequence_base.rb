@@ -745,7 +745,7 @@ module Inferno
           delayed_sequence_references.each do |delayed_sequence_reference|
             reference_elements = resolve_path(resource, delayed_sequence_reference[:path])
             reference_elements.each do |reference|
-              next unless reference.is_a? FHIR::Reference
+              next if !(reference.is_a? FHIR::Reference) || reference.contained?
 
               resource_class = reference.resource_class.name.demodulize
               is_delayed = delayed_sequence_reference[:resources].include?(resource_class)
