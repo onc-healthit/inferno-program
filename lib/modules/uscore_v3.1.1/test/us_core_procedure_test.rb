@@ -86,11 +86,11 @@ describe Inferno::Sequence::USCore311ProcedureSequence do
     it 'fails if the bundle contains a resource which is not the searched for resource nor an OperationOutcome' do
       stub_request(:get, "#{@base_url}/Procedure")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::Procedure.new, FHIR::Specimen.new]).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::Procedure.new, FHIR::Specimen.new, FHIR::PaymentNotice.new]).to_json)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'All resources returned must be of the type Procedure or OperationOutcome', exception.message
+      assert_equal 'All resources returned must be of the type Procedure or OperationOutcome, but includes Specimen, PaymentNotice', exception.message
     end
 
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do

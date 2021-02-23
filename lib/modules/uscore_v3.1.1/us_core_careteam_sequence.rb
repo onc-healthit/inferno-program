@@ -155,14 +155,17 @@ module Inferno
 
             @resources_found = true
             resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-            assert(resources_returned.all? { |resource| ['CareTeam', 'OperationOutcome'].include? resource.resourceType },
-                   'All resources returned must be of the type CareTeam or OperationOutcome')
-            resources_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+            types_in_response = Set.new(resources_returned.map { |resource| resource&.resourceType })
+            resources_returned.select! { |resource| resource.resourceType == 'CareTeam' }
             @care_team = resources_returned.first
             @care_team_ary[patient] += resources_returned
 
             save_resource_references(versioned_resource_class('CareTeam'), @care_team_ary[patient])
             save_delayed_sequence_references(resources_returned, USCore311CareteamSequenceDefinitions::DELAYED_REFERENCES)
+
+            invalid_types_in_response = types_in_response - Set.new(['CareTeam', 'OperationOutcome'])
+            assert(invalid_types_in_response.empty?,
+                   'All resources returned must be of the type CareTeam or OperationOutcome, but includes ' + invalid_types_in_response.to_a.join(', '))
             validate_reply_entries(resources_returned, search_params)
 
             next if search_query_variants_tested_once
@@ -173,14 +176,13 @@ module Inferno
             assert_response_ok(reply)
             assert_bundle_response(reply)
             search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-            assert(search_with_type.all? { |resource| ['CareTeam', 'OperationOutcome'].include? resource.resourceType },
-                   'All resources returned must be of the type CareTeam or OperationOutcome.')
-            search_with_type.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+            search_with_type.select! { |resource| resource.resourceType == 'CareTeam' }
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
             search_query_variants_tested_once = true
           end
         end
+
         skip_if_not_found(resource_type: 'CareTeam', delayed: false)
       end
 

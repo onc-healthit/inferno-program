@@ -162,11 +162,10 @@ module Inferno
 
           next unless any_resources
 
-          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          assert(resource_returned.all? { |resource| ['AllergyIntolerance', 'OperationOutcome'].include? resource.resourceType },
-                 'All resources returned must be of the type AllergyIntolerance or OperationOutcome')
-          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
-          @allergy_intolerance_ary[patient] = resource_returned
+          resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          types_in_response = Set.new(resources_returned.map { |resource| resource&.resourceType })
+          resources_returned.select! { |resource| resource.resourceType == 'AllergyIntolerance' }
+          @allergy_intolerance_ary[patient] = resources_returned
 
           @allergy_intolerance = @allergy_intolerance_ary[patient]
             .find { |resource| resource.resourceType == 'AllergyIntolerance' }
@@ -174,6 +173,11 @@ module Inferno
 
           save_resource_references(versioned_resource_class('AllergyIntolerance'), @allergy_intolerance_ary[patient])
           save_delayed_sequence_references(@allergy_intolerance_ary[patient], USCore311AllergyintoleranceSequenceDefinitions::DELAYED_REFERENCES)
+
+          invalid_types_in_response = types_in_response - Set.new(['AllergyIntolerance', 'OperationOutcome'])
+          assert(invalid_types_in_response.empty?,
+                 'All resources returned must be of the type AllergyIntolerance or OperationOutcome, but includes ' + invalid_types_in_response.to_a.join(', '))
+
           validate_reply_entries(@allergy_intolerance_ary[patient], search_params)
 
           search_params = search_params.merge('patient': "Patient/#{patient}")
@@ -181,9 +185,7 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
           search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          assert(search_with_type.all? { |resource| ['AllergyIntolerance', 'OperationOutcome'].include? resource.resourceType },
-                 'All resources returned must be of the type AllergyIntolerance or OperationOutcome')
-          search_with_type.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+          search_with_type.select! { |resource| resource.resourceType == 'AllergyIntolerance' }
           assert search_with_type.length == @allergy_intolerance_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
         end
 
