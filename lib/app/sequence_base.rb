@@ -537,7 +537,8 @@ module Inferno
           assert resource_validation_errors[:errors].empty?, "Invalid #{resource.resourceType}: #{resource_validation_errors[:errors].join("\n* ")}"
 
           search_params.each do |key, value|
-            validate_resource_item(resource, key.to_s, value)
+            unescaped_value = value&.gsub('\\,', ',')
+            validate_resource_item(resource, key.to_s, unescaped_value)
           end
         end
       end
