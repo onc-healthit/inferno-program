@@ -47,7 +47,27 @@ module Inferno
         # run after the oauth endpoints are saved
       end
 
-      REQUIRED_SMART_CAPABILITIES = [
+      # Only require EHR launch related capabilities
+      # A separate sequence handles standalone launch
+
+      def self.required_smart_capabilities
+        [
+          'launch-ehr',
+          'client-confidential-symmetric',
+          'sso-openid-connect',
+          'context-banner',
+          'context-style',
+          'context-ehr-patient',
+          'permission-offline',
+          'permission-user'
+        ]
+      end
+
+      def required_smart_capabilities
+        self.class.required_smart_capabilities
+      end
+
+      SMART_CAPABILITIES = [
         'launch-ehr',
         'launch-standalone',
         'client-public',
@@ -266,8 +286,10 @@ module Inferno
           link 'http://hl7.org/fhir/smart-app-launch/conformance/index.html#core-capabilities'
           description %(
             A SMART on FHIR server SHALL convey its capabilities to app
-            developers by listing a set of the capabilities. The following
-            capabilities are required: #{REQUIRED_SMART_CAPABILITIES.join(', ')}
+            developers by listing the SMART core capabilities supported by
+            their implementation within the Well-known configuration file.
+            This test ensures that the capabilities required by this scenario
+            are properly documented in the Well-known file.
           )
         end
 
@@ -276,8 +298,8 @@ module Inferno
         capabilities = @well_known_configuration['capabilities']
         assert capabilities.is_a?(Array), 'The well-known capabilities are not an array'
 
-        missing_capabilities = REQUIRED_SMART_CAPABILITIES - capabilities
-        assert missing_capabilities.empty?, "The following required capabilities are missing: #{missing_capabilities.join(', ')}"
+        missing_capabilities = required_smart_capabilities - capabilities
+        assert missing_capabilities.empty?, "The following capabilities required for this scenario are missing: #{missing_capabilities.join(', ')}"
       end
     end
   end
