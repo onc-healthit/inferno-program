@@ -162,11 +162,10 @@ module Inferno
 
           next unless any_resources
 
-          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          assert(resource_returned.all? { |resource| ['Patient', 'OperationOutcome'].include? resource.resourceType },
-                 'All resources returned must be of the type Patient or OperationOutcome')
-          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
-          @patient_ary[patient] = resource_returned
+          resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          types_in_response = Set.new(resources_returned.map { |resource| resource&.resourceType })
+          resources_returned.select! { |resource| resource.resourceType == 'Patient' }
+          @patient_ary[patient] = resources_returned
 
           @patient = @patient_ary[patient]
             .find { |resource| resource.resourceType == 'Patient' }
@@ -174,6 +173,11 @@ module Inferno
 
           save_resource_references(versioned_resource_class('Patient'), @patient_ary[patient])
           save_delayed_sequence_references(@patient_ary[patient], USCore311PatientSequenceDefinitions::DELAYED_REFERENCES)
+
+          invalid_types_in_response = types_in_response - Set.new(['Patient', 'OperationOutcome'])
+          assert(invalid_types_in_response.empty?,
+                 'All resources returned must be of the type Patient or OperationOutcome, but includes ' + invalid_types_in_response.to_a.join(', '))
+
           validate_reply_entries(@patient_ary[patient], search_params)
         end
 

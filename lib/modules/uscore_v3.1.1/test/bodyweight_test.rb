@@ -121,12 +121,12 @@ describe Inferno::Sequence::USCore311BodyweightSequence do
         }
         stub_request(:get, "#{@base_url}/Observation")
           .with(query: query_params, headers: @auth_header)
-          .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::Observation.new, FHIR::Specimen.new]).to_json)
+          .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::Observation.new, FHIR::Specimen.new, FHIR::PaymentNotice.new]).to_json)
       end
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'All resources returned must be of the type Observation or OperationOutcome', exception.message
+      assert_equal 'All resources returned must be of the type Observation or OperationOutcome, but includes Specimen, PaymentNotice', exception.message
     end
 
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do

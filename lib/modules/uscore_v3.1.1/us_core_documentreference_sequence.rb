@@ -202,11 +202,10 @@ module Inferno
 
           next unless any_resources
 
-          resource_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          assert(resource_returned.all? { |resource| ['DocumentReference', 'OperationOutcome'].include? resource.resourceType },
-                 'All resources returned must be of the type DocumentReference or OperationOutcome')
-          resource_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
-          @document_reference_ary[patient] = resource_returned
+          resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          types_in_response = Set.new(resources_returned.map { |resource| resource&.resourceType })
+          resources_returned.select! { |resource| resource.resourceType == 'DocumentReference' }
+          @document_reference_ary[patient] = resources_returned
 
           @document_reference = @document_reference_ary[patient]
             .find { |resource| resource.resourceType == 'DocumentReference' }
@@ -214,6 +213,11 @@ module Inferno
 
           save_resource_references(versioned_resource_class('DocumentReference'), @document_reference_ary[patient])
           save_delayed_sequence_references(@document_reference_ary[patient], USCore311DocumentreferenceSequenceDefinitions::DELAYED_REFERENCES)
+
+          invalid_types_in_response = types_in_response - Set.new(['DocumentReference', 'OperationOutcome'])
+          assert(invalid_types_in_response.empty?,
+                 'All resources returned must be of the type DocumentReference or OperationOutcome, but includes ' + invalid_types_in_response.to_a.join(', '))
+
           validate_reply_entries(@document_reference_ary[patient], search_params)
 
           search_params = search_params.merge('patient': "Patient/#{patient}")
@@ -221,9 +225,7 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
           search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          assert(search_with_type.all? { |resource| ['DocumentReference', 'OperationOutcome'].include? resource.resourceType },
-                 'All resources returned must be of the type DocumentReference or OperationOutcome')
-          search_with_type.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+          search_with_type.select! { |resource| resource.resourceType == 'DocumentReference' }
           assert search_with_type.length == @document_reference_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
         end
 

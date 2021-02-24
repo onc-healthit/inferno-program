@@ -152,17 +152,17 @@ describe '<%= resource_type %> search by <%= search_params.keys.join('+') %> tes
       }
       stub_request(:get, "#{@base_url}/<%= resource_type %>")
         .with(query: query_params, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::<%= resource_type %>.new, FHIR::Specimen.new]).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::<%= resource_type %>.new, FHIR::Specimen.new, FHIR::PaymentNotice.new]).to_json)
     end
   <% else %>
     stub_request(:get, "#{@base_url}/<%= resource_type %>")
       .with(query: @query, headers: @auth_header)
-      .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::<%= resource_type %>.new, FHIR::Specimen.new]).to_json)
+      .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::<%= resource_type %>.new, FHIR::Specimen.new, FHIR::PaymentNotice.new]).to_json)
   <% end %>
 
     exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-    assert_equal 'All resources returned must be of the type <%= resource_type %> or OperationOutcome', exception.message
+    assert_equal 'All resources returned must be of the type <%= resource_type %> or OperationOutcome, but includes Specimen, PaymentNotice', exception.message
   end
 <% end %>
 
