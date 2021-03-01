@@ -59,6 +59,7 @@ module Inferno
       set :static, true
       set :views, File.expand_path('views', __dir__)
       set(:prefix) { '/' << name[/[^:]+$/].underscore }
+      set :protection, except: :frame_options # necessary for SMART EHR Launches
 
       def render_index
         unless defined?(settings.presets).nil? || settings.presets.nil?
