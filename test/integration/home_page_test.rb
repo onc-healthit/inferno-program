@@ -14,6 +14,11 @@ class HomePageTest < MiniTest::Test
     assert last_response.body.downcase.include? 'html'
   end
 
+  def test_no_x_frame_options_header
+    get '/'
+    refute_includes last_response.headers.keys.map(&:downcase), 'x-frame-options'
+  end
+
   def test_404_page
     get '/asdfasdf'
     assert last_response.not_found?
