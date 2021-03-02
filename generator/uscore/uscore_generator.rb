@@ -422,7 +422,7 @@ module Inferno
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               #{status_search_code(sequence, search_param[:names])}
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-              #{'test_medication_inclusion(reply.resource.entry.map(&:resource), search_params)' if sequence[:resource] == 'MedicationRequest'}
+              #{check_medication_inclusion if sequence[:resource] == 'MedicationRequest'}
               #{comparator_search_code}
               #{token_system_search_code}
             )
@@ -985,12 +985,17 @@ module Inferno
             @resources_found = reply&.resource&.entry&.any? { |entry| entry&.resource&.resourceType == '#{sequence[:resource]}' }
             #{skip_if_not_found_code(sequence)}
             search_result_resources = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            types_in_response = Set.new(search_result_resources.map{|resource| resource&.resourceType})
+            search_result_resources.select! { |resource| resource.resourceType == '#{sequence[:resource]}'}
             @#{sequence[:resource].underscore}_ary += search_result_resources
             @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary
               .find { |resource| resource.resourceType == '#{sequence[:resource]}' }
 
             save_resource_references(#{save_resource_references_arguments})
             save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
+            invalid_types_in_response = types_in_response - Set.new(['#{sequence[:resource]}', 'OperationOutcome'])
+            assert(invalid_types_in_response.empty?,
+                'All resources returned must be of the type #{sequence[:resource]} or OperationOutcome, but includes ' +  invalid_types_in_response.to_a.join(', '))
             validate_reply_entries(search_result_resources, search_params)
           )
         else
@@ -1008,7 +1013,10 @@ module Inferno
 
               next unless any_resources
 
-              @#{sequence[:resource].underscore}_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              types_in_response = Set.new(resources_returned.map{|resource| resource&.resourceType})
+              resources_returned.select! { |resource| resource.resourceType == '#{sequence[:resource]}'}
+              @#{sequence[:resource].underscore}_ary[patient] = resources_returned
           )
 
           if sequence[:resource] == 'Device'
@@ -1032,6 +1040,7 @@ module Inferno
             assert_response_ok(reply)
             assert_bundle_response(reply)
             search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            search_with_type.select! { |resource| resource.resourceType == '#{sequence[:resource]}'}
             assert search_with_type.length == @#{sequence[:resource].underscore}_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
           )
 
@@ -1042,6 +1051,11 @@ module Inferno
 
               save_resource_references(#{save_resource_references_arguments})
               save_delayed_sequence_references(@#{sequence[:resource].underscore}_ary[patient], #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
+
+              invalid_types_in_response = types_in_response - Set.new(['#{sequence[:resource]}', 'OperationOutcome'])
+              assert(invalid_types_in_response.empty?,
+                'All resources returned must be of the type #{sequence[:resource]} or OperationOutcome, but includes ' +  invalid_types_in_response.to_a.join(', '))
+
               validate_reply_entries(@#{sequence[:resource].underscore}_ary[patient], search_params)
               #{search_with_reference_types unless sequence[:resource] == 'Patient'}
             end
@@ -1093,11 +1107,17 @@ module Inferno
 
               @resources_found = true
               resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              types_in_response = Set.new(resources_returned.map{|resource| resource&.resourceType})
+              resources_returned.select! { |resource| resource.resourceType == '#{sequence[:resource]}' }
               @#{sequence[:resource].underscore} = resources_returned.first
               @#{sequence[:resource].underscore}_ary[patient] += resources_returned
 
               save_resource_references(#{save_resource_references_arguments})
               save_delayed_sequence_references(resources_returned, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
+
+              invalid_types_in_response = types_in_response - Set.new(['#{sequence[:resource]}', 'OperationOutcome'])
+              assert(invalid_types_in_response.empty?,
+                  'All resources returned must be of the type #{sequence[:resource]} or OperationOutcome, but includes ' +  invalid_types_in_response.to_a.join(', '))
               validate_reply_entries(resources_returned, search_params)
 
               next if search_query_variants_tested_once
@@ -1109,6 +1129,7 @@ module Inferno
               assert_response_ok(reply)
               assert_bundle_response(reply)
               search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              search_with_type.select! { |resource| resource.resourceType == '#{sequence[:resource]}'}
               assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
               #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
@@ -1116,6 +1137,7 @@ module Inferno
               search_query_variants_tested_once = true
             end
           end
+
           #{skip_if_not_found_code(sequence)})
       end
 
@@ -1211,6 +1233,16 @@ module Inferno
           comparators = param_info[:comparators].select { |_comparator, expectation| ['SHALL', 'SHOULD'].include? expectation }
           param_comparators[param] = comparators if comparators.present?
         end
+      end
+
+      def check_medication_inclusion
+        %(
+          resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          assert(resources_returned.all? { |resource| ['MedicationRequest', 'OperationOutcome'].include? resource.resourceType },
+              'All resources returned must be of the type MedicationRequest or OperationOutcome' )
+          resources_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+          test_medication_inclusion(resources_returned, search_params)
+        )
       end
 
       def skip_if_not_found_code(sequence)

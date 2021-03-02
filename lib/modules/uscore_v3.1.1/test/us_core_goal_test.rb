@@ -83,15 +83,27 @@ describe Inferno::Sequence::USCore311GoalSequence do
       assert_match(/Invalid \w+:/, exception.message)
     end
 
-    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+    it 'fails if the bundle contains a resource which is not the searched for resource nor an OperationOutcome' do
       stub_request(:get, "#{@base_url}/Goal")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@goal_ary.values.flatten).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::Goal.new, FHIR::Specimen.new, FHIR::PaymentNotice.new]).to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'All resources returned must be of the type Goal or OperationOutcome, but includes Specimen, PaymentNotice', exception.message
+    end
+
+    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      operation_outcome = FHIR.from_contents(load_fixture(:operationoutcome_example))
+
+      stub_request(:get, "#{@base_url}/Goal")
+        .with(query: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@goal_ary.values.flatten.append(operation_outcome)).to_json)
 
       reference_with_type_params = @query.merge('patient': 'Patient/' + @query[:patient])
       stub_request(:get, "#{@base_url}/Goal")
         .with(query: reference_with_type_params, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@goal_ary.values.flatten).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@goal_ary.values.flatten.append(operation_outcome)).to_json)
 
       @sequence.run_test(@test)
     end
@@ -240,9 +252,11 @@ describe Inferno::Sequence::USCore311GoalSequence do
     end
 
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      operation_outcome = FHIR.from_contents(load_fixture(:operationoutcome_example))
+
       stub_request(:get, "#{@base_url}/Goal")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@goal_ary.values.flatten).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@goal_ary.values.flatten.append(operation_outcome)).to_json)
 
       @sequence.run_test(@test)
     end

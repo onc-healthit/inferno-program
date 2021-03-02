@@ -193,7 +193,10 @@ module Inferno
 
           next unless any_resources
 
-          @condition_ary[patient] = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          types_in_response = Set.new(resources_returned.map { |resource| resource&.resourceType })
+          resources_returned.select! { |resource| resource.resourceType == 'Condition' }
+          @condition_ary[patient] = resources_returned
 
           @condition = @condition_ary[patient]
             .find { |resource| resource.resourceType == 'Condition' }
@@ -201,6 +204,11 @@ module Inferno
 
           save_resource_references(versioned_resource_class('Condition'), @condition_ary[patient])
           save_delayed_sequence_references(@condition_ary[patient], USCore311ConditionSequenceDefinitions::DELAYED_REFERENCES)
+
+          invalid_types_in_response = types_in_response - Set.new(['Condition', 'OperationOutcome'])
+          assert(invalid_types_in_response.empty?,
+                 'All resources returned must be of the type Condition or OperationOutcome, but includes ' + invalid_types_in_response.to_a.join(', '))
+
           validate_reply_entries(@condition_ary[patient], search_params)
 
           search_params = search_params.merge('patient': "Patient/#{patient}")
@@ -208,6 +216,7 @@ module Inferno
           assert_response_ok(reply)
           assert_bundle_response(reply)
           search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          search_with_type.select! { |resource| resource.resourceType == 'Condition' }
           assert search_with_type.length == @condition_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
         end
 

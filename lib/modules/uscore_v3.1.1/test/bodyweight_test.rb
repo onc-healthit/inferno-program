@@ -113,7 +113,25 @@ describe Inferno::Sequence::USCore311BodyweightSequence do
       assert_match(/Invalid \w+:/, exception.message)
     end
 
+    it 'fails if the bundle contains a resource which is not the searched for resource nor an OperationOutcome' do
+      ['29463-7'].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          'code': value
+        }
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([FHIR::Observation.new, FHIR::Specimen.new, FHIR::PaymentNotice.new]).to_json)
+      end
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal 'All resources returned must be of the type Observation or OperationOutcome, but includes Specimen, PaymentNotice', exception.message
+    end
+
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      operation_outcome = FHIR.from_contents(load_fixture(:operationoutcome_example))
+
       ['29463-7'].each do |value|
         query_params = {
           'patient': @sequence.patient_ids.first,
@@ -121,7 +139,7 @@ describe Inferno::Sequence::USCore311BodyweightSequence do
         }
         body =
           if @sequence.resolve_element_from_path(@observation, 'code.coding.code') == value
-            wrap_resources_in_bundle([@observation]).to_json
+            wrap_resources_in_bundle([@observation, operation_outcome]).to_json
           else
             FHIR::Bundle.new.to_json
           end
@@ -136,7 +154,7 @@ describe Inferno::Sequence::USCore311BodyweightSequence do
 
       stub_request(:get, "#{@base_url}/Observation")
         .with(query: @query_with_system, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten.append(operation_outcome)).to_json)
 
       @sequence.run_test(@test)
     end
@@ -464,13 +482,15 @@ describe Inferno::Sequence::USCore311BodyweightSequence do
     end
 
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      operation_outcome = FHIR.from_contents(load_fixture(:operationoutcome_example))
+
       stub_request(:get, "#{@base_url}/Observation")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten.append(operation_outcome)).to_json)
 
       stub_request(:get, "#{@base_url}/Observation")
         .with(query: @query_with_system, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten.append(operation_outcome)).to_json)
 
       @sequence.run_test(@test)
     end
@@ -626,13 +646,15 @@ describe Inferno::Sequence::USCore311BodyweightSequence do
     end
 
     it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      operation_outcome = FHIR.from_contents(load_fixture(:operationoutcome_example))
+
       stub_request(:get, "#{@base_url}/Observation")
         .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten.append(operation_outcome)).to_json)
 
       stub_request(:get, "#{@base_url}/Observation")
         .with(query: @query_with_system, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten).to_json)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten.append(operation_outcome)).to_json)
 
       @sequence.run_test(@test)
     end
