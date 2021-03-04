@@ -13,7 +13,7 @@ services:
     depends_on:
       - validator_service
   validator_service:
-    image: infernocommunity/fhir-validator-service:v0.1.1
+    image: infernocommunity/fhir-validator-service:v1.2.0
     environment:
       DISABLE_TX: 'true'
   nginx:
