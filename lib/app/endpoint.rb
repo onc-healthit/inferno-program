@@ -19,7 +19,7 @@ module Inferno
       Inferno::DEFAULT_SCOPES = settings.default_scopes
       Inferno::ENVIRONMENT = settings.environment
       Inferno::PURGE_ON_RELOAD = settings.purge_database_on_reload
-      Inferno::RESOURCE_VALIDATOR = Inferno::App::ResourceValidatorFactory.new_validator(settings.resource_validator, settings.external_resource_validator_url)
+      Inferno::RESOURCE_VALIDATOR = Inferno::App::ResourceValidatorFactory.new_validator(settings.resource_validator, settings.external_resource_validator_url, settings.external_resource_validator_version)
 
       if settings.logging_enabled
         $stdout.sync = true # output in Docker is heavily delayed without this

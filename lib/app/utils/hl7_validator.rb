@@ -10,11 +10,13 @@ module Inferno
       /^us-core-1: Datetime must be at least to day/ # Invalid invariant in US Core v3.1.1
     ].freeze
     @validator_url = nil
+    attr_accessor :expected_version
 
-    def initialize(validator_url)
+    def initialize(validator_url, expected_version = nil)
       raise ArgumentError, 'Validator URL is unset' if validator_url.blank?
 
       @validator_url = validator_url
+      @expected_version = expected_version
     end
 
     def validate(resource, fhir_models_klass, profile_url = nil)
@@ -40,6 +42,12 @@ module Inferno
     rescue StandardError
       Inferno.logger.error('Unable to reach the /version validator endpoint. Please ensure that the validator is up to date.')
       nil
+    end
+
+    # @return [Boolean] true if the 'requested' version from the config file matches the version
+    # returned by the external service, false otherwise.
+    def version_match?
+      @expected_version == version
     end
 
     private

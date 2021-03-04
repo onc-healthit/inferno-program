@@ -21,5 +21,10 @@ module Inferno
         information: []
       }
     end
+
+    # @return true (FHIR Models Validator always matches the expected version)
+    def version_match?
+      true
+    end
   end
 end
