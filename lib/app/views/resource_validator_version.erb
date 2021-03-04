@@ -1,0 +1,14 @@
+<% unless Inferno::RESOURCE_VALIDATOR.version_match? %>
+  <div class="row">
+    <div class="col">
+      <div class="container row row-no-padding align-items-center" style="margin:auto;" >
+        <div class="col-12" style="color: #063d75; text-align: center;">
+          <div class="alert alert-danger" role="alert">
+            Inferno expects FHIR Validator Service to be version <code><%= Inferno::RESOURCE_VALIDATOR.expected_version %></code>, 
+            but the available instance is version <code><%= Inferno::RESOURCE_VALIDATOR.version %></code>. To see how to update the validator, please review <a href="https://github.com/onc-healthit/inferno-program#validator-service">the Inferno README</a>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
