@@ -226,7 +226,7 @@ module Inferno
 
           validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, search_params)
 
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@allergy_intolerance_ary[patient], 'clinicalStatus'), true)
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@allergy_intolerance_ary[patient], 'clinicalStatus') { |el| get_value_for_search_param(el).present? }, true)
           token_with_system_search_params = search_params.merge('clinical-status': value_with_system)
           reply = get_resource_by_params(versioned_resource_class('AllergyIntolerance'), token_with_system_search_params)
           validate_search_reply(versioned_resource_class('AllergyIntolerance'), reply, token_with_system_search_params)
