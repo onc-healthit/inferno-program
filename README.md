@@ -195,17 +195,36 @@ all of which are hereby incorporated by reference.
 
 ## Validator Service
 
-Inferno uses an external validator service, found [here](https://github.com/inferno-community/fhir-validator-wrapper/), to validate resources provided to Inferno. When running Inferno in Docker using the `docker-compose.yml` file from this repository, the validator service is run as a separate Docker container that Inferno makes HTTP requests to.
+Inferno Program Edition uses an [external validator
+service](https://github.com/inferno-community/fhir-validator-wrapper/) that
+is run in a separate process to validate FHIR resources received from the
+system under test. When running Inferno in Docker using the
+`docker-compose.yml` file from this repository, the validator service is run
+as a separate Docker container and is available to Inferno via a RESTful API.
+If Inferno is not run using Docker and the `docker-compose.yml` file, then
+the validator service must be run separately and Inferno's `config.yml` must
+be updated to point to this service.
 
 ### Updating the Validator Service in Docker
 
-When Inferno is updated to a new version, it will occasionally require a new version of the validator service. If Inferno is being run using the `docker-compose.yml` file in this repository, the new validator version will be specified as part of the `validator_service` image declaration following an update through Git.
+When Inferno is updated to a new version, it will occasionally require a new
+version of the validator service. If Inferno is being run using the
+`docker-compose.yml` file in this repository, the new validator version will
+be specified as part of the `validator_service` image declaration following
+an update through Git.
 
-To download the Docker files associated with the new version, run `docker-compose pull` in the Inferno directory. Once the new files are downloaded, you can update the version by running `docker-compose down`, followed by `docker-compose up --force-recreate`. This will restart Inferno and the validator service with the new service version.
+To download the Docker files associated with the new version, run
+`docker-compose pull` in the Inferno directory. Once the new files are
+downloaded, you can update the version by running `docker-compose down`,
+followed by `docker-compose up --force-recreate`. This will restart Inferno
+and the validator service with the new service version.
 
 ### Updating the Validator Service outside of Docker
 
-If Inferno isn't running in Docker, the valdiator service will have to be updated manually. See the [FHIR Validator Wrapper repository](https://github.com/inferno-community/fhir-validator-wrapper) for more information on how to run the validator service outside of docker.
+If Inferno isn't running in Docker, the validator service will have to be
+updated manually. See the [FHIR Validator Wrapper
+repository](https://github.com/inferno-community/fhir-validator-wrapper) for
+more information on how to run the validator service outside of docker.
 
 ## Reference Implementation
 
