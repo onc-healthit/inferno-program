@@ -340,7 +340,7 @@ module Inferno
             validate_search_reply(versioned_resource_class('Procedure'), reply, comparator_search_params)
           end
 
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@procedure_ary[patient], 'code'), true)
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@procedure_ary[patient], 'code') { |el| get_value_for_search_param(el).present? }, true)
           token_with_system_search_params = search_params.merge('code': value_with_system)
           reply = get_resource_by_params(versioned_resource_class('Procedure'), token_with_system_search_params)
           validate_search_reply(versioned_resource_class('Procedure'), reply, token_with_system_search_params)

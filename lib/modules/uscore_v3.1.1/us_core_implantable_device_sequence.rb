@@ -205,7 +205,7 @@ module Inferno
 
           validate_search_reply(versioned_resource_class('Device'), reply, search_params)
 
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@device_ary[patient], 'type'), true)
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@device_ary[patient], 'type') { |el| get_value_for_search_param(el).present? }, true)
           token_with_system_search_params = search_params.merge('type': value_with_system)
           reply = get_resource_by_params(versioned_resource_class('Device'), token_with_system_search_params)
           validate_search_reply(versioned_resource_class('Device'), reply, token_with_system_search_params)

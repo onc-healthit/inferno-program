@@ -208,7 +208,7 @@ module Inferno
 
             next if search_query_variants_tested_once
 
-            value_with_system = get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary[patient], 'category'), true)
+            value_with_system = get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }, true)
             token_with_system_search_params = search_params.merge('category': value_with_system)
             reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), token_with_system_search_params)
             validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, token_with_system_search_params)
@@ -308,7 +308,7 @@ module Inferno
             validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
           end
 
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary[patient], 'category'), true)
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }, true)
           token_with_system_search_params = search_params.merge('category': value_with_system)
           reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), token_with_system_search_params)
           validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, token_with_system_search_params)
@@ -352,7 +352,7 @@ module Inferno
 
           validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, search_params)
 
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary[patient], 'code'), true)
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary[patient], 'code') { |el| get_value_for_search_param(el).present? }, true)
           token_with_system_search_params = search_params.merge('code': value_with_system)
           reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), token_with_system_search_params)
           validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, token_with_system_search_params)
@@ -447,7 +447,7 @@ module Inferno
             validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, comparator_search_params)
           end
 
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary[patient], 'code'), true)
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary[patient], 'code') { |el| get_value_for_search_param(el).present? }, true)
           token_with_system_search_params = search_params.merge('code': value_with_system)
           reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), token_with_system_search_params)
           validate_search_reply(versioned_resource_class('DiagnosticReport'), reply, token_with_system_search_params)

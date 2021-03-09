@@ -1198,8 +1198,9 @@ module Inferno
         return unless token_param
 
         param_description = sequence[:search_param_descriptions][token_param.to_sym]
+        resolve_element_path_method = "#{resolve_element_path(param_description, sequence[:delayed_sequence])}{ |el| get_value_for_search_param(el).present?}"
         %(
-          value_with_system = get_value_for_search_param(#{resolve_element_path(param_description, sequence[:delayed_sequence])}, true)
+          value_with_system = get_value_for_search_param(#{resolve_element_path_method}, true)
           token_with_system_search_params = search_params.merge('#{token_param}': value_with_system)
           reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), token_with_system_search_params)
           validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, token_with_system_search_params)
