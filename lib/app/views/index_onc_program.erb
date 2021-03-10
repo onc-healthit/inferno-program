@@ -200,6 +200,35 @@ For alternate installation options, please visit <a href='https://github.com/onc
   </div>
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.5.0</div>
+      <p>
+      The <strong>Inferno Program Edition v1.5.0</strong> release contains a number of fixes to tests that prevented systems from passing in certain cases.
+      It also updates the version of the <a href="https://confluence.hl7.org/display/FHIR/Using+the+FHIR+Validator">HL7 FHIR Validator</a> from v4.3.1 to v5.2.10,
+      which improves the correctness of FHIR resource validation and allows Inferno to supress unnecessary errors and warnings.
+      The update to the HL7 FHIR Validator may result in some systems that previously passed tests to now fail.
+      <p>
+      <i>Notice: Users that run Inferno Program Edition locally must update the FHIR Validator Wrapper service to v1.2.0 so that the proper version of the HL7 FHIR Validator is used during tests.  Users
+      are prominently alerted in the Inferno user interface when the version of the validator available to Inferno is incorrect.
+      For instructions on how to update the validator, please review the <a href="https://github.com/onc-healthit/inferno-program#validator-service">Inferno README</a>.</i>
+      </p>
+      <p>Updates in this version include:</p>
+      <ul>
+      <li>Update FHIR Validator Wrapper service to v1.2, which provides a service interface to the HL7 FHIR Validator v5.2.10.</li>
+      <li>Allow flexibility for servers to return OperationOutcome resources within US Core FHIR search Bundle responses (<a href="https://github.com/onc-healthit/inferno-program/pull/229">#229</a>).</li>
+      <li>Fix issue where using contained resources on certain elements marked as MUST SUPPORT caused errors (<a href="https://github.com/onc-healthit/inferno-program/issues/232">#232</a>).</li>
+      <li>Update SMART on FHIR discovery tests to only check capabilities relevant to that API endpoint (<a href="https://github.com/onc-healthit/inferno-program/issues/233">#233</a>).</li>
+      <li>Fix issue that occurs when patient name includes comma in certain situations (<a href="https://github.com/onc-healthit/inferno-program/issues/231">#231</a>).</li>
+      <li>Allow browsers to run Inferno within within an iframe for testing support for EHR-embedded apps(<a href="https://github.com/onc-healthit/inferno-program/issues/235#issuecomment-786914929">#235</a>).</li>
+      <li>Fix issue where a fresh clone of Inferno crashes due to missing validators directory.</li>
+      <li>Fix issue where searches by token that include system are improperly formed in certain cases (<a href="https://github.com/onc-healthit/inferno-program/issues/248">#248</a>).</li>
+      <li>Add warning to user interface if the validator service available to Inferno is not the correct version.</li>
+      </ul>
+      </p>
+    <p>
+
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_5_0.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure.
+    </p>
     <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.4.1</div>
     <p>
     The Inferno Program Edition v1.4.1 release fixes two issues that may incorrectly cause systems to fail tests.
