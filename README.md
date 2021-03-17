@@ -36,10 +36,6 @@ Certification Program.  Users interested in extending or reusing this open
 testing capability to meet their own needs are encouraged to visit the [Inferno
 GitHub repository](https://github.com/onc-healthit/inferno).
 
-## Walkthrough
-
-To walkthrough an example of using Inferno, see https://github.com/onc-healthit/inferno-program/wiki/Walkthrough
-
 ## Installation and Deployment
 
 ### Docker Installation
@@ -239,6 +235,8 @@ Users that would like to try out Inferno before installing locally can use that
 reference implementation, but should be forewarned that the database will be
 periodically refreshed and there is no guarantee that previous test runs will be
 available in perpetuity.
+
+To walkthrough an example of using the reference implementation, see https://github.com/onc-healthit/inferno-program/wiki/Walkthrough
 
 ## Supported Browsers
 
