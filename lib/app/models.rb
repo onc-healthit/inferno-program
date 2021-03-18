@@ -3,7 +3,7 @@
 DataMapper::Model.raise_on_save_failure = true
 
 DataMapper::Property::String.length(255)
-DataMapper.setup(:default, "postgres://postgres@db/inferno")
+DataMapper.setup(:default, Inferno::CONNECTION_STRING)
 
 require_relative 'models/request_response'
 require_relative 'models/resource_reference'

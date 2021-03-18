@@ -38,21 +38,23 @@ GitHub repository](https://github.com/onc-healthit/inferno).
 
 ## Installation and Deployment
 
-### Docker Installation
-
-Docker is the recommended installation method for Windows devices and can also
-be used on Linux and MacOS hosts.
+Inferno Program Edition is designed to be run using
+[Docker](https://www.docker.com/) to ensure consistency of execution across a
+wide range of host environments, including Windows, Linux and MacOS.
 
 1. Install [Docker](https://www.docker.com/) for the host platform as well as
    the [docker-compose](https://docs.docker.com/compose/install/) tool (which
    may be included in the distribution, as is the case for Windows and MacOS).
-2. Download the [latest release of the `inferno`
+2. Download the [latest release of the Inferno Program Edition
    project](https://github.com/onc-healthit/inferno-program/releases) to your local
    computer in a directory of your choice.
 3. Open a terminal in the directory where the project was downloaded (above).
 4. Run the command `docker-compose up --build` to start the server. This will
    automatically build the Docker image and launch Inferno, the HL7 FHIR Validator,
-   and an NGINX web server.
+   and an NGINX web server, suitable for use in a single user environment.
+   For information about running Inferno in a multi-user server environment,
+   please refer to the [Deploying Inferno in a Server
+   Environment](#deploying-inferno-in-a-server-environment) section below.
 5. Navigate to http://localhost:4567 to find the running application.
 
 If the docker image gets out of sync with the underlying system, such as when
@@ -62,35 +64,6 @@ up --build` to rebuild the containers.
 Check out the [Troubleshooting
 Documentation](https://github.com/onc-healthit/inferno/wiki/Troubleshooting) for
 help.
-
-<!--### Native Installation
-
-Inferno can installed and run locally on your machine.  Install the following
-dependencies first:
-
-* [Ruby 2.5+](https://www.ruby-lang.org/en/)
-* [Ruby Bundler](http://bundler.io/)
-* [SQLite](https://www.sqlite.org/)
-
-And run the following commands from the terminal:
-
-```sh
-# MacOS or Linux
-git clone https://github.com/onc-healthit/inferno-program
-cd inferno
-bundle install
-bundle exec rackup
-```
-
-Inferno can then be accessed at http://localhost:4567 in a web browser.
-
-If you would like to use a different port it can be specified when calling
-`rackup`.  For example, the following command would host Inferno on port 3000:
-
-```sh
-bundle exec rackup -p 3000
-```
--->
 
 ### Terminology Support
 
@@ -225,6 +198,40 @@ If Inferno isn't running in Docker, the validator service will have to be
 updated manually. See the [FHIR Validator Wrapper
 repository](https://github.com/inferno-community/fhir-validator-wrapper) for
 more information on how to run the validator service outside of docker.
+
+## Deploying Inferno in a Server Environment
+
+Inferno's default configuration is designed to be lightweight and
+run on the users host machine.  If you would like to run a shared instance
+of Inferno, you can use the docker-compose configuration provided in
+`docker-compose.production.yml`, which attaches Inferno to a Postgres
+database to provide more stability when multiple tests are run
+simultaniously.  This requires higher resource utilization on the host
+machine than the default configuration, which uses SQLite for
+storage.
+
+To run this configuration, you use `docker-compose.production.yml`
+file:
+```sh
+docker-compose up -f docker-compose.production.yml --build -d
+```
+
+To stop the service and destroy the containers, run:
+```sh
+docker-compose down -f docker-compose.production.yml
+```
+
+Note that the database will not be persisted if you stop and destroy
+the service using the above command.  You may attach the database
+to a Docker Volume if you would like to persist the database beyond
+the life of the container. The Docker documentation [provides
+information](https://docs.docker.com/storage/volumes/#use-a-volume-with-docker-compose)
+on how to configure this within a `docker-compose` file.
+
+For another example of deploying Inferno in a production environment, review
+[the docker-compose file](https://github.com/onc-healthit/inferno.healthit.gov/blob/master/docker-compose.yml)
+used to deploy Inferno Program Edition, Inferno Community Edition, and a
+number of services on https://inferno.healthit.gov/inferno.
 
 ## Reference Implementation
 

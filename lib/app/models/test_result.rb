@@ -10,8 +10,8 @@ module Inferno
       include DataMapper::Resource
       property :id, String, key: true, default: proc { SecureRandom.uuid }
       property :test_id, String
-      property :ref, String
-      property :name, String
+      property :ref, Text
+      property :name, Text
       property :result, String
       property :message, Text
       property :details, Text

@@ -64,7 +64,7 @@ module Inferno
       property :data_absent_code_found, Boolean
       property :data_absent_extension_found, Boolean
 
-      property :device_codes, String
+      property :device_codes, Text
 
       # Bulk Data Parameters
       property :bulk_url, Text
