@@ -9,7 +9,6 @@ gem 'bloomer'
 gem 'colorize'
 gem 'data_mapper'
 gem 'dm-sqlite-adapter'
-gem 'dm-postgres-adapter'
 gem 'fhir_client'
 gem 'json-jwt'
 gem 'jwt'
@@ -28,6 +27,10 @@ gem 'sinatra-contrib'
 gem 'sqlite3'
 gem 'thin'
 gem 'time_difference'
+
+group :production do
+  gem 'dm-postgres-adapter'
+end
 
 group :test do
   gem 'minitest'
