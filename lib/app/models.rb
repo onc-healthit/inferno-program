@@ -2,7 +2,8 @@
 
 DataMapper::Model.raise_on_save_failure = true
 
-DataMapper.setup(:default, "sqlite3:data/#{Inferno::ENVIRONMENT}_data.db")
+DataMapper::Property::String.length(255)
+DataMapper.setup(:default, "postgres://postgres@db/inferno")
 
 require_relative 'models/request_response'
 require_relative 'models/resource_reference'

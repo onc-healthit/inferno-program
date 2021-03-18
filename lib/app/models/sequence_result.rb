@@ -11,11 +11,11 @@ module Inferno
       property :id, String, key: true, default: proc { SecureRandom.uuid }
       property :name, String
       property :result, String
-      property :test_case_id, String
-      property :test_set_id, String
+      property :test_case_id, Text
+      property :test_set_id, Text
 
-      property :redirect_to_url, String, length: 500
-      property :wait_at_endpoint, String
+      property :redirect_to_url, Text
+      property :wait_at_endpoint, Text
       property :expect_redirect_failure, Boolean, default: false
 
       property :required_passed, Integer, default: 0
@@ -31,11 +31,11 @@ module Inferno
       property :app_version, String
 
       property :required, Boolean, default: true
-      property :input_params, String
-      property :output_results, String
+      property :input_params, Text
+      property :output_results, Text
 
-      property :next_sequences, String
-      property :next_test_cases, String
+      property :next_sequences, Text
+      property :next_test_cases, Text
 
       property :created_at, DateTime, default: proc { DateTime.now }
 
