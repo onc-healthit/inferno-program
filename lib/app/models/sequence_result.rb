@@ -9,7 +9,7 @@ module Inferno
       include ResultStatuses
       include DataMapper::Resource
       property :id, String, key: true, default: proc { SecureRandom.uuid }
-      property :name, String
+      property :name, Text
       property :result, String
       property :test_case_id, Text
       property :test_set_id, Text
