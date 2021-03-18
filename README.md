@@ -236,6 +236,8 @@ reference implementation, but should be forewarned that the database will be
 periodically refreshed and there is no guarantee that previous test runs will be
 available in perpetuity.
 
+To see an example of using the reference implementation, see the [walkthrough](https://github.com/onc-healthit/inferno-program/wiki/Walkthrough) on the wiki.
+
 ## Supported Browsers
 
 Inferno has been tested on the latest versions of Chrome, Firefox, Safari, and
