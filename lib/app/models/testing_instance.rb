@@ -10,56 +10,56 @@ module Inferno
     class TestingInstance
       include DataMapper::Resource
       property :id, String, key: true, default: proc { Inferno::SecureRandomBase62.generate(64) }
-      property :url, String
+      property :url, Text
       property :name, String
       property :confidential_client, Boolean
-      property :client_id, String
-      property :client_secret, String
-      property :base_url, String
+      property :client_id, Text
+      property :client_secret, Text
+      property :base_url, Text
 
       property :client_name, String, default: 'Inferno'
-      property :scopes, String
-      property :received_scopes, String
+      property :scopes, Text
+      property :received_scopes, Text
       property :encounter_id, String
       property :launch_type, String
-      property :state, String
+      property :state, Text
       property :selected_module, String
 
       property :conformance_checked, Boolean
-      property :oauth_authorize_endpoint, String
-      property :oauth_token_endpoint, String
-      property :oauth_register_endpoint, String
+      property :oauth_authorize_endpoint, Text
+      property :oauth_token_endpoint, Text
+      property :oauth_register_endpoint, Text
       property :fhir_format, String
 
       property :dynamically_registered, Boolean
       property :client_endpoint_key, String, default: proc { Inferno::SecureRandomBase62.generate(32) }
 
-      property :token, String
+      property :token, Text
       property :token_retrieved_at, DateTime
       property :token_expires_in, Integer
-      property :id_token, String
-      property :refresh_token, String
+      property :id_token, Text
+      property :refresh_token, Text
       property :created_at, DateTime, default: proc { DateTime.now }
 
-      property :oauth_introspection_endpoint, String
+      property :oauth_introspection_endpoint, Text
       property :resource_id, String
       property :resource_secret, String
       property :introspect_token, String
       property :introspect_refresh_token, String
 
-      property :standalone_launch_script, String
-      property :ehr_launch_script, String
-      property :manual_registration_script, String
+      property :standalone_launch_script, Text
+      property :ehr_launch_script, Text
+      property :manual_registration_script, Text
 
-      property :initiate_login_uri, String
-      property :redirect_uris, String
+      property :initiate_login_uri, Text
+      property :redirect_uris, Text
 
-      property :dynamic_registration_token, String
+      property :dynamic_registration_token, Text
 
       property :must_support_confirmed, String, default: ''
 
-      property :patient_ids, String
-      property :group_id, String
+      property :patient_ids, Text
+      property :group_id, Text
 
       property :data_absent_code_found, Boolean
       property :data_absent_extension_found, Boolean
@@ -67,31 +67,31 @@ module Inferno
       property :device_codes, String
 
       # Bulk Data Parameters
-      property :bulk_url, String
-      property :bulk_token_endpoint, String
-      property :bulk_client_id, String
-      property :bulk_system_export_endpoint, String
-      property :bulk_patient_export_endpoint, String
-      property :bulk_group_export_endpoint, String
+      property :bulk_url, Text
+      property :bulk_token_endpoint, Text
+      property :bulk_client_id, Text
+      property :bulk_system_export_endpoint, Text
+      property :bulk_patient_export_endpoint, Text
+      property :bulk_group_export_endpoint, Text
       property :bulk_fastest_resource, String
       property :bulk_requires_auth, String
       property :bulk_since_param, String
-      property :bulk_jwks_url_auth, String
-      property :bulk_jwks_auth, String
+      property :bulk_jwks_url_auth, Text
+      property :bulk_jwks_auth, Text
       property :bulk_encryption_method, String, default: 'ES384'
-      property :bulk_data_jwks, String
-      property :bulk_access_token, String
+      property :bulk_data_jwks, Text
+      property :bulk_access_token, Text
       property :bulk_lines_to_validate, String
-      property :bulk_status_output, String
-      property :bulk_patient_ids_in_group, String
-      property :bulk_device_types_in_group, String
+      property :bulk_status_output, Text
+      property :bulk_patient_ids_in_group, String, length: 500
+      property :bulk_device_types_in_group, String, length: 500
       property :bulk_stop_after_must_support, String, default: 'true'
-      property :bulk_scope, String
+      property :bulk_scope, Text
       property :disable_bulk_data_require_access_token_test, Boolean, default: false
 
       # These are used by BDT
-      property :bulk_public_key, String
-      property :bulk_private_key, String
+      property :bulk_public_key, Text
+      property :bulk_private_key, Text
 
       has n, :sequence_results
       has n, :resource_references

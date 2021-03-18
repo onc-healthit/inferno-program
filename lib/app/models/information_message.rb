@@ -5,7 +5,7 @@ module Inferno
     class InformationMessage
       include DataMapper::Resource
       property :id, String, key: true, default: proc { SecureRandom.uuid }
-      property :message, String, length: 500
+      property :message, Text
 
       belongs_to :test_result
     end

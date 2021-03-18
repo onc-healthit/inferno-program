@@ -3,8 +3,9 @@ FROM ruby:2.5.6
 WORKDIR /var/www/inferno
 
 ### Install dependencies
-
 COPY Gemfile* /var/www/inferno/
+RUN apt-get update
+RUN apt-get install postgresql-server-dev-11 --assume-yes
 RUN gem install bundler
 # Throw an error if Gemfile & Gemfile.lock are out of sync
 RUN bundle config --global frozen 1
