@@ -3,6 +3,9 @@
 base_path: "inferno"
 
 # Useful during development to purge the database on each reload.
+# Note that this flag does not apply to Postgres-backed installations.
+# Please review the Readme for directions on how to purge the
+# database when used in a server environment.
 purge_database_on_reload: false
 
 # Disable peer SSL verification for environments that use SSL inspection.
