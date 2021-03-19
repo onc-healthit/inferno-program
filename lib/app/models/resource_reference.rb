@@ -12,6 +12,8 @@ module Inferno
       property :profile, String
       property :created_at, DateTime
 
+      property :resource_index, Serial, unique_index: true, key: false
+
       belongs_to :testing_instance
     end
   end
