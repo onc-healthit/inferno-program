@@ -73,7 +73,7 @@ module Inferno
       property :bulk_system_export_endpoint, Text
       property :bulk_patient_export_endpoint, Text
       property :bulk_group_export_endpoint, Text
-      property :bulk_fastest_resource, String
+      property :bulk_fastest_resource, Text
       property :bulk_requires_auth, String
       property :bulk_since_param, String
       property :bulk_jwks_url_auth, Text
@@ -83,8 +83,8 @@ module Inferno
       property :bulk_access_token, Text
       property :bulk_lines_to_validate, String
       property :bulk_status_output, Text
-      property :bulk_patient_ids_in_group, String, length: 500
-      property :bulk_device_types_in_group, String, length: 500
+      property :bulk_patient_ids_in_group, Text
+      property :bulk_device_types_in_group, Text
       property :bulk_stop_after_must_support, String, default: 'true'
       property :bulk_scope, Text
       property :disable_bulk_data_require_access_token_test, Boolean, default: false
