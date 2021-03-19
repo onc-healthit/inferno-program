@@ -213,20 +213,24 @@ storage.
 To run this configuration, you use `docker-compose.production.yml`
 file:
 ```sh
-docker-compose up -f docker-compose.production.yml --build -d
+docker-compose -f docker-compose.production.yml up --build -d
 ```
 
 To stop the service and destroy the containers, run:
 ```sh
-docker-compose down -f docker-compose.production.yml
+docker-compose -f docker-compose.production.yml down
 ```
 
-Note that the database will not be persisted if you stop and destroy
-the service using the above command.  You may attach the database
-to a Docker Volume if you would like to persist the database beyond
-the life of the container. The Docker documentation [provides
-information](https://docs.docker.com/storage/volumes/#use-a-volume-with-docker-compose)
-on how to configure this within a `docker-compose` file.
+This configuration will persist data if the container is stopped
+or destroyed.  If you would like to clear the data in the database,
+and have it recreated from scratch the next time the application is started,
+you can run the following commands:
+
+```sh
+docker-compose -f docker-compose.production.yml down
+docker volume ls | grep inferno-pgdata # Lists active volumes
+docker volume rm inferno-program_inferno-pgdata # Volume name will end in inferno-pgdata
+```
 
 For another example of deploying Inferno in a production environment, review
 [the docker-compose file](https://github.com/onc-healthit/inferno.healthit.gov/blob/master/docker-compose.yml)
