@@ -43,8 +43,9 @@ Inferno Program Edition is designed to be run using
 wide range of host environments, including Windows, Linux and MacOS.
 
 1. Install [Docker](https://www.docker.com/) for the host platform as well as
-   the [docker-compose](https://docs.docker.com/compose/install/) tool (which
-   may be included in the distribution, as is the case for Windows and MacOS).
+   the [docker-compose](https://docs.docker.com/compose/install/) tool, if
+   necessary. Docker-compose may be included in the Docker distribution, as is
+   the case for Windows and MacOS.
 2. Download the [latest release of the Inferno Program Edition
    project](https://github.com/onc-healthit/inferno-program/releases) to your local
    computer in a directory of your choice.
