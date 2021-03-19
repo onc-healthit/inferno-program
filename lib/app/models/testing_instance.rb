@@ -183,7 +183,7 @@ module Inferno
 
       def patient_id
         resource_references
-          .first(resource_type: 'Patient', order: [:created_at.asc])
+          .first(resource_type: 'Patient', order: [:resource_index.asc])
           &.resource_id
       end
 
