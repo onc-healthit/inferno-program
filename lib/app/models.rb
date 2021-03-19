@@ -2,7 +2,7 @@
 
 DataMapper::Model.raise_on_save_failure = true
 
-DataMapper::Property::String.length(255)
+DataMapper::Property::String.length(500)
 DataMapper.setup(:default, Inferno::CONNECTION_STRING)
 
 require_relative 'models/request_response'
