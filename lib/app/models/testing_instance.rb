@@ -42,10 +42,10 @@ module Inferno
       property :created_at, DateTime, default: proc { DateTime.now }
 
       property :oauth_introspection_endpoint, Text
-      property :resource_id, String
-      property :resource_secret, String
-      property :introspect_token, String
-      property :introspect_refresh_token, String
+      property :resource_id, Text
+      property :resource_secret, Text
+      property :introspect_token, Text
+      property :introspect_refresh_token, Text
 
       property :standalone_launch_script, Text
       property :ehr_launch_script, Text
