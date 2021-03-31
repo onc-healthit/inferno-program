@@ -202,6 +202,7 @@ module Inferno
 
             assert_response_ok(reply)
             assert_bundle_response(reply)
+
             search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             search_with_type.select! { |resource| resource.resourceType == 'CarePlan' }
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
