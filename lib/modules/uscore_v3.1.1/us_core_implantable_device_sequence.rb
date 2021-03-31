@@ -159,6 +159,7 @@ module Inferno
 
           validate_reply_entries(@device_ary[patient], search_params)
 
+          # Search with type of reference variant (patient=Patient/[id])
           search_params = search_params.merge('patient': "Patient/#{patient}")
           reply = get_resource_by_params(versioned_resource_class('Device'), search_params)
           assert_response_ok(reply)

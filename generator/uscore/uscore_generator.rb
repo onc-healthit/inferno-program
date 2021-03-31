@@ -303,10 +303,10 @@ module Inferno
         params.any? { |param| param.to_s.include? 'status' }
       end
 
-      def status_search_code(sequence, current_search)
+      def status_search_code(sequence, current_search, search_method: :get)
         if sequence_has_status_search?(sequence) && !status_search?(current_search)
           %(
-            reply = perform_search_with_status(reply, search_params) if reply.code == 400
+            reply = perform_search_with_status(reply, search_params, search_method: search_method) if reply.code == 400
           )
         else
           ''
@@ -336,7 +336,7 @@ module Inferno
         status_param = status_param_strings(sequence)
 
         %(
-          def perform_search_with_status(reply, search_param)
+          def perform_search_with_status(reply, search_param, search_method: :get)
             begin
               parsed_reply = JSON.parse(reply.body)
               assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
@@ -356,7 +356,7 @@ module Inferno
 
             [#{status_param[:value]}].each do |status_value|
               params_with_status = search_param.merge(#{status_param[:param]}: status_value)
-              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), params_with_status)
+              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), params_with_status, search_method: :get)
               assert_response_ok(reply)
               assert_bundle_response(reply)
 
@@ -1035,8 +1035,16 @@ module Inferno
           end
 
           search_with_reference_types = %(
+            # Search with type of reference variant (patient=Patient/[id])
             search_params = search_params.merge('patient': "Patient/\#{patient}")
             reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+            assert_response_ok(reply)
+            assert_bundle_response(reply)
+          )
+          
+          search_by_post = %(
+            # Search by POST variant
+            reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params, search_method: :post)
             assert_response_ok(reply)
             assert_bundle_response(reply)
           )
@@ -1048,6 +1056,12 @@ module Inferno
               search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
               search_with_type.select! { |resource| resource.resourceType == '#{sequence[:resource]}'}
               assert search_with_type.length == @#{sequence[:resource].underscore}_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
+            )
+            search_by_post += %(
+              search_by_post_resources = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              search_by_post_resources.select! { |resource| resource.resourceType == '#{sequence[:resource]}'}
+              #{"# Do not do comparison check on Device due to complications in filtering by Device Category" if sequence[:resource] == 'Device'}
+              assert search_by_post_resources.length == @#{sequence[:resource].underscore}_ary[patient].length, 'Expected search by POST to have the same results as search by GET'
             )
           end
 
@@ -1065,6 +1079,7 @@ module Inferno
 
               validate_reply_entries(@#{sequence[:resource].underscore}_ary[patient], search_params)
               #{search_with_reference_types unless sequence[:resource] == 'Patient'}
+              #{search_by_post unless sequence[:resource] == 'Patient'}
             end
 
             #{skip_if_not_found_code(sequence)}
@@ -1104,6 +1119,12 @@ module Inferno
           assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
         )
 
+        search_by_post_length_check = %(
+          search_by_post_resources = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          search_by_post_resources.select! { |resource| resource.resourceType == '#{sequence[:resource]}'}
+          assert search_by_post_resources.length == resources_returned.length, 'Expected search by POST to have the same results as search by GET'
+        )
+
         %(
           #{skip_if_search_not_supported_code(sequence, search_parameters)}
           @#{sequence[:resource].underscore}_ary = {}
@@ -1139,12 +1160,25 @@ module Inferno
               next if search_query_variants_tested_once
               #{get_token_system_search_code(search_parameters, sequence)}
 
+              # Search with type of reference variant (patient=Patient/[id])
               search_params_with_type = search_params.merge('patient': "Patient/\#{patient}")
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params_with_type)
               #{status_search_code(sequence, search_parameters)}
               assert_response_ok(reply)
               assert_bundle_response(reply)
+
               #{search_by_type_length_check unless sequence[:resource] == 'Device'}
+              search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              search_with_type.select! { |resource| resource.resourceType == '#{sequence[:resource]}'}
+              assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
+
+              # Search by POST variant
+              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params, search_method: :post)
+              #{status_search_code(sequence, search_parameters, search_method: :post)}
+              assert_response_ok(reply)
+              assert_bundle_response(reply)
+              #{search_by_post_length_check unless sequence[:resource] == 'Device'}
+
               #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
 
               search_query_variants_tested_once = true

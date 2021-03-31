@@ -483,10 +483,10 @@ module Inferno
         @test_warnings << e.message
       end
 
-      def get_resource_by_params(klass, params)
+      def get_resource_by_params(klass, params, search_method: :get)
         options = {
           search: {
-            flag: false,
+            flag: search_method != :get, # if not get, then search by post
             compartment: nil,
             parameters: params
           }

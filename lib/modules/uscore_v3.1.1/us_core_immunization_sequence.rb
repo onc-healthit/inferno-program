@@ -89,7 +89,7 @@ module Inferno
         end
       end
 
-      def perform_search_with_status(reply, search_param)
+      def perform_search_with_status(reply, search_param, search_method: :get)
         begin
           parsed_reply = JSON.parse(reply.body)
           assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
@@ -108,7 +108,7 @@ module Inferno
 
         ['completed', 'entered-in-error', 'not-done'].each do |status_value|
           params_with_status = search_param.merge('status': status_value)
-          reply = get_resource_by_params(versioned_resource_class('Immunization'), params_with_status)
+          reply = get_resource_by_params(versioned_resource_class('Immunization'), params_with_status, search_method: :get)
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
@@ -151,7 +151,7 @@ module Inferno
 
           reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
 
-          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+          reply = perform_search_with_status(reply, search_params, search_method: search_method) if reply.code == 400
 
           assert_response_ok(reply)
           assert_bundle_response(reply)
@@ -178,6 +178,7 @@ module Inferno
 
           validate_reply_entries(@immunization_ary[patient], search_params)
 
+          # Search with type of reference variant (patient=Patient/[id])
           search_params = search_params.merge('patient': "Patient/#{patient}")
           reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
           assert_response_ok(reply)
@@ -185,7 +186,17 @@ module Inferno
 
           search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
           search_with_type.select! { |resource| resource.resourceType == 'Immunization' }
-          assert search_with_type.length == @immunization_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
+
+          assert 'Device' == 'Immunization' || search_with_type.length == @immunization_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
+
+          # Search by POST variant
+          reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params, search_method: :post)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+          search_by_post_resources = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          search_by_post_resources.select! { |resource| resource.resourceType == 'Immunization' }
+
+          assert 'Device' == 'Immunization' || search_by_post_resources.length == @immunization_ary[patient].length, 'Expected search by POST to have the same results as search by GET'
         end
 
         skip_if_not_found(resource_type: 'Immunization', delayed: false)
@@ -227,7 +238,7 @@ module Inferno
 
           reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
 
-          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+          reply = perform_search_with_status(reply, search_params, search_method: search_method) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('Immunization'), reply, search_params)
 
@@ -360,7 +371,7 @@ module Inferno
           search_params['_revinclude'] = 'Provenance:target'
           reply = get_resource_by_params(versioned_resource_class('Immunization'), search_params)
 
-          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+          reply = perform_search_with_status(reply, search_params, search_method: search_method) if reply.code == 400
 
           assert_response_ok(reply)
           assert_bundle_response(reply)
