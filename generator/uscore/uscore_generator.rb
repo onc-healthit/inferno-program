@@ -306,7 +306,7 @@ module Inferno
       def status_search_code(sequence, current_search, search_method: :get)
         if sequence_has_status_search?(sequence) && !status_search?(current_search)
           %(
-            reply = perform_search_with_status(reply, search_params, search_method: search_method) if reply.code == 400
+            reply = perform_search_with_status(reply, search_params, search_method: #{search_method}) if reply.code == 400
           )
         else
           ''
@@ -344,7 +344,6 @@ module Inferno
               assert false, 'Server returned a status of 400 without an OperationOutcome.'
             end
 
-
             warning do
               assert @instance.server_capabilities&.search_documented?('#{sequence[:resource]}'),
                 %(Server returned a status of 400 with an OperationOutcome, but the
@@ -356,7 +355,7 @@ module Inferno
 
             [#{status_param[:value]}].each do |status_value|
               params_with_status = search_param.merge(#{status_param[:param]}: status_value)
-              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), params_with_status, search_method: :get)
+              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), params_with_status, search_method: search_method)
               assert_response_ok(reply)
               assert_bundle_response(reply)
 
@@ -404,7 +403,24 @@ module Inferno
 
         is_first_search = search_param == find_first_search(sequence)
 
-        search_test[:description] += 'Because this is the first search of the sequence, resources in the response will be used for subsequent tests.' if is_first_search
+        if is_first_search
+          search_test[:description] += %(
+            This test will verifies that the server supports searching by
+            reference using the form `patient=[id]` as well as
+            `patient=Patient/[id]`.  The two different forms are expected
+            to return the same number of results.  US Core requires that
+            both forms are supported by US Core responders.
+
+            Additionally, this test will check that GET and POST search
+            methods return the same number of results. Both methods are
+            required by the FHIR R4 specification.
+
+            Because this is the first search of the sequence, resources in
+            the response will be used for subsequent tests.
+          )
+
+        end
+
         comparator_search_code = get_comparator_searches(search_param[:names], sequence)
         token_system_search_code = get_token_system_search_code(search_param[:names], sequence)
         search_test[:test_code] =
@@ -1041,7 +1057,7 @@ module Inferno
             assert_response_ok(reply)
             assert_bundle_response(reply)
           )
-          
+
           search_by_post = %(
             # Search by POST variant
             reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params, search_method: :post)
@@ -1060,8 +1076,7 @@ module Inferno
             search_by_post += %(
               search_by_post_resources = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
               search_by_post_resources.select! { |resource| resource.resourceType == '#{sequence[:resource]}'}
-              #{"# Do not do comparison check on Device due to complications in filtering by Device Category" if sequence[:resource] == 'Device'}
-              assert search_by_post_resources.length == @#{sequence[:resource].underscore}_ary[patient].length, 'Expected search by POST to have the same results as search by GET'
+              assert search_by_post_resources.length == @#{sequence[:resource].underscore}_ary[patient].length, 'Expected search by POST to have same results as search by GET'
             )
           end
 

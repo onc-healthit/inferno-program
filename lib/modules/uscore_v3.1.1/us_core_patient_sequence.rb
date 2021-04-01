@@ -141,7 +141,20 @@ module Inferno
 
             A server SHALL support searching by _id on the Patient resource.
             This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
-            Because this is the first search of the sequence, resources in the response will be used for subsequent tests.
+
+            This test will verifies that the server supports searching by
+            reference using the form `patient=[id]` as well as
+            `patient=Patient/[id]`.  The two different forms are expected
+            to return the same number of results.  US Core requires that
+            both forms are supported by US Core responders.
+
+            Additionally, this test will check that GET and POST search
+            methods return the same number of results. Both methods are
+            required by the FHIR R4 specification.
+
+            Because this is the first search of the sequence, resources in
+            the response will be used for subsequent tests.
+
           )
           versions :r4
         end

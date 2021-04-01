@@ -127,7 +127,7 @@ module Inferno
 
         ['planned', 'arrived', 'triaged', 'in-progress', 'onleave', 'finished', 'cancelled', 'entered-in-error', 'unknown'].each do |status_value|
           params_with_status = search_param.merge('status': status_value)
-          reply = get_resource_by_params(versioned_resource_class('Encounter'), params_with_status, search_method: :get)
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), params_with_status, search_method: search_method)
           assert_response_ok(reply)
           assert_bundle_response(reply)
 

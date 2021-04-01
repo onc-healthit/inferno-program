@@ -140,7 +140,7 @@ module Inferno
 
         ['final,entered-in-error'].each do |status_value|
           params_with_status = search_param.merge('status': status_value)
-          reply = get_resource_by_params(versioned_resource_class('Observation'), params_with_status, search_method: :get)
+          reply = get_resource_by_params(versioned_resource_class('Observation'), params_with_status, search_method: search_method)
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
@@ -169,7 +169,20 @@ module Inferno
 
             A server SHALL support searching by patient+code on the Observation resource.
             This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
-            Because this is the first search of the sequence, resources in the response will be used for subsequent tests.
+
+            This test will verifies that the server supports searching by
+            reference using the form `patient=[id]` as well as
+            `patient=Patient/[id]`.  The two different forms are expected
+            to return the same number of results.  US Core requires that
+            both forms are supported by US Core responders.
+
+            Additionally, this test will check that GET and POST search
+            methods return the same number of results. Both methods are
+            required by the FHIR R4 specification.
+
+            Because this is the first search of the sequence, resources in
+            the response will be used for subsequent tests.
+
           )
           versions :r4
         end
@@ -185,7 +198,7 @@ module Inferno
             search_params = { 'patient': patient, 'code': val }
             reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
 
-            reply = perform_search_with_status(reply, search_params, search_method: search_method) if reply.code == 400
+            reply = perform_search_with_status(reply, search_params, search_method: get) if reply.code == 400
 
             assert_response_ok(reply)
             assert_bundle_response(reply)
@@ -218,7 +231,7 @@ module Inferno
             search_params_with_type = search_params.merge('patient': "Patient/#{patient}")
             reply = get_resource_by_params(versioned_resource_class('Observation'), search_params_with_type)
 
-            reply = perform_search_with_status(reply, search_params, search_method: search_method) if reply.code == 400
+            reply = perform_search_with_status(reply, search_params, search_method: get) if reply.code == 400
 
             assert_response_ok(reply)
             assert_bundle_response(reply)
@@ -227,16 +240,21 @@ module Inferno
             search_with_type.select! { |resource| resource.resourceType == 'Observation' }
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
+            search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            search_with_type.select! { |resource| resource.resourceType == 'Observation' }
+            assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
+
             # Search by POST variant
             reply = get_resource_by_params(versioned_resource_class('Observation'), search_params, search_method: :post)
 
-            reply = perform_search_with_status(reply, search_params, search_method: search_method) if reply.code == 400
+            reply = perform_search_with_status(reply, search_params, search_method: post) if reply.code == 400
 
             assert_response_ok(reply)
             assert_bundle_response(reply)
+
             search_by_post_resources = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             search_by_post_resources.select! { |resource| resource.resourceType == 'Observation' }
-            assert search_by_post_resources.length == @observation_ary[patient].length, 'Expected search by POST to have the same results as search by GET'
+            assert search_by_post_resources.length == resources_returned.length, 'Expected search by POST to have the same results as search by GET'
 
             search_query_variants_tested_once = true
           end
@@ -332,7 +350,7 @@ module Inferno
           search_params['_revinclude'] = 'Provenance:target'
           reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
 
-          reply = perform_search_with_status(reply, search_params, search_method: search_method) if reply.code == 400
+          reply = perform_search_with_status(reply, search_params, search_method: get) if reply.code == 400
 
           assert_response_ok(reply)
           assert_bundle_response(reply)
