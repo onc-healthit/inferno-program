@@ -1,7 +1,9 @@
-module JSON
-    module_function
+# frozen_string_literal: true
 
-    def parse(source, opts = {})
-        Parser.new(source, **opts).parse
-    end
+module JSON
+  module_function
+
+  def parse(source, opts = {})
+    Parser.new(source, **opts).parse
+  end
 end
