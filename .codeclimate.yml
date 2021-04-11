@@ -13,7 +13,7 @@ checks:
   method-count:
     enabled: false
   method-lines:
-    enabled: true
+    enabled: trueo
   nested-control-flow:
     enabled: true
   return-statements:
@@ -25,6 +25,6 @@ checks:
 plugins:
   rubocop:
     enabled: true
-    channel: rubocop-0-67
+    channel: rubocop-0-80
     config:
       file: .rubocop.yml
