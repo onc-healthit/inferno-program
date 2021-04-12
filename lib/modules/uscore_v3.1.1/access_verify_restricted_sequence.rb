@@ -9,14 +9,13 @@ module Inferno
       test_id_prefix 'AVR'
       details %(
         This test ensures that patients are able to grant or deny access to a
-        subset of resources to an app. It also verifies that patients can
-        prevent issuance of a refresh token by denying the `offline_access`
-        scope. The tester provides a list of resources that will be granted
-        during the SMART App Launch process, and this test verifies that the
-        scopes granted are consistent with what the tester provided. It also
-        formulates queries to ensure that the app is either given access to,
-        or denied access to, the appropriate resource types based on those
-        chosen by the tester.
+        subset of resources to an app as requied by the certification
+        criteria. The tester provides a list of resources that will be
+        granted during the SMART App Launch process, and this test verifies
+        that the scopes granted are consistent with what the tester provided.
+        It also formulates queries to ensure that the app is either given
+        access to, or denied access to, the appropriate resource types based
+        on those chosen by the tester.
 
         Resources that can be mapped to USCDI are checked in this test, including:
 
