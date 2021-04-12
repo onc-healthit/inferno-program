@@ -95,6 +95,25 @@ describe Inferno::Sequence::USCore<%=reformatted_version%>ONCAccessVerifyUnrestr
                                   'patient/Procedure.read patient/Provenance.read'
       assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
     end
+
+    it 'passes if user scopes used on non-USCDI/non-Patient Compartment resources' do
+      @instance.received_scopes = 'launch/patient openid fhirUser offline_access user/Medication.read patient/AllergyIntolerance.read patient/CarePlan.read '\
+                                  'patient/CareTeam.read patient/Condition.read user/Device.read patient/DiagnosticReport.read patient/DocumentReference.read '\
+                                  'user/Encounter.read patient/Goal.read patient/Immunization.read user/Location.read patient/MedicationRequest.read '\
+                                  'patient/Observation.read user/Organization.read patient/Patient.read user/Practitioner.read '\
+                                  'patient/Procedure.read patient/Provenance.read'
+      assert_raises(Inferno::PassException) { @sequence.run_test(@test) }
+    end
+
+    it 'fails if user scopes used on Patient Compartment resources' do
+      @instance.received_scopes = 'launch/patient openid fhirUser offline_access patient/Medication.read user/AllergyIntolerance.read patient/CarePlan.read '\
+                                  'patient/CareTeam.read patient/Condition.read patient/Device.read patient/DiagnosticReport.read patient/DocumentReference.read '\
+                                  'patient/Encounter.read patient/Goal.read patient/Immunization.read patient/Location.read patient/MedicationRequest.read '\
+                                  'patient/Observation.read patient/Organization.read patient/Patient.read patient/Practitioner.read '\
+                                  'patient/Procedure.read patient/Provenance.read'
+      assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+    end
+
   end
 
   describe 'Validate Patient Authorization' do

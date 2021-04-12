@@ -86,8 +86,13 @@ describe Inferno::Sequence::USCore311ONCAccessVerifyRestrictedSequence do
       assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
     end
 
-    it 'fails if offline_acess received' do
+    it 'passes if offline_acess received' do
       @instance.received_scopes = 'launch/patient offline_access openid fhirUser patient/Observation.read patient/Condition.read patient/Patient.read'
+      assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+    end
+
+    it 'passes if offline_access not received' do
+      @instance.received_scopes = 'launch/patient openid fhirUser patient/Observation.read patient/Condition.read patient/Patient.read'
       assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
     end
   end
