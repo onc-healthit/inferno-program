@@ -17,6 +17,7 @@ require 'json/jwt'
 require 'kramdown'
 
 require 'rack'
+require_relative 'app/ext/json'
 require_relative 'app/utils/logging'
 require_relative 'app/endpoint'
 require_relative 'app/utils/secure_random_base62'
