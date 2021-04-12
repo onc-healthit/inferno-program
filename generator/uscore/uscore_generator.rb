@@ -1039,10 +1039,17 @@ module Inferno
             reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
             assert_response_ok(reply)
             assert_bundle_response(reply)
-            search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-            search_with_type.select! { |resource| resource.resourceType == '#{sequence[:resource]}'}
-            assert search_with_type.length == @#{sequence[:resource].underscore}_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
           )
+
+          # Do not perform this check for devices due to the extra complexity involved in
+          # the device filter.  This is thoroughly checked in other resources.
+          unless sequence[:resource] == 'Device'
+            search_with_reference_types += %(
+              search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+              search_with_type.select! { |resource| resource.resourceType == '#{sequence[:resource]}'}
+              assert search_with_type.length == @#{sequence[:resource].underscore}_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
+            )
+          end
 
           first_search + %(
               @#{sequence[:resource].underscore} = @#{sequence[:resource].underscore}_ary[patient]
@@ -1088,6 +1095,15 @@ module Inferno
         # assume only patient + one other parameter
         search_param = fixed_value_search_param(search_parameters, sequence)
         values_variable_name = "#{search_param[:name].tr('-', '_')}_val"
+
+        # This code is split out because we will only use it for non-Devices to do extra complexity involved with
+        # filtering by device categories.
+        search_by_type_length_check = %(
+          search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          search_with_type.select! { |resource| resource.resourceType == '#{sequence[:resource]}'}
+          assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
+        )
+
         %(
           #{skip_if_search_not_supported_code(sequence, search_parameters)}
           @#{sequence[:resource].underscore}_ary = {}
@@ -1128,10 +1144,7 @@ module Inferno
               #{status_search_code(sequence, search_parameters)}
               assert_response_ok(reply)
               assert_bundle_response(reply)
-              search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-              search_with_type.select! { |resource| resource.resourceType == '#{sequence[:resource]}'}
-              assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
-
+              #{search_by_type_length_check unless sequence[:resource] == 'Device'}
               #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
 
               search_query_variants_tested_once = true

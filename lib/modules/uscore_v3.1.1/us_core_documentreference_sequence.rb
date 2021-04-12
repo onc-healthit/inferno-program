@@ -224,6 +224,7 @@ module Inferno
           reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
           assert_response_ok(reply)
           assert_bundle_response(reply)
+
           search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
           search_with_type.select! { |resource| resource.resourceType == 'DocumentReference' }
           assert search_with_type.length == @document_reference_ary[patient].length, 'Expected search by Patient/ID to have the same results as search by ID'
