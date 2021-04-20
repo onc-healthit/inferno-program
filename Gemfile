@@ -2,6 +2,7 @@
 
 source 'https://rubygems.org'
 
+gem 'activerecord', '~> 5.2'
 gem 'addressable'
 gem 'ast'
 gem 'base62-rb'
@@ -24,11 +25,13 @@ gem 'rubyXL'
 gem 'selenium-webdriver'
 gem 'sinatra'
 gem 'sinatra-contrib'
+gem 'standalone_migrations', '~> 6.0'
 gem 'sqlite3'
 gem 'thin'
 gem 'time_difference'
 
 group :test do
+  gem 'database_cleaner-active_record'
   gem 'minitest'
   gem 'rack-test'
   gem 'rubocop', require: false
