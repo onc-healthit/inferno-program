@@ -60,8 +60,8 @@ class ServerCapabilitiesTest < MiniTest::Test
       ]
     }
 
-    @capabilities = Inferno::Models::ServerCapabilities.new(
-      testing_instance_id: Inferno::Models::TestingInstance.create.id,
+    @capabilities = Inferno::ServerCapabilities.new(
+      testing_instance_id: Inferno::TestingInstance.create!.id,
       capabilities: @capability_statement
     )
 
@@ -84,8 +84,8 @@ class ServerCapabilitiesTest < MiniTest::Test
       ]
     }
 
-    @smart_capabilities = Inferno::Models::ServerCapabilities.new(
-      testing_instance_id: Inferno::Models::TestingInstance.create.id,
+    @smart_capabilities = Inferno::ServerCapabilities.new(
+      testing_instance_id: Inferno::TestingInstance.create!.id,
       capabilities: @smart_capability_statement
     )
   end
@@ -121,8 +121,8 @@ class ServerCapabilitiesTest < MiniTest::Test
   def test_operation_supported_pass
     conformance = load_json_fixture(:bulk_data_conformance)
 
-    server_capabilities = Inferno::Models::ServerCapabilities.new(
-      testing_instance_id: Inferno::Models::TestingInstance.create.id,
+    server_capabilities = Inferno::ServerCapabilities.new(
+      testing_instance_id: Inferno::TestingInstance.create!.id,
       capabilities: conformance.as_json
     )
 
@@ -132,8 +132,8 @@ class ServerCapabilitiesTest < MiniTest::Test
   def test_operation_supported_fail_invalid_name
     conformance = load_json_fixture(:bulk_data_conformance)
 
-    server_capabilities = Inferno::Models::ServerCapabilities.new(
-      testing_instance_id: Inferno::Models::TestingInstance.create.id,
+    server_capabilities = Inferno::ServerCapabilities.new(
+      testing_instance_id: Inferno::TestingInstance.create!.id,
       capabilities: conformance.as_json
     )
 

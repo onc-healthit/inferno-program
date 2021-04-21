@@ -25,7 +25,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
     @sequence_class = Inferno::Sequence::TokenRefreshSequence
     @token_endpoint = 'http://www.example.com/token'
     @client = FHIR::Client.new('http://www.example.com/fhir')
-    @instance = Inferno::Models::TestingInstance.create(
+    @instance = Inferno::TestingInstance.create(
       oauth_token_endpoint: @token_endpoint,
       scopes: 'jkl',
       refresh_token: 'abc',
@@ -103,7 +103,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
     end
 
     it 'skips if no refresh token has been received' do
-      @instance.update(refresh_token: nil)
+      @instance.update!(refresh_token: nil)
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
       assert_equal 'No refresh token was received during the SMART launch', exception.message
@@ -143,7 +143,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
     end
 
     it 'skips if no refresh token has been received' do
-      @instance.update(refresh_token: nil)
+      @instance.update!(refresh_token: nil)
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
 
       assert_equal 'No refresh token was received during the SMART launch', exception.message
@@ -278,7 +278,7 @@ end
 class TokenRefreshSequenceTest < MiniTest::Test
   def setup
     refresh_token = 'REFRESH_TOKEN'
-    @instance = Inferno::Models::TestingInstance.create(
+    @instance = Inferno::TestingInstance.create(
       url: 'http://www.example.com',
       client_name: 'Inferno',
       base_url: 'http://localhost:4567',
@@ -389,7 +389,7 @@ class TokenRefreshSequenceTest < MiniTest::Test
   end
 
   def test_pass_if_confidential_client
-    @instance.update(
+    @instance.update!(
       client_secret: @confidential_client_secret,
       confidential_client: true
     )
@@ -397,7 +397,7 @@ class TokenRefreshSequenceTest < MiniTest::Test
   end
 
   def test_pass_if_public_client
-    @instance.update(
+    @instance.update!(
       client_secret: nil,
       confidential_client: false
     )

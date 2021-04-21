@@ -10,7 +10,7 @@ describe Inferno::Sequence::USCore311ONCAccessVerifyRestrictedSequence do
     @sequence_class = Inferno::Sequence::USCore311ONCAccessVerifyRestrictedSequence
     @base_url = 'http://www.example.com/fhir'
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(url: @base_url, onc_sl_url: @base_url, token: @token, selected_module: 'uscore_v3.1.1')
+    @instance = Inferno::TestingInstance.create(url: @base_url, onc_sl_url: @base_url, token: @token, selected_module: 'uscore_v3.1.1')
     @client = FHIR::Client.for_testing_instance(@instance)
     @patient_ids = 'example'
     @instance.patient_id = @instance.patient_ids = @patient_ids

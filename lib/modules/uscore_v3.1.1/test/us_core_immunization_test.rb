@@ -10,7 +10,7 @@ describe Inferno::Sequence::USCore311ImmunizationSequence do
     @sequence_class = Inferno::Sequence::USCore311ImmunizationSequence
     @base_url = 'http://www.example.com/fhir'
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.1')
+    @instance = Inferno::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.1')
     @client = FHIR::Client.for_testing_instance(@instance)
     @patient_ids = 'example'
     @instance.patient_ids = @patient_ids
@@ -32,7 +32,7 @@ describe Inferno::Sequence::USCore311ImmunizationSequence do
     end
 
     it 'skips if the search params are not supported' do
-      capabilities = Inferno::Models::ServerCapabilities.new
+      capabilities = Inferno::ServerCapabilities.new
       def capabilities.supported_search_params(_)
         []
       end
@@ -194,7 +194,7 @@ describe Inferno::Sequence::USCore311ImmunizationSequence do
     end
 
     it 'skips if the search params are not supported' do
-      capabilities = Inferno::Models::ServerCapabilities.new
+      capabilities = Inferno::ServerCapabilities.new
       def capabilities.supported_search_params(_)
         ['patient']
       end
@@ -322,7 +322,7 @@ describe Inferno::Sequence::USCore311ImmunizationSequence do
     end
 
     it 'skips if the search params are not supported' do
-      capabilities = Inferno::Models::ServerCapabilities.new
+      capabilities = Inferno::ServerCapabilities.new
       def capabilities.supported_search_params(_)
         ['patient']
       end
@@ -400,9 +400,10 @@ describe Inferno::Sequence::USCore311ImmunizationSequence do
     end
 
     it 'skips if the Immunization read interaction is not supported' do
-      Inferno::Models::ServerCapabilities.create(
+      Inferno::ServerCapabilities.delete_all
+      Inferno::ServerCapabilities.create(
         testing_instance_id: @instance.id,
-        capabilities: FHIR::CapabilityStatement.new.to_json
+        capabilities: FHIR::CapabilityStatement.new.as_json
       )
       @instance.reload
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
@@ -419,7 +420,7 @@ describe Inferno::Sequence::USCore311ImmunizationSequence do
     end
 
     it 'fails if a non-success response code is received' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'Immunization',
         resource_id: @immunization_id,
         testing_instance: @instance
@@ -435,7 +436,7 @@ describe Inferno::Sequence::USCore311ImmunizationSequence do
     end
 
     it 'fails if no resource is received' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'Immunization',
         resource_id: @immunization_id,
         testing_instance: @instance
@@ -451,7 +452,7 @@ describe Inferno::Sequence::USCore311ImmunizationSequence do
     end
 
     it 'fails if the resource returned is not a Immunization' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'Immunization',
         resource_id: @immunization_id,
         testing_instance: @instance
@@ -467,7 +468,7 @@ describe Inferno::Sequence::USCore311ImmunizationSequence do
     end
 
     it 'fails if the resource has an incorrect id' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'Immunization',
         resource_id: @immunization_id,
         testing_instance: @instance
@@ -488,7 +489,7 @@ describe Inferno::Sequence::USCore311ImmunizationSequence do
       immunization = FHIR::Immunization.new(
         id: @immunization_id
       )
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'Immunization',
         resource_id: @immunization_id,
         testing_instance: @instance

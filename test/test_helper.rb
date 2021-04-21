@@ -24,6 +24,7 @@ if create_assertion_report?
 end
 
 require_relative '../lib/app'
+Inferno::Utils::Database.establish_db_connection
 
 def find_fixture_directory(test_directory = nil)
   test_directory ||=
@@ -92,16 +93,16 @@ def get_test_instance(url: 'http://www.example.com',
                       selected_module: 'argonaut',
                       token: 'ACCESS_TOKEN')
 
-  @instance = Inferno::Models::TestingInstance.new(url: url,
-                                                   client_name: client_name,
-                                                   base_url: base_url,
-                                                   client_endpoint_key: client_endpoint_key,
-                                                   client_id: client_id,
-                                                   oauth_authorize_endpoint: oauth_authorize_endpoint,
-                                                   oauth_token_endpoint: oauth_token_endpoint,
-                                                   scopes: scopes,
-                                                   selected_module: selected_module,
-                                                   token: token)
+  @instance = Inferno::TestingInstance.new(url: url,
+                                           client_name: client_name,
+                                           base_url: base_url,
+                                           client_endpoint_key: client_endpoint_key,
+                                           client_id: client_id,
+                                           oauth_authorize_endpoint: oauth_authorize_endpoint,
+                                           oauth_token_endpoint: oauth_token_endpoint,
+                                           scopes: scopes,
+                                           selected_module: selected_module,
+                                           token: token)
 end
 
 def get_client(instance)
@@ -117,7 +118,7 @@ def set_resource_support(instance, resource)
       code: interaction
     }
   end
-  Inferno::Models::ServerCapabilities.create(
+  Inferno::ServerCapabilities.create!(
     testing_instance_id: instance.id,
     capabilities: {
       rest: [

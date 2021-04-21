@@ -8,7 +8,7 @@ describe Inferno::Sequence::BulkDataGroupExportSequence do
 
     @sequence_class = Inferno::Sequence::BulkDataGroupExportSequence
 
-    @instance = Inferno::Models::TestingInstance.create(
+    @instance = Inferno::TestingInstance.create(
       url: 'http://www.example.com',
       bulk_url: 'https://www.example.com/bulk',
       bulk_access_token: 99_897_979

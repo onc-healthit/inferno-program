@@ -23,7 +23,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       initiate_login_uri: '/login'
     }
 
-    Inferno::Models::TestingInstance.create(default_params.merge(params))
+    Inferno::TestingInstance.create!(default_params.merge(params))
   end
 
   def create_sequence_result(params = {})
@@ -34,7 +34,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       next_test_cases: ''
     }
 
-    Inferno::Models::SequenceResult.create(default_params.merge(params))
+    Inferno::SequenceResult.create!(default_params.merge(params))
   end
 
   def setup
@@ -43,9 +43,9 @@ class OAuth2EndpointsTest < MiniTest::Test
     # Guard against misconfigured environment because we are purging the database
     raise "Tests must run in test environment, currently #{Inferno::ENVIRONMENT}" unless Inferno::ENVIRONMENT == :test
 
-    Inferno::Models::TestResult.destroy!
-    Inferno::Models::SequenceResult.destroy!
-    Inferno::Models::TestingInstance.destroy!
+    Inferno::TestResult.destroy_all
+    Inferno::SequenceResult.destroy_all
+    Inferno::TestingInstance.destroy_all
   end
 
   def test_launch_response_success
@@ -55,7 +55,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       wait_at_endpoint: 'launch',
       redirect_to_url: '/redirect'
     )
-    Inferno::Models::TestResult.create(
+    Inferno::TestResult.create!(
       sequence_result: sequence_result
     )
 
@@ -92,7 +92,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       wait_at_endpoint: 'launch',
       redirect_to_url: '/redirect'
     )
-    Inferno::Models::TestResult.create(
+    Inferno::TestResult.create!(
       sequence_result: sequence_result
     )
 
@@ -122,7 +122,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       wait_at_endpoint: 'launch',
       redirect_to_url: '/redirect'
     )
-    Inferno::Models::TestResult.create(
+    Inferno::TestResult.create!(
       sequence_result: sequence_result
     )
 
@@ -150,7 +150,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       testing_instance: instance,
       result: 'pass'
     )
-    Inferno::Models::TestResult.create(
+    Inferno::TestResult.create!(
       sequence_result: sequence_result
     )
 
@@ -171,7 +171,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       testing_instance: instance,
       wait_at_endpoint: 'redirect'
     )
-    Inferno::Models::TestResult.create(
+    Inferno::TestResult.create!(
       sequence_result: sequence_result
     )
 
@@ -207,7 +207,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       testing_instance: instance,
       wait_at_endpoint: 'redirect'
     )
-    Inferno::Models::TestResult.create(
+    Inferno::TestResult.create!(
       sequence_result: sequence_result
     )
 
@@ -230,7 +230,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       testing_instance: instance,
       wait_at_endpoint: 'redirect'
     )
-    Inferno::Models::TestResult.create(
+    Inferno::TestResult.create!(
       sequence_result: sequence_result
     )
 
@@ -259,7 +259,7 @@ class OAuth2EndpointsTest < MiniTest::Test
       testing_instance: instance,
       result: 'pass'
     )
-    Inferno::Models::TestResult.create(
+    Inferno::TestResult.create!(
       sequence_result: sequence_result
     )
 
