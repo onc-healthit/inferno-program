@@ -2,6 +2,7 @@
 
 module Inferno
   class ResourceReference < ApplicationRecord
+    self.primary_key = 'id'
     attribute :id, :string, default: -> { SecureRandom.uuid }
     attribute :resource_id, :string
 

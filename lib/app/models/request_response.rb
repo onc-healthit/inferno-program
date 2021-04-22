@@ -2,6 +2,7 @@
 
 module Inferno
   class RequestResponse < ApplicationRecord
+    self.primary_key = 'id'
     attribute :id, :string, default: -> { SecureRandom.uuid }
     attribute :timestamp, :datetime, default: -> { DateTime.now }
 

@@ -24,6 +24,7 @@ class InitialSetup < ActiveRecord::Migration[5.2]
       t.string "instance_id", limit: 500
       t.datetime "timestamp"
       t.index ["request_index"], name: "unique_inferno_models_request_responses_request_index", unique: true
+      t.index ["id"], unique: true
     end
 
     create_table "inferno_models_resource_references", primary_key: "resource_index", force: :cascade do |t|
@@ -35,6 +36,7 @@ class InitialSetup < ActiveRecord::Migration[5.2]
       t.string "testing_instance_id", limit: 50, null: false
       t.index ["resource_index"], name: "unique_inferno_models_resource_references_resource_index", unique: true
       t.index ["testing_instance_id"], name: "index_inferno_models_resource_references_testing_instance"
+      t.index ["id"], unique: true
     end
 
     create_table "inferno_models_sequence_results", id: :string, limit: 500, force: :cascade do |t|
