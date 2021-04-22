@@ -1,6 +1,6 @@
 development:
   adapter: postgresql
-  database: inferno_program_dev
+  database: inferno_program
   username: postgres
   host: db
   pool: 10
@@ -16,7 +16,7 @@ production:
 
 test: &test
   adapter: postgresql
-  database: inferno_program_test
+  database: inferno_program
   username: postgres
   host: db
   pool: 10

@@ -25,7 +25,7 @@ COPY db/config.docker.yml db/config.yml
 
 ### Set up environment
 
-ENV APP_ENV=production
+ENV RACK_ENV=production
 EXPOSE 4567
 
 CMD ["./bin/run.sh"]
