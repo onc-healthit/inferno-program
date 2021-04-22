@@ -1,3 +1,4 @@
+# coding: utf-8
 # frozen_string_literal: true
 
 module Inferno
@@ -263,7 +264,7 @@ module Inferno
         end
 
         assert_output_has_type_url
-        @instance.bulk_status_output = @status_response.to_json
+        @instance.update!(bulk_status_output: @status_response.to_json)
       end
 
       test 'Bulk Data Server returns requiresAccessToken with value true' do
