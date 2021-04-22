@@ -16,11 +16,11 @@ jobs:
       run: docker-compose build
     - name: Run Tests in Docker (local config)
       run: |
-        docker-compose run --rm inferno bundle exec rake
+        docker-compose run -e RACK_ENV=test --rm inferno bundle exec rake db:create db:migrate test
         docker-compose down
     - name: Build Docker image
       run: docker-compose -f docker-compose.production.yml build
     - name: Run Tests in Docker (server config)
       run: |
-        docker-compose -f docker-compose.production.yml run -e APP_ENV=test --rm inferno bundle exec rake db:create db:migrate test
+        docker-compose -f docker-compose.production.yml run -e RACK_ENV=test --rm inferno bundle exec rake db:create db:migrate test
         docker-compose -f docker-compose.production.yml down

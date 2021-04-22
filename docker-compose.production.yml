@@ -3,6 +3,7 @@ services:
   inferno:
     build:
       context: ./
+      dockerfile: Dockerfile.postgres
     volumes:
       - ./config.yml:/var/www/inferno/config.yml
       - ./batch:/var/www/inferno/batch
