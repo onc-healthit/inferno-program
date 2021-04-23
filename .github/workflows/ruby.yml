@@ -23,6 +23,6 @@ jobs:
     - name: Prepare DB
       run: RACK_ENV=test bundle exec rake db:create db:migrate
     - name: Run tests
-      run: bundle exec rake
+      run: bin/run_tests.sh
     - name: Rubocop
       run: bundle exec rubocop

@@ -35,6 +35,7 @@ ActiveRecord::Schema.define(version: 2021_04_21_162516) do
     t.string "direction", limit: 500
     t.string "instance_id", limit: 500
     t.datetime "timestamp"
+    t.index ["id"], name: "index_inferno_models_request_responses_on_id", unique: true
     t.index ["request_index"], name: "unique_inferno_models_request_responses_request_index", unique: true
   end
 
@@ -45,6 +46,7 @@ ActiveRecord::Schema.define(version: 2021_04_21_162516) do
     t.string "profile", limit: 500
     t.datetime "created_at"
     t.string "testing_instance_id", limit: 50, null: false
+    t.index ["id"], name: "index_inferno_models_resource_references_on_id", unique: true
     t.index ["resource_index"], name: "unique_inferno_models_resource_references_resource_index", unique: true
     t.index ["testing_instance_id"], name: "index_inferno_models_resource_references_testing_instance"
   end

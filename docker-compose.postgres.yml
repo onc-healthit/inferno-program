@@ -3,9 +3,9 @@ services:
   inferno:
     build:
       context: ./
-      dockerfile: Dockerfile.postgres
     volumes:
       - ./config.yml:/var/www/inferno/config.yml
+      - ./db/config.postgres.yml:/var/www/inferno/db/config.yml
       - ./batch:/var/www/inferno/batch
       - type: bind
         source: "./resources/terminology/validators"
