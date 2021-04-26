@@ -205,21 +205,21 @@ more information on how to run the validator service outside of docker.
 Inferno's default configuration is designed to be lightweight and
 run on the users host machine.  If you would like to run a shared instance
 of Inferno, you can use the docker-compose configuration provided in
-`docker-compose.production.yml`, which attaches Inferno to a Postgres
+`docker-compose.postgres.yml`, which attaches Inferno to a Postgres
 database to provide more stability when multiple tests are run
 simultaniously.  This requires higher resource utilization on the host
 machine than the default configuration, which uses SQLite for
 storage.
 
-To run this configuration, you use `docker-compose.production.yml`
+To run this configuration, you use `docker-compose.postgres.yml`
 file:
 ```sh
-docker-compose -f docker-compose.production.yml up --build -d
+docker-compose -f docker-compose.postgres.yml up --build -d
 ```
 
 To stop the service and destroy the containers, run:
 ```sh
-docker-compose -f docker-compose.production.yml down
+docker-compose -f docker-compose.postgres.yml down
 ```
 
 This configuration will persist data if the container is stopped
@@ -228,7 +228,7 @@ and have it recreated from scratch the next time the application is started,
 you can run the following commands:
 
 ```sh
-docker-compose -f docker-compose.production.yml down
+docker-compose -f docker-compose.postgres.yml down
 docker volume ls | grep inferno-pgdata # Lists active volumes
 docker volume rm inferno-program_inferno-pgdata # Volume name will end in inferno-pgdata
 ```
@@ -262,7 +262,7 @@ conform to the specification and performs as intended.  To run these tests,
 execute the following command:
 
 ```sh
-bundle exec rake test
+bin/run_tests.sh
 ```
 
 ## Inspecting and Exporting Tests
@@ -302,6 +302,19 @@ ensures that the appropriate validation services are in place.
 
 _Note: This feature is still in development and we are looking for feedback on
 features and improvements in ways it can be used_
+
+### Database Setup
+
+Prior to running tests, the database must be created and updated. If using
+docker-compose, run:
+```sh
+docker-compose run inferno bundle exec rake db:create db:migrate
+```
+This command can also be combined with those belowe to prepare the database and
+run the tests in one step:
+```sh
+docker-compose run inferno bundle exec rake db:create db:migrate infero:execute...
+```
 
 ### Running Tests Directly
 
