@@ -23,6 +23,7 @@ module Inferno
         tar_file_name = "tmp/#{package.split('#').join('-')}.tgz"
 
         File.open(tar_file_name, 'w') do |output_file|
+          output_file.binmode
           block = proc do |response|
             response.read_body do |chunk|
               output_file.write chunk
