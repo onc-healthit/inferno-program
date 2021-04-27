@@ -3,8 +3,8 @@ FROM ruby:2.7.2
 WORKDIR /var/www/inferno
 
 ### Install dependencies
-COPY Gemfile /var/www/inferno/Gemfile
-COPY Gemfile.lock /var/www/inferno/Gemfile.lock
+COPY Gemfile.postgres /var/www/inferno/Gemfile
+COPY Gemfile.postgres.lock /var/www/inferno/Gemfile.lock
 RUN gem install bundler
 # Throw an error if Gemfile & Gemfile.lock are out of sync
 RUN bundle config --global frozen 1
