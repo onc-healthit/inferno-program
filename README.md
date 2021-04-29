@@ -303,25 +303,12 @@ ensures that the appropriate validation services are in place.
 _Note: This feature is still in development and we are looking for feedback on
 features and improvements in ways it can be used_
 
-### Database Setup
-
-Prior to running tests, the database must be created and updated. If using
-docker-compose, run:
-```sh
-docker-compose run inferno bundle exec rake db:create db:migrate
-```
-This command can also be combined with those below to prepare the database and
-run the tests in one step:
-```sh
-docker-compose run inferno bundle exec rake db:create db:migrate inferno:execute...
-```
-
 ### Running Tests Directly
 
 Testing sequences can be run from the command line via a rake task which takes
 the sequence (or sequences) to be run and server url as arguments:
 ```sh
-docker-compose run inferno bundle exec rake inferno:execute[https://inferno.healthit.gov/reference-server/r4,onc_program,UsCoreR4CapabilityStatement,USCore311Patient]
+docker-compose run inferno bundle exec rake db:create db:migrate inferno:execute[https://inferno.healthit.gov/reference-server/r4,onc_program,UsCoreR4CapabilityStatement,USCore311Patient]
 ```
 
 ### Running Automated Command Line Interface Scripts
@@ -331,7 +318,7 @@ execution. The provided `./batch/inferno.healthit.gov.json` shows an example of 
 and how it can be used.  The `execute_batch` task runs the script:
 
 ```sh
-docker-compose run inferno bundle exec rake inferno:execute_batch[./batch/inferno.healthit.gov.json]
+docker-compose run inferno bundle exec rake db:create db:migrate inferno:execute_batch[./batch/inferno.healthit.gov.json]
 ```
 
 Inferno also provides a  `generate_script` rake task which prompts the user for
@@ -339,7 +326,7 @@ a series of inputs which are then used to generate a script. The user is
 expected to provide a url for the FHIR Server to be tested and the module name
 from which sequences will be pulled.
 ```sh
-bundle exec rake inferno:generate_script[https://my-server.org/data,onc_program]
+bundle exec rake db:create db:migrate inferno:generate_script[https://my-server.org/data,onc_program]
 ```
 
 ## Using with Continuous Integration Systems
