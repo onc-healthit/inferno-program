@@ -95,7 +95,7 @@ GEM
       aes_key_wrap
       bindata
     jwt (2.2.1)
-    kramdown (2.3.0)
+    kramdown (2.3.1)
       rexml
     loofah (2.9.1)
       crass (~> 1.0.2)
@@ -157,7 +157,7 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
-    rexml (3.2.4)
+    rexml (3.2.5)
     rubocop (0.80.0)
       jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)
