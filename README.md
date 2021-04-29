@@ -310,10 +310,10 @@ docker-compose, run:
 ```sh
 docker-compose run inferno bundle exec rake db:create db:migrate
 ```
-This command can also be combined with those belowe to prepare the database and
+This command can also be combined with those below to prepare the database and
 run the tests in one step:
 ```sh
-docker-compose run inferno bundle exec rake db:create db:migrate infero:execute...
+docker-compose run inferno bundle exec rake db:create db:migrate inferno:execute...
 ```
 
 ### Running Tests Directly
