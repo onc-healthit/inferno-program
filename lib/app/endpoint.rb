@@ -18,7 +18,6 @@ module Inferno
       Inferno::BASE_PATH = "/#{settings.base_path.gsub(/[^0-9a-z_-]/i, '')}"
       Inferno::DEFAULT_SCOPES = settings.default_scopes
       Inferno::ENVIRONMENT = settings.environment
-      Inferno::CONNECTION_STRING = ENV['INFERNO_CONNECTION_STRING'] || "sqlite3:data/#{Inferno::ENVIRONMENT}_data.db"
       Inferno::PURGE_ON_RELOAD = settings.purge_database_on_reload
       Inferno::RESOURCE_VALIDATOR = Inferno::App::ResourceValidatorFactory.new_validator(
         settings.resource_validator,
@@ -41,9 +40,6 @@ module Inferno
             end
             l
           end
-
-        # FIXME: Really don't want a direct dependency to DataMapper here
-        DataMapper.logger = Inferno.logger if Inferno::ENVIRONMENT == :development
 
         FHIR.logger = FHIR::STU3.logger = FHIR::DSTU2.logger = Inferno.logger
 

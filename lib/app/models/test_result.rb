@@ -4,33 +4,18 @@ require_relative '../utils/result_statuses'
 require_relative 'information_message'
 
 module Inferno
-  module Models
-    class TestResult
-      include ResultStatuses
-      include DataMapper::Resource
-      property :id, String, key: true, default: proc { SecureRandom.uuid }
-      property :test_id, String
-      property :ref, Text
-      property :name, Text
-      property :result, String
-      property :message, Text
-      property :details, Text
-      property :required, Boolean, default: true
+  class TestResult < ApplicationRecord
+    include ResultStatuses
 
-      property :url, Text
-      property :description, Text
-      property :test_index, Integer
-      property :created_at, DateTime, default: proc { DateTime.now }
-      property :versions, String
+    attribute :id, :string, default: -> { SecureRandom.uuid }
+    attribute :required, :boolean, default: true
+    attribute :created_at, :datetime, default: -> { DateTime.now }
+    attribute :test_id, :string
 
-      property :wait_at_endpoint, Text
-      property :redirect_to_url, Text
-      property :expect_redirect_failure, Boolean, default: false
-
-      has n, :request_responses, through: Resource, order: [:request_index.asc]
-      has n, :test_warnings
-      has n, :information_messages
-      belongs_to :sequence_result
-    end
+    has_and_belongs_to_many :request_responses, -> { order 'timestamp ASC' },
+                            join_table: :inferno_models_request_response_test_results
+    has_many :test_warnings
+    has_many :information_messages
+    belongs_to :sequence_result
   end
 end

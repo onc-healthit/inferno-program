@@ -19,7 +19,7 @@ describe Inferno::Sequence::SharedLaunchTests do
   before do
     @sequence_class = SharedLaunchTestSequence
     @client = FHIR::Client.new('http://www.example.com/fhir')
-    @instance = Inferno::Models::TestingInstance.new
+    @instance = Inferno::TestingInstance.new
   end
 
   describe 'auth_endpoint_tls_test' do

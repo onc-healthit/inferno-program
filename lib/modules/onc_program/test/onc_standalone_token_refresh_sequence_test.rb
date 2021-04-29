@@ -16,7 +16,7 @@ describe Inferno::Sequence::OncStandaloneTokenRefreshSequence do
     @sequence_class = Inferno::Sequence::OncStandaloneTokenRefreshSequence
     @token_endpoint = 'http://www.example.com/token'
     @client = FHIR::Client.new('http://www.example.com/fhir')
-    @instance = Inferno::Models::TestingInstance.create(
+    @instance = Inferno::TestingInstance.create(
       oauth_token_endpoint: @token_endpoint,
       scopes: 'bad',
       onc_sl_scopes: 'jkl',
@@ -248,7 +248,7 @@ end
 class OncStandaloneTokenRefreshSequenceTest < MiniTest::Test
   def setup
     refresh_token = 'REFRESH_TOKEN'
-    @instance = Inferno::Models::TestingInstance.create(
+    @instance = Inferno::TestingInstance.create(
       url: 'http://www.example.com',
       onc_sl_url: 'http://www.example.com',
       client_name: 'Inferno',

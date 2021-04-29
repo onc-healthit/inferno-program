@@ -14,7 +14,7 @@ describe Inferno::Sequence::SharedONCLaunchTests do
     @base_url = 'http://www.example.com/fhir'
     @sequence_class = SharedONCLaunchTestSequence
     @client = FHIR::Client.new(@base_url)
-    @instance = Inferno::Models::TestingInstance.create(token: 'ACCESS_TOKEN')
+    @instance = Inferno::TestingInstance.create(token: 'ACCESS_TOKEN')
     @instance.patient_id = '123'
     @instance.encounter_id = '456'
     @instance.instance_variable_set(:@module, OpenStruct.new(resources_to_test: Set['Patient', 'Encounter']))
@@ -156,7 +156,7 @@ describe Inferno::Sequence::SharedONCLaunchTests do
       @base_url = 'http://www.example.com/fhir'
       @sequence_class = SharedONCLaunchTestRefreshSequence
       @client = FHIR::Client.new(@base_url)
-      @instance = Inferno::Models::TestingInstance.create
+      @instance = Inferno::TestingInstance.create
       @sequence = @sequence_class.new(@instance, @client)
     end
 

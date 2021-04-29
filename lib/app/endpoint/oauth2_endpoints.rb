@@ -19,11 +19,11 @@ module Inferno
 
           get '/oauth2/:key/redirect/?' do
             unless params[:state].blank?
-              @instance = Inferno::Models::TestingInstance.first(state: params[:state])
+              @instance = Inferno::TestingInstance.find_by(state: params[:state])
               return resume_execution if @instance.present?
             end
 
-            @instance = Inferno::Models::TestingInstance.get(instance_id_from_cookie)
+            @instance = Inferno::TestingInstance.find_by(id: instance_id_from_cookie)
             halt 500, no_instance_for_state_error_message if @instance.nil?
 
             if @instance&.waiting_on_sequence&.wait?
@@ -35,10 +35,10 @@ module Inferno
           end
 
           get '/oauth2/:key/launch/?' do
-            @instance = Inferno::Models::SequenceResult.recent_results_for_iss(params[:iss])&.testing_instance
+            @instance = Inferno::SequenceResult.recent_results_for_iss(params[:iss])&.testing_instance
             return resume_execution if @instance.present?
 
-            @instance = Inferno::Models::TestingInstance.get(instance_id_from_cookie)
+            @instance = Inferno::TestingInstance.find_by(id: instance_id_from_cookie)
             halt 500, no_instance_for_iss_error_message if @instance.nil?
 
             if @instance.waiting_on_sequence&.wait?
@@ -182,7 +182,7 @@ module Inferno
                 out << js_redirect("#{base_path}/#{@instance.id}/test_sets/#{test_set.id}/##{query_target}") if finished
               end
             else
-              latest_sequence_result = Inferno::Models::SequenceResult.first(testing_instance: @instance)
+              latest_sequence_result = Inferno::SequenceResult.find_by(testing_instance: @instance)
               test_set_id = latest_sequence_result&.test_set_id || @instance.module.default_test_set
               redirect "#{BASE_PATH}/#{@instance.id}/test_sets/#{test_set_id}/?error=no_#{params[:endpoint]}"
             end

@@ -5,7 +5,7 @@ services:
       context: ./
     volumes:
       - ./config.yml:/var/www/inferno/config.yml
-      - ./data:/var/www/inferno/data
+      - ./db/config.postgres.yml:/var/www/inferno/db/config.yml
       - ./batch:/var/www/inferno/batch
       - type: bind
         source: "./resources/terminology/validators"
@@ -16,8 +16,6 @@ services:
     restart: unless-stopped
     networks:
       - inferno-production
-    environment:
-      INFERNO_CONNECTION_STRING: 'postgres://postgres@db/inferno_program'
   db:
     image: postgres:9.6-alpine
     restart: unless-stopped

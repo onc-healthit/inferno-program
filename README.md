@@ -205,21 +205,21 @@ more information on how to run the validator service outside of docker.
 Inferno's default configuration is designed to be lightweight and
 run on the users host machine.  If you would like to run a shared instance
 of Inferno, you can use the docker-compose configuration provided in
-`docker-compose.production.yml`, which attaches Inferno to a Postgres
+`docker-compose.postgres.yml`, which attaches Inferno to a Postgres
 database to provide more stability when multiple tests are run
 simultaniously.  This requires higher resource utilization on the host
 machine than the default configuration, which uses SQLite for
 storage.
 
-To run this configuration, you use `docker-compose.production.yml`
+To run this configuration, you use `docker-compose.postgres.yml`
 file:
 ```sh
-docker-compose -f docker-compose.production.yml up --build -d
+docker-compose -f docker-compose.postgres.yml up --build -d
 ```
 
 To stop the service and destroy the containers, run:
 ```sh
-docker-compose -f docker-compose.production.yml down
+docker-compose -f docker-compose.postgres.yml down
 ```
 
 This configuration will persist data if the container is stopped
@@ -228,7 +228,7 @@ and have it recreated from scratch the next time the application is started,
 you can run the following commands:
 
 ```sh
-docker-compose -f docker-compose.production.yml down
+docker-compose -f docker-compose.postgres.yml down
 docker volume ls | grep inferno-pgdata # Lists active volumes
 docker volume rm inferno-program_inferno-pgdata # Volume name will end in inferno-pgdata
 ```
@@ -262,7 +262,7 @@ conform to the specification and performs as intended.  To run these tests,
 execute the following command:
 
 ```sh
-bundle exec rake test
+bin/run_tests.sh
 ```
 
 ## Inspecting and Exporting Tests
@@ -308,7 +308,7 @@ features and improvements in ways it can be used_
 Testing sequences can be run from the command line via a rake task which takes
 the sequence (or sequences) to be run and server url as arguments:
 ```sh
-docker-compose run inferno bundle exec rake inferno:execute[https://inferno.healthit.gov/reference-server/r4,onc_program,UsCoreR4CapabilityStatement,USCore311Patient]
+docker-compose run inferno bundle exec rake db:create db:migrate inferno:execute[https://inferno.healthit.gov/reference-server/r4,onc_program,UsCoreR4CapabilityStatement,USCore311Patient]
 ```
 
 ### Running Automated Command Line Interface Scripts
@@ -318,7 +318,7 @@ execution. The provided `./batch/inferno.healthit.gov.json` shows an example of 
 and how it can be used.  The `execute_batch` task runs the script:
 
 ```sh
-docker-compose run inferno bundle exec rake inferno:execute_batch[./batch/inferno.healthit.gov.json]
+docker-compose run inferno bundle exec rake db:create db:migrate inferno:execute_batch[./batch/inferno.healthit.gov.json]
 ```
 
 Inferno also provides a  `generate_script` rake task which prompts the user for
@@ -326,7 +326,7 @@ a series of inputs which are then used to generate a script. The user is
 expected to provide a url for the FHIR Server to be tested and the module name
 from which sequences will be pulled.
 ```sh
-bundle exec rake inferno:generate_script[https://my-server.org/data,onc_program]
+bundle exec rake db:create db:migrate inferno:generate_script[https://my-server.org/data,onc_program]
 ```
 
 ## Using with Continuous Integration Systems

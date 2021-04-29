@@ -14,11 +14,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build Docker image
       run: docker-compose build
-    - name: Run Tests in Docker (local config)
+    - name: Run Tests in Docker (SQLite config)
       run: |
-        docker-compose run --rm inferno bundle exec rake
+        docker-compose run inferno bin/run_tests.sh
         docker-compose down
-    - name: Run Tests in Docker (server config)
+    - name: Run Tests in Docker (Postgres config)
       run: |
-        docker-compose -f docker-compose.production.yml run --rm inferno bundle exec rake
-        docker-compose -f docker-compose.production.yml down
+        docker-compose -f docker-compose.postgres.yml run inferno bin/run_tests.sh
+        docker-compose -f docker-compose.postgres.yml down

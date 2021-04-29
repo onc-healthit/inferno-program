@@ -9,7 +9,7 @@ describe Inferno::Sequence::BulkDataPatientExportSequence do
 
     @sequence_class = Inferno::Sequence::BulkDataPatientExportSequence
 
-    @instance = Inferno::Models::TestingInstance.create(
+    @instance = Inferno::TestingInstance.create(
       url: 'http://www.example.com',
       bulk_url: 'https://www.example.com/bulk',
       bulk_access_token: 99_897_979
@@ -223,7 +223,7 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       'error' => 'error'
     }
 
-    @instance = Inferno::Models::TestingInstance.new(
+    @instance = Inferno::TestingInstance.new(
       url: 'http://www.example.com',
       bulk_url: 'https://www.example.com/bulk',
       client_name: 'Inferno',

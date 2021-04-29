@@ -6,7 +6,7 @@ describe Inferno::Sequence::OncSMARTDiscoverySequence do
   before do
     @sequence_class = Inferno::Sequence::OncSMARTDiscoverySequence
     @client = FHIR::Client.new('http://www.example.com/fhir')
-    @instance = Inferno::Models::TestingInstance.new
+    @instance = Inferno::TestingInstance.new
   end
 
   it 'must require a a subset of all capabilities' do

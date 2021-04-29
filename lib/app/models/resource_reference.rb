@@ -1,20 +1,11 @@
 # frozen_string_literal: true
 
-require 'dm-timestamps'
-
 module Inferno
-  module Models
-    class ResourceReference
-      include DataMapper::Resource
-      property :id, String, key: true, default: proc { SecureRandom.uuid }
-      property :resource_type, String
-      property :resource_id, String
-      property :profile, String
-      property :created_at, DateTime
+  class ResourceReference < ApplicationRecord
+    self.primary_key = 'id'
+    attribute :id, :string, default: -> { SecureRandom.uuid }
+    attribute :resource_id, :string
 
-      property :resource_index, Serial, unique_index: true, key: false
-
-      belongs_to :testing_instance
-    end
+    belongs_to :testing_instance
   end
 end

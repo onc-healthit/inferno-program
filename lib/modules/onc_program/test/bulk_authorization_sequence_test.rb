@@ -7,7 +7,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     @sequence_class = Inferno::Sequence::BulkDataAuthorizationSequence
     config = load_json_fixture(:bulk_data_authorization)
 
-    @instance = Inferno::Models::TestingInstance.create(
+    @instance = Inferno::TestingInstance.create(
       url: 'http://www.example.com',
       bulk_client_id: config['client_id'],
       bulk_data_jwks: config['bulk_data_jwks'].to_json,

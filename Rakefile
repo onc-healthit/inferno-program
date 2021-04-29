@@ -2,14 +2,13 @@
 
 require 'rake/testtask'
 require 'rubocop/rake_task'
+require 'standalone_migrations'
+
+StandaloneMigrations::Tasks.load_tasks
 
 task :default do
   ENV['RACK_ENV'] = 'test'
   Rake::Task['test'].invoke
-end
-
-Dir['lib/tasks/*.rake'].sort.each do |ext|
-  load ext
 end
 
 Rake::TestTask.new(:test) do |t|

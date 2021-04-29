@@ -3,10 +3,8 @@ FROM ruby:2.7.2
 WORKDIR /var/www/inferno
 
 ### Install dependencies
-COPY Gemfile.docker /var/www/inferno/Gemfile
-COPY Gemfile.docker.lock /var/www/inferno/Gemfile.lock
-RUN apt-get update
-RUN apt-get install postgresql-server-dev-11 --assume-yes
+COPY Gemfile.postgres /var/www/inferno/Gemfile
+COPY Gemfile.postgres.lock /var/www/inferno/Gemfile.lock
 RUN gem install bundler
 # Throw an error if Gemfile & Gemfile.lock are out of sync
 RUN bundle config --global frozen 1
@@ -21,10 +19,12 @@ COPY config* /var/www/inferno/
 COPY Rakefile /var/www/inferno/
 COPY test /var/www/inferno/test
 COPY lib /var/www/inferno/lib
+COPY db /var/www/inferno/db
+COPY bin /var/www/inferno/bin
 
 ### Set up environment
 
-ENV APP_ENV=production
+ENV RACK_ENV=production
 EXPOSE 4567
 
-CMD ["bundle", "exec", "rackup", "-o", "0.0.0.0"]
+CMD ["./bin/run.sh"]

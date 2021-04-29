@@ -6,7 +6,7 @@ describe Inferno::Sequence::OncStandaloneLaunchSequence do
   before do
     @sequence_class = Inferno::Sequence::OncStandaloneLaunchSequence
     @client = FHIR::Client.new('http://www.example.com/fhir')
-    @instance = Inferno::Models::TestingInstance.new
+    @instance = Inferno::TestingInstance.new
   end
 
   describe 'ONC scopes test' do
@@ -29,7 +29,7 @@ describe Inferno::Sequence::OncStandaloneLaunchSequence do
     it 'fails when a required scope was not requested' do
       @sequence.required_scopes.each do |scope|
         scopes = @sequence.required_scopes - [scope]
-        @instance.instance_variable_set(:@onc_sl_scopes, scopes.join(' '))
+        @instance.onc_sl_scopes = scopes.join(' ')
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
         assert_equal "Required scopes were not requested: #{scope}", exception.message
@@ -37,10 +37,10 @@ describe Inferno::Sequence::OncStandaloneLaunchSequence do
     end
 
     it 'fails when a required scope was not received' do
-      @instance.instance_variable_set(:@onc_sl_scopes, good_scopes)
+      @instance.onc_sl_scopes = good_scopes
       @sequence.required_scopes.each do |scope|
         scopes = @sequence.required_scopes - [scope]
-        @instance.instance_variable_set(:@received_scopes, scopes.join(' '))
+        @instance.received_scopes = scopes.join(' ')
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
         assert_equal "Required scopes were not received: #{scope}", exception.message
@@ -48,15 +48,15 @@ describe Inferno::Sequence::OncStandaloneLaunchSequence do
     end
 
     it 'fails when no patient-level scope was requested' do
-      @instance.instance_variable_set(:@onc_sl_scopes, @sequence.required_scopes.join(' '))
+      @instance.onc_sl_scopes = @sequence.required_scopes.join(' ')
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
       assert_equal 'Patient-level scope in the format: `patient/[ resource | * ].[ read | *]` was not requested.', exception.message
     end
 
     it 'fails when no patient-level scope was received' do
-      @instance.instance_variable_set(:@onc_sl_scopes, good_scopes)
-      @instance.instance_variable_set(:@received_scopes, @sequence.required_scopes.join(' '))
+      @instance.onc_sl_scopes = good_scopes
+      @instance.received_scopes = @sequence.required_scopes.join(' ')
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
       assert_equal 'Patient-level scope in the format: `patient/[ resource | * ].[ read | *]` was not received.', exception.message
@@ -65,15 +65,15 @@ describe Inferno::Sequence::OncStandaloneLaunchSequence do
     it 'fails when a badly formatted scope was requested' do
       bad_scopes = ['patient/*/*', 'user/*.read', 'patient/*.*.*', 'patient/*.write']
       bad_scopes.each do |scope|
-        @instance.instance_variable_set(:@onc_sl_scopes, (@sequence.required_scopes + [scope]).join(' '))
+        @instance.onc_sl_scopes = (@sequence.required_scopes + [scope]).join(' ')
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
         assert_equal "Requested scope '#{scope}' does not follow the format: `patient/[ resource | * ].[ read | * ]`", exception.message
       end
 
       bad_resource_type = 'ValueSet'
-      @instance.instance_variable_set(:@received_scopes, good_scopes)
-      @instance.instance_variable_set(:@onc_sl_scopes, @sequence.required_scopes.join(' ') + " patient/#{bad_resource_type}.*")
+      @instance.received_scopes = good_scopes
+      @instance.onc_sl_scopes = @sequence.required_scopes.join(' ') + " patient/#{bad_resource_type}.*"
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
       assert_equal "'#{bad_resource_type}' must be either a valid resource type or '*'", exception.message
@@ -81,25 +81,25 @@ describe Inferno::Sequence::OncStandaloneLaunchSequence do
 
     it 'fails when a badly formatted scope was received' do
       bad_scopes = ['patient/*/*', 'user/*.read', 'patient/*.*.*', 'patient/*.write']
-      @instance.instance_variable_set(:@onc_sl_scopes, good_scopes)
+      @instance.onc_sl_scopes = good_scopes
 
       bad_scopes.each do |scope|
-        @instance.instance_variable_set(:@received_scopes, (@sequence.required_scopes + [scope]).join(' '))
+        @instance.received_scopes = (@sequence.required_scopes + [scope]).join(' ')
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
         assert_equal "Received scope '#{scope}' does not follow the format: `patient/[ resource | * ].[ read | * ]`", exception.message
       end
 
       bad_resource_type = 'ValueSet'
-      @instance.instance_variable_set(:@received_scopes, @sequence.required_scopes.join(' ') + " patient/#{bad_resource_type}.*")
+      @instance.received_scopes = @sequence.required_scopes.join(' ') + " patient/#{bad_resource_type}.*"
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
       assert_equal "'#{bad_resource_type}' must be either a valid resource type or '*'", exception.message
     end
 
     it 'succeeds when the required scopes and a patient-level scope are present' do
-      @instance.instance_variable_set(:@onc_sl_scopes, good_scopes)
-      @instance.instance_variable_set(:@received_scopes, good_scopes)
+      @instance.onc_sl_scopes = good_scopes
+      @instance.received_scopes = good_scopes
 
       @sequence.run_test(@test)
     end

@@ -29,7 +29,7 @@ describe Inferno::Sequence::OncOpenIDConnectSequence do
 
     @sequence_class = Inferno::Sequence::OncOpenIDConnectSequence
 
-    @instance = Inferno::Models::TestingInstance.create(
+    @instance = Inferno::TestingInstance.create(
       url: 'http://www.example.com',
       scopes: 'launch patient/*.read openid fhirUser',
       client_id: 'CLIENT_ID',

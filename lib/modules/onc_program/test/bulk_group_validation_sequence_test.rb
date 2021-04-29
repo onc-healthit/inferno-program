@@ -22,7 +22,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       'requiresAccessToken' => true
     }
 
-    @instance = Inferno::Models::TestingInstance.create(
+    @instance = Inferno::TestingInstance.create(
       url: 'http://www.example.com',
       bulk_status_output: @status_response.to_json,
       bulk_access_token: 99_897_979,
@@ -176,7 +176,7 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
     end
 
     it 'skips when bulk_access_token is nil' do
-      a_instance = Inferno::Models::TestingInstance.create(
+      a_instance = Inferno::TestingInstance.create(
         url: 'http://www.example.com',
         bulk_status_output: @status_response.to_json
       )

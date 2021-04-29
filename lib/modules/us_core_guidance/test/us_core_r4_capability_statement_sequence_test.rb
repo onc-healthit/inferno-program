@@ -6,7 +6,7 @@ describe Inferno::Sequence::UsCoreR4CapabilityStatementSequence do
   before do
     @sequence_class = Inferno::Sequence::UsCoreR4CapabilityStatementSequence
     @client = FHIR::Client.new('http://www.example.com/fhir')
-    @instance = Inferno::Models::TestingInstance.new(oauth_token_endpoint: @token_endpoint, scopes: 'jkl')
+    @instance = Inferno::TestingInstance.new(oauth_token_endpoint: @token_endpoint, scopes: 'jkl')
     @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'r4'))
   end
 
@@ -20,7 +20,7 @@ describe Inferno::Sequence::UsCoreR4CapabilityStatementSequence do
       stub_request(:get, /metadata/).to_raise(SocketError)
 
       exception = assert_raises(SocketError) { @sequence.run_test(@test) }
-      test_result = Inferno::Models::TestResult.new
+      test_result = Inferno::TestResult.new
       exception.update_result(test_result)
 
       assert test_result.fail?, "Test result should be fail but is #{test_result.result}"

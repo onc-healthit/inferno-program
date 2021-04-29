@@ -1,22 +1,23 @@
 describe 'unauthorized search test' do
-  before do
-    @test = @sequence_class[:<%= test_key %>]
-    @sequence = @sequence_class.new(@instance, @client)
+before do
+@test = @sequence_class[:<%= test_key %>]
+@sequence = @sequence_class.new(@instance, @client)
 <% if dynamic_search_params.present? %>
   <% dynamic_search_params.each do |_param, search_param|  %>
     <%= search_param[:variable_name] %> = FHIR.from_contents(load_fixture(:<%= sequence_name %>))
     @sequence.instance_variable_set(:'<%= search_param[:variable_name] %>', <%= search_param[:variable_name] %>)
   <% end %>
 <% end %>
-    @query = {
-      <%= search_param_string %>
-    }
-  end
+@query = {
+<%= search_param_string %>
+}
+end
 
-  it 'skips if the <%= resource_type %> search interaction is not supported' do
-    Inferno::Models::ServerCapabilities.create(
+it 'skips if the <%= resource_type %> search interaction is not supported' do
+    Inferno::ServerCapabilities.delete_all
+    Inferno::ServerCapabilities.create(
       testing_instance_id: @instance.id,
-      capabilities: FHIR::CapabilityStatement.new.to_json
+      capabilities: FHIR::CapabilityStatement.new.as_json
     )
     @instance.reload
     exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }

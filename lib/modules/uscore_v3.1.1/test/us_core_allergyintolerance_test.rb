@@ -10,7 +10,7 @@ describe Inferno::Sequence::USCore311AllergyintoleranceSequence do
     @sequence_class = Inferno::Sequence::USCore311AllergyintoleranceSequence
     @base_url = 'http://www.example.com/fhir'
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.1')
+    @instance = Inferno::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.1')
     @client = FHIR::Client.for_testing_instance(@instance)
     @patient_ids = 'example'
     @instance.patient_ids = @patient_ids
@@ -32,7 +32,7 @@ describe Inferno::Sequence::USCore311AllergyintoleranceSequence do
     end
 
     it 'skips if the search params are not supported' do
-      capabilities = Inferno::Models::ServerCapabilities.new
+      capabilities = Inferno::ServerCapabilities.new
       def capabilities.supported_search_params(_)
         []
       end
@@ -199,7 +199,7 @@ describe Inferno::Sequence::USCore311AllergyintoleranceSequence do
     end
 
     it 'skips if the search params are not supported' do
-      capabilities = Inferno::Models::ServerCapabilities.new
+      capabilities = Inferno::ServerCapabilities.new
       def capabilities.supported_search_params(_)
         ['patient']
       end
@@ -281,9 +281,10 @@ describe Inferno::Sequence::USCore311AllergyintoleranceSequence do
     end
 
     it 'skips if the AllergyIntolerance read interaction is not supported' do
-      Inferno::Models::ServerCapabilities.create(
+      Inferno::ServerCapabilities.delete_all
+      Inferno::ServerCapabilities.create(
         testing_instance_id: @instance.id,
-        capabilities: FHIR::CapabilityStatement.new.to_json
+        capabilities: FHIR::CapabilityStatement.new.as_json
       )
       @instance.reload
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
@@ -300,7 +301,7 @@ describe Inferno::Sequence::USCore311AllergyintoleranceSequence do
     end
 
     it 'fails if a non-success response code is received' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'AllergyIntolerance',
         resource_id: @allergy_intolerance_id,
         testing_instance: @instance
@@ -316,7 +317,7 @@ describe Inferno::Sequence::USCore311AllergyintoleranceSequence do
     end
 
     it 'fails if no resource is received' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'AllergyIntolerance',
         resource_id: @allergy_intolerance_id,
         testing_instance: @instance
@@ -332,7 +333,7 @@ describe Inferno::Sequence::USCore311AllergyintoleranceSequence do
     end
 
     it 'fails if the resource returned is not a AllergyIntolerance' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'AllergyIntolerance',
         resource_id: @allergy_intolerance_id,
         testing_instance: @instance
@@ -348,7 +349,7 @@ describe Inferno::Sequence::USCore311AllergyintoleranceSequence do
     end
 
     it 'fails if the resource has an incorrect id' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'AllergyIntolerance',
         resource_id: @allergy_intolerance_id,
         testing_instance: @instance
@@ -369,7 +370,7 @@ describe Inferno::Sequence::USCore311AllergyintoleranceSequence do
       allergy_intolerance = FHIR::AllergyIntolerance.new(
         id: @allergy_intolerance_id
       )
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'AllergyIntolerance',
         resource_id: @allergy_intolerance_id,
         testing_instance: @instance
@@ -390,7 +391,7 @@ describe Inferno::Sequence::USCore311AllergyintoleranceSequence do
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:'@resources_found', true)
 
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'AllergyIntolerance',
         resource_id: @allergy_intolerance.id,
         testing_instance: @instance
