@@ -159,8 +159,9 @@ module Inferno
             both forms are supported by US Core responders.
 
             Additionally, this test will check that GET and POST search
-            methods return the same number of results. Both methods are
-            required by the FHIR R4 specification.
+            methods return the same number of results. Search by POST
+            is required by the FHIR R4 specification, and these tests
+            interpret search by GET as a requirement of US Core v3.1.1.
 
             Because this is the first search of the sequence, resources in
             the response will be used for subsequent tests.
