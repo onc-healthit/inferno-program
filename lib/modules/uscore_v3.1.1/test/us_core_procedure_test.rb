@@ -105,6 +105,10 @@ describe Inferno::Sequence::USCore311ProcedureSequence do
         .with(query: reference_with_type_params, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@procedure_ary.values.flatten.append(operation_outcome)).to_json)
 
+      stub_request(:post, "#{@base_url}/Procedure/_search")
+        .with(body: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@procedure_ary.values.flatten.append(operation_outcome)).to_json)
+
       @sequence.run_test(@test)
     end
 
@@ -169,6 +173,9 @@ describe Inferno::Sequence::USCore311ProcedureSequence do
 
         stub_request(:get, "#{@base_url}/Procedure")
           .with(query: @query.merge('patient': 'Patient/' + @query[:patient], 'status': ['preparation,in-progress,not-done,on-hold,stopped,completed,entered-in-error,unknown'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@procedure]).to_json)
+        stub_request(:post, "#{@base_url}/Procedure/_search")
+          .with(headers: @auth_header, body: @query.merge('status': ['preparation,in-progress,not-done,on-hold,stopped,completed,entered-in-error,unknown'].first))
           .to_return(status: 200, body: wrap_resources_in_bundle([@procedure]).to_json)
 
         @sequence.run_test(@test)

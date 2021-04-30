@@ -145,6 +145,9 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
         stub_request(:get, "#{@base_url}/MedicationRequest")
           .with(query: reference_with_type_params, headers: @auth_header)
           .to_return(status: 200, body: body)
+        stub_request(:post, "#{@base_url}/MedicationRequest/_search")
+          .with(headers: @auth_header, body: query_params)
+          .to_return(status: 200, body: body)
       end
 
       @sequence.run_test(@test)
@@ -163,6 +166,9 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
           end
         stub_request(:get, "#{@base_url}/MedicationRequest")
           .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
+        stub_request(:post, "#{@base_url}/MedicationRequest/_search")
+          .with(body: query_params, headers: @auth_header)
           .to_return(status: 200, body: body)
         stub_request(:get, "#{@base_url}/MedicationRequest")
           .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient]), headers: @auth_header)
@@ -272,6 +278,9 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
           stub_request(:get, "#{@base_url}/MedicationRequest")
             .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient], 'status': ['active,on-hold,cancelled,completed,entered-in-error,stopped,draft,unknown'].first), headers: @auth_header)
             .to_return(status: 200, body: body)
+          stub_request(:post, "#{@base_url}/MedicationRequest/_search")
+            .with(headers: @auth_header, body: query_params.merge('status': ['active,on-hold,cancelled,completed,entered-in-error,stopped,draft,unknown'].first))
+            .to_return(status: 200, body: body)
         end
 
         @sequence.run_test(@test)
@@ -378,6 +387,9 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
           end
         stub_request(:get, "#{@base_url}/MedicationRequest")
           .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
+        stub_request(:post, "#{@base_url}/MedicationRequest/_search")
+          .with(body: query_params, headers: @auth_header)
           .to_return(status: 200, body: body)
         stub_request(:get, "#{@base_url}/MedicationRequest")
           .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient]), headers: @auth_header)
@@ -491,6 +503,9 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
           end
         stub_request(:get, "#{@base_url}/MedicationRequest")
           .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
+        stub_request(:post, "#{@base_url}/MedicationRequest/_search")
+          .with(body: query_params, headers: @auth_header)
           .to_return(status: 200, body: body)
         stub_request(:get, "#{@base_url}/MedicationRequest")
           .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient]), headers: @auth_header)
@@ -667,6 +682,9 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
           end
         stub_request(:get, "#{@base_url}/MedicationRequest")
           .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
+        stub_request(:post, "#{@base_url}/MedicationRequest/_search")
+          .with(body: query_params, headers: @auth_header)
           .to_return(status: 200, body: body)
         stub_request(:get, "#{@base_url}/MedicationRequest")
           .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient]), headers: @auth_header)

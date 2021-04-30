@@ -105,6 +105,10 @@ describe Inferno::Sequence::USCore311ImplantableDeviceSequence do
         .with(query: reference_with_type_params, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@device_ary.values.flatten.append(operation_outcome)).to_json)
 
+      stub_request(:post, "#{@base_url}/Device/_search")
+        .with(body: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@device_ary.values.flatten.append(operation_outcome)).to_json)
+
       @sequence.run_test(@test)
     end
   end

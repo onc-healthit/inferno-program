@@ -145,6 +145,9 @@ describe Inferno::Sequence::USCore311CareteamSequence do
         stub_request(:get, "#{@base_url}/CareTeam")
           .with(query: reference_with_type_params, headers: @auth_header)
           .to_return(status: 200, body: body)
+        stub_request(:post, "#{@base_url}/CareTeam/_search")
+          .with(headers: @auth_header, body: query_params)
+          .to_return(status: 200, body: body)
       end
 
       @sequence.run_test(@test)
