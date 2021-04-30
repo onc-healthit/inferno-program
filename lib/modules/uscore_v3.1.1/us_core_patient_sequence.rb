@@ -193,6 +193,15 @@ module Inferno
                  'All resources returned must be of the type Patient or OperationOutcome, but includes ' + invalid_types_in_response.to_a.join(', '))
 
           validate_reply_entries(@patient_ary[patient], search_params)
+
+          # Search by POST variant
+          reply = get_resource_by_params(versioned_resource_class('Patient'), search_params, search_method: :post)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+
+          search_by_post_resources = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          search_by_post_resources.select! { |resource| resource.resourceType == 'Patient' }
+          assert search_by_post_resources.length == @patient_ary[patient].length, 'Expected search by POST to have same results as search by GET'
         end
 
         skip_if_not_found(resource_type: 'Patient', delayed: false)

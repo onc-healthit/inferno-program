@@ -1094,7 +1094,7 @@ module Inferno
                 'All resources returned must be of the type #{sequence[:resource]} or OperationOutcome, but includes ' +  invalid_types_in_response.to_a.join(', '))
 
               validate_reply_entries(@#{sequence[:resource].underscore}_ary[patient], search_params)
-              #{search_by_post unless sequence[:resource] == 'Patient'}
+              #{search_by_post}
               #{search_with_reference_types unless sequence[:resource] == 'Patient'}
             end
 
