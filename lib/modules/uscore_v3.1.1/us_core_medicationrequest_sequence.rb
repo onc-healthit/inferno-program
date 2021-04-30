@@ -186,7 +186,7 @@ module Inferno
             Medications, the search will be repeated with
             _include=MedicationRequest:medication.
 
-            This test will verifies that the server supports searching by
+            This test verifies that the server supports searching by
             reference using the form `patient=[id]` as well as
             `patient=Patient/[id]`.  The two different forms are expected
             to return the same number of results.  US Core requires that

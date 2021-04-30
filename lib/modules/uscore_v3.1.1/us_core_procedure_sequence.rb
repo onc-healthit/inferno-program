@@ -152,7 +152,7 @@ module Inferno
             A server SHALL support searching by patient on the Procedure resource.
             This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
 
-            This test will verifies that the server supports searching by
+            This test verifies that the server supports searching by
             reference using the form `patient=[id]` as well as
             `patient=Patient/[id]`.  The two different forms are expected
             to return the same number of results.  US Core requires that
