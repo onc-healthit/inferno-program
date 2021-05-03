@@ -19,7 +19,7 @@ describe FHIR::Client do
       stub_request(:get, "#{@base_url}/Patient/5")
         .to_return(status: 200)
 
-      result = @client.read(FHIR::Patient, 5)
+      @client.read(FHIR::Patient, 5)
 
       last_logged_request = @client.requests.last.to_hash
 
@@ -33,7 +33,7 @@ describe FHIR::Client do
       stub_request(:get, "#{@base_url}/Patient?name=Fred")
         .to_return(status: 200)
 
-      result = @client.search(FHIR::Patient, {search: {parameters: {name: 'Fred'}}})
+      @client.search(FHIR::Patient, { search: { parameters: { name: 'Fred' } } })
 
       last_logged_request = @client.requests.last.to_hash
 
@@ -43,10 +43,10 @@ describe FHIR::Client do
 
     it 'searches by POST when body passed' do
       stub_request(:post, "#{@base_url}/Patient/_search")
-        .with(headers: {'Content-Type' => 'application/x-www-form-urlencoded'}, body: {name: 'Fred'})
+        .with(headers: { 'Content-Type' => 'application/x-www-form-urlencoded' }, body: { name: 'Fred' })
         .to_return(status: 200)
 
-      result = @client.search(FHIR::Patient, {search: {body: {name: 'Fred'}}})
+      @client.search(FHIR::Patient, { search: { body: { name: 'Fred' } } })
 
       last_logged_request = @client.requests.last.to_hash
 
@@ -55,7 +55,6 @@ describe FHIR::Client do
       assert last_logged_request.dig('request', :headers, 'Content-Type') == 'application/x-www-form-urlencoded'
       assert last_logged_request.dig('request', :payload) == 'name=Fred'
     end
-
   end
 
   describe '#time_to_refresh?' do

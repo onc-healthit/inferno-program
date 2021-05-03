@@ -13,7 +13,7 @@ module FHIR
       # The underlying library handles encoding body payload.  We have to
       # encode the payload for logging purposes, otherwise a hash will be
       # logged.  This is good enough for program certification tests.
-      if reply.request.dig(:headers,'Content-Type') == 'application/x-www-form-urlencoded' &&
+      if reply.request.dig(:headers, 'Content-Type') == 'application/x-www-form-urlencoded' &&
          reply.request[:payload].is_a?(Hash)
         reply.request[:payload] = URI.encode_www_form(reply.request[:payload])
       end

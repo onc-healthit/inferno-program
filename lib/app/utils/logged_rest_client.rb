@@ -77,11 +77,11 @@ module Inferno
       # Fix the payload encoding for logging, because the underlying library
       # returns a hash
       if payload.is_a?(Hash)
-        if headers['Content-Type'] == 'application/x-www-form-urlencoded'
-          request[:payload] = URI.encode_www_form(payload)
-        else #default to json for program tests
-          request[:payload] = payload.to_json
-        end
+        request[:payload] = if headers['Content-Type'] == 'application/x-www-form-urlencoded'
+                              URI.encode_www_form(payload)
+                            else # default to json for program tests
+                              payload.to_json
+                            end
       end
 
       record_response(request, reply)
