@@ -100,6 +100,10 @@ describe Inferno::Sequence::USCore311AllergyintoleranceSequence do
         .with(query: @query, headers: @auth_header)
         .to_return(status: 200, body: wrap_resources_in_bundle(@allergy_intolerance_ary.values.flatten.append(operation_outcome)).to_json)
 
+      stub_request(:post, "#{@base_url}/AllergyIntolerance/_search")
+        .with(body: @query, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@allergy_intolerance_ary.values.flatten.append(operation_outcome)).to_json)
+
       reference_with_type_params = @query.merge('patient': 'Patient/' + @query[:patient])
       stub_request(:get, "#{@base_url}/AllergyIntolerance")
         .with(query: reference_with_type_params, headers: @auth_header)
@@ -169,6 +173,9 @@ describe Inferno::Sequence::USCore311AllergyintoleranceSequence do
 
         stub_request(:get, "#{@base_url}/AllergyIntolerance")
           .with(query: @query.merge('patient': 'Patient/' + @query[:patient], 'clinical-status': ['active', 'inactive', 'resolved'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@allergy_intolerance]).to_json)
+        stub_request(:post, "#{@base_url}/AllergyIntolerance/_search")
+          .with(headers: @auth_header, body: @query.merge('clinical-status': ['active', 'inactive', 'resolved'].first))
           .to_return(status: 200, body: wrap_resources_in_bundle([@allergy_intolerance]).to_json)
 
         @sequence.run_test(@test)

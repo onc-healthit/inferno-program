@@ -127,7 +127,7 @@ test_sets:
           For each of the relevant USCDI data elements provided in the
           conformance statement, this test executes the [required supported
           searches](https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html)
-          as defined by the US Core Implementation Guide v3.1.  The test begins
+          as defined by the US Core Implementation Guide v3.1.1.  The test begins
           by searching by one or more patients, with the expectation that the
           Bearer token provided to the test grants access to all USCDI
           resources. It uses results returned from that query to generate other

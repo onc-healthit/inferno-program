@@ -141,7 +141,21 @@ module Inferno
 
             A server SHALL support searching by _id on the Patient resource.
             This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
-            Because this is the first search of the sequence, resources in the response will be used for subsequent tests.
+
+            This test verifies that the server supports searching by
+            reference using the form `patient=[id]` as well as
+            `patient=Patient/[id]`.  The two different forms are expected
+            to return the same number of results.  US Core requires that
+            both forms are supported by US Core responders.
+
+            Additionally, this test will check that GET and POST search
+            methods return the same number of results. Search by POST
+            is required by the FHIR R4 specification, and these tests
+            interpret search by GET as a requirement of US Core v3.1.1.
+
+            Because this is the first search of the sequence, resources in
+            the response will be used for subsequent tests.
+
           )
           versions :r4
         end
@@ -179,6 +193,15 @@ module Inferno
                  'All resources returned must be of the type Patient or OperationOutcome, but includes ' + invalid_types_in_response.to_a.join(', '))
 
           validate_reply_entries(@patient_ary[patient], search_params)
+
+          # Search by POST variant
+          reply = get_resource_by_params(versioned_resource_class('Patient'), search_params, search_method: :post)
+          assert_response_ok(reply)
+          assert_bundle_response(reply)
+
+          search_by_post_resources = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+          search_by_post_resources.select! { |resource| resource.resourceType == 'Patient' }
+          assert search_by_post_resources.length == @patient_ary[patient].length, 'Expected search by POST to have same results as search by GET'
         end
 
         skip_if_not_found(resource_type: 'Patient', delayed: false)

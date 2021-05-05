@@ -4,12 +4,57 @@ require File.expand_path '../test_helper.rb', __dir__
 
 describe FHIR::Client do
   before do
-    @client = FHIR::Client.new('http://www.example.com/fhir')
+    @base_url = 'http://www.example.com/fhir'
+    @client = FHIR::Client.new(@base_url)
     @instance = Inferno::TestingInstance.create!(
       oauth_token_endpoint: 'http://www.example.com/token',
       client_id: 'CLIENT_ID'
     )
     @client.instance_variable_set(:@testing_instance, @instance)
+    @client.monitor_requests
+  end
+
+  describe '#requests' do
+    it 'saves requests' do
+      stub_request(:get, "#{@base_url}/Patient/5")
+        .to_return(status: 200)
+
+      @client.read(FHIR::Patient, 5)
+
+      last_logged_request = @client.requests.last.to_hash
+
+      assert last_logged_request.dig('request', :url) == "#{@base_url}/Patient/5"
+      assert last_logged_request.dig('request', :method) == :get
+      assert last_logged_request.dig('request', :headers, 'Accept') == 'application/fhir+json'
+      assert last_logged_request.dig('response', :code) == 200
+    end
+
+    it 'searches by GET by default' do
+      stub_request(:get, "#{@base_url}/Patient?name=Fred")
+        .to_return(status: 200)
+
+      @client.search(FHIR::Patient, { search: { parameters: { name: 'Fred' } } })
+
+      last_logged_request = @client.requests.last.to_hash
+
+      assert last_logged_request.dig('request', :url) == "#{@base_url}/Patient?name=Fred"
+      assert last_logged_request.dig('request', :method) == :get
+    end
+
+    it 'searches by POST when body passed' do
+      stub_request(:post, "#{@base_url}/Patient/_search")
+        .with(headers: { 'Content-Type' => 'application/x-www-form-urlencoded' }, body: { name: 'Fred' })
+        .to_return(status: 200)
+
+      @client.search(FHIR::Patient, { search: { body: { name: 'Fred' } } })
+
+      last_logged_request = @client.requests.last.to_hash
+
+      assert last_logged_request.dig('request', :url) == "#{@base_url}/Patient/_search"
+      assert last_logged_request.dig('request', :method) == :post
+      assert last_logged_request.dig('request', :headers, 'Content-Type') == 'application/x-www-form-urlencoded'
+      assert last_logged_request.dig('request', :payload) == 'name=Fred'
+    end
   end
 
   describe '#time_to_refresh?' do

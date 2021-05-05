@@ -485,14 +485,18 @@ module Inferno
         @test_warnings << e.message
       end
 
-      def get_resource_by_params(klass, params)
+      def get_resource_by_params(klass, params, search_method: :get)
+        raise StandardError, "No such search method: #{search_method}" unless [:post, :get].include?(search_method)
+
         options = {
           search: {
-            flag: false,
-            compartment: nil,
-            parameters: params
+            compartment: nil
           }
         }
+
+        options[:search][:parameters] = params if search_method == :get
+        options[:search][:body] = params if search_method == :post
+
         @client.search(klass, options)
       end
 

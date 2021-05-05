@@ -108,7 +108,7 @@ module Inferno
         end
       end
 
-      def perform_search_with_status(reply, search_param)
+      def perform_search_with_status(reply, search_param, search_method: :get)
         begin
           parsed_reply = JSON.parse(reply.body)
           assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
@@ -127,7 +127,7 @@ module Inferno
 
         ['planned', 'arrived', 'triaged', 'in-progress', 'onleave', 'finished', 'cancelled', 'entered-in-error', 'unknown'].each do |status_value|
           params_with_status = search_param.merge('status': status_value)
-          reply = get_resource_by_params(versioned_resource_class('Encounter'), params_with_status)
+          reply = get_resource_by_params(versioned_resource_class('Encounter'), params_with_status, search_method: search_method)
           assert_response_ok(reply)
           assert_bundle_response(reply)
 

@@ -133,7 +133,7 @@ module Inferno
         @medications.uniq!(&:id)
       end
 
-      def perform_search_with_status(reply, search_param)
+      def perform_search_with_status(reply, search_param, search_method: :get)
         begin
           parsed_reply = JSON.parse(reply.body)
           assert parsed_reply['resourceType'] == 'OperationOutcome', 'Server returned a status of 400 without an OperationOutcome.'
@@ -152,7 +152,7 @@ module Inferno
 
         ['active,on-hold,cancelled,completed,entered-in-error,stopped,draft,unknown'].each do |status_value|
           params_with_status = search_param.merge('status': status_value)
-          reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), params_with_status)
+          reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), params_with_status, search_method: search_method)
           assert_response_ok(reply)
           assert_bundle_response(reply)
 
@@ -185,7 +185,21 @@ module Inferno
             If any MedicationRequest resources use external references to
             Medications, the search will be repeated with
             _include=MedicationRequest:medication.
-            Because this is the first search of the sequence, resources in the response will be used for subsequent tests.
+
+            This test verifies that the server supports searching by
+            reference using the form `patient=[id]` as well as
+            `patient=Patient/[id]`.  The two different forms are expected
+            to return the same number of results.  US Core requires that
+            both forms are supported by US Core responders.
+
+            Additionally, this test will check that GET and POST search
+            methods return the same number of results. Search by POST
+            is required by the FHIR R4 specification, and these tests
+            interpret search by GET as a requirement of US Core v3.1.1.
+
+            Because this is the first search of the sequence, resources in
+            the response will be used for subsequent tests.
+
           )
           versions :r4
         end
@@ -201,7 +215,7 @@ module Inferno
             search_params = { 'patient': patient, 'intent': val }
             reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
 
-            reply = perform_search_with_status(reply, search_params) if reply.code == 400
+            reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
 
             assert_response_ok(reply)
             assert_bundle_response(reply)
@@ -225,10 +239,11 @@ module Inferno
 
             next if search_query_variants_tested_once
 
+            # Search with type of reference variant (patient=Patient/[id])
             search_params_with_type = search_params.merge('patient': "Patient/#{patient}")
             reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params_with_type)
 
-            reply = perform_search_with_status(reply, search_params) if reply.code == 400
+            reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
 
             assert_response_ok(reply)
             assert_bundle_response(reply)
@@ -236,6 +251,22 @@ module Inferno
             search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             search_with_type.select! { |resource| resource.resourceType == 'MedicationRequest' }
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
+
+            search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            search_with_type.select! { |resource| resource.resourceType == 'MedicationRequest' }
+            assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
+
+            # Search by POST variant
+            reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params, search_method: :post)
+
+            reply = perform_search_with_status(reply, search_params, search_method: :post) if reply.code == 400
+
+            assert_response_ok(reply)
+            assert_bundle_response(reply)
+
+            search_by_post_resources = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            search_by_post_resources.select! { |resource| resource.resourceType == 'MedicationRequest' }
+            assert search_by_post_resources.length == resources_returned.length, 'Expected search by POST to have the same results as search by GET'
 
             test_medication_inclusion(@medication_request_ary[patient], search_params)
 
@@ -331,7 +362,7 @@ module Inferno
 
           reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
 
-          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+          reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
 
@@ -386,7 +417,7 @@ module Inferno
 
           reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
 
-          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+          reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
 
           validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
 
@@ -525,7 +556,7 @@ module Inferno
           search_params['_revinclude'] = 'Provenance:target'
           reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
 
-          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+          reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
 
           assert_response_ok(reply)
           assert_bundle_response(reply)

@@ -150,6 +150,9 @@ describe Inferno::Sequence::USCore311ObservationLabSequence do
         stub_request(:get, "#{@base_url}/Observation")
           .with(query: reference_with_type_params, headers: @auth_header)
           .to_return(status: 200, body: body)
+        stub_request(:post, "#{@base_url}/Observation/_search")
+          .with(headers: @auth_header, body: query_params)
+          .to_return(status: 200, body: body)
       end
 
       stub_request(:get, "#{@base_url}/Observation")
@@ -254,6 +257,9 @@ describe Inferno::Sequence::USCore311ObservationLabSequence do
             .to_return(status: 200, body: body)
           stub_request(:get, "#{@base_url}/Observation")
             .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient], 'status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
+            .to_return(status: 200, body: body)
+          stub_request(:post, "#{@base_url}/Observation/_search")
+            .with(headers: @auth_header, body: query_params.merge('status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first))
             .to_return(status: 200, body: body)
         end
 

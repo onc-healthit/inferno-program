@@ -31,27 +31,7 @@ module Inferno
 
       reply[:timestamp] = DateTime.now
 
-      request[:payload] = begin
-                            JSON.parse(request[:payload])
-                          rescue StandardError
-                            request[:payload]
-                          end
       @@requests << { direction: :outbound, request: request, response: reply }
-    end
-
-    def post(url, payload, headers = {})
-      reply = RestClient.post(url, payload, headers)
-      request = {
-        method: :post,
-        url: url,
-        headers: headers,
-        payload: payload
-      }
-
-      # request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
-      request[:payload] = payload.to_json if payload.is_a?(Hash)
-      record_response(request, reply)
-      reply
     end
 
     def self.get(url, headers = {}, &block)
@@ -94,8 +74,16 @@ module Inferno
         payload: payload
       }
 
-      # request[:payload] = URI.encode_www_form(payload) if payload.is_a?(Hash)
-      request[:payload] = payload.to_json if payload.is_a?(Hash)
+      # Fix the payload encoding for logging, because the underlying library
+      # returns a hash
+      if payload.is_a?(Hash)
+        request[:payload] = if headers['Content-Type'] == 'application/x-www-form-urlencoded'
+                              URI.encode_www_form(payload)
+                            else # default to json for program tests
+                              payload.to_json
+                            end
+      end
+
       record_response(request, reply)
       reply
     end
