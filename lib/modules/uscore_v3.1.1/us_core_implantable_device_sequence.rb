@@ -209,6 +209,8 @@ module Inferno
         resolved_one = false
 
         patient_ids.each do |patient|
+          next unless @device_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'type': get_value_for_search_param(resolve_element_from_path(@device_ary[patient], 'type') { |el| get_value_for_search_param(el).present? })

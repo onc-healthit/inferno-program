@@ -1203,13 +1203,20 @@ module Inferno
           #{skip_if_not_found_code(sequence)})
       end
 
-      def get_search_params(search_parameters, sequence, grab_first_value = false)
-        search_params = get_search_param_hash(search_parameters, sequence, grab_first_value)
+      def get_search_params(search_parameters, sequence)
+        search_params = get_search_param_hash(search_parameters, sequence)
         search_param_string = %(
           search_params = {
             #{search_params.map { |param, value| search_param_to_string(param, value) }.join(",\n")}
           }
         )
+
+        if search_parameters != find_first_search(sequence)[:names] && search_parameters.include?('patient') # skip if patient does not have this resource type.
+          search_param_string = %(
+            next unless @#{sequence[:resource].underscore}_ary[patient].present?
+            #{search_param_string}
+          )
+        end
 
         if search_param_string.include? 'get_value_for_search_param'
           search_param_value_check = if sequence[:delayed_sequence]
@@ -1234,7 +1241,7 @@ module Inferno
         "'#{param}': #{value_string || value}"
       end
 
-      def get_search_param_hash(search_parameters, sequence, grab_first_value = false)
+      def get_search_param_hash(search_parameters, sequence)
         search_params = search_param_constants(search_parameters, sequence)
         return search_params if search_params.present?
 
@@ -1243,8 +1250,6 @@ module Inferno
           params[param] =
             if param == 'patient'
               'patient'
-            elsif grab_first_value && !sequence[:delayed_sequence]
-              search_param_description[:values].first
             else
               "get_value_for_search_param(#{resolve_element_path(search_param_description, sequence[:delayed_sequence])} { |el| get_value_for_search_param(el).present? })"
             end

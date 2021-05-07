@@ -281,6 +281,8 @@ module Inferno
         skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
 
         patient_ids.each do |patient|
+          next unless @diagnostic_report_ary[patient].present?
+
           search_params = {
             'patient': patient
           }
@@ -317,6 +319,8 @@ module Inferno
         resolved_one = false
 
         patient_ids.each do |patient|
+          next unless @diagnostic_report_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'category': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }),
@@ -369,6 +373,8 @@ module Inferno
         resolved_one = false
 
         patient_ids.each do |patient|
+          next unless @diagnostic_report_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'code': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary[patient], 'code') { |el| get_value_for_search_param(el).present? })
@@ -414,6 +420,8 @@ module Inferno
         resolved_one = false
 
         patient_ids.each do |patient|
+          next unless @diagnostic_report_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'status': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
@@ -456,6 +464,8 @@ module Inferno
         resolved_one = false
 
         patient_ids.each do |patient|
+          next unless @diagnostic_report_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'code': get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary[patient], 'code') { |el| get_value_for_search_param(el).present? }),
