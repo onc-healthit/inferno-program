@@ -4,7 +4,7 @@ development:
   username: postgres
   host: db
   pool: 10
-  timeout: 5000
+  idle_timeout: 60
 
 production:
   adapter: postgresql
@@ -12,7 +12,7 @@ production:
   username: postgres
   host: db
   pool: 10
-  timeout: 5000
+  idle_timeout: 60
 
 test: &test
   adapter: postgresql
@@ -20,4 +20,4 @@ test: &test
   username: postgres
   host: db
   pool: 10
-  timeout: 5000
+  idle_timeout: 60

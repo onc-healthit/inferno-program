@@ -62,6 +62,10 @@ module Inferno
       set(:prefix) { '/' << name[/[^:]+$/].underscore }
       set :protection, except: :frame_options # necessary for SMART EHR Launches
 
+      after do
+        logger.debug "ActiveRecord connections: #{ActiveRecord::Base.connection_pool.stat}"
+      end
+
       def render_index
         unless defined?(settings.presets).nil? || settings.presets.nil?
           base_url = request.base_url
