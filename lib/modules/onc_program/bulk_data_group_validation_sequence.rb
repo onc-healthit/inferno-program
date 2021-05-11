@@ -106,7 +106,7 @@ module Inferno
         }
 
         streamed_ndjson_get(file['url'], headers) do |response, resource|
-          assert response.header['Content-Type'] == 'application/fhir+ndjson', "Content type must be 'application/fhir+ndjson' but is '#{response.header['Content-type']}'"
+          assert response.header['Content-Type']&.start_with?('application/fhir+ndjson'), "Content type must have 'application/fhir+ndjson' but found '#{response.header['Content-type']}'"
 
           break if !validate_all && line_count >= lines_to_validate && (klass != 'Patient' || @patient_ids_seen.length >= MIN_RESOURCE_COUNT)
 

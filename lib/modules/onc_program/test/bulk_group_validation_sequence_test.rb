@@ -318,22 +318,6 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       assert_match(/^Successfully validated [\d]+ resource/, pass_exception.message)
     end
 
-    it 'fails when content-type is invalid' do
-      stub_request(:get, @patient_file_location)
-        .with(headers: @file_request_headers)
-        .to_return(
-          status: 200,
-          headers: { content_type: 'application/fhir+text' },
-          body: @patient_export
-        )
-
-      error = assert_raises(Inferno::AssertionException) do
-        @sequence.test_output_against_profile('Patient')
-      end
-
-      assert_match(/Content type/, error.message)
-    end
-
     it 'passes when all must supports are found' do
       stub_request(:get, @patient_file_location)
         .with(headers: @file_request_headers)
@@ -406,6 +390,34 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
           headers: { content_type: 'application/fhir+ndjson' },
           body: @patient_export
         )
+    end
+
+    it 'fails when content-type is invalid' do
+      stub_request(:get, @patient_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+text' },
+          body: @patient_export
+        )
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.check_file_request(@file, 'Patient')
+      end
+
+      assert_match(/Content type must have/, error.message)
+    end
+
+    it 'passes with additional content-type' do
+      stub_request(:get, @patient_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson;charset=utf-8' },
+          body: @patient_export
+        )
+
+      @sequence.check_file_request(@file, 'Patient')
     end
 
     it 'succeeds when NDJSON is valid and saves patient ids as seen' do
