@@ -56,16 +56,13 @@ test_sets:
           Launch to a [SMART on FHIR](http://www.hl7.org/fhir/smart-app-launch/)
           confidential client with limited access granted to the app based on user input.
           The tester is expected to grant the application access to a subset of
-          desired resource types, and to deny requests for "offline_access"
-          refresh tokens.
+          desired resource types.
         input_instructions: |
           The purpose of this test is to demonstrate that users can restrict
-          access granted to apps to a limited number of resources and does
-          not force the user to have offline_access refresh tokens.  Enter
-          which resources the user will grant access to below, and during
-          the launch process only grant access to those resources. Additionally,
-          do not grant access to offline_access refresh tokens.  Inferno
-          will verify that access granted matches these expectations.
+          access granted to apps to a limited number of resources. Enter
+          which resources the user will grant access to below, and during the
+          launch process only grant access to those resources. Inferno will
+          verify that access granted matches these expectations.
         lock_variables: 
           - redirect_uris
           - onc_sl_url

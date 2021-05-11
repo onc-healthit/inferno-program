@@ -178,12 +178,12 @@ module Inferno
           name 'OAuth token exchange response grants scope that is limited to those selected by user'
           link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html#quick-start'
           description %(
-            The ONC certification criteria requires that patients are capable of choosing which
-            FHIR resources to authorize to the application, and patients must be
-            given the choice to grant `offline_access`.  For this test, the tester specifies
-            which resources will be selected during authorization, and this verifies that only
-            those resources are granted according to the scopes returned during the access token
-            response.
+            The ONC certification criteria requires that patients are capable
+            of choosing which FHIR resources to authorize to the application.
+            For this test, the tester specifies which resources will be
+            selected during authorization, and this verifies that only those
+            resources are granted according to the scopes returned during the
+            access token response.
           )
         end
 
@@ -215,8 +215,6 @@ module Inferno
 
         assert improperly_granted_resources.empty?, "User expected to deny the following resources that were granted: #{improperly_granted_resources.join(', ')}"
         assert improperly_denied_resources.empty?, "User expected to grant access to the following resources: #{improperly_denied_resources.join(', ')}"
-
-        assert !received_scopes.split(' ').include?('offline_access'), 'Scopes returned in access token response contained offline_access.  User must deny this scope to pass this test.'
       end
     end
   end
