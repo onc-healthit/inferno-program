@@ -74,16 +74,16 @@ module Inferno
         pass @instance.onc_visual_single_scopes_notes if @instance.onc_visual_single_scopes_notes.present?
       end
 
-      test 'Health IT Module demonstrated a graphical user interface to authorize offline access.' do
+      test 'Health IT Module informed patient when offline access scope is being granted during authorization.' do
         metadata do
           id '04'
           link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
           description %(
-            Health IT Module demonstrated a graphical user interface for user to authorize offline access.
+            Health IT Module informed patient when offline access scope is being granted during authorization.
           )
         end
 
-        assert @instance.onc_visual_single_offline_access == 'true', 'Health IT Module did not demonstrate a graphical user interface for user to authorize offline access'
+        assert @instance.onc_visual_single_offline_access == 'true', 'Health IT Module did not inform patient when offline access scope is being granted during authorization.'
         pass @instance.onc_visual_single_offline_access_notes if @instance.onc_visual_single_offline_access_notes.present?
       end
 

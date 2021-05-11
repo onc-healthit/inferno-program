@@ -395,10 +395,18 @@ module Inferno
                 scope_pieces = scope.split('/')
 
                 assert scope_pieces.count == 2, bad_format_message
-                assert scope_pieces[0] == patient_or_user, bad_format_message
 
                 resource_access = scope_pieces[1].split('.')
                 bad_resource_message = "'#{resource_access[0]}' must be either a valid resource type or '*'"
+
+                non_patient_compartment_resources = ['Encounter', 'Device', 'Location', 'Medication', 'Organization',
+                                                     'Practitioner', 'PractitionerRole', 'RelatedPerson']
+
+                if patient_or_user == 'patient' && non_patient_compartment_resources.include?(resource_access[0])
+                  assert ['user', 'patient'].include?(scope_pieces[0]), "#{received_or_requested.capitalize} scope '#{scope}' must begin with either 'user/' or 'patient/'"
+                else
+                  assert scope_pieces[0] == patient_or_user, bad_format_message
+                end
 
                 assert resource_access.count == 2, bad_format_message
                 assert valid_resource_types.include?(resource_access[0]), bad_resource_message
