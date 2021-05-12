@@ -207,21 +207,21 @@ For alternate installation options, please visit <a href='https://github.com/onc
       as well as a number of updates to tests based on bug reports and community feedback.
       This release may result in some systems that previously passed to now fail due to additional search tests.
       <p>
-      <i>Notice: This release migrates to o alternate data persistence library because the previous
+      <i>Notice: This release migrates to an alternate data persistence library because the previous
       library is no longer maintained.  This library uses a different database schema, and therefore users
-      that upgrade Inferno in the same directory will not have access to previous test results after upgrading to v.1.6.0. </i>
+      that upgrade Inferno in the same directory will not have access to previous test results after upgrading to v1.6.0. </i>
       </p>
       <p>Updates in this version include:</p>
       <ul>
-      <li>Include checks for POST-based searches, in addition to the existing checks for GET-based searches, because it is a requirement in the base FHIR specification.  This update may cause systems that previously passed to now fail.</li>
+      <li>Include checks for POST-based searches, in addition to the existing checks for GET-based searches, because support for POST-based searches is required in the base FHIR specification.  This update may cause systems that previously passed to now fail.</li>
       <li>Update the "Limited App" tests to no longer require the system under test to demonstrate the ability to deny "offline_access" scopes, as clarified in the CCG update.</li>
       <li>Update language in the "Visual Inspection and Attestation" test to clarify that the system under test needs to inform the user when "offline_access" scopes are being granted.</li>
       <li>Allow systems to use "user-level" scopes for non-Patient compartment, non-USCDI resources in the "Standalone Patient App" tests, as clarified in the CCG update. </li>
       <li>Fix issue where entering an Implantable Device Type Code would cause a search test to incorrectly fail systems.</li>
       <li>Fix issue where the "Multi-Patient App" tests would incorrectly fail systems that included charset or other additional information in the Content-Type header.</li>
-      <li>Enable the ability to use Postgres by configuration when deployed in a shared environment for higher stability.  Please review the README for information on how to enable this configuration.</li>
+      <li>Enable the ability to use Postgres by configuration when deployed in a shared environment for increased stability.  Please review the README for information on how to enable this configuration.</li>
       <li>Migrate from DataMapper to ActiveRecord because DataMapper is no longer maintained and is not receiving security updates.</li>
-      <li>Migrate to Ruby v.2.7 and update the versions of many of the libraries being used in Inferno.</li>
+      <li>Migrate to Ruby v2.7 and update the versions of many of the libraries being used in Inferno.</li>
       </ul>
       </p>
     <p>
