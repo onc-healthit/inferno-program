@@ -74,12 +74,12 @@ module Inferno
         pass @instance.onc_visual_single_scopes_notes if @instance.onc_visual_single_scopes_notes.present?
       end
 
-      test 'Health IT Module informed patient when offline access scope is being granted during authorization.' do
+      test 'Health IT Module informed patient when "offline_access" scope is being granted during authorization.' do
         metadata do
           id '04'
           link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
           description %(
-            Health IT Module informed patient when offline access scope is being granted during authorization.
+            Health IT Module informed patient when "offline_access" scope is being granted during authorization.
           )
         end
 
