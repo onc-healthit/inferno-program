@@ -358,18 +358,20 @@ procedure:
           launch have limited access based on the preferences of the tester.
       - id: AUTH-PATIENT-11 
         SUT: |
-          [Both] The health IT developer demonstrates the ability of Health IT
-          Module to evaluate the authorization request and request end-user
-          input, if applicable (required for patient-facing applications),
-          including the ability for the end-user to explicitly enable the
-          “offline_access” scope according to the implementation specification
-          adopted in § 170.215(a)(3).
+          [Both] The health IT developer demonstrates the ability of the
+          Health IT Module to evaluate the authorization request and request
+          end-user input, if applicable (required for patient-facing
+          applications), including either the ability for the end-user to
+          explicitly enable / disable the “offline_access” scope or
+          information communicating the application’s request for the
+          “offline_access” scope.
         TLV: | 
-          The tester verifies the ability of Health IT Module to evaluate
-          the authorization request and request end-user input, if applicable
-          (required for patient-facing applications), including the ability for
-          the end-user to explicitly enable the “offline_access” scope according
-          to the implementation specification adopted in § 170.215(a)(3).
+          [Both] The tester verifies the ability of the Health IT Module to
+          evaluate the authorization request and request end-user input, if
+          applicable (required for patient-facing applications), including
+          either the ability for the end-user to explicitly enable / disable
+          the “offline_access” scope or information communicating the
+          application’s request for the “offline_access” scope.
         inferno_supported: 'yes'
         inferno_tests:
           - SPB-OSLS-02
@@ -1278,10 +1280,8 @@ procedure:
           * “Organization”;
           * “Patient”;
           * “Practitioner”;
-          * “PractitionerRole”;
-          * “Procedure”;
-          * “Provenance”; and
-          * “RelatedPerson”;
+          * “Procedure”; and
+          * “Provenance”;
         TLV: |
           The tester verifies the ability of the Health IT
           Module to respond to requests for multiple patients’ data
@@ -1307,10 +1307,8 @@ procedure:
           * “Organization”;
           * “Patient”;
           * “Practitioner”;
-          * “PractitionerRole”;
-          * “Procedure”;
-          * “Provenance”; and
-          * “RelatedPerson”;
+          * “Procedure”; and
+          * “Provenance”;
         inferno_supported: 'yes'
         inferno_tests:
           - BDGV-03
