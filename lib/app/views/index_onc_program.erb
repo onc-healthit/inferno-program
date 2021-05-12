@@ -200,6 +200,35 @@ For alternate installation options, please visit <a href='https://github.com/onc
   </div>
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.6.0</div>
+      <p>
+      The <strong>Inferno Program Edition v1.6.0</strong> release contains test updates that reflect additional guidance provided
+      in the <a href="https://www.healthit.gov/test-method/standardized-api-patient-and-population-services#ccg">2015 Cures Update CCG v1.4</a>,
+      as well as a number of updates to tests based on bug reports and community feedback.
+      This release may result in some systems that previously passed to now fail due to additional search tests.
+      <p>
+      <i>Notice: This release migrates to o alternate data persistence library because the previous
+      library is no longer maintained.  This library uses a different database schema, and therefore users
+      that upgrade Inferno in the same directory will not have access to previous test results after upgrading to v.1.6.0. </i>
+      </p>
+      <p>Updates in this version include:</p>
+      <ul>
+      <li>Include checks for POST-based searches, in addition to the existing checks for GET-based searches, because it is a requirement in the base FHIR specification.  This update may cause systems that previously passed to now fail.</li>
+      <li>Update the "Limited App" tests to no longer require the system under test to demonstrate the ability to deny "offline_access" scopes, as clarified in the CCG update.</li>
+      <li>Update language in the "Visual Inspection and Attestation" test to clarify that the system under test needs to inform the user when "offline_access" scopes are being granted.</li>
+      <li>Allow systems to use "user-level" scopes for non-Patient compartment, non-USCDI resources in the "Standalone Patient App" tests, as clarified in the CCG update. </li>
+      <li>Fix issue where entering an Implantable Device Type Code would cause a search test to incorrectly fail systems.</li>
+      <li>Fix issue where the "Multi-Patient App" tests would incorrectly fail systems that included charset or other additional information in the Content-Type header.</li>
+      <li>Enable the ability to use Postgres by configuration when deployed in a shared environment for higher stability.  Please review the README for information on how to enable this configuration.</li>
+      <li>Migrate from DataMapper to ActiveRecord because DataMapper is no longer maintained and is not receiving security updates.</li>
+      <li>Migrate to Ruby v.2.7 and update the versions of many of the libraries being used in Inferno.</li>
+      </ul>
+      </p>
+    <p>
+
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_6_0.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure.
+    </p>
     <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.5.0</div>
       <p>
       The <strong>Inferno Program Edition v1.5.0</strong> release contains a number of fixes to tests that prevented systems from passing in certain cases.
