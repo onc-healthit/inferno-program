@@ -21,6 +21,11 @@ module Inferno
       'http://hl7.org/fhir/ValueSet/example-hierarchical' # Example valueset with fake codes
     ].freeze
 
+    # Code systems to "preprocess" prior to validation, and the function to use
+    PREPROCESS_FUNCS = {
+      'urn:ietf:bcp:13' => Inferno::Terminology::BCP13.method(:preprocess_code)
+    }
+
     PACKAGE_DIR = File.join('tmp', 'terminology', 'fhir')
 
     @known_valuesets = {}
@@ -234,6 +239,15 @@ module Inferno
     # @param String system an optional codesystem to validate against. Defaults to nil
     # @return Boolean whether the code or code/system is in the valueset
     def self.validate_code(valueset_url: nil, code:, system: nil)
+      # Before we validate the code, see if there's any preprocessing steps we have to do
+      # To get the code "ready" for validation
+      require 'pry'
+      binding.pry
+      if PREPROCESS_FUNCS[system]
+        code = PREPROCESS_FUNCS[system].call(code)
+      end
+      
+
       # Get the valueset from the url. Redundant if the 'system' is not nil,
       # but allows us to throw a better error if the valueset isn't known by Inferno
       if valueset_url
