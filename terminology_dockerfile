@@ -2,6 +2,10 @@ FROM ruby:2.7.2
 
 WORKDIR /var/www/inferno
 
+RUN apt-get -y update && \
+    apt-get -y upgrade && \
+    apt-get install -y sqlite3
+
 ### Install dependencies
 COPY Gemfile.postgres /var/www/inferno/Gemfile
 COPY Gemfile.postgres.lock /var/www/inferno/Gemfile.lock
