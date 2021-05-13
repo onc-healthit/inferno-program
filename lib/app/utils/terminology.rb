@@ -24,7 +24,7 @@ module Inferno
     # Code systems to "preprocess" prior to validation, and the function to use
     PREPROCESS_FUNCS = {
       'urn:ietf:bcp:13' => Inferno::Terminology::BCP13.method(:preprocess_code)
-    }
+    }.freeze
 
     PACKAGE_DIR = File.join('tmp', 'terminology', 'fhir')
 
@@ -241,9 +241,7 @@ module Inferno
     def self.validate_code(valueset_url: nil, code:, system: nil)
       # Before we validate the code, see if there's any preprocessing steps we have to do
       # To get the code "ready" for validation
-      if PREPROCESS_FUNCS[system]
-        code = PREPROCESS_FUNCS[system].call(code)
-      end
+      code = PREPROCESS_FUNCS[system].call(code) if PREPROCESS_FUNCS[system]
 
       # Get the valueset from the url. Redundant if the 'system' is not nil,
       # but allows us to throw a better error if the valueset isn't known by Inferno

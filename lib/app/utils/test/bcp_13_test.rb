@@ -3,8 +3,6 @@
 require_relative '../../../../test/test_helper'
 require_relative '../bcp_13'
 
-
-
 describe Inferno::Terminology::BCP13 do
   it 'should remove optional parameters when semicolon-separated' do
     assert_equal 'application/fhir+json', Inferno::Terminology::BCP13.preprocess_code('application/fhir+json; charset=UTF-8')
