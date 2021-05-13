@@ -241,12 +241,9 @@ module Inferno
     def self.validate_code(valueset_url: nil, code:, system: nil)
       # Before we validate the code, see if there's any preprocessing steps we have to do
       # To get the code "ready" for validation
-      require 'pry'
-      binding.pry
       if PREPROCESS_FUNCS[system]
         code = PREPROCESS_FUNCS[system].call(code)
       end
-      
 
       # Get the valueset from the url. Redundant if the 'system' is not nil,
       # but allows us to throw a better error if the valueset isn't known by Inferno
