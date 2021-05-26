@@ -77,7 +77,7 @@ def execute(instance, sequences)
       end
     end
     instance.save!
-    
+
     # manually read config yaml file
     config = YAML.load_file(ENV['INFERNO_CONFIG_FILE'] || 'config.yml')
     disable_verify_peer = config['disable_verify_peer']
