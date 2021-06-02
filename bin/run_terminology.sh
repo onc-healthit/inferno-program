@@ -14,19 +14,9 @@ fi
 temp_folder="tmp/terminology"
 
 if [[ ! -f "$temp_folder/umls.zip" ]]; then
-  [[ -z "$UMLS_USERNAME" ]] && { echo "UMLS Username environment variable is empty" >&2 ; exit 1; }
-  [[ -z "$UMLS_PASSWORD" ]] && { echo "UMLS Password environment variable is empty" >&2 ; exit 1; }
-  function control_c_download {
-    kill -INT "$child"
-    rm -f "$temp_folder/umls.zip"
-    exit $?
-  }
-  trap control_c_download SIGHUP SIGINT SIGTERM SIGQUIT SIGKILL SIGTSTP
-  bundle exec rake terminology:download_umls["$UMLS_USERNAME","$UMLS_PASSWORD"] &
-  child=$!
-  wait "$child"
-else
-  echo "UMLS Zip already exists; skipping UMLS download Rake task."
+  echo "The UMLS zip file must be manually downloaded and placed in the tmp/terminology folder."
+  echo "For more info, see the 'terminology support' section of the README."
+  exit 1
 fi
 
 if [[ ! -e "$temp_folder/umls" ]]; then

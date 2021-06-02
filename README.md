@@ -67,17 +67,6 @@ Documentation](https://github.com/onc-healthit/inferno/wiki/Troubleshooting) for
 help.
 
 ### Terminology Support
-
-#### 2020-November-30 UMLS Auth Workaround
-
-IMPORTANT: As of November 2020, UMLS login now requires the use of a federated login provider, such as Google, Microsoft, or https://login.gov. This change breaks the first step of the terminology build process outlined below.
-
-As a temporary workaround, if you download https://download.nlm.nih.gov/umls/kss/2019AB/umls-2019AB-full.zip (note: this file is several GB in size), rename it `umls.zip` and place it in `<inferno root>/tmp/terminology`, that should allow the terminology processing to skip the download step and continue normally. This also eliminates the need to create the `.env` file (outlined below).
-
-We hope to have this login system supported in the near future, which will re-enable the ability to do a completely automated terminology build from start to finish.
-
-For more information on the UTS sign-in process changes, visit https://www.nlm.nih.gov/research/umls/uts-changes.html.
-
 #### Terminology prerequisites
 
 In order to validate terminologies, Inferno must be loaded with files generated
@@ -103,14 +92,11 @@ You can prebuild the terminology docker container by running the following comma
 docker-compose -f terminology_compose.yml build
 ```
 
-Once the container is built, you will have to add your UMLS username and passwords to a file named `.env` at the root of the inferno project. The file should look like this (replacing `your_username` and `your_password` with your UMLS username/password, respectively):
+Once the container is built, you will have to download the UMLS zip file from the NIH website. This is because UMLS login now requires the use of a federated login provider, such as Google, Microsoft, or https://login.gov.
 
-```sh
-UMLS_USERNAME=your_username
-UMLS_PASSWORD=your_password
-```
+To accomplish this, download https://download.nlm.nih.gov/umls/kss/2019AB/umls-2019AB-full.zip (note: this file is several GB in size), rename it `umls.zip` and place it in `<inferno root>/tmp/terminology`.
 
-Note that _anything_ after the equals sign in `.env` will be considered part of the variable, so don't wrap your username/password in quotation marks (unless they're actually part of your username).
+For more information on the UTS sign-in process changes, visit https://www.nlm.nih.gov/research/umls/uts-changes.html.
 
 Once that file exists, you can run the terminology creation task by using the following commands, in order:
 
@@ -118,7 +104,7 @@ Once that file exists, you can run the terminology creation task by using the fo
 docker-compose -f terminology_compose.yml up
 ```
 
-This will run the terminology creation steps in order, using the UMLS credentials supplied in `.env`. These tasks may take several hours. If the creation task is cancelled in progress and restarted, it will restart after the last _completed_ step. Intermediate files are saved to `tmp/terminology` in the Inferno repository that the Docker Compose job is run from, and the validators are saved to `resources/terminology/validators/bloom`, where Inferno can use them for validation.
+This will run the terminology creation steps in order. These tasks may take several hours. If the creation task is cancelled in progress and restarted, it will restart after the last _completed_ step. Intermediate files are saved to `tmp/terminology` in the Inferno repository that the Docker Compose job is run from, and the validators are saved to `resources/terminology/validators/bloom`, where Inferno can use them for validation.
 
 #### Cleanup
 
