@@ -7,7 +7,6 @@ require 'csv'
 require 'colorize'
 require 'optparse'
 require 'rubocop/rake_task'
-require 'yaml'
 
 require_relative '../app'
 require_relative '../app/endpoint'
@@ -78,10 +77,7 @@ def execute(instance, sequences)
     end
     instance.save!
 
-    # manually read config yaml file
-    config = YAML.load_file(ENV['INFERNO_CONFIG_FILE'] || 'config.yml')
-    disable_verify_peer = config['disable_verify_peer']
-
+    disable_verify_peer = Inferno::App::Endpoint.settings.disable_verify_peer
     sequence_instance = sequence.new(instance, client, disable_verify_peer)
     sequence_result = nil
 
