@@ -76,7 +76,9 @@ def execute(instance, sequences)
       end
     end
     instance.save!
-    sequence_instance = sequence.new(instance, client, false)
+
+    disable_verify_peer = Inferno::App::Endpoint.settings.disable_verify_peer
+    sequence_instance = sequence.new(instance, client, disable_verify_peer)
     sequence_result = nil
 
     suppress_output { sequence_result = sequence_instance.start }
