@@ -200,6 +200,24 @@ For alternate installation options, please visit <a href='https://github.com/onc
   </div>
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.6.1</div>
+    <p>
+    The Inferno Program Edition v1.6.1 release fixes one test issue that may incorrectly cause systems to fail tests.
+    It also includes a number of fixes not directly related to test execution.
+    Systems that passed tests in Inferno Program Edition v1.6.0 should continue to pass in v1.6.1.
+    </p>
+    <p>Updates in this version include:</p>
+    <ul>
+    <li>Fixes issue where BCP:13 code validation incorrectly fails systems that include optional MIME Type parameters, such as "charset=UTF-8".</li>
+    <li>Fixes issue introduced in v1.6.0 that prevents new installations of Inferno from generating the necessary terminology files used for terminology validation.</li>
+    <li>Fixes issue that prevented the command line interface from disabling TLS Peer Validation, which often isn't necessary for CI-related tests.</li>
+    </ul>
+    </p>
+  <p>
+
+    Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_6_1.xlsx'>Test Procedure Matrix</a> to view a mapping
+    between Inferno Tests and the 2015 Cures Update Test Procedure.
+  </p>
     <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.6.0</div>
       <p>
       The <strong>Inferno Program Edition v1.6.0</strong> release contains test updates that reflect additional guidance provided
