@@ -82,8 +82,12 @@ module Inferno
       end
 
       def scope_granting_access(resource, scopes)
+        non_patient_compartment_resources = ['Encounter', 'Device', 'Location', 'Medication', 'Organization',
+                                             'Practitioner', 'PractitionerRole', 'RelatedPerson']
         scopes.split(' ').find do |scope|
-          ['patient/*.read', 'patient/*.*', "patient/#{resource}.read", "patient/#{resource}.*"].include? scope
+          return true if non_patient_compartment_resources.include?(resource) && ["user/#{resource}.read", "user/#{resource}.*"].include?(scope)
+
+          ['patient/*.read', 'patient/*.*', "patient/#{resource}.read", "patient/#{resource}.*"].include?(scope)
         end
       end
 
