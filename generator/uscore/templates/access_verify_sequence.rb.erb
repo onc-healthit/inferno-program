@@ -248,7 +248,7 @@ module Inferno
             parameters: params
           }
         }
-        reply = @client.search('<%=sequence[:resource]%>', options)
+        reply = @client.search(versioned_resource_class('<%=sequence[:resource]%>'), options)
         access_allowed_scope = scope_granting_access('<%=sequence[:resource]%>', resource_access_as_scope)
 
         if access_allowed_scope.present?
