@@ -88,13 +88,8 @@ module Inferno
       end
 
       def scope_granting_access(resource, scopes)
-        non_patient_compartment_resources = ['Encounter', 'Device', 'Location', 'Medication', 'Organization',
-                                             'Practitioner', 'PractitionerRole', 'RelatedPerson']
-
         scopes.split(' ').find do |scope|
-          return true if non_patient_compartment_resources.include?(resource) && ["user/#{resource}.read", "user/#{resource}.*"].include?(scope)
-
-          ['patient/*.read', 'patient/*.*', "patient/#{resource}.read", "patient/#{resource}.*"].include?(scope)
+          ['patient/*.read', 'patient/*.*', "patient/#{resource}.read", "patient/#{resource}.*"].include? scope
         end
       end
 
@@ -203,7 +198,7 @@ module Inferno
             parameters: params
           }
         }
-        reply = @client.search('AllergyIntolerance', options)
+        reply = @client.search(versioned_resource_class('AllergyIntolerance'), options)
         access_allowed_scope = scope_granting_access('AllergyIntolerance', resource_access_as_scope)
 
         if access_allowed_scope.present?
@@ -260,7 +255,7 @@ module Inferno
             parameters: params
           }
         }
-        reply = @client.search('CarePlan', options)
+        reply = @client.search(versioned_resource_class('CarePlan'), options)
         access_allowed_scope = scope_granting_access('CarePlan', resource_access_as_scope)
 
         if access_allowed_scope.present?
@@ -317,7 +312,7 @@ module Inferno
             parameters: params
           }
         }
-        reply = @client.search('CareTeam', options)
+        reply = @client.search(versioned_resource_class('CareTeam'), options)
         access_allowed_scope = scope_granting_access('CareTeam', resource_access_as_scope)
 
         if access_allowed_scope.present?
@@ -373,7 +368,7 @@ module Inferno
             parameters: params
           }
         }
-        reply = @client.search('Condition', options)
+        reply = @client.search(versioned_resource_class('Condition'), options)
         access_allowed_scope = scope_granting_access('Condition', resource_access_as_scope)
 
         if access_allowed_scope.present?
@@ -429,7 +424,7 @@ module Inferno
             parameters: params
           }
         }
-        reply = @client.search('Device', options)
+        reply = @client.search(versioned_resource_class('Device'), options)
         access_allowed_scope = scope_granting_access('Device', resource_access_as_scope)
 
         if access_allowed_scope.present?
@@ -472,7 +467,7 @@ module Inferno
             parameters: params
           }
         }
-        reply = @client.search('DiagnosticReport', options)
+        reply = @client.search(versioned_resource_class('DiagnosticReport'), options)
         access_allowed_scope = scope_granting_access('DiagnosticReport', resource_access_as_scope)
 
         if access_allowed_scope.present?
@@ -528,7 +523,7 @@ module Inferno
             parameters: params
           }
         }
-        reply = @client.search('DocumentReference', options)
+        reply = @client.search(versioned_resource_class('DocumentReference'), options)
         access_allowed_scope = scope_granting_access('DocumentReference', resource_access_as_scope)
 
         if access_allowed_scope.present?
@@ -584,7 +579,7 @@ module Inferno
             parameters: params
           }
         }
-        reply = @client.search('Goal', options)
+        reply = @client.search(versioned_resource_class('Goal'), options)
         access_allowed_scope = scope_granting_access('Goal', resource_access_as_scope)
 
         if access_allowed_scope.present?
@@ -640,7 +635,7 @@ module Inferno
             parameters: params
           }
         }
-        reply = @client.search('Immunization', options)
+        reply = @client.search(versioned_resource_class('Immunization'), options)
         access_allowed_scope = scope_granting_access('Immunization', resource_access_as_scope)
 
         if access_allowed_scope.present?
@@ -697,7 +692,7 @@ module Inferno
             parameters: params
           }
         }
-        reply = @client.search('MedicationRequest', options)
+        reply = @client.search(versioned_resource_class('MedicationRequest'), options)
         access_allowed_scope = scope_granting_access('MedicationRequest', resource_access_as_scope)
 
         if access_allowed_scope.present?
@@ -754,7 +749,7 @@ module Inferno
             parameters: params
           }
         }
-        reply = @client.search('Observation', options)
+        reply = @client.search(versioned_resource_class('Observation'), options)
         access_allowed_scope = scope_granting_access('Observation', resource_access_as_scope)
 
         if access_allowed_scope.present?
@@ -810,7 +805,7 @@ module Inferno
             parameters: params
           }
         }
-        reply = @client.search('Procedure', options)
+        reply = @client.search(versioned_resource_class('Procedure'), options)
         access_allowed_scope = scope_granting_access('Procedure', resource_access_as_scope)
 
         if access_allowed_scope.present?
