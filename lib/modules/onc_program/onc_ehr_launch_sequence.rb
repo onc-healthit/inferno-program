@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative './shared_onc_launch_tests'
+require_relative '../core/shared_tests'
 
 module Inferno
   module Sequence
     class OncEHRLaunchSequence < SequenceBase
       include Inferno::Sequence::SharedONCLaunchTests
+      include Inferno::Sequence::SharedTests
 
       title 'ONC EHR Launch Sequence'
 
@@ -183,9 +185,9 @@ module Inferno
 
       token_endpoint_tls_test(index: '06')
 
-      invalid_code_test(index: '07')
+      test_is_deprecated(index: '07', name: 'OAuth token exchange fails when supplied invalid code', version: '1.7.0')
 
-      invalid_client_id_test(index: '08')
+      test_is_deprecated(index: '08', name: 'OAuth token exchange fails when supplied invalid client ID', version: '1.7.0')
 
       successful_token_exchange_test(index: '09')
 
