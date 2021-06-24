@@ -220,4 +220,7 @@ test_sets:
           - sequence: SMARTInvalidLaunchSequence
             variable_defaults:
               confidential_client: 'true'
+          - sequence: SMARTInvalidAuthorizationCodeSequence
+            variable_defaults:
+              confidential_client: 'true'
           - ONCVisualInspectionSequence
