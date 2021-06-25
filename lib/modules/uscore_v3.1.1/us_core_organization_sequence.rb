@@ -57,7 +57,7 @@ module Inferno
         when 'name'
           values_found = resolve_path(resource, 'name')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          match_found = values_found.any? { |value_in_resource| values.any? { |searched_value| value_in_resource.starts_with? searched_value } }
           assert match_found, "name in Organization/#{resource.id} (#{values_found}) does not match name requested (#{value})"
 
         when 'address'
