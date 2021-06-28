@@ -58,6 +58,32 @@ class SequenceBaseTest < MiniTest::Test
         end
       end
     end
+
+    it 'passes when string value starts with searched value' do
+      @instance = Inferno::TestingInstance.create!
+      client = FHIR::Client.new('')
+      patient_sequence = Inferno::Sequence::USCore311PatientSequence.new(@instance, client, true)
+      patient_resource = FHIR::Patient.new(
+        name: [{
+          family: 'LastName'
+        }]
+      )
+      patient_sequence.validate_resource_item(patient_resource, 'family', 'las')
+    end
+
+    it 'fails when string value does not start with searched value' do
+      @instance = Inferno::TestingInstance.create!
+      client = FHIR::Client.new('')
+      patient_sequence = Inferno::Sequence::USCore311PatientSequence.new(@instance, client, true)
+      patient_resource = FHIR::Patient.new(
+        name: [{
+          family: 'LastName'
+        }]
+      )
+      assert_raises(Inferno::AssertionException) do
+        patient_sequence.validate_resource_item(patient_resource, 'family', 'something')
+      end
+    end
   end
 
   describe '#date_comparator_value' do
