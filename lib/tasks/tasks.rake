@@ -54,6 +54,7 @@ def execute(instance, sequences)
   sequence_results = []
 
   fails = false
+  skips = false
 
   system 'clear'
   puts "\n"
@@ -138,6 +139,7 @@ def execute(instance, sequences)
       fails = true
     elsif sequence_result.skip?
       puts 'skip '.yellow + '*'.yellow
+      skips = true
     end
     puts "---------------------------------------------\n"
   end
@@ -157,7 +159,7 @@ def execute(instance, sequences)
   puts "\n=============================================\n"
 
   return_value = 0
-  return_value = 1 if fails
+  return_value = 1 if fails || skips
 
   return_value
 end
