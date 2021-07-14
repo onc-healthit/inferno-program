@@ -211,7 +211,7 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_not_supported(:Provenance, [:search, :read])
+        skip_if_known_not_supported(:Provenance, [:read])
         skip_if_not_found(resource_type: 'Provenance', delayed: true)
 
         validated_resources = Set.new
