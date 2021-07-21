@@ -716,7 +716,7 @@ module Inferno
       def create_resource_profile_test(sequence)
         test_key = :validate_resources
         test = {
-          tests_that: "#{sequence[:resource]} resources returned from previous search conform to the #{sequence[:profile_name]}.",
+          tests_that: "#{sequence[:resource]} resources returned conform to the #{sequence[:profile_name]}.",
           key: test_key,
           index: sequence[:tests].length + 1,
           link: sequence[:profile],
@@ -924,7 +924,6 @@ module Inferno
 
         resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
         test[:test_code] = %(
-              skip_if_known_not_supported(:#{sequence[:resource]}, [:search, :read])
               #{skip_if_not_found_code(sequence)}
 
               validated_resources = Set.new
