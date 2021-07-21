@@ -114,7 +114,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '02'
-          name 'Practitioner resources returned from previous search conform to the US Core Practitioner Profile.'
+          name 'Practitioner resources returned conform to the US Core Practitioner Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
           description %(
 
@@ -235,7 +235,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_not_supported(:Practitioner, [:search, :read])
         skip_if_not_found(resource_type: 'Practitioner', delayed: true)
 
         validated_resources = Set.new

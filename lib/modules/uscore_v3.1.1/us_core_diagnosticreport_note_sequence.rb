@@ -591,7 +591,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '11'
-          name 'DiagnosticReport resources returned from previous search conform to the US Core DiagnosticReport Profile for Report and Note exchange.'
+          name 'DiagnosticReport resources returned conform to the US Core DiagnosticReport Profile for Report and Note exchange.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note'
           description %(
 
@@ -706,7 +706,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_not_supported(:DiagnosticReport, [:search, :read])
         skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
 
         validated_resources = Set.new

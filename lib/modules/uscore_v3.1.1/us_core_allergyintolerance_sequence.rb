@@ -356,7 +356,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '07'
-          name 'AllergyIntolerance resources returned from previous search conform to the US  Core AllergyIntolerance Profile.'
+          name 'AllergyIntolerance resources returned conform to the US  Core AllergyIntolerance Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance'
           description %(
 
@@ -484,7 +484,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_not_supported(:AllergyIntolerance, [:search, :read])
         skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
 
         validated_resources = Set.new

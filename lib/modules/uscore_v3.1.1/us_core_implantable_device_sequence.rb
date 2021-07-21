@@ -325,7 +325,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '07'
-          name 'Device resources returned from previous search conform to the US Core Implantable Device Profile.'
+          name 'Device resources returned conform to the US Core Implantable Device Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
           description %(
 
@@ -445,7 +445,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_not_supported(:Device, [:search, :read])
         skip_if_not_found(resource_type: 'Device', delayed: false)
 
         validated_resources = Set.new

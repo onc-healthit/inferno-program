@@ -110,7 +110,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '02'
-          name 'Organization resources returned from previous search conform to the US Core Organization Profile.'
+          name 'Organization resources returned conform to the US Core Organization Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
           description %(
 
@@ -238,7 +238,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_not_supported(:Organization, [:search, :read])
         skip_if_not_found(resource_type: 'Organization', delayed: true)
 
         validated_resources = Set.new
