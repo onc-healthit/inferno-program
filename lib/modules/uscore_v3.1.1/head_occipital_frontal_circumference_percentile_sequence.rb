@@ -564,7 +564,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '10'
-          name 'Observation resources returned conform to the US Core Pediatric Head Occipital-frontal Circumference Percentile Profile.'
+          name 'Observation resources returned during previous tests conform to the US Core Pediatric Head Occipital-frontal Circumference Percentile Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile'
           description %(
 

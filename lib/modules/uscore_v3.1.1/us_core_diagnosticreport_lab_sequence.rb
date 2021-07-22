@@ -591,7 +591,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '11'
-          name 'DiagnosticReport resources returned conform to the US Core DiagnosticReport Profile for Laboratory Results Reporting.'
+          name 'DiagnosticReport resources returned during previous tests conform to the US Core DiagnosticReport Profile for Laboratory Results Reporting.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab'
           description %(
 

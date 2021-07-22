@@ -112,7 +112,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '02'
-          name 'PractitionerRole resources returned conform to the US Core PractitionerRole Profile.'
+          name 'PractitionerRole resources returned during previous tests conform to the US Core PractitionerRole Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitionerrole'
           description %(
 

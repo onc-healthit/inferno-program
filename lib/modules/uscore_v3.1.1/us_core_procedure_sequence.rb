@@ -470,7 +470,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '09'
-          name 'Procedure resources returned conform to the US Core Procedure Profile.'
+          name 'Procedure resources returned during previous tests conform to the US Core Procedure Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure'
           description %(
 

@@ -114,7 +114,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '02'
-          name 'Practitioner resources returned conform to the US Core Practitioner Profile.'
+          name 'Practitioner resources returned during previous tests conform to the US Core Practitioner Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
           description %(
 

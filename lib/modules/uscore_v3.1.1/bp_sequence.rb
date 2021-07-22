@@ -564,7 +564,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '10'
-          name 'Observation resources returned conform to the Observation Blood Pressure Profile.'
+          name 'Observation resources returned during previous tests conform to the Observation Blood Pressure Profile.'
           link 'http://hl7.org/fhir/StructureDefinition/bp'
           description %(
 

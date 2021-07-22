@@ -367,7 +367,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '06'
-          name 'Observation resources returned conform to the US Core Smoking Status Observation Profile.'
+          name 'Observation resources returned during previous tests conform to the US Core Smoking Status Observation Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-smokingstatus'
           description %(
 

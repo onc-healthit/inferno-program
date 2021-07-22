@@ -400,7 +400,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '08'
-          name 'Immunization resources returned conform to the US Core Immunization Profile.'
+          name 'Immunization resources returned during previous tests conform to the US Core Immunization Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization'
           description %(
 

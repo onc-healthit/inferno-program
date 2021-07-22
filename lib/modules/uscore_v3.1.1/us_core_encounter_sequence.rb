@@ -177,7 +177,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '02'
-          name 'Encounter resources returned conform to the US Core Encounter Profile.'
+          name 'Encounter resources returned during previous tests conform to the US Core Encounter Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter'
           description %(
 

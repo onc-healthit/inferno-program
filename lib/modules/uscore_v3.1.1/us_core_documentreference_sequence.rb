@@ -623,7 +623,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '12'
-          name 'DocumentReference resources returned conform to the US Core DocumentReference Profile.'
+          name 'DocumentReference resources returned during previous tests conform to the US Core DocumentReference Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
           description %(
 

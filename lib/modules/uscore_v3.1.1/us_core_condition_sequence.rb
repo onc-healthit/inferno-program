@@ -477,7 +477,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '09'
-          name 'Condition resources returned conform to the US Core Condition Profile.'
+          name 'Condition resources returned during previous tests conform to the US Core Condition Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
           description %(
 

@@ -564,7 +564,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '10'
-          name 'Observation resources returned conform to the Observation Body Temperature Profile.'
+          name 'Observation resources returned during previous tests conform to the Observation Body Temperature Profile.'
           link 'http://hl7.org/fhir/StructureDefinition/bodytemp'
           description %(
 

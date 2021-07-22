@@ -528,7 +528,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '12'
-          name 'Patient resources returned conform to the US Core Patient Profile.'
+          name 'Patient resources returned during previous tests conform to the US Core Patient Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
           description %(
 

@@ -392,7 +392,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '07'
-          name 'CarePlan resources returned conform to the US Core CarePlan Profile.'
+          name 'CarePlan resources returned during previous tests conform to the US Core CarePlan Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan'
           description %(
 

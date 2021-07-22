@@ -572,7 +572,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '10'
-          name 'MedicationRequest resources returned conform to the US Core MedicationRequest Profile.'
+          name 'MedicationRequest resources returned during previous tests conform to the US Core MedicationRequest Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
 

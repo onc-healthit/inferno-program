@@ -110,7 +110,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '02'
-          name 'Organization resources returned conform to the US Core Organization Profile.'
+          name 'Organization resources returned during previous tests conform to the US Core Organization Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
           description %(
 

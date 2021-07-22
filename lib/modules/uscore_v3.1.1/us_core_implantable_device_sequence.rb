@@ -325,7 +325,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '07'
-          name 'Device resources returned conform to the US Core Implantable Device Profile.'
+          name 'Device resources returned during previous tests conform to the US Core Implantable Device Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
           description %(
 

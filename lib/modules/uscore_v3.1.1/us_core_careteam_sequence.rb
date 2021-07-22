@@ -317,7 +317,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '06'
-          name 'CareTeam resources returned conform to the US Core CareTeam Profile.'
+          name 'CareTeam resources returned during previous tests conform to the US Core CareTeam Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
 

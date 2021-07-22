@@ -128,7 +128,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '02'
-          name 'Location resources returned conform to the US Core Location Profile.'
+          name 'Location resources returned during previous tests conform to the US Core Location Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'
           description %(
 

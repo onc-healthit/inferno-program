@@ -86,7 +86,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '02'
-          name 'Provenance resources returned conform to the US Core Provenance Profile.'
+          name 'Provenance resources returned during previous tests conform to the US Core Provenance Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
           description %(
 
