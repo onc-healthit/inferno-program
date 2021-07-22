@@ -349,7 +349,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '07'
-          name 'Goal resources returned from previous search conform to the US Core Goal Profile.'
+          name 'Goal resources returned during previous tests conform to the US Core Goal Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal'
           description %(
 
@@ -469,7 +469,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_not_supported(:Goal, [:search, :read])
         skip_if_not_found(resource_type: 'Goal', delayed: false)
 
         validated_resources = Set.new

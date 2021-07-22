@@ -572,7 +572,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '10'
-          name 'MedicationRequest resources returned from previous search conform to the US Core MedicationRequest Profile.'
+          name 'MedicationRequest resources returned during previous tests conform to the US Core MedicationRequest Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
 
@@ -790,7 +790,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_not_supported(:MedicationRequest, [:search, :read])
         skip_if_not_found(resource_type: 'MedicationRequest', delayed: false)
 
         validated_resources = Set.new

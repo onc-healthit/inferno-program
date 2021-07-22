@@ -623,7 +623,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '12'
-          name 'DocumentReference resources returned from previous search conform to the US Core DocumentReference Profile.'
+          name 'DocumentReference resources returned during previous tests conform to the US Core DocumentReference Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
           description %(
 
@@ -762,7 +762,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_not_supported(:DocumentReference, [:search, :read])
         skip_if_not_found(resource_type: 'DocumentReference', delayed: false)
 
         validated_resources = Set.new

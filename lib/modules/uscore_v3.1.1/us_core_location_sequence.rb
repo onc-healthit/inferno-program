@@ -128,7 +128,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '02'
-          name 'Location resources returned from previous search conform to the US Core Location Profile.'
+          name 'Location resources returned during previous tests conform to the US Core Location Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-location'
           description %(
 
@@ -243,7 +243,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_not_supported(:Location, [:search, :read])
         skip_if_not_found(resource_type: 'Location', delayed: true)
 
         validated_resources = Set.new

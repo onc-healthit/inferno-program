@@ -564,7 +564,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '10'
-          name 'Observation resources returned from previous search conform to the US Core Laboratory Result Observation Profile.'
+          name 'Observation resources returned during previous tests conform to the US Core Laboratory Result Observation Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab'
           description %(
 
@@ -687,7 +687,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_not_supported(:Observation, [:search, :read])
         skip_if_not_found(resource_type: 'Observation', delayed: false)
 
         validated_resources = Set.new

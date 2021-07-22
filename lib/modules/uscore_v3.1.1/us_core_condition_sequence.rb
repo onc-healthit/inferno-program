@@ -477,7 +477,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '09'
-          name 'Condition resources returned from previous search conform to the US Core Condition Profile.'
+          name 'Condition resources returned during previous tests conform to the US Core Condition Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
           description %(
 
@@ -604,7 +604,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_not_supported(:Condition, [:search, :read])
         skip_if_not_found(resource_type: 'Condition', delayed: false)
 
         validated_resources = Set.new

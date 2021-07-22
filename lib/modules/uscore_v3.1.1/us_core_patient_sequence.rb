@@ -528,7 +528,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '12'
-          name 'Patient resources returned from previous search conform to the US Core Patient Profile.'
+          name 'Patient resources returned during previous tests conform to the US Core Patient Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
           description %(
 
@@ -665,7 +665,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_not_supported(:Patient, [:search, :read])
         skip_if_not_found(resource_type: 'Patient', delayed: false)
 
         validated_resources = Set.new

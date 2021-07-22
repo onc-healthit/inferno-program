@@ -86,7 +86,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '02'
-          name 'Provenance resources returned from previous search conform to the US Core Provenance Profile.'
+          name 'Provenance resources returned during previous tests conform to the US Core Provenance Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
           description %(
 
@@ -211,7 +211,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_not_supported(:Provenance, [:search, :read])
         skip_if_not_found(resource_type: 'Provenance', delayed: true)
 
         validated_resources = Set.new

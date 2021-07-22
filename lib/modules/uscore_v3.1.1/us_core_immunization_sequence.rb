@@ -400,7 +400,7 @@ module Inferno
       test :validate_resources do
         metadata do
           id '08'
-          name 'Immunization resources returned from previous search conform to the US Core Immunization Profile.'
+          name 'Immunization resources returned during previous tests conform to the US Core Immunization Profile.'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization'
           description %(
 
@@ -512,7 +512,6 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_not_supported(:Immunization, [:search, :read])
         skip_if_not_found(resource_type: 'Immunization', delayed: false)
 
         validated_resources = Set.new
