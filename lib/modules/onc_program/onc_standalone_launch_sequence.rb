@@ -24,7 +24,7 @@ module Inferno
                :initiate_login_uri,
                :redirect_uris
 
-      defines :token, :id_token, :refresh_token, :patient_id
+      defines :token, :id_token, :refresh_token, :patient_id, :onc_sl_token, :onc_sl_refresh_token
 
       show_uris
 
@@ -107,6 +107,35 @@ module Inferno
 
       def instance_scopes
         @instance.onc_sl_scopes
+      end
+
+      def after_save_refresh_token(refresh_token)
+        # This method is used to save off the refresh token for standalone
+        # launch to be used for token revocation later.  We must do this because
+        # we are overwriting our standalone refresh/access token with the one
+        # used in the ehr launch.
+
+        # Note that this is also done after the token refresh within the 'Single
+        # Patient API' set of sequences, so this is somewhat redundant if that
+        # is implemented as expected.  However, we duplicate it here in case
+        # that isn't implemented as expected -- for example by failing that set
+        # of tests or if they interpretted the spec differently and do not echo
+        # back the 'refresh_token' parameter.
+
+        @instance.onc_sl_refresh_token = refresh_token
+        @instance.save!
+      end
+
+      def after_save_access_token(token)
+        # See `after_save_refresh_token` method for explanation of purpose of
+        # this method.
+
+        @instance.onc_sl_token = token
+
+        # save a copy so patient_id and oauth_token_endpoint are not overwritten
+        @instance.onc_sl_patient_id = @instance.patient_id
+
+        @instance.save!
       end
 
       auth_endpoint_tls_test(index: '01')
