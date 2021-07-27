@@ -493,11 +493,11 @@
               value: instance.onc_sl_refresh_token,
               })%> 
 
-        <%= erb(:prerequisite_field,{},{prerequisite: :patient_id,
+        <%= erb(:prerequisite_field,{},{prerequisite: :onc_sl_patient_id,
               label: 'Patient ID',
-              description: 'Patient ID provided as context in the patient standalone launch.',
+              description: 'Patient ID associated with revoked tokens provided as context in the patient standalone launch. This will be used to verify access is no longer granted using the revoked token.',
               instance: instance,
-              value: instance.patient_id,
+              value: instance.onc_sl_patient_id,
               })%>
 
         <%= erb(:prerequisite_field,{},{prerequisite: :dynamic_registration_token,
@@ -654,7 +654,12 @@
               instance: instance,
               value: instance.bulk_token_endpoint,
               })%>       
-
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_access_token,
+              label: 'Bulk Data Access Token',
+              description: 'Bearer token to be used for Bulk Data API.  Note that this field is only intended to support development for systems that have not yet implemented authorization and must not be available as input for certification.',
+              instance: instance,
+              value: instance.bulk_access_token,
+              })%> 
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_client_id,
               label: 'Bulk Data Client ID',
               description: 'Client ID provided at registration to the Inferno application.',

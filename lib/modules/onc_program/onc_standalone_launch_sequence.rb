@@ -24,7 +24,8 @@ module Inferno
                :initiate_login_uri,
                :redirect_uris
 
-      defines :token, :id_token, :refresh_token, :patient_id, :onc_sl_token, :onc_sl_refresh_token
+      defines :token, :id_token, :refresh_token, :patient_id, :onc_sl_token,
+              :onc_sl_refresh_token, :onc_sl_patient_id
 
       show_uris
 
@@ -131,10 +132,13 @@ module Inferno
         # this method.
 
         @instance.onc_sl_token = token
+        @instance.save!
+      end
 
-        # save a copy so patient_id and oauth_token_endpoint are not overwritten
-        @instance.onc_sl_patient_id = @instance.patient_id
-
+      def after_save_patient_id(patient_id)
+        # See `after_save_refresh_token` method for explanation of purpose of
+        # this method.
+        @instance.onc_sl_patient_id = patient_id
         @instance.save!
       end
 

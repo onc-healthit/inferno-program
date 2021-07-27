@@ -16,7 +16,7 @@ module Inferno
       test_id_prefix 'TR'
 
       requires :onc_sl_url, :onc_sl_client_id, :onc_sl_confidential_client, :onc_sl_client_secret, :refresh_token, :oauth_token_endpoint
-      defines :token, :refresh_token, :onc_sl_token, :onc_sl_refresh_token, :onc_sl_patient_id, :onc_sl_oauth_token_endpoint
+      defines :token, :refresh_token, :onc_sl_token, :onc_sl_refresh_token
 
       def url_property
         'onc_sl_url'
@@ -43,23 +43,19 @@ module Inferno
       end
 
       def after_save_refresh_token(refresh_token)
-        # This method is used to save off the refresh token for standalone launch to be used for token
-        # revocation later.  We must do this because we are overwriting our standalone refresh/access token
-        # with the one used in the ehr launch.
+        # This method is used to save off the refresh token for standalone
+        # launch to be used for token revocation later.  We must do this because
+        # we are overwriting our standalone refresh/access token with
+        # the one used in other launches, but we specifically want to use this
+        # for revocation.
 
         @instance.onc_sl_refresh_token = refresh_token
         @instance.save!
       end
 
       def after_save_access_token(token)
-        # This method is used to save off the access token for standalone launch to be used for token
-        # revocation later.  We must do this because we are overwriting our standalone refresh/access token
-        # with the one used in the ehr launch.
+        # See `after_save_refresh_token` for explanation of this method/hook.
         @instance.onc_sl_token = token
-
-        # save a copy so patient_id and oauth_token_endpoint are not overwritten
-        @instance.onc_sl_patient_id = @instance.patient_id
-
         @instance.save!
       end
     end
