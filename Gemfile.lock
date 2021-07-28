@@ -34,7 +34,7 @@ GEM
     base62-rb (0.3.1)
     bcp47 (0.3.3)
       i18n
-    bindata (2.4.5)
+    bindata (2.4.10)
     bitarray (1.2.0)
     bloomer (1.0.0)
       bitarray
