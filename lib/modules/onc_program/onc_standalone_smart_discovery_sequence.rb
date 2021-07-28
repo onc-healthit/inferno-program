@@ -12,7 +12,9 @@ module Inferno
       test_id_prefix 'SA-OSD'
 
       requires :onc_sl_url
-      defines :oauth_authorize_endpoint, :oauth_token_endpoint, :oauth_register_endpoint
+      defines :oauth_authorize_endpoint, :oauth_token_endpoint,
+              :oauth_register_endpoint, :onc_sl_oauth_token_endpoint,
+              :onc_sl_oauth_authorize_endpoint
 
       description "Retrieve server's SMART on FHIR configuration"
 
@@ -44,6 +46,10 @@ module Inferno
       end
 
       def after_save_oauth_endpoints(oauth_token_endpoint, oauth_authorize_endpoint)
+        # Save the endpoints for use in the Token Revocation test at the end of
+        # the ONC Test Method, because we want that to use the endpoints for the
+        # Single Patient API set of tests, in case there are different ones for
+        # the EHR launch.
         @instance.onc_sl_oauth_token_endpoint = oauth_token_endpoint
         @instance.onc_sl_oauth_authorize_endpoint = oauth_authorize_endpoint
         @instance.save!

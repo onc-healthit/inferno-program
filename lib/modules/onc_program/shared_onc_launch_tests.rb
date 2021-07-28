@@ -33,16 +33,25 @@ module Inferno
         "State provided in redirect (#{@params[:state]}) does not match expected state (#{@instance.state})."
       end
 
-      def after_save_refresh_token(refresh_token)
-        # This method is used to save off the refresh token for standalone launch to be used for token
-        # revocation later.  We must do this because we are overwriting our standalone refresh/access token
-        # with the one used in the ehr launch.
+      def after_save_refresh_token(_refresh_token)
+        # This method is used to save off the refresh token for standalone
+        # launch to be used for token revocation later.  We must do this because
+        # we are overwriting our standalone refresh/access token/patient id with
+        # the one used in the ehr launch.
       end
 
-      def after_save_access_token(token)
-        # This method is used to save off the access token for standalone launch to be used for token
-        # revocation later.  We must do this because we are overwriting our standalone refresh/access token
-        # with the one used in the ehr launch.
+      def after_save_access_token(_token)
+        # This method is used to save off the access token for standalone launch
+        # to be used for token revocation later.  We must do this because we are
+        # overwriting our standalone refresh/access token/patient id with the
+        # one used in the ehr launch.
+      end
+
+      def after_save_patient_id(_patient_id)
+        # This method is used to save off the patient_id for standalone launch to be
+        # used for token revocation checking later.  We must do this because we are
+        # overwriting our standalone refresh/access token/patient id with the
+        # one used in the ehr launch.
       end
 
       def validate_token_response_contents(token_response, require_expires_in:, check_scope_subset: false)
@@ -76,7 +85,11 @@ module Inferno
 
         after_save_access_token(@token_response_body['access_token'])
 
-        @instance.patient_id = @token_response_body['patient'] if @token_response_body['patient'].present?
+        if @token_response_body['patient'].present?
+          @instance.patient_id = @token_response_body['patient']
+          after_save_patient_id(@token_response_body['patient'])
+        end
+
         @instance.update(encounter_id: @token_response_body['encounter']) if @token_response_body['encounter'].present?
 
         required_keys = ['token_type', 'scope']
