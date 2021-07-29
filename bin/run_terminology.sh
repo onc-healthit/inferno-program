@@ -11,6 +11,8 @@ if [ -f /.dockerenv ]; then
   fi
 fi
 
+trap 'trap " " SIGTERM; kill 0; wait;' SIGHUP SIGINT SIGTERM SIGQUIT SIGKILL SIGTSTP
+
 ./bin/prepare_terminology.sh 2019 &
 ./bin/prepare_terminology.sh 2020 &
 ./bin/prepare_terminology.sh 2021 &
