@@ -284,6 +284,8 @@ module Inferno
         resolved_one = false
 
         patient_ids.each do |patient|
+          next unless @observation_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }),
@@ -336,6 +338,8 @@ module Inferno
         resolved_one = false
 
         patient_ids.each do |patient|
+          next unless @observation_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category') { |el| get_value_for_search_param(el).present? })
@@ -381,6 +385,8 @@ module Inferno
         resolved_one = false
 
         patient_ids.each do |patient|
+          next unless @observation_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }),
@@ -429,6 +435,8 @@ module Inferno
         resolved_one = false
 
         patient_ids.each do |patient|
+          next unless @observation_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code') { |el| get_value_for_search_param(el).present? }),

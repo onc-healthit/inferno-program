@@ -240,6 +240,8 @@ module Inferno
         resolved_one = false
 
         patient_ids.each do |patient|
+          next unless @immunization_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'date': get_value_for_search_param(resolve_element_from_path(@immunization_ary[patient], 'occurrence') { |el| get_value_for_search_param(el).present? })
@@ -287,6 +289,8 @@ module Inferno
         resolved_one = false
 
         patient_ids.each do |patient|
+          next unless @immunization_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'status': get_value_for_search_param(resolve_element_from_path(@immunization_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })

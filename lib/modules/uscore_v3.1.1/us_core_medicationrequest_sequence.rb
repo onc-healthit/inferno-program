@@ -301,6 +301,8 @@ module Inferno
         resolved_one = false
 
         patient_ids.each do |patient|
+          next unless @medication_request_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? }),
@@ -350,6 +352,8 @@ module Inferno
         resolved_one = false
 
         patient_ids.each do |patient|
+          next unless @medication_request_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? }),
@@ -405,6 +409,8 @@ module Inferno
         resolved_one = false
 
         patient_ids.each do |patient|
+          next unless @medication_request_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? }),
@@ -719,6 +725,8 @@ module Inferno
 
         found_second_val = false
         patient_ids.each do |patient|
+          next unless @medication_request_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? }),
