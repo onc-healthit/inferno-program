@@ -32,7 +32,7 @@ module Inferno
         Sequence, does not work in the case where the client sends an invalid
         Authorization code or client ID during the code exchange step.  This must
         not result in a successful launch.
-        
+
         This test is not included as part of a regular SMART Launch Sequence
         because some servers may not accept an authorization code after it
         has been used unsuccessfully in this manner.
