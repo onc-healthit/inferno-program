@@ -66,11 +66,15 @@ module Inferno
     # @param selected_module [Symbol]/[String], the name of the module to build validators for, or :all (default)
     # @param [String] minimum_binding_strength the lowest binding strength for which we should build validators
     # @param [Boolean] include_umls a flag to determine if we should build validators that require UMLS
-    def self.create_validators(type: :bloom, selected_module: :all, minimum_binding_strength: 'example', include_umls: true)
+    def self.create_validators(type: :bloom, selected_module: :all, minimum_binding_strength: 'example', include_umls: true, delete_existing: true)
       strengths = ['example', 'preferred', 'extensible', 'required'].drop_while { |s| s != minimum_binding_strength }
       validators = []
       umls_code_systems = Set.new(Inferno::Terminology::ValueSet::SAB.keys)
       root_dir = "resources/terminology/validators/#{type}"
+
+      if delete_existing
+        FileUtils.rm_r(root_dir, force: true)
+      end
       FileUtils.mkdir_p(root_dir)
 
       get_module_valuesets(selected_module, strengths).each do |k, vs|
@@ -80,8 +84,9 @@ module Inferno
         Inferno.logger.debug "Processing #{k}"
         filename = "#{root_dir}/#{(URI(vs.url).host + URI(vs.url).path).gsub(%r{[./]}, '_')}"
         begin
-          save_to_file(vs.valueset, filename, type)
-          validators << { url: k, file: name_by_type(File.basename(filename), type), count: vs.count, type: type.to_s, code_systems: vs.included_code_systems }
+          # Save the validator to file, and get the "new" count of number of codes
+          new_count = save_to_file(vs.valueset, filename, type)
+          validators << { url: k, file: name_by_type(File.basename(filename), type), count: new_count, type: type.to_s, code_systems: vs.included_code_systems }
         rescue ValueSet::UnknownCodeSystemException, ValueSet::FilterOperationException, UnknownValueSetException, URI::InvalidURIError => e
           Inferno.logger.warn "#{e.message} for ValueSet: #{k}"
           next
@@ -159,22 +164,40 @@ module Inferno
     #
     # @param [String] filename the name of the file
     def self.save_bloom_to_file(codeset, filename)
-      bf = Bloomer::Scalable.new
+      # If the file already exists, load it in 
+      if File.file? filename
+        begin
+          bf = Bloomer::Scalable.from_msgpack(File.read(filename))
+        rescue => e
+          binding.pry
+        end
+      else
+        bf = Bloomer::Scalable.new
+      end
       codeset.each do |cc|
         bf.add("#{cc[:system]}|#{cc[:code]}")
       end
       bloom_file = File.new(filename, 'wb')
       bloom_file.write(bf.to_msgpack) unless bf.nil?
+      # return the accumulated count of the bloom filter
+      bf.count
     end
 
     # Saves the valueset to a csv
     # @param [String] filename the name of the file
     def self.save_csv_to_file(codeset, filename)
+      # If the file already exists, add it to the Set
+      if File.file? filename
+        codeset.merge(CSV.read(filename))
+      end
+      count = 0
       CSV.open(filename, 'wb') do |csv|
         codeset.each do |code|
           csv << [code[:system], code[:code]]
+          count += 1
         end
       end
+      count
     end
 
     def self.register_umls_db(database)

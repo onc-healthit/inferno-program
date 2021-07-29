@@ -5,6 +5,7 @@ require 'pry'
 require 'pry-byebug'
 require 'csv'
 require 'colorize'
+require 'nokogiri'
 require 'optparse'
 require 'rubocop/rake_task'
 
@@ -752,44 +753,65 @@ end
 namespace :terminology do |_argv|
   TEMP_DIR = 'tmp/terminology'
   desc 'download and execute UMLS terminology data'
-  task :download_umls, [:username, :password] do |_t, args|
-    # Adapted from python https://github.com/jmandel/umls-bloomer/blob/master/01-download.py
-    default_target_file = 'https://download.nlm.nih.gov/umls/kss/2021AA/umls-2021AA-full.zip'
+  task :download_umls, [:apikey, :version] do |_t, args|
+    # Adapted from https://documentation.uts.nlm.nih.gov/automating-downloads.html
 
-    FileUtils.mkdir_p(TEMP_DIR)
+    args.with_defaults(version: '2019')
+    versioned_temp_dir = File.join(TEMP_DIR, args.version)
+    # URLs for the umls downloads, by year
+    umls_file_urls = {
+      '2019' => 'https://download.nlm.nih.gov/umls/kss/2019AB/umls-2019AB-full.zip',
+      '2020' => 'https://download.nlm.nih.gov/umls/kss/2020AB/umls-2020AB-full.zip',
+      '2021' => 'https://download.nlm.nih.gov/umls/kss/2021AA/umls-2021AA-full.zip'
+    }
+    # URL for the 'ticket-granting ticket' request link
+    tgt_url = 'https://utslogin.nlm.nih.gov/cas/v1/api-key'
 
-    puts 'Getting Login Page'
-    response = RestClient.get default_target_file
-    # Get the final redirection URL
-    login_page = response.history.last.headers[:location]
-    action_base = login_page.split('/cas/')[0]
-    action_path = response.body.split('form id="fm1" action="')[1].split('"')[0]
-    execution = response.body.split('name="execution" value="')[1].split('"')[0]
+    FileUtils.mkdir_p(versioned_temp_dir)
+
+    target_file = umls_file_urls[args.version]
+    target_filename = 'umls.zip'
+
+    puts 'Getting TGT'
+    tgt_html = RestClient::Request.execute(method: :post,
+                                  url: tgt_url,
+                                  payload: {
+                                    apikey: args.apikey
+                                  })
+    tgt = Nokogiri::HTML(tgt_html.body).at_css("form").attributes['action'].value
+
+    puts 'Getting ticket'
+    ticket = RestClient::Request.execute(method: :post,
+                                url: tgt,
+                                payload: {
+                                  service: target_file
+                                }).body
 
     begin
-      puts 'Getting Download Link'
-      RestClient::Request.execute(method: :post,
-                                  url: action_base + action_path,
-                                  payload: {
-                                    username: args.username,
-                                    password: args.password,
-                                    execution: execution,
-                                    _eventId: 'submit'
-                                  },
+      puts 'Downloading'
+      RestClient::Request.execute(method: :get,
+                                  url: "#{target_file}?ticket=#{ticket}",
                                   max_redirects: 0)
     rescue RestClient::ExceptionWithResponse => e
-      follow_redirect(e.response.headers[:location], e.response.headers[:set_cookie])
+      ticket = RestClient::Request.execute(method: :post,
+                                      url: tgt,
+                                      payload: {
+                                        service: e.response.headers[:location]
+                                      }).body
+      target_location = File.join(versioned_temp_dir, target_filename)
+      follow_redirect(e.response.headers[:location], target_location, ticket, e.response.headers[:set_cookie])
     end
     puts 'Finished Downloading!'
   end
 
-  def follow_redirect(location, cookie = nil)
+  def follow_redirect(location, file_location, ticket, cookie = nil)
     return unless location
 
     size = 0
     percent = 0
     current_percent = 0
-    File.open(File.join(TEMP_DIR, 'umls.zip'), 'w') do |f|
+    File.open(file_location, 'w') do |f|
+      f.binmode
       block = proc do |response|
         puts response.header['content-type']
         if response.header['content-type'] == 'application/zip'
@@ -804,12 +826,12 @@ namespace :terminology do |_argv|
             end
           end
         else
-          follow_redirect(response.header['location'], response.header['set-cookie'])
+          follow_redirect(response.header['location'], file_location, ticket, response.header['set-cookie'])
         end
       end
       RestClient::Request.execute(
         method: :get,
-        url: location,
+        url: "#{location}?ticket=#{ticket}",
         headers: { cookie: cookie },
         block_response: block
       )
@@ -817,11 +839,14 @@ namespace :terminology do |_argv|
   end
 
   desc 'unzip umls zip'
-  task :unzip_umls, [:umls_zip] do |_t, args|
-    args.with_defaults(umls_zip: File.join(TEMP_DIR, 'umls.zip'))
-    destination = File.join(TEMP_DIR, 'umls')
+  task :unzip_umls, [:version] do |_t, args|
+    args.with_defaults(version: '2019')
+    versioned_temp_dir = File.join(TEMP_DIR, args.version)
+    destination = File.join(versioned_temp_dir, 'umls')
+    umls_zip = File.join(versioned_temp_dir, 'umls.zip')
+
     # https://stackoverflow.com/questions/19754883/how-to-unzip-a-zip-file-containing-folders-and-files-in-rails-while-keeping-the
-    Zip::File.open(args.umls_zip) do |zip_file|
+    Zip::File.open(umls_zip) do |zip_file|
       # Handle entries one by one
       zip_file.each do |entry|
         # Extract to file/directory/symlink
@@ -844,10 +869,18 @@ namespace :terminology do |_argv|
   end
 
   desc 'run umls jar'
-  task :run_umls, [:my_config] do |_t, args|
+  task :run_umls, [:version] do |_t, args|
     # More information on batch running UMLS
     # https://www.nlm.nih.gov/research/umls/implementation_resources/community/mmsys/BatchMetaMorphoSys.html
-    args.with_defaults(my_config: 'inferno.prop')
+    args.with_defaults(version: '2019')
+
+    versioned_temp_dir = File.join(TEMP_DIR, args.version)
+
+    version_props = {
+      '2019' => 'inferno_2019.prop',
+      '2020' => 'inferno_2020.prop',
+      '2021' => 'inferno_2021.prop'
+    }
     jre_version = if !(/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM).nil?
                     'windows64'
                   elsif !(/darwin/ =~ RUBY_PLATFORM).nil?
@@ -856,11 +889,11 @@ namespace :terminology do |_argv|
                     'linux'
                   end
     puts "#{jre_version} system detected"
-    config_file = File.join(Dir.pwd, 'resources', 'terminology', args.my_config)
-    output_dir = File.join(Dir.pwd, TEMP_DIR, 'umls_subset')
+    config_file = File.join(Dir.pwd, 'resources', 'terminology', version_props[args.version])
+    output_dir = File.join(Dir.pwd, versioned_temp_dir, 'umls_subset')
     FileUtils.mkdir(output_dir)
     puts "Using #{config_file}"
-    Dir.chdir(Dir[File.join(Dir.pwd, TEMP_DIR, '/umls/20*')][0]) do
+    Dir.chdir(Dir[File.join(Dir.pwd, versioned_temp_dir, '/umls/20*')][0]) do
       puts Dir.pwd
       Dir['lib/*.jar'].each do |jar|
         File.chmod(0o555, jar)
@@ -1058,36 +1091,56 @@ namespace :terminology do |_argv|
     end
   end
 
+  def db_for_version(version)
+    return File.join(TEMP_DIR, version, 'umls.db')
+  end
+
   desc 'Create ValueSet Validators'
-  task :create_vs_validators, [:database, :type] do |_t, args|
-    args.with_defaults(database: File.join(TEMP_DIR, 'umls.db'), type: 'bloom')
+  task :create_vs_validators, [:database, :type, :version, :delete_existing] do |_t, args|
+    args.with_defaults(type: 'bloom', delete_existing: true, version: '2019')
+
+    if !args.database.nil?
+      database = args.database
+    else
+      database = db_for_version(args.version)
+    end
     validator_type = args.type.to_sym
-    Inferno::Terminology.register_umls_db args.database
+    Inferno::Terminology.register_umls_db database
+    binding.pry
     Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
-    Inferno::Terminology.create_validators(type: validator_type)
+    Inferno::Terminology.create_validators(type: validator_type, delete_existing: args.delete_existing)
   end
 
   desc 'Create only non-UMLS validators'
-  task :create_non_umls_vs_validators, [:module, :minimum_binding_strength] do |_t, args|
+  task :create_non_umls_vs_validators, [:module, :minimum_binding_strength, :delete_existing] do |_t, args|
     args.with_defaults(type: 'bloom',
                        module: :all,
-                       minimum_binding_strength: 'example')
+                       minimum_binding_strength: 'example',
+                       delete_existing: true)
     validator_type = args.type.to_sym
     Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
     Inferno::Terminology.create_validators(type: validator_type,
                                            selected_module: args.module,
                                            minimum_binding_strength: args.minimum_binding_strength,
-                                           include_umls: false)
+                                           include_umls: false,
+                                           delete_existing: args.delete_existing)
   end
 
   desc 'Create ValueSet Validators for a given module'
-  task :create_module_vs_validators, [:module, :minimum_binding_strength] do |_t, args|
-    args.with_defaults(module: 'all', minimum_binding_strength: 'example')
-    Inferno::Terminology.register_umls_db File.join(TEMP_DIR, 'umls.db')
+  task :create_module_vs_validators, [:module, :minimum_binding_strength, :version, :delete_existing] do |_t, args|
+    args.with_defaults(module: 'all',
+                       minimum_binding_strength: 'example',
+                       delete_existing: true,
+                       version: '2019')
+    # Args come in as strings, so we need to convert to a boolean
+    delete_existing = !(args.delete_existing == 'false')
+
+    Inferno::Terminology.register_umls_db db_for_version(args.version)
     Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
     Inferno::Terminology.create_validators(type: :bloom,
                                            selected_module: args.module,
-                                           minimum_binding_strength: args.minimum_binding_strength)
+                                           minimum_binding_strength: args.minimum_binding_strength,
+                                           delete_existing: delete_existing)
   end
 
   desc 'Number of codes in ValueSet'

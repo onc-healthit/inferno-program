@@ -1,6 +1,15 @@
 #!/bin/sh
 
-tmpdir="./tmp/terminology"
+if [ -n "$1" ]
+then
+  version="$1"
+else
+  version="2019"
+fi
+
+echo "Version: ${version}"
+
+tmpdir="./tmp/terminology/${version}"
 
 umls_db_location=${tmpdir}/umls.db
 
