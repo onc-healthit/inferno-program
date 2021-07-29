@@ -101,6 +101,7 @@ procedure:
         inferno_tests:
           - SPB-OSLS-01 - SPB-OSLS-09
           - EHB-OELS-01 - EHB-OELS-11
+          - SIAC-01 - SIAC-04
         inferno_notes: |
           Complete demonstration of these capabilities are accomplished
           through subsequent steps in the test procedure.
