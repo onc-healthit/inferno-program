@@ -7,8 +7,8 @@ module Inferno
     class SMARTInvalidAuthorizationCodeSequence < SequenceBase
       include Inferno::Sequence::SharedONCLaunchTests
 
-      title 'SMART App Launch Error: Invalid Authorization Code'
-      description 'Demonstrate that the server properly validates Authorization code'
+      title 'SMART App Launch Error: Invalid Access Token Request'
+      description 'Demonstrate that the server properly validates authorization code and client ID provided in access token request.'
 
       test_id_prefix 'SIAC'
 
@@ -26,7 +26,7 @@ module Inferno
       details %(
         # Background
 
-        The Invalid Authorization Code Sequence verifies that a SMART Launch Sequence,
+        The Invalid Access Token Request Sequence verifies that a SMART Launch Sequence,
         specifically the [Standalone
         Launch](http://hl7.org/fhir/smart-app-launch/#standalone-launch-sequence)
         Sequence, does not work in the case where the client sends an invalid
