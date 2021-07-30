@@ -87,16 +87,16 @@ module Inferno
         pass @instance.onc_visual_single_offline_access_notes if @instance.onc_visual_single_offline_access_notes.present?
       end
 
-      test 'Health IT Module attested that refresh tokens had three month timeout period.' do
+      test 'Health IT Module attested that refresh tokens are valid for a period of no shorter than three months.' do
         metadata do
           id '05'
           link 'https://www.federalregister.gov/documents/2020/05/01/2020-07419/21st-century-cures-act-interoperability-information-blocking-and-the-onc-health-it-certification'
           description %(
-            Health IT Module attested that refresh tokens had three month timeout period.
+            Health IT Module attested that refresh tokens are valid for a period of no shorter than three months.
           )
         end
 
-        assert @instance.onc_visual_refresh_timeout == 'true', 'Health IT Module did attest that refresh tokens have three month timeout period'
+        assert @instance.onc_visual_refresh_timeout == 'true', 'Health IT Module did not attest that refresh tokens are valid for a period of no shorter than three months.'
         pass @instance.onc_visual_refresh_timeout_notes if @instance.onc_visual_refresh_timeout_notes.present?
       end
 
