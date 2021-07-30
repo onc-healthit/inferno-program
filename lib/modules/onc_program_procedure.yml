@@ -565,6 +565,7 @@ procedure:
         inferno_tests:
           - RPA-OSRLS-02 - RPA-OSRLS-11
           - AVR-01 - AVR-14
+          - SIAC-01 - SIAC-04
       - id: AUTH-PATIENT-19
         SUT: |
           [Standalone-Launch] The health IT developer the ability of the Health IT

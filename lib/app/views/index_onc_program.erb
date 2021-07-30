@@ -200,6 +200,27 @@ For alternate installation options, please visit <a href='https://github.com/onc
   </div>
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.6.2</div>
+    <p>
+    The Inferno Program Edition v1.6.2 release fixes a number of issues that may incorrectly cause systems to fail tests.
+    It also includes a minor fixes not directly related to test execution.
+    Systems that passed tests in Inferno Program Edition v1.6.1 should continue to pass in v1.6.2.
+    </p>
+    <p>This version includes updates that:</p>
+    <ul>
+
+    <li>Moves tests that ensure authorization servers reject invalid content during the token exchange step within the 'Standalone Patient App - Full Patient Access' tests ('SPB-OSLS-05', 'SPB-OSLS-06') to a separate sequence 'Other > SMART App Launch Error: Invalid Access Token Request'. This has been done to ensure that servers are allowed to invalidate codes that have been tampered with during the authorization code exchange process. This requires testers to perform an extra SMART launch, but the tests have not been changed otherwise.</li>
+    <li>Removes check within the US Core Provenance tests (USCPROV-04) that required systems to state they support the search interaction within the Provenance resource in their CapabilityStatement. Search is not required to be supported for the Provenance resource for compliance to US Core v3.1.1.</li>
+    <li>Updates Single Patient API tests to ignore invalid patient IDs provided by tester. Previously tests failed without properly explaining the cause of failure.</li>
+    <li>Fixes tests that incorrectly required exact string matches when searching by strings in certain cases, instead of "starts with" matches.</li>
+    <li>Fixes issue where the "Refresh Token" input was not pre-filled in the "Token Revocation" test in certain situations.</li>
+    </ul>
+    </p>
+  <p>
+
+    Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_6_2.xlsx'>Test Procedure Matrix</a> to view a mapping
+    between Inferno Tests and the 2015 Cures Update Test Procedure.
+  </p>
     <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.6.1</div>
     <p>
     The Inferno Program Edition v1.6.1 release fixes one test issue that may incorrectly cause systems to fail tests.
