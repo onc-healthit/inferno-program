@@ -101,7 +101,6 @@ procedure:
         inferno_tests:
           - SPB-OSLS-01 - SPB-OSLS-09
           - EHB-OELS-01 - EHB-OELS-11
-          - SIAC-01 - SIAC-04
         inferno_notes: |
           Complete demonstration of these capabilities are accomplished
           through subsequent steps in the test procedure.
@@ -566,6 +565,7 @@ procedure:
         inferno_tests:
           - RPA-OSRLS-02 - RPA-OSRLS-11
           - AVR-01 - AVR-14
+          - SIAC-01 - SIAC-04
       - id: AUTH-PATIENT-19
         SUT: |
           [Standalone-Launch] The health IT developer the ability of the Health IT
