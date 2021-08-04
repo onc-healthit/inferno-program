@@ -82,7 +82,7 @@ Prerequisites:
 * A UMLS account
 * A working Docker toolchain, which has been assigned at least 10GB of RAM (The Metathesaurus step requires 8GB of RAM for the Java process)
   * Note: the Docker terminology process will not run unless Docker has access to at least 10GB of RAM.
-* At least 33 GB of free disk space on the Host OS, for downloading/unzipping/processing the terminology files.
+* At least 90 GB of free disk space on the Host OS, for downloading/unzipping/processing the terminology files.
   * Note: this space needs to be allocated on the host because Docker maps these files through to the Host, to allow for building in the dedicated terminology container.
 * A copy of the Inferno repository, which contains the required Docker and Ruby files
 
@@ -92,13 +92,16 @@ You can prebuild the terminology docker container by running the following comma
 docker-compose -f terminology_compose.yml build
 ```
 
-Once the container is built, you will have to download the UMLS zip file from the NIH website. This is because UMLS login now requires the use of a federated login provider, such as Google, Microsoft, or https://login.gov.
+Once the container is built, you will have to add your UMLS API key to a file named `.env` at the root of the inferno project. This API key is used to authenticate the user to download the UMLS zip files. To find your UMLS API key, sign into [the UTS homepage](https://uts.nlm.nih.gov/uts/), click on `My Profile` in the top right, and copy the `API KEY` value from the `UMLS Licensee Profile`. 
 
-To accomplish this, download https://download.nlm.nih.gov/umls/kss/2019AB/umls-2019AB-full.zip (note: this file is several GB in size), rename it `umls.zip` and place it in `<inferno root>/tmp/terminology`.
+The `.env` file should look like this (replacing `your_api_key`  with your UMLS API key):
 
-For more information on the UTS sign-in process changes, visit https://www.nlm.nih.gov/research/umls/uts-changes.html.
+```sh
+UMLS_APIKEY=your_api_key
+```
+Note that _anything_ after the equals sign in `.env` will be considered part of the variable, so don't wrap your API key in quotation marks.
 
-Once that file exists, you can run the terminology creation task by using the following commands, in order:
+Once that file exists, you can run the terminology creation task by using the following command:
 
 ```sh
 docker-compose -f terminology_compose.yml up
@@ -108,7 +111,7 @@ This will run the terminology creation steps in order. These tasks may take seve
 
 #### Cleanup
 
-Once the terminology building is done, the `.env` file should be deleted to remove the UMLS username and password from the system.
+Once the terminology building is done, the `.env` file should be deleted to remove your UMLS API key from the system.
 
 Optionally, the files and folders in `tmp/terminology/` can be deleted after terminology building to free up space, as they are several GB in size. If you intend to re-run the terminology builder, these files can be left to speed up building in the future, since the builder will be able to skip the initial download/preprocessing steps.
 

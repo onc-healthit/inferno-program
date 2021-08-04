@@ -13,12 +13,11 @@ fi
 
 trap 'trap " " SIGTERM; kill 0; wait;' SIGHUP SIGINT SIGTERM SIGQUIT SIGKILL SIGTSTP
 
-./bin/prepare_terminology.sh 2019 &
-./bin/prepare_terminology.sh 2020 &
-./bin/prepare_terminology.sh 2021 &
-
-wait
-
+./bin/prepare_terminology.sh 2019
 exec bundle exec rake terminology:create_module_vs_validators["uscore_v3.1.1","preferred"]
+
+./bin/prepare_terminology.sh 2020
 exec bundle exec rake terminology:create_module_vs_validators["uscore_v3.1.1","preferred","2020","false"]
+
+./bin/prepare_terminology.sh 2021
 exec bundle exec rake terminology:create_module_vs_validators["uscore_v3.1.1","preferred","2021","false"]

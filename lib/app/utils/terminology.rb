@@ -72,9 +72,7 @@ module Inferno
       umls_code_systems = Set.new(Inferno::Terminology::ValueSet::SAB.keys)
       root_dir = "resources/terminology/validators/#{type}"
 
-      if delete_existing
-        FileUtils.rm_r(root_dir, force: true)
-      end
+      FileUtils.rm_r(root_dir, force: true) if delete_existing
       FileUtils.mkdir_p(root_dir)
 
       get_module_valuesets(selected_module, strengths).each do |k, vs|
@@ -164,16 +162,12 @@ module Inferno
     #
     # @param [String] filename the name of the file
     def self.save_bloom_to_file(codeset, filename)
-      # If the file already exists, load it in 
-      if File.file? filename
-        begin
-          bf = Bloomer::Scalable.from_msgpack(File.read(filename))
-        rescue => e
-          binding.pry
-        end
-      else
-        bf = Bloomer::Scalable.new
-      end
+      # If the file already exists, load it in
+      bf = if File.file? filename
+             Bloomer::Scalable.from_msgpack(File.read(filename))
+           else
+             Bloomer::Scalable.new
+           end
       codeset.each do |cc|
         bf.add("#{cc[:system]}|#{cc[:code]}")
       end
@@ -187,9 +181,7 @@ module Inferno
     # @param [String] filename the name of the file
     def self.save_csv_to_file(codeset, filename)
       # If the file already exists, add it to the Set
-      if File.file? filename
-        codeset.merge(CSV.read(filename))
-      end
+      codeset.merge(CSV.read(filename)) if File.file? filename
       count = 0
       CSV.open(filename, 'wb') do |csv|
         codeset.each do |code|
