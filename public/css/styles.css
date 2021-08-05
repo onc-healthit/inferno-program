@@ -1048,10 +1048,11 @@ body {
   width: 28px;
   height: 28px;
   background:white; 
-  ht: 0px;
   z-index: 5;
+  -ms-transform: rotate(45deg);
   -moz-transform: rotate(45deg);
   -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
   right: -14px;
   top: 6px;
   border-radius: 4px;
@@ -1252,12 +1253,6 @@ body {
   display:inherit;
 }
 
-.input-instructions {
-
-
-}
-
-
 #group-report .print-button {
 
   position:absolute;
@@ -1340,4 +1335,8 @@ body {
 .onc-index-page .btn-secondary {
   background-color: #f88b30;
   border-color: #f87e30;
+}
+
+.onc-index-page .alert {
+  margin-bottom: 1rem !important;
 }
