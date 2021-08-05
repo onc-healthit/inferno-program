@@ -5,16 +5,8 @@
 // providing IE11 support makes it clear that the certification criteria does
 // not specifically disallow IE 11.
 
-// Start of legacy browser alerts/polyfills
-function alertIfUnsupportedBrowser(){
-  var isIE = /MSIE \d|Trident.*rv:/.test(navigator.userAgent);
-  var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
-  if(isIE && !isIE11){
-    alert('Inferno does not currently support Internet Explorer 10 or earlier.  Please switch to another browser, such as Chrome, Firefox, Safari, or Edge.');
-  }
-}
-
-alertIfUnsupportedBrowser();
+// Start of IE11 browser alerts/polyfills
+// May remove once IE11 is no longer supported anywhere
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/includes
 if (!String.prototype.includes) {
