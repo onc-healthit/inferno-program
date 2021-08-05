@@ -156,9 +156,9 @@ module Inferno
 
       token_endpoint_tls_test(index: '04')
 
-      test_is_deprecated(index: '05', name: 'OAuth token exchange fails when supplied invalid code', version: '1.7.0')
+      test_is_deprecated(index: '05', name: 'OAuth token exchange fails when supplied invalid code', version: '1.6.1')
 
-      test_is_deprecated(index: '06', name: 'OAuth token exchange fails when supplied invalid client ID', version: '1.7.0')
+      test_is_deprecated(index: '06', name: 'OAuth token exchange fails when supplied invalid client ID', version: '1.6.1')
 
       successful_token_exchange_test(index: '07')
 

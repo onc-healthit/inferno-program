@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative '../core/shared_tests'
+
 module Inferno
   module Sequence
     class BulkDataAuthorizationSequence < SequenceBase
+      include Inferno::Sequence::SharedTests
+
       title 'Bulk Data Authorization'
       description 'Demonstrate SMART Backend Service Authorization for Bulk Data'
 
@@ -131,30 +135,7 @@ module Inferno
         assert_response_bad(response)
       end
 
-      test :require_system_scope do
-        metadata do
-          id '03'
-          name 'Authorization request fails when client supplies invalid scope'
-          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#scopes'
-          description %(
-            The Backend Service Authorization specification defines the required fields for the
-            authorization request, made via HTTP POST to authorization token endpoint.  This
-            request includes the `scope` parameter, where the value must be a system scope.
-            System scopes have the format `system/(:resourceType|*).(read|write|*).
-
-            The OAuth 2.0 Authorization Framework describes the proper response for an
-            invalid request in the client credentials grant flow:
-
-            ```
-            If the request failed client authentication or is invalid, the authorization server returns an
-            error response as described in [Section 5.2](https://tools.ietf.org/html/rfc6749#section-5.2).
-            ```
-          )
-        end
-
-        response = authorize(scope: 'user/*.read')
-        assert_response_bad(response)
-      end
+      test_is_deprecated(index: '03', name: 'Authorization request fails when client supplies invalid scope', version: '1.6.2')
 
       test :require_grant_type do
         metadata do

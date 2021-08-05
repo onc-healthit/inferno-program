@@ -42,7 +42,7 @@ resource_validator: external
 
 # The url where the external validator can be reached. Ignored when using the
 # internal validator.
-external_resource_validator_url: http://validator_service:4567
+external_resource_validator_url: https://localhost:8888 
 
 # The expected version of the external validator. The app will display a warning if
 # the found version doesn't match the expected version exactly.

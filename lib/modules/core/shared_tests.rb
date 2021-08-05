@@ -15,7 +15,7 @@ module Inferno
               name "#{name} is deprecated"
               link 'http://hl7.org/fhir'
               description %(
-                Test #{name} is deprecated from version #{version}
+                Test #{name} is deprecated after version #{version}
               )
               optional
             end
