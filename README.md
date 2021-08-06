@@ -84,6 +84,7 @@ Prerequisites:
   * Note: the Docker terminology process will not run unless Docker has access to at least 10GB of RAM.
 * At least 90 GB of free disk space on the Host OS, for downloading/unzipping/processing the terminology files.
   * Note: this space needs to be allocated on the host because Docker maps these files through to the Host, to allow for building in the dedicated terminology container.
+  * Note: see the `.env` file section below for a way to reduce this space requirement to around 40 GB.
 * A copy of the Inferno repository, which contains the required Docker and Ruby files
 
 You can prebuild the terminology docker container by running the following command:
@@ -97,9 +98,13 @@ Once the container is built, you will have to add your UMLS API key to a file na
 The `.env` file should look like this (replacing `your_api_key`  with your UMLS API key):
 
 ```sh
-UMLS_APIKEY=your_api_key
+UMLS_API_KEY=your_api_key
+# optional
+CLEANUP=true
 ```
 Note that _anything_ after the equals sign in `.env` will be considered part of the variable, so don't wrap your API key in quotation marks.
+
+Optionally: you can add a second environment variable, named `CLEANUP` and set to `true`, to that same file. This tells the build system to delete the "build files"--everything except for the finished databases--between each version build. This caps the space requirement at ~40 GB, rather than 90 GB.
 
 Once that file exists, you can run the terminology creation task by using the following command:
 

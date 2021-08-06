@@ -18,3 +18,4 @@ services:
         consistency: delegated
     environment:
       UMLS_API_KEY:
+      CLEANUP:

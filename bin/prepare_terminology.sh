@@ -52,7 +52,7 @@ if [[ ! -e "$temp_folder/umls_subset" ]]; then
   child=$!
   wait "$child"
 else
-  echo "UMLS Subset already exists; skipping Metamorphosys Rake task."
+  echo "${version} UMLS Subset already exists; skipping Metamorphosys Rake task."
 fi
 
 # Note: these are unversioned, hence why they don't make use of $temp_folder

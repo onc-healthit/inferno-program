@@ -182,14 +182,13 @@ namespace :terminology do |_argv|
     puts 'done'
   end
 
-  desc 'cleanup terminology files'
+  desc 'cleanup all terminology files'
   task :cleanup, [] do |_t, _args|
-    args.with_defaults(version: '2019')
     puts "removing all terminology build files in #{TEMP_DIR}"
     FileUtils.remove_dir File.join(TEMP_DIR)
   end
 
-  desc 'cleanup terminology files _except_ umls.db'
+  desc 'cleanup terminology files except umls.db'
   task :cleanup_precursors, [:version] do |_t, args|
     args.with_defaults(version: '2019')
     puts "removing terminology precursor files in #{TEMP_DIR}/#{args.version}"
@@ -199,17 +198,22 @@ namespace :terminology do |_argv|
     FileUtils.rm(Dir.glob(File.join(TEMP_DIR, args.version, '*.pipe')), force: true)
   end
 
+
+  def db_for_version(version)
+    File.join(TEMP_DIR, version, 'umls.db')
+  end
+
   desc 'post-process UMLS terminology file'
   task :process_umls, [:version] do |_t, args|
     args.with_defaults(version: '2019')
-    versioned_temp_dir = db_for_version(args.version)
+    versioned_temp_dir = File.join(TEMP_DIR, version)
     require 'find'
     require 'csv'
     puts 'Looking for `./tmp/terminology/MRCONSO.RRF`...'
-    input_file = Find.find(TEMP_DIR).find { |f| /MRCONSO.RRF$/ =~f }
+    input_file = Find.find(versioned_temp_dir).find { |f| /MRCONSO.RRF$/ =~f }
     if input_file
       start = Time.now
-      output_filename = File.join(TEMP_DIR, 'terminology_umls.txt')
+      output_filename = File.join(versioned_temp_dir, 'terminology_umls.txt')
       output = File.open(output_filename, 'w:UTF-8')
       line = 0
       excluded = 0
@@ -364,10 +368,6 @@ namespace :terminology do |_argv|
     end
   end
 
-  def db_for_version(version)
-    File.join(TEMP_DIR, version, 'umls.db')
-  end
-
   desc 'Create ValueSet Validators'
   task :create_vs_validators, [:database, :type, :version, :delete_existing] do |_t, args|
     args.with_defaults(type: 'bloom', delete_existing: true, version: '2019')
@@ -425,13 +425,28 @@ namespace :terminology do |_argv|
 
   desc 'Expand and Save ValueSet to a file'
   task :expand_valueset_to_file, [:vs, :filename, :type] do |_t, args|
-    Inferno::Terminology.register_umls_db File.join(TEMP_DIR, 'umls.db')
-    Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
-    vs = Inferno::Terminology.known_valuesets[args.vs]
+    # JSON is a special case, because we need to add codes from valuesets from several versions
+    # We accomplish this by collecting and merging codes from each version
+    # Before writing the JSON to a file at the end
     if args.type == 'json'
-      File.open("#{args.filename}.json", 'wb') { |f| f << vs.expansion_as_fhir_valueset.to_json }
-    else
-      Inferno::Terminology.save_to_file(vs.valueset, args.filename, args.type.to_sym)
+      end_vs = nil
+    end
+
+    %w{2019 2020 2021}.each do |version|
+      Inferno::Terminology.register_umls_db File.join(TEMP_DIR, version, 'umls.db')
+      Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
+      vs = Inferno::Terminology.known_valuesets[args.vs]
+      if args.type == 'json'
+        end_vs ||= vs
+        # Collect valueset codes
+        end_vs.valueset.merge vs.valueset
+      else
+        Inferno::Terminology.save_to_file(vs.valueset, args.filename, args.type.to_sym)
+      end
+    end
+
+    if args.type == 'json'
+      File.open("#{args.filename}.json", 'wb') { |f| f << end_vs.expansion_as_fhir_valueset.to_json }
     end
   end
 

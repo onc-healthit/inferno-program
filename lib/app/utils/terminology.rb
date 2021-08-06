@@ -181,7 +181,12 @@ module Inferno
     # @param [String] filename the name of the file
     def self.save_csv_to_file(codeset, filename)
       # If the file already exists, add it to the Set
-      codeset.merge(CSV.read(filename)) if File.file? filename
+      if File.file? filename
+        csv_set = Set.new
+        CSV.read(filename).each do |code_array|
+          csv_set.add({ code: code_array[0], system: code_array[1] })
+        end
+      end
       count = 0
       CSV.open(filename, 'wb') do |csv|
         codeset.each do |code|

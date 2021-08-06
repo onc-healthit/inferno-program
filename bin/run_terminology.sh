@@ -11,13 +11,34 @@ if [ -f /.dockerenv ]; then
   fi
 fi
 
-trap 'trap " " SIGTERM; kill 0; wait;' SIGHUP SIGINT SIGTERM SIGQUIT SIGKILL SIGTSTP
-
 ./bin/prepare_terminology.sh 2019
-exec bundle exec rake terminology:create_module_vs_validators["uscore_v3.1.1","preferred"]
+bundle exec rake terminology:create_module_vs_validators["uscore_v3.1.1","preferred"]
+echo "$?"
+
+if [ -n "$CLEANUP" ]
+then
+  echo 'Deleting 2019 build files'
+  bundle exec rake terminology:cleanup_precursors["2019"]
+fi
 
 ./bin/prepare_terminology.sh 2020
-exec bundle exec rake terminology:create_module_vs_validators["uscore_v3.1.1","preferred","2020","false"]
+echo "$?"
+bundle exec rake terminology:create_module_vs_validators["uscore_v3.1.1","preferred","2020","false"]
+echo "$?"
+
+if [ -n "$CLEANUP" ]
+then
+  echo 'Deleting 2020 build files'
+  exec bundle exec rake terminology:cleanup_precursors["2020"]
+fi
 
 ./bin/prepare_terminology.sh 2021
-exec bundle exec rake terminology:create_module_vs_validators["uscore_v3.1.1","preferred","2021","false"]
+echo "$?"
+bundle exec rake terminology:create_module_vs_validators["uscore_v3.1.1","preferred","2021","false"]
+echo "$?"
+
+if [ -n "$CLEANUP" ]
+then
+  echo 'Deleting 2021 build files'
+  exec bundle exec rake terminology:cleanup_precursors["2021"]
+fi
