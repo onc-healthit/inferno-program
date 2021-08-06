@@ -198,7 +198,6 @@ namespace :terminology do |_argv|
     FileUtils.rm(Dir.glob(File.join(TEMP_DIR, args.version, '*.pipe')), force: true)
   end
 
-
   def db_for_version(version)
     File.join(TEMP_DIR, version, 'umls.db')
   end
@@ -428,11 +427,9 @@ namespace :terminology do |_argv|
     # JSON is a special case, because we need to add codes from valuesets from several versions
     # We accomplish this by collecting and merging codes from each version
     # Before writing the JSON to a file at the end
-    if args.type == 'json'
-      end_vs = nil
-    end
+    end_vs = nil if args.type == 'json'
 
-    %w{2019 2020 2021}.each do |version|
+    %w[2019 2020 2021].each do |version|
       Inferno::Terminology.register_umls_db File.join(TEMP_DIR, version, 'umls.db')
       Inferno::Terminology.load_valuesets_from_directory(Inferno::Terminology::PACKAGE_DIR, true)
       vs = Inferno::Terminology.known_valuesets[args.vs]
@@ -445,9 +442,7 @@ namespace :terminology do |_argv|
       end
     end
 
-    if args.type == 'json'
-      File.open("#{args.filename}.json", 'wb') { |f| f << end_vs.expansion_as_fhir_valueset.to_json }
-    end
+    File.open("#{args.filename}.json", 'wb') { |f| f << end_vs.expansion_as_fhir_valueset.to_json } if args.type == 'json'
   end
 
   desc 'Download FHIR Package'
