@@ -37,6 +37,9 @@ module Inferno
       result
     end
 
+    # FHIR validator does not valid Resource.id /^[A-Za-z0-9\-\.]{1,64}$/
+    # So Inferno has to check Resource.id against this regex.
+    # This should be removed after FHIR validator fix
     def validate_resource_id(resource)
       resource&.id.nil? || resource.id.match?(/^[A-Za-z0-9\-\.]{1,64}$/) ? nil : "#{resource.resourceType}.id: FHIR id value shall match Regex /^[A-Za-z0-9\-\.]{1,64}$/"
     end
