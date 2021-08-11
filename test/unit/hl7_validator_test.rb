@@ -63,9 +63,7 @@ describe Inferno::HL7Validator do
         )
 
       result = @validator.validate(@resource, FHIR, @profile)
-      assert_equal 3, result[:errors].length
-      assert_equal 1, result[:warnings].length
-      assert_equal 4, result[:information].length
+      assert(result[:errors].any? { |err| err.match?(/FHIR id value shall match Regex/) })
     end
   end
 
@@ -94,6 +92,7 @@ describe Inferno::HL7Validator do
       result = @validator.validate_resource_id(@resource)
 
       assert result.present?
+      assert result.match?(/FHIR id value shall match Regex/)
     end
 
     it 'catches Resource id with invalid character' do
@@ -101,6 +100,7 @@ describe Inferno::HL7Validator do
       result = @validator.validate_resource_id(@resource)
 
       assert result.present?
+      assert result.match?(/FHIR id value shall match Regex/)
     end
 
     it 'passes Resource without id' do
