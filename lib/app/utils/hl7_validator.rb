@@ -28,7 +28,17 @@ module Inferno
       result = RestClient.post "#{@validator_url}/validate", resource.source_contents, params: { profile: profile_url }
       outcome = fhir_models_klass.from_contents(result.body)
 
-      issues_by_severity(outcome.issue)
+      result = issues_by_severity(outcome.issue)
+
+      id_error = validate_resource_id(resource)
+
+      result[:errors] << id_error if id_error.present?
+
+      result
+    end
+
+    def validate_resource_id(resource)
+      resource&.id.nil? || resource.id.match?(/^[A-Za-z0-9\-\.]{1,64}$/) ? nil : "#{resource.resourceType}.id: FHIR id value shall match Regex /^[A-Za-z0-9\-\.]{1,64}$/"
     end
 
     # @return [String] the version of the validator currently being used or nil
