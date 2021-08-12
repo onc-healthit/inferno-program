@@ -91,29 +91,38 @@ describe Inferno::HL7Validator do
       @resource.id = '1234567890123456789012345678901234567890123456789012345678901234567890'
       result = @validator.validate_resource_id(@resource)
 
-      assert result.present?
-      assert result.match?(/FHIR id value shall match Regex/)
+      refute result.empty?
+      assert result.first.match?(/^Patient\.id: FHIR id value shall match Regex/)
     end
 
     it 'catches Resource id with invalid character' do
       @resource.id = '1234567890$'
       result = @validator.validate_resource_id(@resource)
 
-      assert result.present?
-      assert result.match?(/FHIR id value shall match Regex/)
+      refute result.empty?
+      assert result.first.match?(/^Patient\.id: FHIR id value shall match Regex/)
+    end
+
+    it 'catches Resource id in internal resource' do
+      @resource.id = '1234567890123456789012345678901234567890123456789012345678901234567890'
+      bundle = wrap_resources_in_bundle(@resource)
+      bundle.id = '1234567890$'
+      result = @validator.validate_resource_id(bundle)
+
+      assert result.size == 2
     end
 
     it 'passes Resource without id' do
       result = @validator.validate_resource_id(@resource)
 
-      assert_nil result
+      assert result.empty?
     end
 
     it 'passes Resource with valid id' do
       @resource.id = 'A-123.b'
       result = @validator.validate_resource_id(@resource)
 
-      assert_nil result
+      assert result.empty?
     end
   end
 end
