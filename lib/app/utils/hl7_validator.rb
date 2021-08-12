@@ -34,7 +34,7 @@ module Inferno
 
       id_errors = validate_resource_id(resource)
 
-      result[:errors].push(*id_errors)
+      result[:errors].concat(id_errors)
 
       result
     end
