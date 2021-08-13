@@ -74,7 +74,7 @@ GEM
     faraday-net_http_persistent (1.2.0)
     faraday-patron (1.0.0)
     faraday-rack (1.0.0)
-    fhir_client (5.0.0)
+    fhir_client (5.0.1)
       activesupport (>= 3)
       addressable (>= 2.3)
       fhir_dstu2_models (>= 1.1.0)
@@ -244,7 +244,7 @@ DEPENDENCIES
   base62-rb
   bloomer
   colorize
-  fhir_client (>= 5.0.0)
+  fhir_client (>= 5.0.1)
   json-jwt
   jwt
   kramdown
