@@ -268,24 +268,30 @@ module Inferno
         patient_ids.each do |patient|
           next unless @care_plan_ary[patient].present?
 
-          search_params = {
-            'patient': patient,
-            'category': get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }),
-            'status': get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
-          }
+          care_plan_ary = Array.wrap(@care_plan_ary[patient])
 
-          next if search_params.any? { |_param, value| value.nil? }
+          care_plan_ary.each do |care_plan|
+            search_params = {
+              'patient': patient,
+              'category': get_value_for_search_param(resolve_element_from_path(care_plan, 'category') { |el| get_value_for_search_param(el).present? }),
+              'status': get_value_for_search_param(resolve_element_from_path(care_plan, 'status') { |el| get_value_for_search_param(el).present? })
+            }
 
-          resolved_one = true
+            next if search_params.any? { |_param, value| value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
+            resolved_one = true
 
-          validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+            reply = get_resource_by_params(versioned_resource_class('CarePlan'), search_params)
 
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@care_plan_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }, true)
-          token_with_system_search_params = search_params.merge('category': value_with_system)
-          reply = get_resource_by_params(versioned_resource_class('CarePlan'), token_with_system_search_params)
-          validate_search_reply(versioned_resource_class('CarePlan'), reply, token_with_system_search_params)
+            validate_search_reply(versioned_resource_class('CarePlan'), reply, search_params)
+
+            value_with_system = get_value_for_search_param(resolve_element_from_path(care_plan, 'category') { |el| get_value_for_search_param(el).present? }, true)
+            token_with_system_search_params = search_params.merge('category': value_with_system)
+            reply = get_resource_by_params(versioned_resource_class('CarePlan'), token_with_system_search_params)
+            validate_search_reply(versioned_resource_class('CarePlan'), reply, token_with_system_search_params)
+
+            break if resolved_one
+          end
         end
 
         skip 'Could not resolve all parameters (patient, category, status) in any resource.' unless resolved_one

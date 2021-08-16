@@ -367,26 +367,32 @@ module Inferno
         patient_ids.each do |patient|
           next unless @document_reference_ary[patient].present?
 
-          search_params = {
-            'patient': patient,
-            'category': get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }),
-            'date': get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'date') { |el| get_value_for_search_param(el).present? })
-          }
+          document_reference_ary = Array.wrap(@document_reference_ary[patient])
 
-          next if search_params.any? { |_param, value| value.nil? }
+          document_reference_ary.each do |document_reference|
+            search_params = {
+              'patient': patient,
+              'category': get_value_for_search_param(resolve_element_from_path(document_reference, 'category') { |el| get_value_for_search_param(el).present? }),
+              'date': get_value_for_search_param(resolve_element_from_path(document_reference, 'date') { |el| get_value_for_search_param(el).present? })
+            }
 
-          resolved_one = true
+            next if search_params.any? { |_param, value| value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+            resolved_one = true
 
-          reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
+            reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
 
-          validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+            reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
 
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }, true)
-          token_with_system_search_params = search_params.merge('category': value_with_system)
-          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), token_with_system_search_params)
-          validate_search_reply(versioned_resource_class('DocumentReference'), reply, token_with_system_search_params)
+            validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+
+            value_with_system = get_value_for_search_param(resolve_element_from_path(document_reference, 'category') { |el| get_value_for_search_param(el).present? }, true)
+            token_with_system_search_params = search_params.merge('category': value_with_system)
+            reply = get_resource_by_params(versioned_resource_class('DocumentReference'), token_with_system_search_params)
+            validate_search_reply(versioned_resource_class('DocumentReference'), reply, token_with_system_search_params)
+
+            break if resolved_one
+          end
         end
 
         skip 'Could not resolve all parameters (patient, category, date) in any resource.' unless resolved_one
@@ -465,33 +471,39 @@ module Inferno
         patient_ids.each do |patient|
           next unless @document_reference_ary[patient].present?
 
-          search_params = {
-            'patient': patient,
-            'type': get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'type') { |el| get_value_for_search_param(el).present? }),
-            'period': get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'context.period') { |el| get_value_for_search_param(el).present? })
-          }
+          document_reference_ary = Array.wrap(@document_reference_ary[patient])
 
-          next if search_params.any? { |_param, value| value.nil? }
+          document_reference_ary.each do |document_reference|
+            search_params = {
+              'patient': patient,
+              'type': get_value_for_search_param(resolve_element_from_path(document_reference, 'type') { |el| get_value_for_search_param(el).present? }),
+              'period': get_value_for_search_param(resolve_element_from_path(document_reference, 'context.period') { |el| get_value_for_search_param(el).present? })
+            }
 
-          resolved_one = true
+            next if search_params.any? { |_param, value| value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
+            resolved_one = true
 
-          reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
+            reply = get_resource_by_params(versioned_resource_class('DocumentReference'), search_params)
 
-          validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+            reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
 
-          ['gt', 'ge', 'lt', 'le'].each do |comparator|
-            comparator_val = date_comparator_value(comparator, resolve_element_from_path(@document_reference_ary[patient], 'context.period') { |el| get_value_for_search_param(el).present? })
-            comparator_search_params = search_params.merge('period': comparator_val)
-            reply = get_resource_by_params(versioned_resource_class('DocumentReference'), comparator_search_params)
-            validate_search_reply(versioned_resource_class('DocumentReference'), reply, comparator_search_params)
+            validate_search_reply(versioned_resource_class('DocumentReference'), reply, search_params)
+
+            ['gt', 'ge', 'lt', 'le'].each do |comparator|
+              comparator_val = date_comparator_value(comparator, resolve_element_from_path(document_reference, 'context.period') { |el| get_value_for_search_param(el).present? })
+              comparator_search_params = search_params.merge('period': comparator_val)
+              reply = get_resource_by_params(versioned_resource_class('DocumentReference'), comparator_search_params)
+              validate_search_reply(versioned_resource_class('DocumentReference'), reply, comparator_search_params)
+            end
+
+            value_with_system = get_value_for_search_param(resolve_element_from_path(document_reference, 'type') { |el| get_value_for_search_param(el).present? }, true)
+            token_with_system_search_params = search_params.merge('type': value_with_system)
+            reply = get_resource_by_params(versioned_resource_class('DocumentReference'), token_with_system_search_params)
+            validate_search_reply(versioned_resource_class('DocumentReference'), reply, token_with_system_search_params)
+
+            break if resolved_one
           end
-
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@document_reference_ary[patient], 'type') { |el| get_value_for_search_param(el).present? }, true)
-          token_with_system_search_params = search_params.merge('type': value_with_system)
-          reply = get_resource_by_params(versioned_resource_class('DocumentReference'), token_with_system_search_params)
-          validate_search_reply(versioned_resource_class('DocumentReference'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, type, period) in any resource.' unless resolved_one

@@ -348,33 +348,39 @@ module Inferno
         patient_ids.each do |patient|
           next unless @procedure_ary[patient].present?
 
-          search_params = {
-            'patient': patient,
-            'code': get_value_for_search_param(resolve_element_from_path(@procedure_ary[patient], 'code') { |el| get_value_for_search_param(el).present? }),
-            'date': get_value_for_search_param(resolve_element_from_path(@procedure_ary[patient], 'performed') { |el| get_value_for_search_param(el).present? })
-          }
+          procedure_ary = Array.wrap(@procedure_ary[patient])
 
-          next if search_params.any? { |_param, value| value.nil? }
+          procedure_ary.each do |procedure|
+            search_params = {
+              'patient': patient,
+              'code': get_value_for_search_param(resolve_element_from_path(procedure, 'code') { |el| get_value_for_search_param(el).present? }),
+              'date': get_value_for_search_param(resolve_element_from_path(procedure, 'performed') { |el| get_value_for_search_param(el).present? })
+            }
 
-          resolved_one = true
+            next if search_params.any? { |_param, value| value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
+            resolved_one = true
 
-          reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
+            reply = get_resource_by_params(versioned_resource_class('Procedure'), search_params)
 
-          validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
+            reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
 
-          ['gt', 'ge', 'lt', 'le'].each do |comparator|
-            comparator_val = date_comparator_value(comparator, resolve_element_from_path(@procedure_ary[patient], 'performed') { |el| get_value_for_search_param(el).present? })
-            comparator_search_params = search_params.merge('date': comparator_val)
-            reply = get_resource_by_params(versioned_resource_class('Procedure'), comparator_search_params)
-            validate_search_reply(versioned_resource_class('Procedure'), reply, comparator_search_params)
+            validate_search_reply(versioned_resource_class('Procedure'), reply, search_params)
+
+            ['gt', 'ge', 'lt', 'le'].each do |comparator|
+              comparator_val = date_comparator_value(comparator, resolve_element_from_path(procedure, 'performed') { |el| get_value_for_search_param(el).present? })
+              comparator_search_params = search_params.merge('date': comparator_val)
+              reply = get_resource_by_params(versioned_resource_class('Procedure'), comparator_search_params)
+              validate_search_reply(versioned_resource_class('Procedure'), reply, comparator_search_params)
+            end
+
+            value_with_system = get_value_for_search_param(resolve_element_from_path(procedure, 'code') { |el| get_value_for_search_param(el).present? }, true)
+            token_with_system_search_params = search_params.merge('code': value_with_system)
+            reply = get_resource_by_params(versioned_resource_class('Procedure'), token_with_system_search_params)
+            validate_search_reply(versioned_resource_class('Procedure'), reply, token_with_system_search_params)
+
+            break if resolved_one
           end
-
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@procedure_ary[patient], 'code') { |el| get_value_for_search_param(el).present? }, true)
-          token_with_system_search_params = search_params.merge('code': value_with_system)
-          reply = get_resource_by_params(versioned_resource_class('Procedure'), token_with_system_search_params)
-          validate_search_reply(versioned_resource_class('Procedure'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, code, date) in any resource.' unless resolved_one

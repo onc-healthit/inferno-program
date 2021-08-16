@@ -303,25 +303,31 @@ module Inferno
         patient_ids.each do |patient|
           next unless @medication_request_ary[patient].present?
 
-          search_params = {
-            'patient': patient,
-            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? }),
-            'status': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
-          }
+          medication_request_ary = Array.wrap(@medication_request_ary[patient])
 
-          next if search_params.any? { |_param, value| value.nil? }
+          medication_request_ary.each do |medication_request|
+            search_params = {
+              'patient': patient,
+              'intent': get_value_for_search_param(resolve_element_from_path(medication_request, 'intent') { |el| get_value_for_search_param(el).present? }),
+              'status': get_value_for_search_param(resolve_element_from_path(medication_request, 'status') { |el| get_value_for_search_param(el).present? })
+            }
 
-          resolved_one = true
+            next if search_params.any? { |_param, value| value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
+            resolved_one = true
 
-          validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+            reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
 
-          resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          assert(resources_returned.all? { |resource| ['MedicationRequest', 'OperationOutcome'].include? resource.resourceType },
-                 'All resources returned must be of the type MedicationRequest or OperationOutcome')
-          resources_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
-          test_medication_inclusion(resources_returned, search_params)
+            validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+
+            resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert(resources_returned.all? { |resource| ['MedicationRequest', 'OperationOutcome'].include? resource.resourceType },
+                   'All resources returned must be of the type MedicationRequest or OperationOutcome')
+            resources_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+            test_medication_inclusion(resources_returned, search_params)
+
+            break if resolved_one
+          end
         end
 
         skip 'Could not resolve all parameters (patient, intent, status) in any resource.' unless resolved_one
@@ -354,27 +360,33 @@ module Inferno
         patient_ids.each do |patient|
           next unless @medication_request_ary[patient].present?
 
-          search_params = {
-            'patient': patient,
-            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? }),
-            'encounter': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'encounter') { |el| get_value_for_search_param(el).present? })
-          }
+          medication_request_ary = Array.wrap(@medication_request_ary[patient])
 
-          next if search_params.any? { |_param, value| value.nil? }
+          medication_request_ary.each do |medication_request|
+            search_params = {
+              'patient': patient,
+              'intent': get_value_for_search_param(resolve_element_from_path(medication_request, 'intent') { |el| get_value_for_search_param(el).present? }),
+              'encounter': get_value_for_search_param(resolve_element_from_path(medication_request, 'encounter') { |el| get_value_for_search_param(el).present? })
+            }
 
-          resolved_one = true
+            next if search_params.any? { |_param, value| value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
+            resolved_one = true
 
-          reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
+            reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
 
-          validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+            reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
 
-          resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          assert(resources_returned.all? { |resource| ['MedicationRequest', 'OperationOutcome'].include? resource.resourceType },
-                 'All resources returned must be of the type MedicationRequest or OperationOutcome')
-          resources_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
-          test_medication_inclusion(resources_returned, search_params)
+            validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+
+            resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert(resources_returned.all? { |resource| ['MedicationRequest', 'OperationOutcome'].include? resource.resourceType },
+                   'All resources returned must be of the type MedicationRequest or OperationOutcome')
+            resources_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+            test_medication_inclusion(resources_returned, search_params)
+
+            break if resolved_one
+          end
         end
 
         skip 'Could not resolve all parameters (patient, intent, encounter) in any resource.' unless resolved_one
@@ -411,27 +423,33 @@ module Inferno
         patient_ids.each do |patient|
           next unless @medication_request_ary[patient].present?
 
-          search_params = {
-            'patient': patient,
-            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? }),
-            'authoredon': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'authoredOn') { |el| get_value_for_search_param(el).present? })
-          }
+          medication_request_ary = Array.wrap(@medication_request_ary[patient])
 
-          next if search_params.any? { |_param, value| value.nil? }
+          medication_request_ary.each do |medication_request|
+            search_params = {
+              'patient': patient,
+              'intent': get_value_for_search_param(resolve_element_from_path(medication_request, 'intent') { |el| get_value_for_search_param(el).present? }),
+              'authoredon': get_value_for_search_param(resolve_element_from_path(medication_request, 'authoredOn') { |el| get_value_for_search_param(el).present? })
+            }
 
-          resolved_one = true
+            next if search_params.any? { |_param, value| value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
+            resolved_one = true
 
-          reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
+            reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
 
-          validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+            reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
 
-          resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          assert(resources_returned.all? { |resource| ['MedicationRequest', 'OperationOutcome'].include? resource.resourceType },
-                 'All resources returned must be of the type MedicationRequest or OperationOutcome')
-          resources_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
-          test_medication_inclusion(resources_returned, search_params)
+            validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+
+            resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            assert(resources_returned.all? { |resource| ['MedicationRequest', 'OperationOutcome'].include? resource.resourceType },
+                   'All resources returned must be of the type MedicationRequest or OperationOutcome')
+            resources_returned.reject! { |resource| resource.resourceType == 'OperationOutcome' }
+            test_medication_inclusion(resources_returned, search_params)
+
+            break if resolved_one
+          end
         end
 
         skip 'Could not resolve all parameters (patient, intent, authoredon) in any resource.' unless resolved_one
@@ -727,29 +745,34 @@ module Inferno
         patient_ids.each do |patient|
           next unless @medication_request_ary[patient].present?
 
-          search_params = {
-            'patient': patient,
-            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? }),
-            'status': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
-          }
+          medication_request_ary = Array.wrap(@medication_request_ary[patient])
+          medication_request_ary.each do |medication_request|
+            search_params = {
+              'patient': patient,
+              'intent': get_value_for_search_param(resolve_element_from_path(medication_request, 'intent') { |el| get_value_for_search_param(el).present? }),
+              'status': get_value_for_search_param(resolve_element_from_path(medication_request, 'status') { |el| get_value_for_search_param(el).present? })
+            }
 
-          next if search_params.any? { |_param, value| value.nil? }
+            next if search_params.any? { |_param, value| value.nil? }
 
-          resolved_one = true
+            resolved_one = true
 
-          second_status_val = resolve_element_from_path(@medication_request_ary[patient], 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
-          next if second_status_val.nil?
+            second_status_val = resolve_element_from_path(@medication_request_ary[patient], 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
+            next if second_status_val.nil?
 
-          found_second_val = true
-          search_params[:status] += ',' + get_value_for_search_param(second_status_val)
-          reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
-          validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-          assert_response_ok(reply)
-          resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          missing_values = search_params[:status].split(',').reject do |val|
-            resolve_element_from_path(resources_returned, 'status') { |val_found| val_found == val }
+            found_second_val = true
+            search_params[:status] += ',' + get_value_for_search_param(second_status_val)
+            reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
+            validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+            assert_response_ok(reply)
+            resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            missing_values = search_params[:status].split(',').reject do |val|
+              resolve_element_from_path(resources_returned, 'status') { |val_found| val_found == val }
+            end
+            assert missing_values.blank?, "Could not find #{missing_values.join(',')} values from status in any of the resources returned"
+
+            break if resolved_one
           end
-          assert missing_values.blank?, "Could not find #{missing_values.join(',')} values from status in any of the resources returned"
         end
         skip 'Cannot find second value for status to perform a multipleOr search' unless found_second_val
 
@@ -759,6 +782,8 @@ module Inferno
 
         found_second_val = false
         patient_ids.each do |patient|
+          next unless @medication_request_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? })

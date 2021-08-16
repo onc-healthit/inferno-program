@@ -438,6 +438,8 @@ module Inferno
 
         found_second_val = false
         patient_ids.each do |patient|
+          next unless @care_team_ary[patient].present?
+
           search_params = {
             'patient': patient,
             'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })

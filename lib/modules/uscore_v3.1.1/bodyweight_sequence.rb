@@ -286,33 +286,39 @@ module Inferno
         patient_ids.each do |patient|
           next unless @observation_ary[patient].present?
 
-          search_params = {
-            'patient': patient,
-            'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }),
-            'date': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'effective') { |el| get_value_for_search_param(el).present? })
-          }
+          observation_ary = Array.wrap(@observation_ary[patient])
 
-          next if search_params.any? { |_param, value| value.nil? }
+          observation_ary.each do |observation|
+            search_params = {
+              'patient': patient,
+              'category': get_value_for_search_param(resolve_element_from_path(observation, 'category') { |el| get_value_for_search_param(el).present? }),
+              'date': get_value_for_search_param(resolve_element_from_path(observation, 'effective') { |el| get_value_for_search_param(el).present? })
+            }
 
-          resolved_one = true
+            next if search_params.any? { |_param, value| value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+            resolved_one = true
 
-          reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
+            reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
 
-          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+            reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
 
-          ['gt', 'ge', 'lt', 'le'].each do |comparator|
-            comparator_val = date_comparator_value(comparator, resolve_element_from_path(@observation_ary[patient], 'effective') { |el| get_value_for_search_param(el).present? })
-            comparator_search_params = search_params.merge('date': comparator_val)
-            reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
-            validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
+            validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+
+            ['gt', 'ge', 'lt', 'le'].each do |comparator|
+              comparator_val = date_comparator_value(comparator, resolve_element_from_path(observation, 'effective') { |el| get_value_for_search_param(el).present? })
+              comparator_search_params = search_params.merge('date': comparator_val)
+              reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
+              validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
+            end
+
+            value_with_system = get_value_for_search_param(resolve_element_from_path(observation, 'category') { |el| get_value_for_search_param(el).present? }, true)
+            token_with_system_search_params = search_params.merge('category': value_with_system)
+            reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
+            validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
+
+            break if resolved_one
           end
-
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }, true)
-          token_with_system_search_params = search_params.merge('category': value_with_system)
-          reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, category, date) in any resource.' unless resolved_one
@@ -387,24 +393,30 @@ module Inferno
         patient_ids.each do |patient|
           next unless @observation_ary[patient].present?
 
-          search_params = {
-            'patient': patient,
-            'category': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }),
-            'status': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
-          }
+          observation_ary = Array.wrap(@observation_ary[patient])
 
-          next if search_params.any? { |_param, value| value.nil? }
+          observation_ary.each do |observation|
+            search_params = {
+              'patient': patient,
+              'category': get_value_for_search_param(resolve_element_from_path(observation, 'category') { |el| get_value_for_search_param(el).present? }),
+              'status': get_value_for_search_param(resolve_element_from_path(observation, 'status') { |el| get_value_for_search_param(el).present? })
+            }
 
-          resolved_one = true
+            next if search_params.any? { |_param, value| value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+            resolved_one = true
 
-          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+            reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
 
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category') { |el| get_value_for_search_param(el).present? }, true)
-          token_with_system_search_params = search_params.merge('category': value_with_system)
-          reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
+            validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+
+            value_with_system = get_value_for_search_param(resolve_element_from_path(observation, 'category') { |el| get_value_for_search_param(el).present? }, true)
+            token_with_system_search_params = search_params.merge('category': value_with_system)
+            reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
+            validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
+
+            break if resolved_one
+          end
         end
 
         skip 'Could not resolve all parameters (patient, category, status) in any resource.' unless resolved_one
@@ -437,33 +449,39 @@ module Inferno
         patient_ids.each do |patient|
           next unless @observation_ary[patient].present?
 
-          search_params = {
-            'patient': patient,
-            'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code') { |el| get_value_for_search_param(el).present? }),
-            'date': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'effective') { |el| get_value_for_search_param(el).present? })
-          }
+          observation_ary = Array.wrap(@observation_ary[patient])
 
-          next if search_params.any? { |_param, value| value.nil? }
+          observation_ary.each do |observation|
+            search_params = {
+              'patient': patient,
+              'code': get_value_for_search_param(resolve_element_from_path(observation, 'code') { |el| get_value_for_search_param(el).present? }),
+              'date': get_value_for_search_param(resolve_element_from_path(observation, 'effective') { |el| get_value_for_search_param(el).present? })
+            }
 
-          resolved_one = true
+            next if search_params.any? { |_param, value| value.nil? }
 
-          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+            resolved_one = true
 
-          reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
+            reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
 
-          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+            reply = perform_search_with_status(reply, search_params, search_method: :get) if reply.code == 400
 
-          ['gt', 'ge', 'lt', 'le'].each do |comparator|
-            comparator_val = date_comparator_value(comparator, resolve_element_from_path(@observation_ary[patient], 'effective') { |el| get_value_for_search_param(el).present? })
-            comparator_search_params = search_params.merge('date': comparator_val)
-            reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
-            validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
+            validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+
+            ['gt', 'ge', 'lt', 'le'].each do |comparator|
+              comparator_val = date_comparator_value(comparator, resolve_element_from_path(observation, 'effective') { |el| get_value_for_search_param(el).present? })
+              comparator_search_params = search_params.merge('date': comparator_val)
+              reply = get_resource_by_params(versioned_resource_class('Observation'), comparator_search_params)
+              validate_search_reply(versioned_resource_class('Observation'), reply, comparator_search_params)
+            end
+
+            value_with_system = get_value_for_search_param(resolve_element_from_path(observation, 'code') { |el| get_value_for_search_param(el).present? }, true)
+            token_with_system_search_params = search_params.merge('code': value_with_system)
+            reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
+            validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
+
+            break if resolved_one
           end
-
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code') { |el| get_value_for_search_param(el).present? }, true)
-          token_with_system_search_params = search_params.merge('code': value_with_system)
-          reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
         end
 
         skip 'Could not resolve all parameters (patient, code, date) in any resource.' unless resolved_one
