@@ -367,9 +367,7 @@ module Inferno
         patient_ids.each do |patient|
           next unless @document_reference_ary[patient].present?
 
-          document_reference_ary = Array.wrap(@document_reference_ary[patient])
-
-          document_reference_ary.each do |document_reference|
+          Array.wrap(@document_reference_ary[patient]).each do |document_reference|
             search_params = {
               'patient': patient,
               'category': get_value_for_search_param(resolve_element_from_path(document_reference, 'category') { |el| get_value_for_search_param(el).present? }),
@@ -471,9 +469,7 @@ module Inferno
         patient_ids.each do |patient|
           next unless @document_reference_ary[patient].present?
 
-          document_reference_ary = Array.wrap(@document_reference_ary[patient])
-
-          document_reference_ary.each do |document_reference|
+          Array.wrap(@document_reference_ary[patient]).each do |document_reference|
             search_params = {
               'patient': patient,
               'type': get_value_for_search_param(resolve_element_from_path(document_reference, 'type') { |el| get_value_for_search_param(el).present? }),

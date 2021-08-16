@@ -303,9 +303,7 @@ module Inferno
         patient_ids.each do |patient|
           next unless @medication_request_ary[patient].present?
 
-          medication_request_ary = Array.wrap(@medication_request_ary[patient])
-
-          medication_request_ary.each do |medication_request|
+          Array.wrap(@medication_request_ary[patient]).each do |medication_request|
             search_params = {
               'patient': patient,
               'intent': get_value_for_search_param(resolve_element_from_path(medication_request, 'intent') { |el| get_value_for_search_param(el).present? }),
@@ -360,9 +358,7 @@ module Inferno
         patient_ids.each do |patient|
           next unless @medication_request_ary[patient].present?
 
-          medication_request_ary = Array.wrap(@medication_request_ary[patient])
-
-          medication_request_ary.each do |medication_request|
+          Array.wrap(@medication_request_ary[patient]).each do |medication_request|
             search_params = {
               'patient': patient,
               'intent': get_value_for_search_param(resolve_element_from_path(medication_request, 'intent') { |el| get_value_for_search_param(el).present? }),
@@ -423,9 +419,7 @@ module Inferno
         patient_ids.each do |patient|
           next unless @medication_request_ary[patient].present?
 
-          medication_request_ary = Array.wrap(@medication_request_ary[patient])
-
-          medication_request_ary.each do |medication_request|
+          Array.wrap(@medication_request_ary[patient]).each do |medication_request|
             search_params = {
               'patient': patient,
               'intent': get_value_for_search_param(resolve_element_from_path(medication_request, 'intent') { |el| get_value_for_search_param(el).present? }),
@@ -745,8 +739,7 @@ module Inferno
         patient_ids.each do |patient|
           next unless @medication_request_ary[patient].present?
 
-          medication_request_ary = Array.wrap(@medication_request_ary[patient])
-          medication_request_ary.each do |medication_request|
+          Array.wrap(@medication_request_ary[patient]).each do |medication_request|
             search_params = {
               'patient': patient,
               'intent': get_value_for_search_param(resolve_element_from_path(medication_request, 'intent') { |el| get_value_for_search_param(el).present? }),

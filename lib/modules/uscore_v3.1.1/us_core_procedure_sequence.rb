@@ -348,9 +348,7 @@ module Inferno
         patient_ids.each do |patient|
           next unless @procedure_ary[patient].present?
 
-          procedure_ary = Array.wrap(@procedure_ary[patient])
-
-          procedure_ary.each do |procedure|
+          Array.wrap(@procedure_ary[patient]).each do |procedure|
             search_params = {
               'patient': patient,
               'code': get_value_for_search_param(resolve_element_from_path(procedure, 'code') { |el| get_value_for_search_param(el).present? }),

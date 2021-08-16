@@ -321,9 +321,7 @@ module Inferno
         patient_ids.each do |patient|
           next unless @diagnostic_report_ary[patient].present?
 
-          diagnostic_report_ary = Array.wrap(@diagnostic_report_ary[patient])
-
-          diagnostic_report_ary.each do |diagnostic_report|
+          Array.wrap(@diagnostic_report_ary[patient]).each do |diagnostic_report|
             search_params = {
               'patient': patient,
               'category': get_value_for_search_param(resolve_element_from_path(diagnostic_report, 'category') { |el| get_value_for_search_param(el).present? }),
@@ -472,9 +470,7 @@ module Inferno
         patient_ids.each do |patient|
           next unless @diagnostic_report_ary[patient].present?
 
-          diagnostic_report_ary = Array.wrap(@diagnostic_report_ary[patient])
-
-          diagnostic_report_ary.each do |diagnostic_report|
+          Array.wrap(@diagnostic_report_ary[patient]).each do |diagnostic_report|
             search_params = {
               'patient': patient,
               'code': get_value_for_search_param(resolve_element_from_path(diagnostic_report, 'code') { |el| get_value_for_search_param(el).present? }),

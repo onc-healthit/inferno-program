@@ -451,9 +451,7 @@ module Inferno
                   #{
                     if search_param[:names].length > 2
                       %(
-                        #{sequence[:resource].underscore}_ary = Array.wrap(@#{sequence[:resource].underscore}_ary[patient])
-
-                        #{sequence[:resource].underscore}_ary.each do |#{sequence[:resource].underscore}|
+                        Array.wrap(@#{sequence[:resource].underscore}_ary[patient]).each do |#{sequence[:resource].underscore}|
                           #{reply_code.gsub("@#{sequence[:resource].underscore}_ary[patient]", sequence[:resource].underscore.to_s)}
                           break if resolved_one
                         end
@@ -920,8 +918,7 @@ module Inferno
               #{
                 if multiple_or_search[:names].length > 2
                   %(
-                    #{sequence[:resource].underscore}_ary = Array.wrap(@#{sequence[:resource].underscore}_ary[patient])
-                    #{sequence[:resource].underscore}_ary.each do |#{sequence[:resource].underscore}|
+                    Array.wrap(@#{sequence[:resource].underscore}_ary[patient]).each do |#{sequence[:resource].underscore}|
                       #{search_params.gsub("@#{sequence[:resource].underscore}_ary[patient]", sequence[:resource].underscore.to_s)}
                       #{reply_code}
                       break if resolved_one
