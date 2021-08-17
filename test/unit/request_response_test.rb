@@ -13,6 +13,7 @@ describe Inferno::RequestResponse do
     @result = Inferno::TestResult.new(sequence_result: @sequence_result)
     @result.save!
   end
+
   it 'returns the request and responses in the correct order' do
     10.times do |index|
       @result.request_responses << Inferno::RequestResponse.create(
@@ -26,5 +27,19 @@ describe Inferno::RequestResponse do
     result.request_responses.each_with_index do |request_response, index|
       assert_equal request_response.request_url, "http://#{index}"
     end
+  end
+
+  it "doesn't raise an error when invalid headers are received" do
+    bad_header = { 'abc' => (0..255).map(&:chr).join }
+
+    request = Inferno::RequestResponse.from_request(
+      OpenStruct.new(
+        request: { headers: bad_header },
+        response: {}
+      ),
+      'abc'
+    )
+
+    assert(request.request_headers.match?(/"ERROR":/))
   end
 end
