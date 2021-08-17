@@ -122,15 +122,6 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     it_tests_required_parameter(request_headers: { content_type: 'application/json' })
   end
 
-  describe 'require system scope' do
-    before do
-      @test = @sequence_class[:require_system_scope]
-      @sequence = @sequence_class.new(@instance, @client)
-    end
-
-    it_tests_required_parameter(request_parameter: { scope: 'user/*.read' })
-  end
-
   describe 'require grant type' do
     before do
       @test = @sequence_class[:require_grant_type]
