@@ -3,6 +3,7 @@
 require 'simplecov'
 SimpleCov.start do
   add_filter '/test/'
+  add_filter '/lib/module/argonaut'
 end
 
 ENV['RACK_ENV'] = 'test'

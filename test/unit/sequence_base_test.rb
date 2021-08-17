@@ -271,7 +271,7 @@ class SequenceBaseTest < MiniTest::Test
       @resource = FHIR::Patient.new(generalPractitioner: [@practitioner_reference],
                                     managingOrganization: @organization_reference,
                                     contained: [@organization])
-      @resource.client = client
+      FHIR::Model.client = client
     end
 
     it 'raises an error if an external reference returns the wrong resource type' do
@@ -321,7 +321,7 @@ class SequenceBaseTest < MiniTest::Test
 
       instance = Inferno::TestingInstance.create!(selected_module: 'uscore_v3.1.1')
       client = FHIR::Client.new('')
-      @bundle1.client = client
+      FHIR::Model.client = client
       @sequence = Inferno::Sequence::SequenceBase.new(instance, client, true)
     end
 

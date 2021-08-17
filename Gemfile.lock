@@ -55,41 +55,51 @@ GEM
       unf (>= 0.0.5, < 1.0.0)
     erubi (1.10.0)
     eventmachine (1.2.7)
-    faraday (1.4.1)
+    faraday (1.7.0)
+      faraday-em_http (~> 1.0)
+      faraday-em_synchrony (~> 1.0)
       faraday-excon (~> 1.1)
+      faraday-httpclient (~> 1.0.1)
       faraday-net_http (~> 1.0)
       faraday-net_http_persistent (~> 1.1)
+      faraday-patron (~> 1.0)
+      faraday-rack (~> 1.0)
       multipart-post (>= 1.2, < 3)
       ruby2_keywords (>= 0.0.4)
+    faraday-em_http (1.0.0)
+    faraday-em_synchrony (1.0.0)
     faraday-excon (1.1.0)
+    faraday-httpclient (1.0.1)
     faraday-net_http (1.0.1)
-    faraday-net_http_persistent (1.1.0)
-    fhir_client (4.0.6)
+    faraday-net_http_persistent (1.2.0)
+    faraday-patron (1.0.0)
+    faraday-rack (1.0.0)
+    fhir_client (5.0.1)
       activesupport (>= 3)
       addressable (>= 2.3)
-      fhir_dstu2_models (>= 1.0.10)
-      fhir_models (>= 4.0.2)
-      fhir_stu3_models (>= 3.0.1)
+      fhir_dstu2_models (>= 1.1.0)
+      fhir_models (>= 4.2.0)
+      fhir_stu3_models (>= 3.1.0)
       nokogiri (>= 1.10.4)
       oauth2 (~> 1.1)
       rack (>= 1.5)
       rest-client (~> 2.0)
       tilt (>= 1.1)
-    fhir_dstu2_models (1.0.11)
+    fhir_dstu2_models (1.1.0)
       bcp47 (>= 0.3)
       date_time_precision (>= 0.8)
       mime-types (>= 3.0)
-      nokogiri (>= 1.10.4)
-    fhir_models (4.1.2)
+      nokogiri (>= 1.11.4)
+    fhir_models (4.2.0)
       bcp47 (>= 0.3)
       date_time_precision (>= 0.8)
       mime-types (>= 3.0)
-      nokogiri (>= 1.10.4)
-    fhir_stu3_models (3.0.2)
+      nokogiri (>= 1.11.4)
+    fhir_stu3_models (3.1.0)
       bcp47 (>= 0.3)
       date_time_precision (>= 0.8)
       mime-types (>= 3.0)
-      nokogiri (>= 1.10.4)
+      nokogiri (>= 1.11.4)
     hashdiff (1.0.0)
     http-accept (1.7.0)
     http-cookie (1.0.3)
@@ -234,7 +244,7 @@ DEPENDENCIES
   base62-rb
   bloomer
   colorize
-  fhir_client
+  fhir_client (>= 5.0.1)
   json-jwt
   jwt
   kramdown
@@ -260,4 +270,4 @@ DEPENDENCIES
   webmock
 
 BUNDLED WITH
-   2.2.19
+   2.2.25
