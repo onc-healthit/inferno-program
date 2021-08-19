@@ -163,7 +163,7 @@ module Inferno
           tests_that: "Server returns correct #{sequence[:resource]} resource from the #{sequence[:resource]} read interaction",
           key: test_key,
           index: sequence[:tests].length + 1,
-          link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html',
+          link: 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html',
           description: "This test will attempt to Reference to #{sequence[:resource]} can be resolved and read."
         }
 
@@ -377,7 +377,7 @@ module Inferno
           tests_that: "Server returns valid results for #{sequence[:resource]} search by #{search_param[:names].join('+')}.",
           key: test_key,
           index: sequence[:tests].length + 1,
-          link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html',
+          link: 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html',
           optional: search_param[:expectation] != 'SHALL',
           description: %(
             A server #{search_param[:expectation]} support searching by #{search_param[:names].join('+')} on the #{sequence[:resource]} resource.
@@ -498,7 +498,7 @@ module Inferno
           tests_that: "Server returns expected results from #{sequence[:resource]} chained search by #{chained_param_string}",
           key: :"chained_search_by_#{search_param}",
           index: sequence[:tests].length + 1,
-          link: 'https://www.hl7.org/fhir/us/core/StructureDefinition-us-core-practitionerrole.html#mandatory-search-parameters',
+          link: 'http://www.hl7.org/fhir/us/core/STU3.1.1/StructureDefinition-us-core-practitionerrole.html#mandatory-search-parameters',
           optional: false,
           description: %(
             A server SHALL support searching the #{sequence[:resource]} resource
@@ -563,7 +563,7 @@ module Inferno
           tests_that: "Server returns correct #{sequence[:resource]} resource from #{sequence[:resource]} #{interaction[:code]} interaction",
           key: test_key,
           index: sequence[:tests].length + 1,
-          link: 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html',
+          link: 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html',
           description: "A server #{interaction[:expectation]} support the #{sequence[:resource]} #{interaction[:code]} interaction.",
           optional: interaction[:expectation] != 'SHALL'
         }
@@ -604,7 +604,7 @@ module Inferno
         test = {
           tests_that: "All must support elements are provided in the #{sequence[:resource]} resources returned.",
           index: sequence[:tests].length + 1,
-          link: 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support',
+          link: 'http://www.hl7.org/fhir/us/core/STU3.1.1/general-guidance.html#must-support',
           test_code: '',
           description: %(
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
@@ -719,9 +719,9 @@ module Inferno
           tests_that: "#{sequence[:resource]} resources returned during previous tests conform to the #{sequence[:profile_name]}.",
           key: test_key,
           index: sequence[:tests].length + 1,
-          link: sequence[:profile],
+          link: sequence[:versioned_profile],
           description: %(
-            This test verifies resources returned from the first search conform to the [US Core #{sequence[:resource]} Profile](#{sequence[:profile]}).
+            This test verifies resources returned from the first search conform to the [#{sequence[:profile_name]}](#{sequence[:versioned_profile]}).
             It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
@@ -817,7 +817,7 @@ module Inferno
             tests_that: "Medication resources returned conform to US Core #{sequence[:version]} profiles",
             key: :validate_medication_resources,
             index: sequence[:tests].length + 1,
-            link: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest',
+            link: 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-medicationrequest',
             description: %(
               This test checks if the resources returned from prior searches conform to the US Core profiles.
               This includes checking for missing data elements and valueset verification.

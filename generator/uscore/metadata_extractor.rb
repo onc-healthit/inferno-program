@@ -79,6 +79,7 @@ module Inferno
           resource: resource['type'],
           profile: profile,
           profile_name: profile_json['title'],
+          versioned_profile: get_versioned_url(profile, metadata[:version]),
           title: profile_title,
           interactions: [],
           operations: [],
@@ -552,6 +553,16 @@ module Inferno
 
       def capitalize_first_letter(str)
         str.slice(0).capitalize + str.slice(1..-1)
+      end
+
+      def get_versioned_url(profile, version)
+        versioned_url = profile
+        case version
+        when 'v3.1.1'
+          versioned_url = profile.gsub('http://hl7.org/fhir/us/core/StructureDefinition', 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition')
+        end
+
+        versioned_url
       end
     end
   end

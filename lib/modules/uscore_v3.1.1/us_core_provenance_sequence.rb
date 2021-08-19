@@ -33,7 +33,7 @@ module Inferno
         resources found for these elements.
 
         ## Profile Validation
-        Each resource returned from the first search is expected to conform to the [US Core Provenance Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance).
+        Each resource returned from the first search is expected to conform to the [US Core Provenance Profile](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-provenance).
         Each element is checked against teminology binding and cardinality requirements.
 
         Elements with a required binding is validated against its bound valueset. If the code/system in the element is not part
@@ -60,7 +60,7 @@ module Inferno
         metadata do
           id '01'
           name 'Server returns correct Provenance resource from the Provenance read interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
             This test will attempt to Reference to Provenance can be resolved and read.
           )
@@ -87,10 +87,10 @@ module Inferno
         metadata do
           id '02'
           name 'Provenance resources returned during previous tests conform to the US Core Provenance Profile.'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-provenance'
           description %(
 
-            This test verifies resources returned from the first search conform to the [US Core Provenance Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance).
+            This test verifies resources returned from the first search conform to the [US Core Provenance Profile](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-provenance).
             It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
@@ -147,7 +147,7 @@ module Inferno
       test 'All must support elements are provided in the Provenance resources returned.' do
         metadata do
           id '03'
-          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
+          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.

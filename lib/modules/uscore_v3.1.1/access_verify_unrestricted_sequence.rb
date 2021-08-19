@@ -102,7 +102,7 @@ module Inferno
           id '01'
           name 'Scope granted enables access to all US Core resource types.'
 
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-patient'
           description %(
 
             This test confirms that the scopes granted during authorization are sufficient to access

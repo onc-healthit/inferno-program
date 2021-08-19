@@ -462,7 +462,7 @@ module Inferno
         metadata do
           id '03'
           name 'Patient resources returned conform to the US Core Patient Profile'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-patient'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
           )
@@ -498,7 +498,7 @@ module Inferno
         metadata do
           id '05'
           name 'Patient IDs match those expected in Group'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-patient'
           description %(
             This test checks that the list of patient IDs that are expected match those that are returned.
             If no patient ids are provided to the test, then the test will be omitted.
@@ -518,7 +518,7 @@ module Inferno
         metadata do
           id '06'
           name 'AllergyIntolerance resources returned conform to the US Core AllergyIntolerance Profile'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-allergyintolerance'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
           )
@@ -538,7 +538,7 @@ module Inferno
         metadata do
           id '07'
           name 'CarePlan resources returned conform to the US Core CarePlan Profile'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-careplan'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
           )
@@ -558,7 +558,7 @@ module Inferno
         metadata do
           id '08'
           name 'CareTeam resources returned conform to the US Core CareTeam Profile'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-careteam'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
           )
@@ -578,7 +578,7 @@ module Inferno
         metadata do
           id '09'
           name 'Condition resources returned conform to the US Core Condition Profile'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-condition'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
           )
@@ -598,7 +598,7 @@ module Inferno
         metadata do
           id '10'
           name 'Device resources returned conform to the US Core Implantable Device Profile'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-implantable-device'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
           )
@@ -619,12 +619,12 @@ module Inferno
         metadata do
           id '11'
           name 'DiagnosticReport resources returned conform to the US Core DiagnosticReport Profiles'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-diagnosticreport-lab'
           description %(
             This test verifies that the resources returned from bulk data export conform to the following US Core profiles. This includes checking for missing data elements and value set verification.
 
-            * http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab
-            * http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note
+            * [DiagnosticReport Lab](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-diagnosticreport-lab)
+            * [DiagnosticReport Note](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-diagnosticreport-note)
           )
         end
 
@@ -647,7 +647,7 @@ module Inferno
         metadata do
           id '12'
           name 'DocumentReference resources returned conform to the US Core DocumentationReference Profile'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-documentreference'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
           )
@@ -667,7 +667,7 @@ module Inferno
         metadata do
           id '13'
           name 'Goal resources returned conform to the US Core Goal Profile'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-goal'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-goal'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
           )
@@ -687,7 +687,7 @@ module Inferno
         metadata do
           id '14'
           name 'Immunization resources returned conform to the US Core Immunization Profile'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-immunization'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-immunization'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
           )
@@ -707,7 +707,7 @@ module Inferno
         metadata do
           id '15'
           name 'MedicationRequest resources returned conform to the US Core MedicationRequest Profile'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-medicationrequest'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
           )
@@ -727,24 +727,24 @@ module Inferno
         metadata do
           id '16'
           name 'Observation resources returned conform to the US Core Observation Profiles'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-observation-lab'
           description %(
             This test verifies that the resources returned from bulk data
             export conform to the following US Core profiles. This includes
             checking for missing data elements and value set verification.
 
-            * http://hl7.org/fhir/us/core/StructureDefinition/pediatric-bmi-for-age
-            * http://hl7.org/fhir/us/core/StructureDefinition/pediatric-weight-for-height
-            * http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab
-            * http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry
-            * http://hl7.org/fhir/us/core/StructureDefinition/us-core-smokingstatus
-            * http://hl7.org/fhir/us/core/StructureDefinition/head-occipital-frontal-circumference-percentile
-            * http://hl7.org/fhir/StructureDefinition/bp
-            * http://hl7.org/fhir/StructureDefinition/bodyheight
-            * http://hl7.org/fhir/StructureDefinition/bodytemp
-            * http://hl7.org/fhir/StructureDefinition/bodyweight
-            * http://hl7.org/fhir/StructureDefinition/heartrate
-            * http://hl7.org/fhir/StructureDefinition/resprate
+            * [Observation Lab](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-observation-lab)
+            * [Pediatric BMI For Age](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/pediatric-bmi-for-age)
+            * [Pediatric Head Occipital-frontal Circumference Percentile](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/head-occipital-frontal-circumference-percentile)
+            * [Pediatric Weight For Height](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/pediatric-weight-for-height)
+            * [Pulse Oximetry](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-pulse-oximetry)
+            * [Smokingstatus](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-smokingstatus)
+            * [Blood Pressure](http://hl7.org/fhir/StructureDefinition/bp)
+            * [Body Height](http://hl7.org/fhir/StructureDefinition/bodyheight)
+            * [Body Temperature](http://hl7.org/fhir/StructureDefinition/bodytemp)
+            * [Body Weight](http://hl7.org/fhir/StructureDefinition/bodyweight)
+            * [Heart Rate](http://hl7.org/fhir/StructureDefinition/heartrate)
+            * [Respiratory Rate](http://hl7.org/fhir/StructureDefinition/resprate)
           )
         end
 
@@ -818,7 +818,7 @@ module Inferno
         metadata do
           id '17'
           name 'Procedure resources returned conform to the US Core Procedure Profile'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-procedure'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-procedure'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
           )
@@ -838,14 +838,14 @@ module Inferno
         metadata do
           id '18'
           name 'Encounter resources returned conform to the US Core Encounter Profile'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-encounter'
           description %(
             This test verifies that at least one of the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
 
             The following US Core profiles have "Must Support" data element which reference Encounter resources:
 
-            * [DiagnosticReport Note](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note)
-            * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
+            * [DiagnosticReport Note](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-diagnosticreport-note)
+            * [DocumentReference](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-documentreference)
           )
         end
 
@@ -865,18 +865,18 @@ module Inferno
         metadata do
           id '19'
           name 'Organization resources returned conform to the US Core Organization Profile'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-organization'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
 
             The following US Core profiles have "Must Support" data element which reference Organization resources:
 
-            * [CareTeam](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam)
-            * [DiagnosticReport Lab](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab)
-            * [DiagnosticReport Note](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note)
-            * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
-            * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
-            * [Provenance](http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance)
+            * [CareTeam](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-careteam)
+            * [DiagnosticReport Lab](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-diagnosticreport-lab)
+            * [DiagnosticReport Note](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-diagnosticreport-note)
+            * [DocumentReference](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-documentreference)
+            * [MedicationRequest](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-medicationrequest)
+            * [Provenance](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-provenance)
           )
         end
 
@@ -894,19 +894,19 @@ module Inferno
         metadata do
           id '20'
           name 'Practitioner resources returned conform to the US Core Practitioner Profile'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-practitioner'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
 
             The following US Core profiles have "Must Support" data element which reference Practitioner resources:
 
-            * [CareTeam](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam)
-            * [DiagnosticReport Lab](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-lab)
-            * [DiagnosticReport Note](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note)
-            * [DocumentReference](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference)
-            * [Encounter](http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter)
-            * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
-            * [Provenance](http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance)
+            * [CareTeam](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-careteam)
+            * [DiagnosticReport Lab](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-diagnosticreport-lab)
+            * [DiagnosticReport Note](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-diagnosticreport-note)
+            * [DocumentReference](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-documentreference)
+            * [Encounter](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-encounter)
+            * [MedicationRequest](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-medicationrequest)
+            * [Provenance](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-provenance)
           )
         end
 
@@ -924,7 +924,7 @@ module Inferno
         metadata do
           id '21'
           name 'Provenance resources returned conform to the US Core Provenance Profile'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-provenance'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
           )
@@ -951,7 +951,7 @@ module Inferno
 
             The following US Core profiles have "Must Support" data elements which reference Location resources:
 
-            * [Encounter](http://hl7.org/fhir/us/core/StructureDefinition/us-core-encounter)
+            * [Encounter](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-encounter)
           )
         end
 
@@ -962,14 +962,14 @@ module Inferno
         metadata do
           id '23'
           name 'Medication resources returned conform to the US Core Medication Profile if bulk data export has Medication resources'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medication'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-medication'
           description %(
             This test verifies that the resources returned from bulk data export conform to the US Core profiles. This includes checking for missing data elements and value set verification.
             This test is omitted if bulk data export does not return any Medication resources.
 
             The following US Core profiles have "Must Support" data elements which reference Medication resources:
 
-            * [MedicationRequest](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest)
+            * [MedicationRequest](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-medicationrequest)
           )
         end
 

@@ -201,7 +201,7 @@ module Inferno
         metadata do
           id '13'
           name 'Server rejects unauthorized access'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
+          link 'https://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html#behavior'
           description %(
             A server SHALL reject any unauthorized requests by returning an HTTP
             401 unauthorized response code.
