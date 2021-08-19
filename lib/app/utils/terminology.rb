@@ -66,6 +66,7 @@ module Inferno
     # @param selected_module [Symbol]/[String], the name of the module to build validators for, or :all (default)
     # @param [String] minimum_binding_strength the lowest binding strength for which we should build validators
     # @param [Boolean] include_umls a flag to determine if we should build validators that require UMLS
+    # @param [Boolean] delete_existing a flag to determine whether any existing validators of `type` should be deleted before the creation tasks run. Default to `true`. If `false`, the existing validators will be read in and combined with the validators created in this step.
     def self.create_validators(type: :bloom, selected_module: :all, minimum_binding_strength: 'example', include_umls: true, delete_existing: true)
       strengths = ['example', 'preferred', 'extensible', 'required'].drop_while { |s| s != minimum_binding_strength }
       validators = []
@@ -187,6 +188,8 @@ module Inferno
           csv_set.add({ code: code_array[0], system: code_array[1] })
         end
       end
+      codeset.merge csv_set
+
       count = 0
       CSV.open(filename, 'wb') do |csv|
         codeset.each do |code|
