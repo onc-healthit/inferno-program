@@ -102,9 +102,12 @@ UMLS_API_KEY=your_api_key
 # optional
 CLEANUP=true
 ```
+
 Note that _anything_ after the equals sign in `.env` will be considered part of the variable, so don't wrap your API key in quotation marks.
 
 Optionally: you can add a second environment variable, named `CLEANUP` and set to `true`, to that same file. This tells the build system to delete the "build files"--everything except for the finished databases--between each version build. This caps the space requirement at ~40 GB, rather than 90 GB.
+
+We've included a template `.env` file in `.env.example`, with these values commented out. To create your `.env` file, you can copy the contents of that file into `.env`, and update the contents with your API key/uncomment the `CLEANUP` as desired.
 
 Once that file exists, you can run the terminology creation task by using the following command:
 
