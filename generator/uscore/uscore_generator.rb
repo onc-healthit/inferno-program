@@ -24,6 +24,8 @@ module Inferno
       def generate
         metadata = extract_metadata
         metadata[:sequences].reject! { |sequence| sequence[:resource] == 'Medication' }
+        metadata[:versioned_base_url] = get_versioned_url('http://hl7.org/fhir/us/core', metadata[:version])
+
         # first isolate the profiles that don't have patient searches
         mark_delayed_sequences(metadata)
         find_delayed_references(metadata)
@@ -56,6 +58,9 @@ module Inferno
       def generate_tests(metadata)
         metadata[:sequences].each do |sequence|
           puts "Generating test #{sequence[:name]}"
+
+          sequence[:versioned_profile] = get_versioned_url(sequence[:profile], sequence[:version])
+          sequence[:versioned_base_url] = metadata[:versioned_base_url]
 
           # read reference if sequence contains no search sequences
           create_read_test(sequence) if sequence[:delayed_sequence]
@@ -163,7 +168,7 @@ module Inferno
           tests_that: "Server returns correct #{sequence[:resource]} resource from the #{sequence[:resource]} read interaction",
           key: test_key,
           index: sequence[:tests].length + 1,
-          link: 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html',
+          link: "#{sequence[:versioned_base_url]}/CapabilityStatement-us-core-server.html",
           description: "This test will attempt to Reference to #{sequence[:resource]} can be resolved and read."
         }
 
@@ -377,7 +382,7 @@ module Inferno
           tests_that: "Server returns valid results for #{sequence[:resource]} search by #{search_param[:names].join('+')}.",
           key: test_key,
           index: sequence[:tests].length + 1,
-          link: 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html',
+          link: "#{sequence[:versioned_base_url]}/CapabilityStatement-us-core-server.html",
           optional: search_param[:expectation] != 'SHALL',
           description: %(
             A server #{search_param[:expectation]} support searching by #{search_param[:names].join('+')} on the #{sequence[:resource]} resource.
@@ -498,7 +503,7 @@ module Inferno
           tests_that: "Server returns expected results from #{sequence[:resource]} chained search by #{chained_param_string}",
           key: :"chained_search_by_#{search_param}",
           index: sequence[:tests].length + 1,
-          link: 'http://www.hl7.org/fhir/us/core/STU3.1.1/StructureDefinition-us-core-practitionerrole.html#mandatory-search-parameters',
+          link: "#{sequence[:versioned_base_url]}/StructureDefinition-us-core-practitionerrole.html#mandatory-search-parameters", 
           optional: false,
           description: %(
             A server SHALL support searching the #{sequence[:resource]} resource
@@ -563,7 +568,7 @@ module Inferno
           tests_that: "Server returns correct #{sequence[:resource]} resource from #{sequence[:resource]} #{interaction[:code]} interaction",
           key: test_key,
           index: sequence[:tests].length + 1,
-          link: 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html',
+          link: "#{sequence[:versioned_base_url]}/CapabilityStatement-us-core-server.html",
           description: "A server #{interaction[:expectation]} support the #{sequence[:resource]} #{interaction[:code]} interaction.",
           optional: interaction[:expectation] != 'SHALL'
         }
@@ -604,7 +609,7 @@ module Inferno
         test = {
           tests_that: "All must support elements are provided in the #{sequence[:resource]} resources returned.",
           index: sequence[:tests].length + 1,
-          link: 'http://www.hl7.org/fhir/us/core/STU3.1.1/general-guidance.html#must-support',
+          link: "#{sequence[:versioned_base_url]}/general-guidance.html#must-support",
           test_code: '',
           description: %(
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
@@ -817,7 +822,7 @@ module Inferno
             tests_that: "Medication resources returned conform to US Core #{sequence[:version]} profiles",
             key: :validate_medication_resources,
             index: sequence[:tests].length + 1,
-            link: 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-medicationrequest',
+            link: get_versioned_url('http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest', sequence[:version]),
             description: %(
               This test checks if the resources returned from prior searches conform to the US Core profiles.
               This includes checking for missing data elements and valueset verification.
@@ -1507,6 +1512,19 @@ module Inferno
         output = template.result_with_hash(module_info)
 
         File.write(file_name, output)
+      end
+
+      def get_versioned_url(profile, version)
+        versioned_url = profile
+        case version
+        when 'v3.1.1'
+          # the URL pattern are:
+          # * http://hl7.org/fhir/us/core/StructureDocument/...
+          # * http://www.hl7.org/fhir/us/core/...
+          versioned_url = profile.gsub('hl7.org/fhir/us/core', 'hl7.org/fhir/us/core/STU3.1.1')
+        end
+
+        versioned_url
       end
     end
   end

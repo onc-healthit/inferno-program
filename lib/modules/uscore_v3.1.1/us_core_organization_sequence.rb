@@ -84,7 +84,7 @@ module Inferno
         metadata do
           id '01'
           name 'Server returns correct Organization resource from the Organization read interaction'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
             This test will attempt to Reference to Organization can be resolved and read.
           )
@@ -171,7 +171,7 @@ module Inferno
       test 'All must support elements are provided in the Organization resources returned.' do
         metadata do
           id '03'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/general-guidance.html#must-support'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.

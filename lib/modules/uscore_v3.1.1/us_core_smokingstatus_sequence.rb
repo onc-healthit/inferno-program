@@ -164,7 +164,7 @@ module Inferno
         metadata do
           id '01'
           name 'Server returns valid results for Observation search by patient+code.'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
 
             A server SHALL support searching by patient+code on the Observation resource.
@@ -268,7 +268,7 @@ module Inferno
         metadata do
           id '02'
           name 'Server returns correct Observation resource from Observation read interaction'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the Observation read interaction.
           )
@@ -285,7 +285,7 @@ module Inferno
         metadata do
           id '03'
           name 'Server returns correct Observation resource from Observation vread interaction'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
             A server SHOULD support the Observation vread interaction.
@@ -303,7 +303,7 @@ module Inferno
         metadata do
           id '04'
           name 'Server returns correct Observation resource from Observation history interaction'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
             A server SHOULD support the Observation history interaction.
@@ -428,7 +428,7 @@ module Inferno
       test 'All must support elements are provided in the Observation resources returned.' do
         metadata do
           id '07'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/general-guidance.html#must-support'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.

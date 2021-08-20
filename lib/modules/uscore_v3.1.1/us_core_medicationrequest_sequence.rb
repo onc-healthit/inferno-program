@@ -176,7 +176,7 @@ module Inferno
         metadata do
           id '01'
           name 'Server returns valid results for MedicationRequest search by patient+intent.'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
 
             A server SHALL support searching by patient+intent on the MedicationRequest resource.
@@ -281,7 +281,7 @@ module Inferno
         metadata do
           id '02'
           name 'Server returns valid results for MedicationRequest search by patient+intent+status.'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
 
             A server SHALL support searching by patient+intent+status on the MedicationRequest resource.
@@ -331,7 +331,7 @@ module Inferno
         metadata do
           id '03'
           name 'Server returns valid results for MedicationRequest search by patient+intent+encounter.'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
@@ -384,7 +384,7 @@ module Inferno
         metadata do
           id '04'
           name 'Server returns valid results for MedicationRequest search by patient+intent+authoredon.'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
@@ -441,7 +441,7 @@ module Inferno
         metadata do
           id '05'
           name 'Server returns correct MedicationRequest resource from MedicationRequest read interaction'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the MedicationRequest read interaction.
           )
@@ -458,7 +458,7 @@ module Inferno
         metadata do
           id '06'
           name 'Server returns correct MedicationRequest resource from MedicationRequest vread interaction'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
             A server SHOULD support the MedicationRequest vread interaction.
@@ -476,7 +476,7 @@ module Inferno
         metadata do
           id '07'
           name 'Server returns correct MedicationRequest resource from MedicationRequest history interaction'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
             A server SHOULD support the MedicationRequest history interaction.
@@ -640,7 +640,7 @@ module Inferno
         metadata do
           id '11'
           name 'Medication resources returned conform to US Core v3.1.1 profiles'
-          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition-us-core-medicationrequest.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-medicationrequest'
           description %(
 
               This test checks if the resources returned from prior searches conform to the US Core profiles.
@@ -660,7 +660,7 @@ module Inferno
       test 'All must support elements are provided in the MedicationRequest resources returned.' do
         metadata do
           id '12'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/general-guidance.html#must-support'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.

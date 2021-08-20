@@ -146,7 +146,7 @@ module Inferno
         metadata do
           id '01'
           name 'Server returns valid results for Procedure search by patient.'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
 
             A server SHALL support searching by patient on the Procedure resource.
@@ -233,7 +233,7 @@ module Inferno
         metadata do
           id '02'
           name 'Server returns valid results for Procedure search by patient+date.'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
 
             A server SHALL support searching by patient+date on the Procedure resource.
@@ -285,7 +285,7 @@ module Inferno
         metadata do
           id '03'
           name 'Server returns valid results for Procedure search by patient+status.'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
@@ -325,7 +325,7 @@ module Inferno
         metadata do
           id '04'
           name 'Server returns valid results for Procedure search by patient+code+date.'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
@@ -384,7 +384,7 @@ module Inferno
         metadata do
           id '05'
           name 'Server returns correct Procedure resource from Procedure read interaction'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the Procedure read interaction.
           )
@@ -401,7 +401,7 @@ module Inferno
         metadata do
           id '06'
           name 'Server returns correct Procedure resource from Procedure vread interaction'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
             A server SHOULD support the Procedure vread interaction.
@@ -419,7 +419,7 @@ module Inferno
         metadata do
           id '07'
           name 'Server returns correct Procedure resource from Procedure history interaction'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
             A server SHOULD support the Procedure history interaction.
@@ -537,7 +537,7 @@ module Inferno
       test 'All must support elements are provided in the Procedure resources returned.' do
         metadata do
           id '10'
-          link 'http://www.hl7.org/fhir/us/core/STU3.1.1/general-guidance.html#must-support'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
