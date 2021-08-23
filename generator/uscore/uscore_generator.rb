@@ -503,7 +503,7 @@ module Inferno
           tests_that: "Server returns expected results from #{sequence[:resource]} chained search by #{chained_param_string}",
           key: :"chained_search_by_#{search_param}",
           index: sequence[:tests].length + 1,
-          link: "#{sequence[:versioned_base_url]}/StructureDefinition-us-core-practitionerrole.html#mandatory-search-parameters", 
+          link: "#{sequence[:versioned_base_url]}/StructureDefinition-us-core-practitionerrole.html#mandatory-search-parameters",
           optional: false,
           description: %(
             A server SHALL support searching the #{sequence[:resource]} resource
