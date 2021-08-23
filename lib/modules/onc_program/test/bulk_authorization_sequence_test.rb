@@ -75,7 +75,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
       @sequence.run_test(@test)
     end
 
-    it 'passes with status code 401' do
+    it 'passes with status code 401 if unauthorized (401) is allowed' do
       if allow_unauthorized
         build_request(401, request_headers, request_parameter, jwt_token_parameter)
 
