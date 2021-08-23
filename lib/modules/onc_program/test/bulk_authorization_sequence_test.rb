@@ -68,11 +68,19 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     jwt_token[parameter[:name]] == parameter[:value]
   end
 
-  def self.it_tests_required_parameter(request_headers: nil, request_parameter: nil, jwt_token_parameter: nil)
+  def self.it_tests_required_parameter(request_headers: nil, request_parameter: nil, jwt_token_parameter: nil, allow_unauthorized: false)
     it 'passes with status code 400' do
       build_request(400, request_headers, request_parameter, jwt_token_parameter)
 
       @sequence.run_test(@test)
+    end
+
+    it 'passes with status code 401' do
+      if allow_unauthorized
+        build_request(401, request_headers, request_parameter, jwt_token_parameter)
+
+        @sequence.run_test(@test)
+      end
     end
 
     it 'fail with status code 200' do
@@ -146,7 +154,7 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
       @sequence = @sequence_class.new(@instance, @client)
     end
 
-    it_tests_required_parameter(jwt_token_parameter: { name: 'iss', value: 'not_a_iss' })
+    it_tests_required_parameter(jwt_token_parameter: { name: 'iss', value: 'not_a_iss', allow_unauthorized: true })
   end
 
   describe 'return access token tests' do
