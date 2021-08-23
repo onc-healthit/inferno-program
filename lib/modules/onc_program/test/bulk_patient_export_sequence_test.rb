@@ -302,32 +302,6 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       )
   end
 
-  def include_export_stub_invalid_accept
-    headers = @export_request_headers.clone
-    headers[:accept] = 'application/fhir+xml'
-
-    stub_request(:get, 'https://www.example.com/bulk/Patient/$export')
-      .with(headers: headers)
-      .to_return(
-        status: 400,
-        headers: { content_type: 'application/json' },
-        body: @operation_outcome.to_json
-      )
-  end
-
-  def include_export_stub_invalid_prefer
-    headers = @export_request_headers.clone
-    headers[:prefer] = 'return=representation'
-
-    stub_request(:get, 'https://www.example.com/bulk/Patient/$export')
-      .with(headers: headers)
-      .to_return(
-        status: 400,
-        headers: { content_type: 'application/json' },
-        body: @operation_outcome.to_json
-      )
-  end
-
   def include_status_check_stub(status_code: 200,
                                 response_headers: { content_type: 'application/json' },
                                 response_body: @complete_status)
@@ -355,8 +329,6 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
     include_metadata_stub
     include_export_stub_no_token
     include_export_stub
-    include_export_stub_invalid_accept
-    include_export_stub_invalid_prefer
     include_status_check_stub
     include_delete_stub
 
