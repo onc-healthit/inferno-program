@@ -129,7 +129,7 @@ module Inferno
           <% if access_verify_restriction == 'restricted' %>name 'Scope granted is limited to those chosen by user during authorization.'
           <% else %>name 'Scope granted enables access to all US Core resource types.'
           <% end %>
-          link '<%=versioned_base_url%>/StructureDefinition/us-core-patient'
+          link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
             <% if access_verify_restriction == 'unrestricted' %>
             This test confirms that the scopes granted during authorization are sufficient to access
