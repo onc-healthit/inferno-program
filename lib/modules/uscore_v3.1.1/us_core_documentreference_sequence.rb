@@ -54,7 +54,7 @@ module Inferno
         resources found for these elements.
 
         ## Profile Validation
-        Each resource returned from the first search is expected to conform to the [US Core DocumentReference Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference).
+        Each resource returned from the first search is expected to conform to the [US Core DocumentReference Profile](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-documentreference).
         Each element is checked against teminology binding and cardinality requirements.
 
         Elements with a required binding is validated against its bound valueset. If the code/system in the element is not part
@@ -174,7 +174,7 @@ module Inferno
         metadata do
           id '01'
           name 'Server returns valid results for DocumentReference search by patient.'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
 
             A server SHALL support searching by patient on the DocumentReference resource.
@@ -261,7 +261,7 @@ module Inferno
         metadata do
           id '02'
           name 'Server returns valid results for DocumentReference search by _id.'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
 
             A server SHALL support searching by _id on the DocumentReference resource.
@@ -299,7 +299,7 @@ module Inferno
         metadata do
           id '03'
           name 'Server returns valid results for DocumentReference search by patient+type.'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
 
             A server SHALL support searching by patient+type on the DocumentReference resource.
@@ -345,7 +345,7 @@ module Inferno
         metadata do
           id '04'
           name 'Server returns valid results for DocumentReference search by patient+category+date.'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
 
             A server SHALL support searching by patient+category+date on the DocumentReference resource.
@@ -396,7 +396,7 @@ module Inferno
         metadata do
           id '05'
           name 'Server returns valid results for DocumentReference search by patient+category.'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
 
             A server SHALL support searching by patient+category on the DocumentReference resource.
@@ -442,7 +442,7 @@ module Inferno
         metadata do
           id '06'
           name 'Server returns valid results for DocumentReference search by patient+type+period.'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
@@ -501,7 +501,7 @@ module Inferno
         metadata do
           id '07'
           name 'Server returns valid results for DocumentReference search by patient+status.'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
 
@@ -541,7 +541,7 @@ module Inferno
         metadata do
           id '08'
           name 'Server returns correct DocumentReference resource from DocumentReference read interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the DocumentReference read interaction.
           )
@@ -558,7 +558,7 @@ module Inferno
         metadata do
           id '09'
           name 'Server returns correct DocumentReference resource from DocumentReference vread interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
             A server SHOULD support the DocumentReference vread interaction.
@@ -576,7 +576,7 @@ module Inferno
         metadata do
           id '10'
           name 'Server returns correct DocumentReference resource from DocumentReference history interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
             A server SHOULD support the DocumentReference history interaction.
@@ -634,10 +634,10 @@ module Inferno
         metadata do
           id '12'
           name 'DocumentReference resources returned during previous tests conform to the US Core DocumentReference Profile.'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-documentreference'
           description %(
 
-            This test verifies resources returned from the first search conform to the [US Core DocumentReference Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference).
+            This test verifies resources returned from the first search conform to the [US Core DocumentReference Profile](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-documentreference).
             It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
@@ -710,7 +710,7 @@ module Inferno
       test 'All must support elements are provided in the DocumentReference resources returned.' do
         metadata do
           id '13'
-          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.

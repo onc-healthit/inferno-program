@@ -220,7 +220,7 @@ module Inferno
         metadata do
           id '05'
           name 'Capability Statement lists support for required US Core Profiles'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html#behavior'
+          link 'https://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html#behavior'
           description %(
            The US Core Implementation Guide states:
 

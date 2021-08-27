@@ -50,7 +50,7 @@ module Inferno
         resources found for these elements.
 
         ## Profile Validation
-        Each resource returned from the first search is expected to conform to the [US Core CareTeam Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam).
+        Each resource returned from the first search is expected to conform to the [US Core CareTeam Profile](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-careteam).
         Each element is checked against teminology binding and cardinality requirements.
 
         Elements with a required binding is validated against its bound valueset. If the code/system in the element is not part
@@ -127,7 +127,7 @@ module Inferno
         metadata do
           id '01'
           name 'Server returns valid results for CareTeam search by patient+status.'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
 
             A server SHALL support searching by patient+status on the CareTeam resource.
@@ -220,7 +220,7 @@ module Inferno
         metadata do
           id '02'
           name 'Server returns correct CareTeam resource from CareTeam read interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           description %(
             A server SHALL support the CareTeam read interaction.
           )
@@ -237,7 +237,7 @@ module Inferno
         metadata do
           id '03'
           name 'Server returns correct CareTeam resource from CareTeam vread interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
             A server SHOULD support the CareTeam vread interaction.
@@ -255,7 +255,7 @@ module Inferno
         metadata do
           id '04'
           name 'Server returns correct CareTeam resource from CareTeam history interaction'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html'
           optional
           description %(
             A server SHOULD support the CareTeam history interaction.
@@ -318,10 +318,10 @@ module Inferno
         metadata do
           id '06'
           name 'CareTeam resources returned during previous tests conform to the US Core CareTeam Profile.'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-careteam'
           description %(
 
-            This test verifies resources returned from the first search conform to the [US Core CareTeam Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam).
+            This test verifies resources returned from the first search conform to the [US Core CareTeam Profile](http://hl7.org/fhir/us/core/STU3.1.1/StructureDefinition/us-core-careteam).
             It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
@@ -378,7 +378,7 @@ module Inferno
       test 'All must support elements are provided in the CareTeam resources returned.' do
         metadata do
           id '07'
-          link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
+          link 'http://hl7.org/fhir/us/core/STU3.1.1/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.

@@ -96,7 +96,7 @@ module Inferno
           id '01'
           name 'Scope granted is limited to those chosen by user during authorization.'
 
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
+          link 'http://www.hl7.org/fhir/smart-app-launch/scopes-and-launch-context/index.html'
           description %(
 
             This test confirms that the scopes granted during authorization match those that

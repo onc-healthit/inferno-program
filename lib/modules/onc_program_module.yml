@@ -123,7 +123,7 @@ test_sets:
         overview: >
           For each of the relevant USCDI data elements provided in the
           conformance statement, this test executes the [required supported
-          searches](https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html)
+          searches](http://www.hl7.org/fhir/us/core/STU3.1.1/CapabilityStatement-us-core-server.html)
           as defined by the US Core Implementation Guide v3.1.1.  The test begins
           by searching by one or more patients, with the expectation that the
           Bearer token provided to the test grants access to all USCDI
@@ -131,7 +131,7 @@ test_sets:
           queries and checks that the results are consistent with the provided
           search parameters.  It then performs a read on each Resource returned
           and validates the response against the relevant
-          [profile](https://www.hl7.org/fhir/us/core/profiles.html) as currently
+          [profile](http://www.hl7.org/fhir/us/core/STU3.1.1/profiles.html) as currently
           defined in the US Core Implementation Guide. All MUST SUPPORT elements
           must be seen before the test can pass, as well as Data Absent Reason
           to demonstrate that the server can properly handle missing data. Note that
