@@ -216,7 +216,7 @@ module Inferno
         end
 
         response = authorize(iss: 'not_a_iss')
-        assert_response_bad(response)
+        assert_response_bad_or_unauthorized(response)
       end
 
       test :authorization_success do
