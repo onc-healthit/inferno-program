@@ -333,6 +333,15 @@ class SequenceBaseTest < MiniTest::Test
       assert all_resources.map(&:id) == ['1', '2']
     end
 
+    it 'fails on 404' do
+      stub_request(:get, @bundle1.link.first.url)
+        .to_return(body: '', status: 404)
+
+      assert_raises Inferno::AssertionException do
+        @sequence.fetch_all_bundled_resources(OpenStruct.new(resource: @bundle1))
+      end
+    end
+
     it 'returns resources when no next page' do
       all_resources = @sequence.fetch_all_bundled_resources(
         OpenStruct.new(resource: FHIR.from_contents(@bundle2))

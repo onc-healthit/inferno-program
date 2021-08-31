@@ -878,8 +878,17 @@ module Inferno
         bundle = reply.resource
         until bundle.nil? || page_count == 20
           resources += bundle&.entry&.map { |entry| entry&.resource }
+          next_bundle_link = bundle&.link&.find { |link| link.relation == 'next' }&.url
           reply_handler&.call(reply)
-          bundle = bundle.next_bundle
+
+          break if next_bundle_link.blank?
+
+          reply = @client.raw_read_url(next_bundle_link)
+          error_message = "Could not resolve next bundle. #{next_bundle_link}"
+          assert_response_ok(reply, error_message)
+
+          bundle = @client.parse_reply(FHIR::Bundle, @client.default_format, reply)
+
           page_count += 1
         end
         resources
