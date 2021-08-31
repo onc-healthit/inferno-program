@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative '../core/shared_tests'
+
 module Inferno
   module Sequence
     class BulkDataExportSequence < SequenceBase
+      include Inferno::Sequence::SharedTests
+
       group 'Bulk Data Export'
 
       title 'Bulk Data Export Tests'
@@ -182,33 +186,9 @@ module Inferno
         assert_response_bad_or_unauthorized(reply)
       end
 
-      test 'Bulk Data Server rejects $export operation with invalid Accept header' do
-        metadata do
-          id '04'
-          link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#headers'
-          description %(
-            Accept (string, required)
+      test_is_deprecated(index: '04', name: 'Bulk Data Server rejects $export operation with invalid Accept header', version: '1.6.2')
 
-            * Specifies the format of the optional OperationOutcome resource response to the kick-off request. Currently, only application/fhir+json is supported.
-          )
-        end
-
-        check_export_kick_off_fail_invalid_accept
-      end
-
-      test 'Bulk Data Server rejects $export operation with invalid Prefer header' do
-        metadata do
-          id '05'
-          link 'http://hl7.org/fhir/uv/bulkdata/export/index.html#headers'
-          description %(
-            Prefer (string, required)
-
-            * Specifies whether the response is immediate or asynchronous. The header SHALL be set to respond-async https://tools.ietf.org/html/rfc7240.
-          )
-        end
-
-        check_export_kick_off_fail_invalid_prefer
-      end
+      test_is_deprecated(index: '05', name: 'Bulk Data Server rejects $export operation with invalid Prefer header', version: '1.6.2')
 
       test 'Bulk Data Server returns "202 Accepted" and "Content-location" for $export operation' do
         metadata do
