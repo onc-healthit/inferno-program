@@ -448,10 +448,23 @@ module Inferno
               #{comparator_search_code}
               #{token_system_search_code}
             )
+
             unless sequence[:delayed_sequence]
               reply_code = %(
                 patient_ids.each do |patient|
-                  #{reply_code}
+                  #{"next unless @#{sequence[:resource].underscore}_ary[patient].present?" if search_param[:names].include?('patient')}
+                  #{
+                    if search_param[:names].length > 2
+                      %(
+                        Array.wrap(@#{sequence[:resource].underscore}_ary[patient]).each do |#{sequence[:resource].underscore}|
+                          #{reply_code.gsub("@#{sequence[:resource].underscore}_ary[patient]", sequence[:resource].underscore.to_s)}
+                          break if resolved_one
+                        end
+                      )
+                    else
+                      reply_code
+                    end
+                  }
                 end
               )
             end
@@ -887,22 +900,42 @@ module Inferno
               resolved_one = false
             )
           end
+
+          reply_code = %(
+            #{second_val_var} = #{resolve_el_str}
+            next if #{second_val_var}.nil?
+            found_second_val = true
+            #{param_value_name(param)} += ',' + get_value_for_search_param(#{second_val_var})
+            reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+            validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+            assert_response_ok(reply)
+            resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+            missing_values = #{param_value_name(param)}.split(',').reject do |val|
+              resolve_element_from_path(resources_returned, '#{param}') { |val_found| val_found == val }
+            end
+            assert missing_values.blank?, "Could not find \#{missing_values.join(',')} values from #{param} in any of the resources returned"
+          )
+
           test[:test_code] += %(
             found_second_val = false
             patient_ids.each do |patient|
-              #{search_params}
-              #{second_val_var} = #{resolve_el_str}
-              next if #{second_val_var}.nil?
-              found_second_val = true
-              #{param_value_name(param)} += ',' + get_value_for_search_param(#{second_val_var})
-              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
-              validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-              assert_response_ok(reply)
-              resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-              missing_values = #{param_value_name(param)}.split(',').reject do |val|
-                resolve_element_from_path(resources_returned, '#{param}') { |val_found| val_found == val }
-              end
-              assert missing_values.blank?, "Could not find \#{missing_values.join(',')} values from #{param} in any of the resources returned"
+              #{"next unless @#{sequence[:resource].underscore}_ary[patient].present?" if multiple_or_search[:names].include?('patient')}
+              #{
+                if multiple_or_search[:names].length > 2
+                  %(
+                    Array.wrap(@#{sequence[:resource].underscore}_ary[patient]).each do |#{sequence[:resource].underscore}|
+                      #{search_params.gsub("@#{sequence[:resource].underscore}_ary[patient]", sequence[:resource].underscore.to_s)}
+                      #{reply_code}
+                      break if resolved_one
+                    end
+                  )
+                else
+                  %(
+                    #{search_params}
+                    #{reply_code}
+                  )
+                end
+              }
             end
             skip 'Cannot find second value for #{param} to perform a multipleOr search' unless found_second_val
           )
@@ -1215,13 +1248,6 @@ module Inferno
             #{search_params.map { |param, value| search_param_to_string(param, value) }.join(",\n")}
           }
         )
-
-        if search_parameters != find_first_search(sequence)[:names] && search_parameters.include?('patient') # skip if patient does not have this resource type.
-          search_param_string = %(
-            next unless @#{sequence[:resource].underscore}_ary[patient].present?
-            #{search_param_string}
-          )
-        end
 
         if search_param_string.include? 'get_value_for_search_param'
           search_param_value_check = if sequence[:delayed_sequence]
