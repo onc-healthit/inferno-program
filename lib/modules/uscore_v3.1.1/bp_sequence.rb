@@ -652,11 +652,21 @@ module Inferno
             This will look through the Observation resources found previously for the following must support elements:
 
             * Observation.category:VSCat
+            * Observation.component:DiastolicBP
+            * Observation.component:SystolicBP
             * category
             * category.coding
             * category.coding.code
             * category.coding.system
             * code
+            * component
+            * component.code
+            * component.dataAbsentReason
+            * component.value[x]
+            * component.value[x].code
+            * component.value[x].system
+            * component.value[x].unit
+            * component.value[x].value
             * dataAbsentReason
             * effective[x]
             * status
