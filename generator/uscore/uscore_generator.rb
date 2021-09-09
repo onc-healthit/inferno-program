@@ -133,7 +133,7 @@ module Inferno
             }
             delayed_profile_intersection
           end
-          sequence[:delayed_references_constant] = "DELAYED_REFERENCES = #{structure_to_string(delayed_sequence_references)}.freeze"
+          sequence[:delayed_references_constant] = "DELAYED_REFERENCES = #{structure_to_string(delayed_sequence_references)}"
         end
       end
 
@@ -711,7 +711,7 @@ module Inferno
         sequence[:tests] << test
 
         sequence[:must_support_constants] = %(
-          MUST_SUPPORTS = #{structure_to_string(sequence[:must_supports])}.freeze
+          MUST_SUPPORTS = #{structure_to_string(sequence[:must_supports])}
         )
       end
 
@@ -719,15 +719,15 @@ module Inferno
         if struct.is_a? Hash
           %({
             #{struct.map { |k, v| "#{k}: #{structure_to_string(v)}" }.join(",\n")}
-          })
+          }.freeze)
         elsif struct.is_a? Array
           %([
             #{struct.map { |el| structure_to_string(el) }.join(",\n")}
-          ])
+          ].freeze)
         elsif struct.is_a? String
           "'#{struct}'"
         else
-          "''"
+          "''.freeze"
         end
       end
 
@@ -781,7 +781,7 @@ module Inferno
         end
         resources_ary_str = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
         if bindings.present?
-          sequence[:bindings_constants] = "BINDINGS = #{structure_to_string(bindings)}.freeze"
+          sequence[:bindings_constants] = "BINDINGS = #{structure_to_string(bindings)}"
           test[:test_code] += %(
             bindings = #{sequence[:class_name]}Definitions::BINDINGS
             invalid_binding_messages = []

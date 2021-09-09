@@ -4,25 +4,25 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311CareteamSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [],
-        slices: [],
+        extensions: [].freeze,
+        slices: [].freeze,
         elements: [
           {
             path: 'status'
-          },
+          }.freeze,
           {
             path: 'subject'
-          },
+          }.freeze,
           {
             path: 'participant'
-          },
+          }.freeze,
           {
             path: 'participant.role'
-          },
+          }.freeze,
           {
             path: 'participant.member'
-          }
-        ]
+          }.freeze
+        ].freeze
       }.freeze
 
       DELAYED_REFERENCES = [
@@ -31,8 +31,8 @@ module Inferno
           resources: [
             'Practitioner',
             'Organization'
-          ]
-        }
+          ].freeze
+        }.freeze
       ].freeze
 
       BINDINGS = [
@@ -41,13 +41,13 @@ module Inferno
           strength: 'required',
           system: 'http://hl7.org/fhir/ValueSet/care-team-status',
           path: 'status'
-        },
+        }.freeze,
         {
           type: 'CodeableConcept',
           strength: 'extensible',
           system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-careteam-provider-roles',
           path: 'participant.role'
-        }
+        }.freeze
       ].freeze
     end
   end
