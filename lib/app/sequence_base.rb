@@ -886,6 +886,7 @@ module Inferno
           reply = @client.raw_read_url(next_bundle_link)
           error_message = "Could not resolve next bundle. #{next_bundle_link}"
           assert_response_ok(reply, error_message)
+          assert_bundle_response(reply)
 
           bundle = @client.parse_reply(FHIR::Bundle, @client.default_format, reply)
 
