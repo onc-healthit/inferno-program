@@ -4,22 +4,22 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311ProcedureSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [],
-        slices: [],
+        extensions: [].freeze,
+        slices: [].freeze,
         elements: [
           {
             path: 'status'
-          },
+          }.freeze,
           {
             path: 'code'
-          },
+          }.freeze,
           {
             path: 'subject'
-          },
+          }.freeze,
           {
             path: 'performed'
-          }
-        ]
+          }.freeze
+        ].freeze
       }.freeze
 
       DELAYED_REFERENCES = [].freeze
@@ -30,13 +30,13 @@ module Inferno
           strength: 'required',
           system: 'http://hl7.org/fhir/ValueSet/event-status',
           path: 'status'
-        },
+        }.freeze,
         {
           type: 'CodeableConcept',
           strength: 'extensible',
           system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-procedure-code',
           path: 'code'
-        }
+        }.freeze
       ].freeze
     end
   end

@@ -4,7 +4,7 @@ module Inferno
   module USCore311ProfileDefinitions
     class USCore311GoalSequenceDefinitions
       MUST_SUPPORTS = {
-        extensions: [],
+        extensions: [].freeze,
         slices: [
           {
             name: 'Goal.target.due[x]:dueDate',
@@ -12,23 +12,23 @@ module Inferno
             discriminator: {
               type: 'type',
               code: 'Date'
-            }
-          }
-        ],
+            }.freeze
+          }.freeze
+        ].freeze,
         elements: [
           {
             path: 'lifecycleStatus'
-          },
+          }.freeze,
           {
             path: 'description'
-          },
+          }.freeze,
           {
             path: 'subject'
-          },
+          }.freeze,
           {
             path: 'target'
-          }
-        ]
+          }.freeze
+        ].freeze
       }.freeze
 
       DELAYED_REFERENCES = [].freeze
@@ -39,7 +39,7 @@ module Inferno
           strength: 'required',
           system: 'http://hl7.org/fhir/ValueSet/goal-status',
           path: 'lifecycleStatus'
-        }
+        }.freeze
       ].freeze
     end
   end
