@@ -200,6 +200,32 @@ For alternate installation options, please visit <a href='https://github.com/onc
   </div>
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
+
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.7.0</div>
+    <p>
+    The Inferno Program Edition v1.7.0 release fixes a number of issues that may incorrectly cause systems to fail tests.
+    It also includes a minor fixes not directly related to test execution.
+    This release may result in some systems that previously passed to now fail due to additional search tests.
+    </p>
+    <p>This version includes updates that:</p>
+    <ul>
+      <li>Adds validation for FHIR id data type specified in FHIR v4.0.1.</li>
+      <li>Removes check within the Bulk Data Authorization test (BDA-03) that required systems to reject authorization requests with scopes other than system scopes specified in Bulk Data Access IG v1.0.0.</li>
+      <li>Removes check within the Bulk Data Export tests (BDE-04 and BDE-05) that required systems to reject export requests with headers other than what specified in Bulk Data Access IG v1.0.0.</li>
+      <li>Adds support for IE 11 in EHR Launch Test.</li>
+      <li>Accepts HTTP response with status 401 as valid response for Bulk Data Authorization test (BDA-06).</li>
+      <li>Fixes issue where headers with invalid characters in HTTP response could crash Inferno tests.</li>
+      <li>Fixes the race condition in reference resolution tests.</li>
+      <li>Fixes issue where MustSupport tests in Multi-Patient cause inadvertent effects of tests in Single-Patient setting.</li>
+      <li>Adds the use parameter in Inferno's public keys that are used in the Multi-Patient API tests.</li>
+    </ul>
+    </p>
+  <p>
+
+    Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_7_0.xlsx'>Test Procedure Matrix</a> to view a mapping
+    between Inferno Tests and the 2015 Cures Update Test Procedure.
+  </p>
+
     <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.6.2</div>
     <p>
     The Inferno Program Edition v1.6.2 release fixes a number of issues that may incorrectly cause systems to fail tests.
