@@ -275,10 +275,6 @@ module Inferno
         profile_elements = profile_definition['snapshot']['element']
         profile_elements.select { |el| el['mustSupport'] }.each do |element|
           # not including components in vital-sign profiles because they don't make sense outside of BP
-          is_vital_sign = profile_definition['baseDefinition'] == 'http://hl7.org/fhir/StructureDefinition/vitalsigns'
-          is_component_element = element['path'].include?('component')
-          profile_changes_component = profile_definition['differential']['element'].any? { |el| el['path'] == 'Observation.component' }
-          next if is_vital_sign && is_component_element && !profile_changes_component
           next if profile_definition['name'] == 'observation-bp' && element['path'].include?('Observation.value[x]')
           next if profile_definition['name'].include?('Pediatric') && element['path'] == 'Observation.dataAbsentReason'
 
@@ -548,6 +544,17 @@ module Inferno
         document_reference_sequence = metadata[:sequences].find { |sequence| sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference' }
         document_reference_sequence[:must_supports][:elements].delete_if do |element|
           ['content.attachment.data', 'content.attachment.url'].include? element[:path]
+
+        unchanged_vital_sign_sequences = metadata[:sequences].select do |sequence|
+          base_path = get_base_path(sequence[:profile])
+          profile_definition = @resource_by_path[base_path]
+          is_vital_sign = profile_definition['baseDefinition'] == 'http://hl7.org/fhir/StructureDefinition/vitalsigns'
+          profile_changes_component = profile_definition['differential']['element'].any? { |el| el['path'] == 'Observation.component' }
+          is_vital_sign && !profile_changes_component
+        end
+        
+        unchanged_vital_sign_sequences.each do |sequence|
+          sequence[:must_supports][:elements].reject! {|el| el[:path].include?('component')}
         end
         metadata
       end
