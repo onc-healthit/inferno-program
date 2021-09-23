@@ -552,9 +552,9 @@ module Inferno
           profile_changes_component = profile_definition['differential']['element'].any? { |el| el['path'] == 'Observation.component' }
           is_vital_sign && !profile_changes_component
         end
-        
+
         unchanged_vital_sign_sequences.each do |sequence|
-          sequence[:must_supports][:elements].reject! {|el| el[:path].include?('component')}
+          sequence[:must_supports][:elements].reject! { |el| el[:path].include?('component') }
         end
         metadata
       end
