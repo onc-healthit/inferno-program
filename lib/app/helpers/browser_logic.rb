@@ -1,9 +1,15 @@
 # frozen_string_literal: true
 
+require 'action_view/helpers/output_safety_helper'
+require 'action_view/helpers/capture_helper'
+require 'action_view/helpers/javascript_helper'
+
 module Inferno
   class App
     module Helpers
       module BrowserLogic
+        include ActionView::Helpers::JavaScriptHelper
+
         def js_hide_wait_modal
           "<script>console.log('hide_wait_modal');$('#WaitModal').modal('hide');</script>"
         end
@@ -50,7 +56,7 @@ module Inferno
             warning_text = 'Inferno will redirect you to an external website at the link below for user authorization in a new browser window.  <strong>It is expected this will fail</strong>.  If the server does not return to Inferno automatically, but does provide an error message, you may return to Inferno and confirm that an error was presented in this window.<br/><br/>'
           end
 
-          "<script>console.log('js_redirect_modal');$('#testsRunningModal').find('.modal-body').html('#{warning_text} <textarea readonly class=\"form-control\" rows=\"3\">#{safe_location}</textarea>'); $('#testsRunningModal').find('.modal-footer').append('#{ok_button}');</script>"
+          "<script>console.log('js_redirect_modal');$('#testsRunningModal').find('.modal-body').html('#{warning_text} <textarea readonly class=\"form-control\" rows=\"3\">#{escape_javascript(safe_location)}</textarea>'); $('#testsRunningModal').find('.modal-footer').append('#{escape_javascript(ok_button)}');</script>"
         end
 
         def js_next_sequence(sequences)
