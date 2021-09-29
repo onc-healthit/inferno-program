@@ -17,6 +17,7 @@ require 'kramdown'
 
 require 'rack'
 require_relative 'app/ext/json'
+require_relative 'app/ext/sinatra_base'
 require_relative 'app/utils/logging'
 require_relative 'app/models'
 require_relative 'app/endpoint'
