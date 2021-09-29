@@ -24,7 +24,7 @@
             name="<%=prerequisite.to_s%>"
             id="<%=prerequisite.to_s%>"
             placeholder="<%= defined?(placeholder) && placeholder ? placeholder : ""%>"
-            value="<%=value%>"
+            value="<%=html_escape(value)%>"
             <%if defined?(readonly) && readonly %>readonly<%end%>
             <%if defined?(required) && required %>required<%end%>
             />
@@ -34,6 +34,6 @@
             name="<%=prerequisite.to_s%>"
             id="<%=prerequisite.to_s%>" rows=6
             <%if defined?(readonly) && readonly %>readonly="readonly"<%end%> 
-            <%if defined?(required) && required %>required="required"<%end%>><%=value%></textarea>
+            <%if defined?(required) && required %>required="required"<%end%>><%=html_escape(value)%></textarea>
     <% end %>
 </div>
