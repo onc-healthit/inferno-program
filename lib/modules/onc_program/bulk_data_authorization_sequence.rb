@@ -121,19 +121,7 @@ module Inferno
         assert_deny_previous_tls @instance.bulk_token_endpoint
       end
 
-      test :require_content_type do
-        metadata do
-          id '02'
-          name 'Authorization request fails when client supplies invalid content_type'
-          link 'http://hl7.org/fhir/uv/bulkdata/authorization/index.html#protocol-details'
-          description %(
-            The client requests a new access token via HTTP POST to the FHIR authorization server’s token endpoint URL, using content-type application/x-www-form-urlencoded
-          )
-        end
-
-        response = authorize(content_type: 'application/json')
-        assert_response_bad(response)
-      end
+      test_is_deprecated(index: '02', name: 'Authorization request fails when client supplies invalid content_type', version: '1.7.0')
 
       test_is_deprecated(index: '03', name: 'Authorization request fails when client supplies invalid scope', version: '1.6.2')
 
