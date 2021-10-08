@@ -121,15 +121,6 @@ describe Inferno::Sequence::BulkDataAuthorizationSequence do
     end
   end
 
-  describe 'require correct content-type' do
-    before do
-      @test = @sequence_class[:require_content_type]
-      @sequence = @sequence_class.new(@instance, @client)
-    end
-
-    it_tests_required_parameter(request_headers: { content_type: 'application/json' })
-  end
-
   describe 'require grant type' do
     before do
       @test = @sequence_class[:require_grant_type]
