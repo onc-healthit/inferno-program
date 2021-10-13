@@ -541,6 +541,7 @@ module Inferno
         end
 
         # remove content.attachment.url and content.attachment.data from DocumentReference must support due to GitHub Issue #316
+        # the must suport of either url or data is guaranteed by invariant us-core-6
         document_reference_sequence = metadata[:sequences].find { |sequence| sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference' }
         document_reference_sequence[:must_supports][:elements].delete_if do |element|
           ['content.attachment.data', 'content.attachment.url'].include? element[:path]
