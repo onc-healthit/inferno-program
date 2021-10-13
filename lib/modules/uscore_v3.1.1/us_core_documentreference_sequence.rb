@@ -729,8 +729,6 @@ module Inferno
             * content
             * content.attachment
             * content.attachment.contentType
-            * content.attachment.data
-            * content.attachment.url
             * content.format
             * context
             * context.encounter
