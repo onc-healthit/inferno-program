@@ -41,12 +41,6 @@ module Inferno
             path: 'content.attachment.contentType'
           }.freeze,
           {
-            path: 'content.attachment.data'
-          }.freeze,
-          {
-            path: 'content.attachment.url'
-          }.freeze,
-          {
             path: 'content.format'
           }.freeze,
           {

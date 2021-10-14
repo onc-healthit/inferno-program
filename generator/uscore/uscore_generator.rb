@@ -616,8 +616,15 @@ module Inferno
                             sequence[:must_supports][:extensions].map { |extension| "* #{extension[:id]}" } +
                             sequence[:must_supports][:slices].map { |slice| "* #{slice[:name]}" }
 
-        is_implantable_device_sequence = sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
-        must_support_list.append('* udiCarrier.carrierAIDC or udiCarrier.carrierHRF') if is_implantable_device_sequence
+        is_implantable_device_sequence = false
+
+        case sequence[:profile]
+        when 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
+          must_support_list.append('* content.attachment.data or content.attachment.url')
+        when 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
+          is_implantable_device_sequence = true
+          must_support_list.append('* udiCarrier.carrierAIDC or udiCarrier.carrierHRF')
+        end
 
         test = {
           tests_that: "All must support elements are provided in the #{sequence[:resource]} resources returned.",
