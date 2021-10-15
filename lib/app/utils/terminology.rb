@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative '../ext/bloomer'
 require_relative 'valueset'
 require 'bloomer'
 require 'bloomer/msgpackable'
@@ -87,7 +88,13 @@ module Inferno
         begin
           # Save the validator to file, and get the "new" count of number of codes
           new_count = save_to_file(vs.valueset, filename, type)
-          validators << { url: k, file: name_by_type(File.basename(filename), type), count: new_count, type: type.to_s, code_systems: vs.included_code_systems }
+          validators << {
+            url: k,
+            file: name_by_type(File.basename(filename), type),
+            count: new_count,
+            type: type.to_s,
+            code_systems: vs.included_code_systems
+          }
         rescue ValueSet::UnknownCodeSystemException, ValueSet::FilterOperationException, UnknownValueSetException, URI::InvalidURIError => e
           Inferno.logger.warn "#{e.message} for ValueSet: #{k}"
           next
@@ -105,8 +112,14 @@ module Inferno
         begin
           cs = vs.code_system_set(cs_name)
           filename = "#{root_dir}/#{bloom_file_name(cs_name)}"
-          save_to_file(cs, filename, type)
-          validators << { url: cs_name, file: name_by_type(File.basename(filename), type), count: cs.length, type: type.to_s, code_systems: cs_name }
+          new_count = save_to_file(cs, filename, type)
+          validators << {
+            url: cs_name,
+            file: name_by_type(File.basename(filename), type),
+            count: new_count,
+            type: type.to_s,
+            code_systems: cs_name
+          }
         rescue ValueSet::UnknownCodeSystemException, ValueSet::FilterOperationException, UnknownValueSetException, URI::InvalidURIError => e
           Inferno.logger.warn "#{e.message} for CodeSystem #{cs_name}"
           next
@@ -169,10 +182,10 @@ module Inferno
       bf = if File.file? filename
              Bloomer::Scalable.from_msgpack(File.read(filename))
            else
-             Bloomer::Scalable.new
+             Bloomer::Scalable.create_with_sufficient_size(codeset.length)
            end
       codeset.each do |cc|
-        bf.add("#{cc[:system]}|#{cc[:code]}")
+        bf.add_without_duplication("#{cc[:system]}|#{cc[:code]}")
       end
       bloom_file = File.new(filename, 'wb')
       bloom_file.write(bf.to_msgpack) unless bf.nil?
@@ -183,11 +196,11 @@ module Inferno
     # Saves the valueset to a csv
     # @param [String] filename the name of the file
     def self.save_csv_to_file(codeset, filename)
+      csv_set = Set.new
       # If the file already exists, add it to the Set
       if File.file? filename
-        csv_set = Set.new
         CSV.read(filename).each do |code_array|
-          csv_set.add({ code: code_array[0], system: code_array[1] })
+          csv_set.add({ code: code_array[1], system: code_array[0] })
         end
       end
       codeset.merge csv_set
@@ -242,10 +255,11 @@ module Inferno
     end
 
     def self.bloom_file_name(codesystem)
-      uri = URI(codesystem)
+      system = codesystem.tr('|', '_')
+      uri = URI(system)
       return (uri.host + uri.path).gsub(%r{[./]}, '_') if uri.host && uri.port
 
-      codesystem.gsub(/[.\W]/, '_')
+      system.gsub(/\W/, '_')
     end
 
     def self.missing_validators

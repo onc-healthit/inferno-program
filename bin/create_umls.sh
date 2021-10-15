@@ -112,17 +112,23 @@ fi
 echo 'Populating mrsat table'
 sqlite3 $umls_db_location ".import ${tmpdir}/MRSAT.pipe mrsat"
 
-echo 'Indexing mrsat(ATN,ATV)'
-sqlite3 $umls_db_location "create index idx_at on mrsat(ATN,ATV);"
+### MRSAT indices ###
 
-echo 'Indexing mrconso(tty)'
-sqlite3 $umls_db_location "create index  idx_tty on mrconso(tty);"
+echo 'Indexing mrsat(SAB,ATN,ATV)'
+sqlite3 $umls_db_location "create index idx_sab_atn_atv on mrsat(SAB,ATN,ATV);"
 
-echo 'Indexing mrrel(rel,sab)'
-sqlite3 $umls_db_location "create index idx_isa on mrrel(REL,SAB);"
+### MRCONSO indices ###
 
-echo 'Indexing mrconso(aui)'
+echo 'Indexing mrconso(AUI)'
 sqlite3 $umls_db_location "CREATE INDEX idx_aui ON mrconso(AUI);"
+
+echo 'Indexing mrconso(SAB,TTY)'
+sqlite3 $umls_db_location "create index idx_sab_tty on mrconso(SAB,TTY);"
+
+### MRREL indices ###
+
+echo 'Indexing mrrel(REL,SAB)'
+sqlite3 $umls_db_location "create index idx_rel_sab on mrrel(REL,SAB);"
 
 echo 'Analyzing Database'
 sqlite3 $umls_db_location "ANALYZE;"

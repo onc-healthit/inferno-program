@@ -9,6 +9,7 @@ require 'rubocop/rake_task'
 
 require_relative '../app'
 require_relative '../app/models'
+require_relative 'check_built_terminology'
 
 namespace :terminology do |_argv|
   TEMP_DIR = 'tmp/terminology'
@@ -471,5 +472,10 @@ namespace :terminology do |_argv|
     system_checked = args.valueset || args.system
 
     puts "#{symbol} #{code_display} #{in_system} #{system_checked}"
+  end
+
+  desc 'Check if the terminology filters have been built correctly'
+  task :check_built_terminology do |_t, _args|
+    Inferno::Tasks::CheckBuiltTerminology.new.run
   end
 end

@@ -61,6 +61,17 @@ module Inferno
         @use_expansions = use_expansions
       end
 
+      def sab_system(system)
+        return SAB[system] if system != 'http://nucc.org/provider-taxonomy'
+
+        @nucc_system ||= # rubocop:disable Naming/MemoizedInstanceVariableName
+          if @db.execute("SELECT COUNT(*) FROM mrconso WHERE SAB = 'NUCCPT'").flatten.first.positive?
+            'NUCCPT'
+          else
+            'NUCCHCPT'
+          end
+      end
+
       # The ValueSet [Set]
       def valueset
         return @valueset if @valueset
@@ -168,9 +179,10 @@ module Inferno
 
       def generate_bloom
         require 'bloomer'
-        @bf = Bloomer::Scalable.new # (100_000, 0.00001)
+
+        @bf = Bloomer::Scalable.create_with_sufficient_size(valueset.length)
         valueset.each do |cc|
-          @bf.add("#{cc[:system]}|#{cc[:code]}")
+          @bf.add_without_duplication("#{cc[:system]}|#{cc[:code]}")
         end
         @bf
       end
@@ -260,7 +272,7 @@ module Inferno
           Inferno.logger.debug "  loading #{system} codes..."
           return filter.nil? ? CODE_SYS[system].call : CODE_SYS[system].call(filter)
         elsif File.exist?(fhir_codesystem)
-          if SAB[system].nil?
+          if sab_system(system).nil?
             fhir_cs = Inferno::Terminology::Codesystem
               .new(FHIR::Json.from_json(File.read(fhir_codesystem)))
 
@@ -293,24 +305,24 @@ module Inferno
 
         filtered_set = Set.new
         raise FilterOperationException, filter&.op unless ['=', 'in', 'is-a', nil].include? filter&.op
-        raise UnknownCodeSystemException, system if SAB[system].nil?
+        raise UnknownCodeSystemException, system if sab_system(system).nil?
 
-        if filter.nil?
-          @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}'") do |row|
+        # Fix for some weirdness around UMLS and provider taxonomy subsetting
+        if system == 'http://nucc.org/provider-taxonomy'
+          @db.execute("SELECT code FROM mrconso WHERE SAB = '#{sab_system(system)}' AND TTY IN('PT', 'OP')") do |row|
+            filtered_set.add(system: system, code: row[0])
+          end
+        elsif filter.nil?
+          @db.execute("SELECT code FROM mrconso WHERE SAB = '#{sab_system(system)}'") do |row|
             filtered_set.add(system: system, code: row[0])
           end
         elsif ['=', 'in', nil].include? filter&.op
           if FILTER_PROP[filter.property]
-            @db.execute("SELECT code FROM mrsat WHERE SAB = '#{SAB[system]}' AND ATN = '#{fp_self(filter.property)}' AND ATV = '#{fp_self(filter.value)}'") do |row|
-              filtered_set.add(system: system, code: row[0])
-            end
-          # Fix for some weirdness around UMLS and provider taxonomy subsetting
-          elsif system == 'http://nucc.org/provider-taxonomy' && filter.property == 'abstract' && filter.value == 'false'
-            @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}' AND TTY = 'PT'") do |row|
+            @db.execute("SELECT code FROM mrsat WHERE SAB = '#{sab_system(system)}' AND ATN = '#{fp_self(filter.property)}' AND ATV = '#{fp_self(filter.value)}'") do |row|
               filtered_set.add(system: system, code: row[0])
             end
           else
-            @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}' AND #{filter_clause.call(filter)}") do |row|
+            @db.execute("SELECT code FROM mrconso WHERE SAB = '#{sab_system(system)}' AND #{filter_clause.call(filter)}") do |row|
               filtered_set.add(system: system, code: row[0])
             end
           end
@@ -342,7 +354,7 @@ module Inferno
           FROM mrrel r
             JOIN mrconso c1 ON c1.aui=r.aui1
             JOIN mrconso c2 ON c2.aui=r.aui2
-          WHERE r.rel='CHD' AND r.SAB= '#{SAB[system]}'") do |row|
+          WHERE r.rel='CHD' AND r.SAB= '#{sab_system(system)}'") do |row|
             children[row[0]] ||= []
             children[row[0]] << row[1]
           end
