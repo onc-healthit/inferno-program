@@ -717,28 +717,31 @@ module Inferno
             next
           end
 
-          begin
-            # Should potentially update valid? method in fhir_dstu2_models
-            # to check for this type of thing
-            # e.g. "patient/54520" is invalid (fhir_client resource_class method would expect "Patient/54520")
-            if value.relative?
-              begin
-                value.resource_class
-              rescue NameError
-                problems << "#{path} has invalid resource type in reference: #{value.type}"
-                next
-              end
+          # Should potentially update valid? method in fhir_dstu2_models
+          # to check for this type of thing
+          # e.g. "patient/54520" is invalid (fhir_client resource_class method would expect "Patient/54520")
+          if value.relative?
+            begin
+              value.resource_class
+            rescue NameError
+              problems << "#{path} has invalid resource type in reference: #{value.type}"
+              next
             end
-            reference = value.reference
-            reference_type = value.resource_type
+          end
+          reference = value.reference
+          reference_type = value.resource_type
+
+          begin
             resolved_resource = value.read
-
-            raise InvalidReferenceResource if resolved_resource&.resourceType != reference_type
-
-            resolved_references.add(value.reference)
           rescue ClientException => e
-            problems << "#{path} did not resolve: #{e}"
-          rescue InvalidReferenceResource
+            # Skip reference read error is the resource is not a US Core resource.
+            problems << "#{path} did not resolve: #{e}" if e.reply.response[:code] != 401 || Inferno::ValidationUtil::RESOURCES[:r4].key?(reference_type)
+            next
+          end
+
+          if resolved_resource&.resourceType == reference_type
+            resolved_references.add(value.reference)
+          else
             problems << "Expected #{reference} to refer to a #{reference_type} resource, but found a #{resolved_resource&.resourceType} resource."
           end
         end
