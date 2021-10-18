@@ -604,7 +604,7 @@ describe Inferno::Sequence::OncOpenIDConnectSequence do
       stub_request(:get, payload['fhirUser'])
         .to_return(status: 401)
 
-       @sequence.run_test(@test) 
+      @sequence.run_test(@test)
     end
 
     it 'fails if fetching the user returns invalid json' do

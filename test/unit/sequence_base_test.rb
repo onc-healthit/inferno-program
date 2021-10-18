@@ -295,7 +295,7 @@ class SequenceBaseTest < MiniTest::Test
       assert_raises(Inferno::AssertionException) { @sequence.validate_reference_resolutions(@resource) }
     end
 
-    it 'skip error if accessing external reference is rejected and the reference is not a US Core resource' do
+    it 'passes if accessing external reference is rejected and the reference is not a US Core resource' do
       service_request_reference_url = 'ServiceRequest/123'
       observation_resource = FHIR::Observation.new(basedOn: [FHIR::Reference.new(reference: service_request_reference_url)])
       stub_request(:get, "#{@base_url}/#{service_request_reference_url}")
