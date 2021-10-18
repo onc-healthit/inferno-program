@@ -342,12 +342,15 @@ module Inferno
                "ID token `fhirUser` claim does not refer to a valid resource type (#{valid_fhir_user_resource_types.join(', ')}): #{fhir_user}"
 
         fhir_user_response = @client.get(fhir_user, @client.fhir_headers)
-        assert_response_ok fhir_user_response
-        assert_valid_json fhir_user_response.body
 
-        response_resource_type = JSON.parse(fhir_user_response.body)['resourceType']
+        if fhir_user_response.code != 401 || Inferno::ValidationUtil::RESOURCES[:r4].keys.any? { |key| fhir_user.include?(key) }
+          assert_response_ok fhir_user_response
+          assert_valid_json fhir_user_response.body
 
-        assert valid_fhir_user_resource_types.include?(response_resource_type), "Resource from `fhirUser` claim was not an allowed resource type: #{response_resource_type}"
+          response_resource_type = JSON.parse(fhir_user_response.body)['resourceType']
+
+          assert valid_fhir_user_resource_types.include?(response_resource_type), "Resource from `fhirUser` claim was not an allowed resource type: #{response_resource_type}"
+        end
       end
     end
   end
