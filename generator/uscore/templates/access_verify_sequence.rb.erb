@@ -106,7 +106,7 @@ module Inferno
         # assertion therefore allows either.
 
         message = "Bad response code: expected 403 (Forbidden) or 401 (Unauthorized), but found #{response.code}."
-        assert [401, 403].include?(response.code), message
+        assert unauthorized?(response.code), message
 
       end
 

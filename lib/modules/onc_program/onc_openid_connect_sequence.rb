@@ -343,7 +343,7 @@ module Inferno
 
         fhir_user_response = @client.get(fhir_user, @client.fhir_headers)
 
-        if fhir_user_response.code != 401 || Inferno::ValidationUtil::RESOURCES[:r4].keys.any? { |key| fhir_user.include?(key) }
+        if !unauthorized?(fhir_user_response.code) || Inferno::ValidationUtil::RESOURCES[:r4].keys.any? { |key| fhir_user.include?(key) }
           assert_response_ok fhir_user_response
           assert_valid_json fhir_user_response.body
 
