@@ -587,7 +587,7 @@ describe Inferno::Sequence::OncOpenIDConnectSequence do
       assert_match 'Bad response code: expected 200, 201, but found 404. ', exception.message
     end
 
-    it 'fails if fetching the user is rejected and the user is Patient, Practitioner or RelatedPersn resource' do
+    it 'fails if fetching the user is rejected and the user is Patient, Practitioner or RelatedPerson resource' do
       stub_request(:get, @decoded_payload['fhirUser'])
         .to_return(status: 401)
 
