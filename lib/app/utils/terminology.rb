@@ -52,6 +52,11 @@ module Inferno
       FHIRPackageManager.get_package('hl7.fhir.r4.expansions#4.0.1', PACKAGE_DIR, ['ValueSet', 'CodeSystem'])
     end
 
+    def self.code_system_metadata
+      @code_system_metadata ||=
+        YAML.load_file('resources/terminology/validators/bloom/metadata.yml')
+    end
+
     def self.load_valuesets_from_directory(directory, include_subdirectories = false)
       directory += '/**/' if include_subdirectories
       valueset_files = Dir["#{directory}/*.json"]
@@ -72,14 +77,13 @@ module Inferno
     # be read in and combined with the validators created in this step.
     def self.create_validators(type: :bloom, selected_module: :all, minimum_binding_strength: 'example', include_umls: true, delete_existing: true)
       strengths = ['example', 'preferred', 'extensible', 'required'].drop_while { |s| s != minimum_binding_strength }
-      validators = []
       umls_code_systems = Set.new(Inferno::Terminology::ValueSet::SAB.keys)
       root_dir = "resources/terminology/validators/#{type}"
 
       FileUtils.rm_r(root_dir, force: true) if delete_existing
       FileUtils.mkdir_p(root_dir)
 
-      get_module_valuesets(selected_module, strengths).each do |k, vs|
+      vs_validators = get_module_valuesets(selected_module, strengths).map do |k, vs|
         next if SKIP_SYS.include? k
         next if !include_umls && !umls_code_systems.disjoint?(Set.new(vs.included_code_systems))
 
@@ -88,7 +92,7 @@ module Inferno
         begin
           # Save the validator to file, and get the "new" count of number of codes
           new_count = save_to_file(vs.valueset, filename, type)
-          validators << {
+          {
             url: k,
             file: name_by_type(File.basename(filename), type),
             count: new_count,
@@ -100,11 +104,12 @@ module Inferno
           next
         end
       end
+      vs_validators.compact!
 
-      code_systems = validators.flat_map { |vs| vs[:code_systems] }.uniq
+      code_systems = vs_validators.flat_map { |vs| vs[:code_systems] }.uniq
       vs = Inferno::Terminology::ValueSet.new(@db)
 
-      code_systems.each do |cs_name|
+      cs_validators = code_systems.map do |cs_name|
         next if SKIP_SYS.include? cs_name
         next if !include_umls && umls_code_systems.include?(cs_name)
 
@@ -113,7 +118,7 @@ module Inferno
           cs = vs.code_system_set(cs_name)
           filename = "#{root_dir}/#{bloom_file_name(cs_name)}"
           new_count = save_to_file(cs, filename, type)
-          validators << {
+          {
             url: cs_name,
             file: name_by_type(File.basename(filename), type),
             count: new_count,
@@ -125,8 +130,38 @@ module Inferno
           next
         end
       end
+      validators = (vs_validators + cs_validators).compact
+
       # Write manifest for loading later
       File.write("#{root_dir}/manifest.yml", validators.to_yaml)
+
+      create_code_system_metadata(cs_validators.map { |validator| validator[:url] }, root_dir)
+    end
+
+    def self.create_code_system_metadata(system_urls, root_dir)
+      vs = ValueSet.new(@db)
+      metadata_path = "#{root_dir}/metadata.yml"
+      metadata =
+        if File.file? metadata_path
+          YAML.load_file(metadata_path)
+        else
+          {}
+        end
+      system_urls.each do |url|
+        abbreviation = vs.umls_abbreviation(url)
+        next if abbreviation.nil?
+
+        versions = @db.execute("SELECT SVER FROM mrsab WHERE RSAB='#{abbreviation}' AND SABIN='Y'").flatten
+        restriction_level = @db.execute("SELECT SRL FROM mrsab WHERE RSAB='#{abbreviation}' AND SABIN='Y'").flatten.first
+        system_metadata = metadata[url] || vs.code_system_metadata(url).dup || {}
+        system_metadata[:versions] ||= []
+        system_metadata[:versions].concat(versions).uniq!
+        system_metadata[:restriction_level] = restriction_level
+
+        metadata[url] = system_metadata
+      end
+
+      File.write(metadata_path, metadata.to_yaml)
     end
 
     def self.get_module_valuesets(selected_module, strengths)

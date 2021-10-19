@@ -112,6 +112,48 @@ fi
 echo 'Populating mrsat table'
 sqlite3 $umls_db_location ".import ${tmpdir}/MRSAT.pipe mrsat"
 
+echo 'Dropping existing mrsab table'
+sqlite3 $umls_db_location "drop table if exists mrsab"
+
+echo 'Creating mrsab table'
+sqlite3 $umls_db_location "create table mrsab (
+        VCUI char(8),
+        RCUI char(8),
+        VSAB varchar(40),
+        RSAB varchar(40),
+        SON varchar(3000),
+        SF varchar(40),
+        SVER varchar(20),
+        VSTART char(8),
+        VEND char(8),
+        IMETA varchar(10),
+        RMETA varchar(10),
+        SLC varchar(1000),
+        SCC varchar(1000),
+        SRL integer,
+        TFR integer,
+        CFR integer,
+        CXTY varchar(50),
+        TTYL varchar(400),
+        ATNL varchar(4000),
+        LAT char(3),
+        CENC varchar(20),
+        CURVER char(1),
+        SABIN char(1),
+        SSN varchar(3000),
+        SCIT varchar(4000)
+      );"
+
+# Remove the last pipe from each line
+if [ ! -e ${tmpdir}/MRSAB.pipe ]
+then
+ echo 'Removing last pipe from RRF'
+ sed -e 's/|$//' -e "s/\"/'/g" ${tmpdir}/umls_subset/MRSAB.RRF > ${tmpdir}/MRSAB.pipe
+fi
+
+echo 'Populating mrsab table'
+sqlite3 $umls_db_location ".import ${tmpdir}/MRSAB.pipe mrsab"
+
 ### MRSAT indices ###
 
 echo 'Indexing mrsat(SAB,ATN,ATV)'
@@ -129,6 +171,10 @@ sqlite3 $umls_db_location "create index idx_sab_tty on mrconso(SAB,TTY);"
 
 echo 'Indexing mrrel(REL,SAB)'
 sqlite3 $umls_db_location "create index idx_rel_sab on mrrel(REL,SAB);"
+
+### MRSAB indices ###
+echo 'Indexing mrsab(RSAB,SABIN)'
+sqlite3 $umls_db_location "create index idx_rsab_sabin on mrsab(RSAB,SABIN);"
 
 echo 'Analyzing Database'
 sqlite3 $umls_db_location "ANALYZE;"
