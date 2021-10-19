@@ -587,7 +587,7 @@ describe Inferno::Sequence::OncOpenIDConnectSequence do
       assert_match 'Bad response code: expected 200, 201, but found 404. ', exception.message
     end
 
-    it 'fails if fetching the user is rejected and the user is Patient, Practitioner or RelatedPerson resource' do
+    it 'fails if fetching the user is rejected and the user is a US Core resource' do
       stub_request(:get, @decoded_payload['fhirUser'])
         .to_return(status: 401)
 
@@ -596,7 +596,7 @@ describe Inferno::Sequence::OncOpenIDConnectSequence do
       assert_match 'Bad response code: expected 200, 201, but found 401. ', exception.message
     end
 
-    it 'passes if fetching the user is rejected and the user is Person resource' do
+    it 'passes if fetching the user is rejected and the user is a Non US Core resource' do
       payload = @decoded_payload.clone
       payload['fhirUser'] = 'http://www.example.com/fhir/Person/123'
       @sequence.instance_variable_set(:@decoded_payload, payload)
