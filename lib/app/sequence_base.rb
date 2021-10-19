@@ -30,8 +30,6 @@ module Inferno
       include SearchValidationUtil
       include Inferno::WebDriver
 
-      class InvalidReferenceResource < StandardError; end
-
       @@test_index = 0
 
       @@group = {}
