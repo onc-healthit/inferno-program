@@ -343,7 +343,13 @@ module Inferno
 
         fhir_user_response = @client.get(fhir_user, @client.fhir_headers)
 
-        if !unauthorized?(fhir_user_response.code) || Inferno::ValidationUtil::RESOURCES[:r4].keys.any? { |key| fhir_user.include?(key) }
+        # SMART allows fhirUser be resource of type Patient, Practitioner, RelatedPerson, or Person
+        # Among these four resource types, Patient, and Practitioner are US Core resource types
+        # Since OncEHRLaunchSequence and OncStandaloneLaunchSequence request scopes for all US Core resource types
+        # US Core resource types (Patient and Practitioner) have to be accessible.
+        us_core_user_resource_type = Inferno::ValidationUtil::RESOURCES[:r4].keys & valid_fhir_user_resource_types
+
+        if !unauthorized?(fhir_user_response.code) || us_core_user_resource_type.any? { |key| fhir_user.include?(key) }
           assert_response_ok fhir_user_response
           assert_valid_json fhir_user_response.body
 
