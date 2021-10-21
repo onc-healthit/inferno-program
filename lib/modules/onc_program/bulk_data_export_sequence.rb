@@ -91,7 +91,7 @@ module Inferno
 
       def check_export_status(url = @content_location, timeout: 180)
         skip 'Server response did not have Content-Location in header' unless url.present?
-        
+
         timeout = @instance.bulk_timeout if @instance.bulk_timeout.positive?
         reply = export_status_check(url, timeout)
 
