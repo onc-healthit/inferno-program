@@ -959,28 +959,48 @@ module Inferno
                 # We want at least one of the codes to be in the valueset
                 if binding_def[:system].present?
                   el.coding.none? do |coding|
-                    Terminology.validate_code(valueset_url: binding_def[:system],
-                                              code: coding.code,
-                                              system: coding.system)
+                    begin
+                      Terminology.validate_code(valueset_url: binding_def[:system],
+                                                code: coding.code,
+                                                system: coding.system)
+                    rescue ProhibitedSystemException => e
+                      @test_warnings << e.message
+                      false
+                    end
                   end
                 # If we're validating a codesystem (AKA if there's no 'system' URL)
                 # We want all of the codes to be in their respective systems
                 else
                   el.coding.any? do |coding|
-                    !Terminology.validate_code(valueset_url: nil,
-                                               code: coding.code,
-                                               system: coding.system)
+                    begin
+                      !Terminology.validate_code(valueset_url: nil,
+                                                code: coding.code,
+                                                system: coding.system)
+                    rescue ProhibitedSystemException => e
+                      @test_warnings << e.message
+                      false
+                    end
                   end
                 end
               else
                 false
               end
             when 'Quantity', 'Coding'
-              !Terminology.validate_code(valueset_url: binding_def[:system],
-                                         code: el.code,
-                                         system: el.system)
+              begin
+                !Terminology.validate_code(valueset_url: binding_def[:system],
+                                          code: el.code,
+                                          system: el.system)
+              rescue ProhibitedSystemException => e
+                @test_warnings << e.message
+                false
+              end
             when 'code'
-              !Terminology.validate_code(valueset_url: binding_def[:system], code: el)
+              begin
+                !Terminology.validate_code(valueset_url: binding_def[:system], code: el)
+              rescue ProhibitedSystemException => e
+                @test_warnings << e.message
+                false
+              end
             else
               false
             end

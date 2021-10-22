@@ -5,6 +5,7 @@ require_relative 'valueset'
 require 'bloomer'
 require 'bloomer/msgpackable'
 require_relative 'fhir_package_manager'
+require_relative 'terminology_configuration'
 require 'fileutils'
 
 module Inferno
@@ -313,6 +314,9 @@ module Inferno
     # @param String system an optional codesystem to validate against. Defaults to nil
     # @return Boolean whether the code or code/system is in the valueset
     def self.validate_code(valueset_url: nil, code:, system: nil)
+      if TerminologyConfiguration.system_prohibited? system
+        raise(ProhibitedSystemException, system)
+      end
       # Before we validate the code, see if there's any preprocessing steps we have to do
       # To get the code "ready" for validation
       code = PREPROCESS_FUNCS[system].call(code) if PREPROCESS_FUNCS[system]
@@ -330,9 +334,20 @@ module Inferno
       if system
         validation_fn.call('code' => code, 'system' => system)
       else
-        @loaded_validators[valueset_url][:code_systems].any? do |possible_system|
-          validation_fn.call('code' => code, 'system' => possible_system)
+        in_allowed_code_system =
+          @loaded_validators[valueset_url][:code_systems].any? do |possible_system|
+            next if TerminologyConfiguration.system_prohibited?(possible_system)
+
+            validation_fn.call('code' => code, 'system' => possible_system)
+          end
+
+        if !in_allowed_code_system
+          if @loaded_validators[valueset_url][:code_systems].any? { TerminologyConfiguration.system_prohibited? possible_system}
+            raise(ProhibitedSystemException, system)
+          end
         end
+
+        in_allowed_code_system
       end
     end
 

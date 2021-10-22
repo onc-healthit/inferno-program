@@ -34,7 +34,7 @@
         </tr>
       </thead>
       <tbody>
-        <% Inferno::Terminology.code_system_metadata&.each_value do |system| %>
+        <% Inferno::TerminologyConfiguration.allowed_systems_metadata&.each_value do |system| %>
           <tr>
             <td><%= system[:name] %></td>
             <td><%= system[:versions].join(', ') %></td>
@@ -70,6 +70,7 @@
         </thead>
         <tbody>
           <% Inferno::Terminology.loaded_validators.sort.each do |url, vs_metadata| %>
+            <% next if Inferno::TerminologyConfiguration.system_prohibited? url %>
             <tr>
               <td><%= url %></td>
               <td><%= vs_metadata[:count] %></td>

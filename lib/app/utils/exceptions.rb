@@ -107,6 +107,12 @@ module Inferno
 
   class InvalidKeyException < RuntimeError
   end
+
+  class ProhibitedSystemException < RuntimeError
+    def initialize(url)
+      super("Inferno is unable to validate codes from #{url} due to license restrictions")
+    end
+  end
 end
 
 # Monkey patch common exceptions so that we don't get hard errors.
