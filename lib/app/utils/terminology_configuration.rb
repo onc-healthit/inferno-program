@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Inferno
   class TerminologyConfiguration
     class << self
@@ -11,7 +13,7 @@ module Inferno
       end
 
       def allowed_systems_metadata
-        @allowed_systems ||=
+        @allowed_systems_metadata ||=
           Terminology.code_system_metadata
             .select { |url, _metadata| system_allowed?(url) }
       end

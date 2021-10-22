@@ -959,27 +959,23 @@ module Inferno
                 # We want at least one of the codes to be in the valueset
                 if binding_def[:system].present?
                   el.coding.none? do |coding|
-                    begin
-                      Terminology.validate_code(valueset_url: binding_def[:system],
-                                                code: coding.code,
-                                                system: coding.system)
-                    rescue ProhibitedSystemException => e
-                      @test_warnings << e.message
-                      false
-                    end
+                    Terminology.validate_code(valueset_url: binding_def[:system],
+                                              code: coding.code,
+                                              system: coding.system)
+                  rescue ProhibitedSystemException => e # rubocop:disable Metrics/BlockNesting
+                    @test_warnings << e.message
+                    false
                   end
                 # If we're validating a codesystem (AKA if there's no 'system' URL)
                 # We want all of the codes to be in their respective systems
                 else
                   el.coding.any? do |coding|
-                    begin
-                      !Terminology.validate_code(valueset_url: nil,
-                                                code: coding.code,
-                                                system: coding.system)
-                    rescue ProhibitedSystemException => e
-                      @test_warnings << e.message
-                      false
-                    end
+                    !Terminology.validate_code(valueset_url: nil,
+                                               code: coding.code,
+                                               system: coding.system)
+                  rescue ProhibitedSystemException => e # rubocop:disable Metrics/BlockNesting
+                    @test_warnings << e.message
+                    false
                   end
                 end
               else
@@ -988,8 +984,8 @@ module Inferno
             when 'Quantity', 'Coding'
               begin
                 !Terminology.validate_code(valueset_url: binding_def[:system],
-                                          code: el.code,
-                                          system: el.system)
+                                           code: el.code,
+                                           system: el.system)
               rescue ProhibitedSystemException => e
                 @test_warnings << e.message
                 false

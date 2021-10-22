@@ -314,9 +314,8 @@ module Inferno
     # @param String system an optional codesystem to validate against. Defaults to nil
     # @return Boolean whether the code or code/system is in the valueset
     def self.validate_code(valueset_url: nil, code:, system: nil)
-      if TerminologyConfiguration.system_prohibited? system
-        raise(ProhibitedSystemException, system)
-      end
+      raise(ProhibitedSystemException, system) if TerminologyConfiguration.system_prohibited? system
+
       # Before we validate the code, see if there's any preprocessing steps we have to do
       # To get the code "ready" for validation
       code = PREPROCESS_FUNCS[system].call(code) if PREPROCESS_FUNCS[system]
@@ -341,10 +340,12 @@ module Inferno
             validation_fn.call('code' => code, 'system' => possible_system)
           end
 
-        if !in_allowed_code_system
-          if @loaded_validators[valueset_url][:code_systems].any? { TerminologyConfiguration.system_prohibited? possible_system}
-            raise(ProhibitedSystemException, system)
-          end
+        unless in_allowed_code_system
+          prohibited_systems =
+            @loaded_validators[valueset_url][:code_systems].select do |system|
+              TerminologyConfiguration.system_prohibited? system
+            end
+          raise(ProhibitedSystemException, prohibited_systems.join(', ')) if prohibited_systems.present?
         end
 
         in_allowed_code_system
