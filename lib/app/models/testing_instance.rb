@@ -15,7 +15,6 @@ module Inferno
     attribute :group_id, :string
     attribute :bulk_client_id, :string
     attribute :onc_sl_client_id, :string
-    attribute :bulk_timeout, :integer
 
     has_many :sequence_results
     has_many :resource_references
