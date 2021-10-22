@@ -744,7 +744,7 @@
               label: 'Export times out after',
               description: %(
                 While testing, Inferno waits for the server to complete the exporting task. Inferno calculates the timeout as: 
-                totalTime = currentTimestamp - startTimestamp + waitTime. If server supplies Retry-After header with a delay time in second, 
+                totalTime = currentTimestamp - startTimestamp + waitTime. If the server supplies a Retry-After header with a delay time in seconds, 
                 Inferno use Retry-After value as waitTime. If server does not supply Retry-After header, Inferno
                 uses exponential backoff approach mentioned in Bulk Data Export. If the calculated totalTime is greater than the timeout value
                 specified here, Inferno bulk client stops testing.
