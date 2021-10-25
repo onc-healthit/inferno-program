@@ -51,7 +51,7 @@ describe Inferno::Sequence::OncStandaloneLaunchSequence do
       @instance.onc_sl_scopes = @sequence.required_scopes.join(' ')
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'Patient-level scope in the format: `patient/[ resource | * ].[ read | *]` was not requested.', exception.message
+      assert_equal 'Patient-level scope for US Core resource types in the format: `patient/[ resource | * ].[ read | *]` was not requested.', exception.message
     end
 
     it 'fails when no patient-level scope was received' do
@@ -59,7 +59,7 @@ describe Inferno::Sequence::OncStandaloneLaunchSequence do
       @instance.received_scopes = @sequence.required_scopes.join(' ')
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'Patient-level scope in the format: `patient/[ resource | * ].[ read | *]` was not received.', exception.message
+      assert_equal 'Patient-level scope for US Core resource types in the format: `patient/[ resource | * ].[ read | *]` was not received.', exception.message
     end
 
     it 'fails when a badly formatted scope was requested' do
@@ -94,7 +94,19 @@ describe Inferno::Sequence::OncStandaloneLaunchSequence do
       @instance.received_scopes = @sequence.required_scopes.join(' ') + " patient/#{bad_resource_type}.*"
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal "'#{bad_resource_type}' must be either a valid resource type or '*'", exception.message
+      assert_equal 'Patient-level scope for US Core resource types in the format: `patient/[ resource | * ].[ read | *]` was not received.', exception.message
+    end
+
+    it 'succeeds when server grants additional patient scopes' do
+      @instance.onc_sl_scopes = good_scopes
+      @instance.received_scopes = @sequence.required_scopes.join(' ') + ' patient/Patient.read patient/ValueSet.read'
+      @sequence.run_test(@test)
+    end
+
+    it 'succeeds when server grants launch scope' do
+      @instance.onc_sl_scopes = good_scopes
+      @instance.received_scopes = @sequence.required_scopes.join(' ') + ' launch patient/Patient.read'
+      @sequence.run_test(@test)
     end
 
     it 'succeeds when the required scopes and a patient-level scope are present' do

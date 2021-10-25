@@ -381,6 +381,10 @@ module Inferno
 
             skip_if_auth_failed
 
+            non_patient_compartment_resources = ['Encounter', 'Device', 'Location', 'Medication', 'Organization', 'Practitioner', 'PractitionerRole', 'RelatedPerson'].freeze
+
+            patient_compartment_resources = valid_resource_types - non_patient_compartment_resources
+
             [
               {
                 scopes: instance_scopes || '',
@@ -398,8 +402,8 @@ module Inferno
               assert missing_scopes.empty?, "Required scopes were not #{received_or_requested}: #{missing_scopes.join(', ')}"
 
               scopes -= required_scopes
-              # Other 'okay' scopes
-              scopes.delete('online_access')
+              # Other 'okay' scopes. Also scopes may include both 'launch' and 'launch/patient' for EHR launch and Standalone launch
+              scopes -= ['online_access', 'launch', 'launch/patient']
 
               patient_scope_found = false
 
@@ -412,23 +416,20 @@ module Inferno
                 resource_access = scope_pieces[1].split('.')
                 bad_resource_message = "'#{resource_access[0]}' must be either a valid resource type or '*'"
 
-                non_patient_compartment_resources = ['Encounter', 'Device', 'Location', 'Medication', 'Organization',
-                                                     'Practitioner', 'PractitionerRole', 'RelatedPerson']
-
-                if patient_or_user == 'patient' && non_patient_compartment_resources.include?(resource_access[0])
+                if patient_or_user == 'patient' && patient_compartment_resources.exclude?(resource_access[0])
                   assert ['user', 'patient'].include?(scope_pieces[0]), "#{received_or_requested.capitalize} scope '#{scope}' must begin with either 'user/' or 'patient/'"
                 else
                   assert scope_pieces[0] == patient_or_user, bad_format_message
                 end
 
                 assert resource_access.count == 2, bad_format_message
-                assert valid_resource_types.include?(resource_access[0]), bad_resource_message
+                assert valid_resource_types.include?(resource_access[0]) || received_or_requested == 'received', bad_resource_message
                 assert resource_access[1] =~ /^(\*|read)/, bad_format_message
 
-                patient_scope_found = true
+                patient_scope_found ||= valid_resource_types.include?(resource_access[0])
               end
 
-              assert patient_scope_found, "#{patient_or_user.capitalize}-level scope in the format: `#{patient_or_user}/[ resource | * ].[ read | *]` was not #{received_or_requested}."
+              assert patient_scope_found, "#{patient_or_user.capitalize}-level scope for US Core resource types in the format: `#{patient_or_user}/[ resource | * ].[ read | *]` was not #{received_or_requested}."
             end
           end
         end

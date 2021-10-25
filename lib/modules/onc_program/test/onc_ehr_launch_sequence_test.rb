@@ -51,7 +51,7 @@ describe Inferno::Sequence::OncEHRLaunchSequence do
       @instance.scopes = @sequence.required_scopes.join(' ')
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'User-level scope in the format: `user/[ resource | * ].[ read | *]` was not requested.', exception.message
+      assert_equal 'User-level scope for US Core resource types in the format: `user/[ resource | * ].[ read | *]` was not requested.', exception.message
     end
 
     it 'fails when no user-level scope was received' do
@@ -59,7 +59,7 @@ describe Inferno::Sequence::OncEHRLaunchSequence do
       @instance.received_scopes = @sequence.required_scopes.join(' ')
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'User-level scope in the format: `user/[ resource | * ].[ read | *]` was not received.', exception.message
+      assert_equal 'User-level scope for US Core resource types in the format: `user/[ resource | * ].[ read | *]` was not received.', exception.message
     end
 
     it 'fails when a badly formatted scope was requested' do
@@ -94,7 +94,19 @@ describe Inferno::Sequence::OncEHRLaunchSequence do
       @instance.received_scopes = @sequence.required_scopes.join(' ') + " user/#{bad_resource_type}.*"
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal "'#{bad_resource_type}' must be either a valid resource type or '*'", exception.message
+      assert_equal 'User-level scope for US Core resource types in the format: `user/[ resource | * ].[ read | *]` was not received.', exception.message
+    end
+
+    it 'succeeds when server grants additional user scopes' do
+      @instance.scopes = good_scopes
+      @instance.received_scopes = @sequence.required_scopes.join(' ') + ' user/Patient.read user/ValueSet.read'
+      @sequence.run_test(@test)
+    end
+
+    it 'succeeds when server grants launch/patient scope' do
+      @instance.scopes = good_scopes
+      @instance.received_scopes = @sequence.required_scopes.join(' ') + ' launch/patient user/Patient.read'
+      @sequence.run_test(@test)
     end
 
     it 'succeeds when the required scopes and a user-level scope are present' do

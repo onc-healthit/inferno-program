@@ -54,7 +54,8 @@ module Inferno
           'PractitionerRole',
           'Procedure',
           'Provenance',
-          'RelatedPerson'
+          'RelatedPerson',
+          'Person'
         ]
       end
 
