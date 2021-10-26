@@ -544,7 +544,11 @@ module Inferno
         document_reference_sequence = metadata[:sequences].find { |sequence| sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference' }
         document_reference_sequence[:must_supports][:elements].delete_if do |element|
           ['content.attachment.data', 'content.attachment.url'].include? element[:path]
+        end
 
+        # exclude component from vital sign profiles except observation-bp and observation-pulse-ox
+        # observation-bp is excluded by profile_definition['differential']['element'].any? { |el| el['path'] == 'Observation.component' }
+        # observation-plux-ox is excluded by profile_definition['baseDefinition'] == 'http://hl7.org/fhir/StructureDefinition/vitalsigns'
         unchanged_vital_sign_sequences = metadata[:sequences].select do |sequence|
           base_path = get_base_path(sequence[:profile])
           profile_definition = @resource_by_path[base_path]
@@ -556,6 +560,8 @@ module Inferno
         unchanged_vital_sign_sequences.each do |sequence|
           sequence[:must_supports][:elements].reject! { |el| el[:path].include?('component') }
         end
+
+        
         metadata
       end
 
