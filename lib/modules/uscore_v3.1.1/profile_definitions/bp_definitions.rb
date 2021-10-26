@@ -86,9 +86,6 @@ module Inferno
             path: 'effective'
           }.freeze,
           {
-            path: 'dataAbsentReason'
-          }.freeze,
-          {
             path: 'component'
           }.freeze,
           {
@@ -110,9 +107,6 @@ module Inferno
           }.freeze,
           {
             path: 'component.value.unit'
-          }.freeze,
-          {
-            path: 'component.dataAbsentReason'
           }.freeze
         ].freeze
       }.freeze

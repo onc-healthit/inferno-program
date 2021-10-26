@@ -75,9 +75,6 @@ module Inferno
           {
             path: 'value.code',
             fixed_value: '/min'
-          }.freeze,
-          {
-            path: 'dataAbsentReason'
           }.freeze
         ].freeze
       }.freeze

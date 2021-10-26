@@ -668,14 +668,12 @@ module Inferno
             * component.code
             * component.code.coding.code
             * component.code.coding.code
-            * component.dataAbsentReason
             * component.value[x]
             * component.value[x].code
             * component.value[x].code
             * component.value[x].system
             * component.value[x].unit
             * component.value[x].value
-            * dataAbsentReason
             * effective[x]
             * status
             * subject
