@@ -752,11 +752,10 @@ module Inferno
       def unauthorized?(response_code)
         # This is intended for tests that are expecting the server to reject a
         # resource request due to user not authorizing the application for that
-        # particular resource.  In early versions of this test, these tests
-        # expected a 401 (Unauthorized), but after later review it seems
-        # reasonable for a server to return 403 (Forbidden) instead.  This
-        # assertion therefore allows either.
-        [401, 403].include?(response_code)
+        # particular resource.  According to FHIR Security - Access Denied Response Handling
+        # (https://www.hl7.org/fhir/security.html#AccessDenied), Server MAY return 401 "Unauthorized",
+        # 403 "Forbidden", or 404 "Not Found"
+        [401, 403, 404].include?(response_code)
       end
 
       def save_delayed_sequence_references(resources, delayed_sequence_references)
