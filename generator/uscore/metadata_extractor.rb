@@ -557,10 +557,10 @@ module Inferno
         # Observation-bp profile uses Observation.component.value for Systolic and Diastolic pressures
         bp_sequence = metadata[:sequences].find { |sequence| sequence[:profile] == 'http://hl7.org/fhir/StructureDefinition/bp' }
         bp_sequence[:must_supports][:elements].delete_if do |element|
-          element[:path].start_with?('value[x]')
+          element[:path] == 'value[x]'
         end
         bp_sequence[:must_supports][:slices].delete_if do |slice|
-          slice[:path].start_with?('value[x]')
+          slice[:path] == 'value[x]'
         end
 
         # ONC clarified that health IT developers that always provide HL7 FHIR "observation" values
