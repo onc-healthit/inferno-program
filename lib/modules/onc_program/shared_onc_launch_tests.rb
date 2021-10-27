@@ -381,7 +381,7 @@ module Inferno
 
             skip_if_auth_failed
 
-            non_patient_compartment_resources = ['Encounter', 'Device', 'Location', 'Medication', 'Organization', 'Practitioner', 'PractitionerRole', 'RelatedPerson'].freeze
+            non_patient_compartment_resources = ['Device', 'Location', 'Medication', 'Organization', 'Practitioner', 'PractitionerRole'].freeze
 
             patient_compartment_resources = valid_resource_types - non_patient_compartment_resources
 
@@ -402,8 +402,10 @@ module Inferno
               assert missing_scopes.empty?, "Required scopes were not #{received_or_requested}: #{missing_scopes.join(', ')}"
 
               scopes -= required_scopes
-              # Other 'okay' scopes. Also scopes may include both 'launch' and 'launch/patient' for EHR launch and Standalone launch
-              scopes -= ['online_access', 'launch', 'launch/patient']
+
+              # Other 'okay' scopes. Also scopes may include both 'launch' and 'launch/patient' for EHR launch and Standalone launch.
+              # 'launch/encounter' is mentioned by SMART App Launch though not in (g)(10) test procedure
+              scopes -= ['online_access', 'launch', 'launch/patient', 'launch/encounter']
 
               patient_scope_found = false
 
