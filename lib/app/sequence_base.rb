@@ -962,6 +962,9 @@ module Inferno
                     Terminology.validate_code(valueset_url: binding_def[:system],
                                               code: coding.code,
                                               system: coding.system)
+                  rescue ProhibitedSystemException => e # rubocop:disable Metrics/BlockNesting
+                    @test_warnings << e.message unless @test_warnings.include? e.message # rubocop:disable Metrics/BlockNesting
+                    false
                   end
                 # If we're validating a codesystem (AKA if there's no 'system' URL)
                 # We want all of the codes to be in their respective systems
@@ -970,17 +973,30 @@ module Inferno
                     !Terminology.validate_code(valueset_url: nil,
                                                code: coding.code,
                                                system: coding.system)
+                  rescue ProhibitedSystemException => e # rubocop:disable Metrics/BlockNesting
+                    @test_warnings << e.message unless @test_warnings.include? e.message # rubocop:disable Metrics/BlockNesting
+                    false
                   end
                 end
               else
                 false
               end
             when 'Quantity', 'Coding'
-              !Terminology.validate_code(valueset_url: binding_def[:system],
-                                         code: el.code,
-                                         system: el.system)
+              begin
+                !Terminology.validate_code(valueset_url: binding_def[:system],
+                                           code: el.code,
+                                           system: el.system)
+              rescue ProhibitedSystemException => e
+                @test_warnings << e.message unless @test_warnings.include? e.message
+                false
+              end
             when 'code'
-              !Terminology.validate_code(valueset_url: binding_def[:system], code: el)
+              begin
+                !Terminology.validate_code(valueset_url: binding_def[:system], code: el)
+              rescue ProhibitedSystemException => e
+                @test_warnings << e.message unless @test_warnings.include? e.message
+                false
+              end
             else
               false
             end

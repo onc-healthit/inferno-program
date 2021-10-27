@@ -5,6 +5,7 @@ services:
       context: ./
     volumes:
       - ./config.yml:/var/www/inferno/config.yml
+      - ./terminology_config.yml:/var/www/inferno/terminology_config.yml
       - ./data:/var/www/inferno/data
       - ./batch:/var/www/inferno/batch
       - type: bind

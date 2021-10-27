@@ -28,18 +28,54 @@ module Inferno
 
       # UMLS Vocabulary: https://www.nlm.nih.gov/research/umls/sourcereleasedocs/index.html
       SAB = {
-        'http://www.nlm.nih.gov/research/umls/rxnorm' => 'RXNORM',
-        'http://loinc.org' => 'LNC',
-        'http://snomed.info/sct' => 'SNOMEDCT_US',
-        'http://www.cms.gov/Medicare/Coding/ICD10' => 'ICD10PCS',
-        'http://hl7.org/fhir/sid/cvx' => 'CVX',
-        'http://hl7.org/fhir/sid/icd-10-cm' => 'ICD10CM',
-        'http://hl7.org/fhir/sid/icd-9-cm' => 'ICD9CM',
-        'http://unitsofmeasure.org' => 'NCI_UCUM',
-        'http://nucc.org/provider-taxonomy' => 'NUCCPT',
-        'http://www.ama-assn.org/go/cpt' => 'CPT',
-        'urn:oid:2.16.840.1.113883.6.285' => 'HCPCS',
-        'urn:oid:2.16.840.1.113883.6.13' => 'CDT'
+        'http://www.nlm.nih.gov/research/umls/rxnorm' => {
+          abbreviation: 'RXNORM',
+          name: 'RxNorm Vocabulary'
+        },
+        'http://loinc.org' => {
+          abbreviation: 'LNC',
+          name: 'Logical Observation Identifiers Names and Codes terminology (LOINC)'
+        },
+        'http://snomed.info/sct' => {
+          abbreviation: 'SNOMEDCT_US',
+          name: 'Systematized Nomenclature of Medicine-Clinical Terms (SNOMED CT), US Edition'
+        },
+        'http://www.cms.gov/Medicare/Coding/ICD10' => {
+          abbreviation: 'ICD10PCS',
+          name: 'ICD-10 Procedure Coding System (ICD-10-PCS)'
+        },
+        'http://hl7.org/fhir/sid/cvx' => {
+          abbreviation: 'CVX',
+          name: 'Vaccines Administered (CVX)'
+        },
+        'http://hl7.org/fhir/sid/icd-10-cm' => {
+          abbreviation: 'ICD10CM',
+          name: 'International Classification of Diseases, Tenth Revision, Clinical Modification (ICD-10-CM)'
+        },
+        'http://hl7.org/fhir/sid/icd-9-cm' => {
+          abbreviation: 'ICD9CM',
+          name: 'International Classification of Diseases, Ninth Revision, Clinical Modification (ICD-9-CM)'
+        },
+        'http://unitsofmeasure.org' => {
+          abbreviation: 'NCI_UCUM',
+          name: 'Unified Code for Units of Measure (UCUM)'
+        },
+        'http://nucc.org/provider-taxonomy' => {
+          abbreviation: 'NUCCHCPT',
+          name: 'National Uniform Claim Committee - Health Care Provider Taxonomy (NUCCHCPT)'
+        },
+        'http://www.ama-assn.org/go/cpt' => {
+          abbreviation: 'CPT',
+          name: 'Current Procedural Terminology (CPT)'
+        },
+        'urn:oid:2.16.840.1.113883.6.285' => {
+          abbreviation: 'HCPCS',
+          name: 'Healthcare Common Procedure Coding System (HCPCS)'
+        },
+        'urn:oid:2.16.840.1.113883.6.13' => {
+          abbreviation: 'CDT',
+          name: 'Code on Dental Procedures and Nomenclature (CDT)'
+        }
       }.freeze
 
       CODE_SYS = {
@@ -59,6 +95,21 @@ module Inferno
       def initialize(database, use_expansions = true)
         @db = database
         @use_expansions = use_expansions
+      end
+
+      def umls_abbreviation(system)
+        return SAB.dig(system, :abbreviation) if system != 'http://nucc.org/provider-taxonomy'
+
+        @nucc_system ||= # rubocop:disable Naming/MemoizedInstanceVariableName
+          if @db.execute("SELECT COUNT(*) FROM mrconso WHERE SAB = 'NUCCPT'").flatten.first.positive?
+            'NUCCPT'
+          else
+            'NUCCHCPT'
+          end
+      end
+
+      def code_system_metadata(system)
+        SAB[system]
       end
 
       # The ValueSet [Set]
@@ -168,9 +219,10 @@ module Inferno
 
       def generate_bloom
         require 'bloomer'
-        @bf = Bloomer::Scalable.new # (100_000, 0.00001)
+
+        @bf = Bloomer::Scalable.create_with_sufficient_size(valueset.length)
         valueset.each do |cc|
-          @bf.add("#{cc[:system]}|#{cc[:code]}")
+          @bf.add_without_duplication("#{cc[:system]}|#{cc[:code]}")
         end
         @bf
       end
@@ -260,7 +312,7 @@ module Inferno
           Inferno.logger.debug "  loading #{system} codes..."
           return filter.nil? ? CODE_SYS[system].call : CODE_SYS[system].call(filter)
         elsif File.exist?(fhir_codesystem)
-          if SAB[system].nil?
+          if umls_abbreviation(system).nil?
             fhir_cs = Inferno::Terminology::Codesystem
               .new(FHIR::Json.from_json(File.read(fhir_codesystem)))
 
@@ -293,24 +345,26 @@ module Inferno
 
         filtered_set = Set.new
         raise FilterOperationException, filter&.op unless ['=', 'in', 'is-a', nil].include? filter&.op
-        raise UnknownCodeSystemException, system if SAB[system].nil?
+        raise UnknownCodeSystemException, system if umls_abbreviation(system).nil?
 
-        if filter.nil?
-          @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}'") do |row|
+        # Fix for some weirdness around UMLS and provider taxonomy subsetting
+        if system == 'http://nucc.org/provider-taxonomy'
+          @db.execute("SELECT code FROM mrconso WHERE SAB = '#{umls_abbreviation(system)}' AND TTY IN('PT', 'OP')") do |row|
+            filtered_set.add(system: system, code: row[0])
+          end
+        elsif filter.nil?
+          @db.execute("SELECT code FROM mrconso WHERE SAB = '#{umls_abbreviation(system)}'") do |row|
             filtered_set.add(system: system, code: row[0])
           end
         elsif ['=', 'in', nil].include? filter&.op
           if FILTER_PROP[filter.property]
-            @db.execute("SELECT code FROM mrsat WHERE SAB = '#{SAB[system]}' AND ATN = '#{fp_self(filter.property)}' AND ATV = '#{fp_self(filter.value)}'") do |row|
-              filtered_set.add(system: system, code: row[0])
-            end
-          # Fix for some weirdness around UMLS and provider taxonomy subsetting
-          elsif system == 'http://nucc.org/provider-taxonomy' && filter.property == 'abstract' && filter.value == 'false'
-            @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}' AND TTY = 'PT'") do |row|
+            query = "SELECT code FROM mrsat WHERE SAB = '#{umls_abbreviation(system)}' " \
+                    "AND ATN = '#{fp_self(filter.property)}' AND ATV = '#{fp_self(filter.value)}'"
+            @db.execute(query) do |row|
               filtered_set.add(system: system, code: row[0])
             end
           else
-            @db.execute("SELECT code FROM mrconso WHERE SAB = '#{SAB[system]}' AND #{filter_clause.call(filter)}") do |row|
+            @db.execute("SELECT code FROM mrconso WHERE SAB = '#{umls_abbreviation(system)}' AND #{filter_clause.call(filter)}") do |row|
               filtered_set.add(system: system, code: row[0])
             end
           end
@@ -342,7 +396,7 @@ module Inferno
           FROM mrrel r
             JOIN mrconso c1 ON c1.aui=r.aui1
             JOIN mrconso c2 ON c2.aui=r.aui2
-          WHERE r.rel='CHD' AND r.SAB= '#{SAB[system]}'") do |row|
+          WHERE r.rel='CHD' AND r.SAB= '#{umls_abbreviation(system)}'") do |row|
             children[row[0]] ||= []
             children[row[0]] << row[1]
           end

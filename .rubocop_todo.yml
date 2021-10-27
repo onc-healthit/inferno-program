@@ -14,7 +14,7 @@ Lint/EmptyWhen:
     - 'lib/modules/argonaut/argonaut_observation_sequence.rb'
     - 'lib/modules/argonaut/argonaut_procedure_sequence.rb'
     - 'lib/modules/argonaut/argonaut_vital_signs_observation_sequence.rb'
-    - 'lib/tasks/tasks.rake'
+    - 'lib/tasks/terminology.rake'
 
 # Offense count: 1
 Lint/NonLocalExitFromIterator:
