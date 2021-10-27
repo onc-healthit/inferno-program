@@ -963,7 +963,7 @@ module Inferno
                                               code: coding.code,
                                               system: coding.system)
                   rescue ProhibitedSystemException => e # rubocop:disable Metrics/BlockNesting
-                    @test_warnings << e.message
+                    @test_warnings << e.message unless @test_warnings.include? e.message # rubocop:disable Metrics/BlockNesting
                     false
                   end
                 # If we're validating a codesystem (AKA if there's no 'system' URL)
@@ -974,7 +974,7 @@ module Inferno
                                                code: coding.code,
                                                system: coding.system)
                   rescue ProhibitedSystemException => e # rubocop:disable Metrics/BlockNesting
-                    @test_warnings << e.message
+                    @test_warnings << e.message unless @test_warnings.include? e.message # rubocop:disable Metrics/BlockNesting
                     false
                   end
                 end
@@ -987,14 +987,14 @@ module Inferno
                                            code: el.code,
                                            system: el.system)
               rescue ProhibitedSystemException => e
-                @test_warnings << e.message
+                @test_warnings << e.message unless @test_warnings.include? e.message
                 false
               end
             when 'code'
               begin
                 !Terminology.validate_code(valueset_url: binding_def[:system], code: el)
               rescue ProhibitedSystemException => e
-                @test_warnings << e.message
+                @test_warnings << e.message unless @test_warnings.include? e.message
                 false
               end
             else
