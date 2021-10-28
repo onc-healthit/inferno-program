@@ -381,7 +381,11 @@ module Inferno
 
             skip_if_auth_failed
 
-            non_patient_compartment_resources = ['Device', 'Location', 'Medication', 'Organization', 'Practitioner', 'PractitionerRole'].freeze
+            # ONC CCG: health IT developers are permitted to scope US Core IG resources that do not exist in either the standard adopted at § 170.213 (USCDI version 1) 
+            # or the "Compartment Patient" section of the standard adopted at § 170.215(a)(1) (HLY FHIR Release 4.0.1) as either patient/[Resource] or user/[Resource]. 
+            # These resources include “Encounter,” “Device,” “Location,” “Medication,” “Organization,” “Practitioner,” and “PractitionerRole.” 
+            # Also add "Person" as it is not in USCDI either
+            non_patient_compartment_resources = ['Encounter', 'Device', 'Location', 'Medication', 'Organization', 'Practitioner', 'PractitionerRole', 'RelatedPerson', 'Person'].freeze
 
             patient_compartment_resources = valid_resource_types - non_patient_compartment_resources
 
