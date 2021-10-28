@@ -51,7 +51,7 @@ describe Inferno::Sequence::OncStandaloneLaunchSequence do
       @instance.onc_sl_scopes = @sequence.required_scopes.join(' ')
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'Patient-level scope for US Core resource types in the format: `patient/[ resource | * ].[ read | *]` was not requested.', exception.message
+      assert_equal 'Patient-level scope in the format: `patient/[ resource | * ].[ read | *]` was not requested.', exception.message
     end
 
     it 'fails when no patient-level scope was received' do
@@ -59,7 +59,7 @@ describe Inferno::Sequence::OncStandaloneLaunchSequence do
       @instance.received_scopes = @sequence.required_scopes.join(' ')
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'Patient-level scope for US Core resource types in the format: `patient/[ resource | * ].[ read | *]` was not received.', exception.message
+      assert_match(/^Request scopes .* were not granted by authorization server./, exception.message)
     end
 
     it 'fails when a badly formatted scope was requested' do
@@ -80,32 +80,30 @@ describe Inferno::Sequence::OncStandaloneLaunchSequence do
     end
 
     it 'fails when a badly formatted scope was received' do
-      bad_scopes = ['patient/*/*', 'user/*.read', 'patient/*.*.*', 'patient/*.write']
+      bad_scopes = ['abc', 'patient/*/*', 'patient/.', 'patient/*.', 'patient/*.*.*', 'patient/*.write']
       @instance.onc_sl_scopes = good_scopes
 
       bad_scopes.each do |scope|
         @instance.received_scopes = (@sequence.required_scopes + [scope]).join(' ')
         exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-        assert_equal "Received scope '#{scope}' does not follow the format: `patient/[ resource | * ].[ read | * ]`", exception.message
+        assert_match(/^Request scopes .* were not granted by authorization server./, exception.message)
       end
+    end
 
-      bad_resource_type = 'ValueSet'
-      @instance.received_scopes = @sequence.required_scopes.join(' ') + " patient/#{bad_resource_type}.*"
+    it 'fails when not all patient compartment scopes were received' do
+      scopes = ['patient/Patient.read', 'patient/Condition.read', 'patient/Obervation.read']
+      @instance.onc_sl_scopes = good_scopes
+
+      @instance.received_scopes = (@sequence.required_scopes + scopes).join(' ')
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'Patient-level scope for US Core resource types in the format: `patient/[ resource | * ].[ read | *]` was not received.', exception.message
+      assert_match(/^Request scopes .* were not granted by authorization server./, exception.message)
     end
 
-    it 'succeeds when server grants additional patient scopes' do
+    it 'succeeds when server grants additional scopes' do
       @instance.onc_sl_scopes = good_scopes
-      @instance.received_scopes = @sequence.required_scopes.join(' ') + ' patient/Patient.read patient/ValueSet.read'
-      @sequence.run_test(@test)
-    end
-
-    it 'succeeds when server grants launch scope' do
-      @instance.onc_sl_scopes = good_scopes
-      @instance.received_scopes = @sequence.required_scopes.join(' ') + ' launch patient/Patient.read'
+      @instance.received_scopes = good_scopes + ' launch launch/encounter user/ValueSet.read'
       @sequence.run_test(@test)
     end
 
