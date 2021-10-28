@@ -731,76 +731,119 @@ module Inferno
           versions :r4
         end
 
-        skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent', 'status'])
-
-        resolved_one = false
-
-        found_second_val = false
-        patient_ids.each do |patient|
-          next unless @medication_request_ary[patient].present?
-
-          Array.wrap(@medication_request_ary[patient]).each do |medication_request|
-            search_params = {
-              'patient': patient,
-              'intent': get_value_for_search_param(resolve_element_from_path(medication_request, 'intent') { |el| get_value_for_search_param(el).present? }),
-              'status': get_value_for_search_param(resolve_element_from_path(medication_request, 'status') { |el| get_value_for_search_param(el).present? })
-            }
-
-            next if search_params.any? { |_param, value| value.nil? }
-
-            resolved_one = true
-
-            second_status_val = resolve_element_from_path(@medication_request_ary[patient], 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
-            next if second_status_val.nil?
-
-            found_second_val = true
-            search_params[:status] += ',' + get_value_for_search_param(second_status_val)
-            reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
-            validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
-            assert_response_ok(reply)
-            resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-            missing_values = search_params[:status].split(',').reject do |val|
-              resolve_element_from_path(resources_returned, 'status') { |val_found| val_found == val }
-            end
-            assert missing_values.blank?, "Could not find #{missing_values.join(',')} values from status in any of the resources returned"
-
-            break if resolved_one
-          end
-        end
-        skip 'Cannot find second value for status to perform a multipleOr search' unless found_second_val
-
         skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent'])
-
         resolved_one = false
 
-        found_second_val = false
         patient_ids.each do |patient|
           next unless @medication_request_ary[patient].present?
 
           search_params = {
             'patient': patient,
-            'intent': get_value_for_search_param(resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el).present? })
+            'intent': 'proposal,plan,order,original-order,reflex-order,filler-order,instance-order,option'
           }
 
-          next if search_params.any? { |_param, value| value.nil? }
+          existing_values = {
+            intent: []
+          }
+
+          missing_values = {
+            intent: []
+          }
+
+          search_value = resolve_element_from_path(@medication_request_ary[patient], 'intent', &:present?)
+          next unless search_value.present?
+
+          existing_values[:intent] << search_value
+
+          search_value = resolve_element_from_path(@medication_request_ary[patient], 'intent') do |value|
+            value.present? && existing_values[:intent].exclude?(value)
+          end
+
+          existing_values[:intent] << search_value if search_value.present?
 
           resolved_one = true
 
-          second_intent_val = resolve_element_from_path(@medication_request_ary[patient], 'intent') { |el| get_value_for_search_param(el) != search_params[:intent] }
-          next if second_intent_val.nil?
-
-          found_second_val = true
-          search_params[:intent] += ',' + get_value_for_search_param(second_intent_val)
           reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
           validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
           assert_response_ok(reply)
           resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          missing_values = search_params[:intent].split(',').reject do |val|
+
+          missing_values[:intent] = existing_values[:intent].reject do |val|
             resolve_element_from_path(resources_returned, 'intent') { |val_found| val_found == val }
           end
-          assert missing_values.blank?, "Could not find #{missing_values.join(',')} values from intent in any of the resources returned"
+
+          missing_value_message = missing_values.reject { |_k, v| v.empty? }.map { |k, v| "#{v.join(',')} values from #{k}" }.join(' and ')
+
+          assert missing_value_message.blank?, "Could not find #{missing_value_message} in any of the resources returned"
+
+          break if resolved_one
         end
-        skip 'Cannot find second value for intent to perform a multipleOr search' unless found_second_val
+
+        skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent', 'status'])
+        resolved_one = false
+
+        patient_ids.each do |patient|
+          next unless @medication_request_ary[patient].present?
+
+          search_params = {
+            'patient': patient,
+            'intent': 'proposal,plan,order,original-order,reflex-order,filler-order,instance-order,option',
+            'status': 'active,on-hold,cancelled,completed,entered-in-error,stopped,draft,unknown'
+          }
+
+          existing_values = {
+            intent: [],
+            status: []
+          }
+
+          missing_values = {
+            intent: [],
+            status: []
+          }
+
+          search_value = resolve_element_from_path(@medication_request_ary[patient], 'intent', &:present?)
+          next unless search_value.present?
+
+          existing_values[:intent] << search_value
+
+          search_value = resolve_element_from_path(@medication_request_ary[patient], 'intent') do |value|
+            value.present? && existing_values[:intent].exclude?(value)
+          end
+
+          existing_values[:intent] << search_value if search_value.present?
+
+          search_value = resolve_element_from_path(@medication_request_ary[patient], 'status', &:present?)
+          next unless search_value.present?
+
+          existing_values[:status] << search_value
+
+          search_value = resolve_element_from_path(@medication_request_ary[patient], 'status') do |value|
+            value.present? && existing_values[:status].exclude?(value)
+          end
+
+          existing_values[:status] << search_value if search_value.present?
+
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params)
+          validate_search_reply(versioned_resource_class('MedicationRequest'), reply, search_params)
+          assert_response_ok(reply)
+          resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+
+          missing_values[:intent] = existing_values[:intent].reject do |val|
+            resolve_element_from_path(resources_returned, 'intent') { |val_found| val_found == val }
+          end
+
+          missing_values[:status] = existing_values[:status].reject do |val|
+            resolve_element_from_path(resources_returned, 'status') { |val_found| val_found == val }
+          end
+
+          missing_value_message = missing_values.reject { |_k, v| v.empty? }.map { |k, v| "#{v.join(',')} values from #{k}" }.join(' and ')
+
+          assert missing_value_message.blank?, "Could not find #{missing_value_message} in any of the resources returned"
+
+          break if resolved_one
+        end
       end
 
       test 'Every reference within MedicationRequest resources can be read.' do

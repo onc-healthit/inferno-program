@@ -891,62 +891,85 @@ module Inferno
         test[:description] += %(
           Parameters being tested: #{multiple_or_params.join(', ')}
         )
-        multiple_or_params.each do |param|
-          multiple_or_search = sequence[:searches].find { |search| (search[:names].include? param) && search[:expectation] == 'SHALL' }
-          next if multiple_or_search.blank?
 
-          second_val_var = "second_#{param}_val"
-          resolve_el_str = "#{resolve_element_path(sequence[:search_param_descriptions][param.to_sym], sequence[:delayed_sequence])} { |el| get_value_for_search_param(el) != #{param_value_name(param)} }" # rubocop:disable Layout/LineLength
-          search_params = get_search_params(multiple_or_search[:names], sequence)
-          resolve_param_from_resource = search_params.include? 'get_value_for_search_param'
-          test[:test_code] += %(
-            #{skip_if_search_not_supported_code(sequence, multiple_or_search[:names])}
-          )
-          if resolve_param_from_resource
-            test[:test_code] += %(
-              resolved_one = false
-            )
+        sequence[:searches].each do |search|
+          # Only validate composite-or search with SHALL expectation
+          next unless search[:expectation] == 'SHALL'
+
+          multiple_or_search_parameters = search[:names] & multiple_or_params
+          next if multiple_or_search_parameters.empty?
+
+          regular_search_parameters = search[:names] - multiple_or_params
+
+          search_params = get_search_param_hash(regular_search_parameters, sequence)
+
+          multiple_or_search_parameters.each do |param|
+            fix_value_search_param = fixed_value_search_param(Array.wrap(param), sequence)
+            search_params[param] = fix_value_search_param[:values].join(',')
           end
 
-          reply_code = %(
-            #{second_val_var} = #{resolve_el_str}
-            next if #{second_val_var}.nil?
-            found_second_val = true
-            #{param_value_name(param)} += ',' + get_value_for_search_param(#{second_val_var})
-            reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
-            validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-            assert_response_ok(reply)
-            resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-            missing_values = #{param_value_name(param)}.split(',').reject do |val|
-              resolve_element_from_path(resources_returned, '#{param}') { |val_found| val_found == val }
-            end
-            assert missing_values.blank?, "Could not find \#{missing_values.join(',')} values from #{param} in any of the resources returned"
-          )
-
           test[:test_code] += %(
-            found_second_val = false
+            #{skip_if_search_not_supported_code(sequence, search[:names])}
+            resolved_one = false
+
             patient_ids.each do |patient|
-              #{"next unless @#{sequence[:resource].underscore}_ary[patient].present?" if multiple_or_search[:names].include?('patient')}
+              #{"next unless @#{sequence[:resource].underscore}_ary[patient].present?" if regular_search_parameters.include?('patient')}
+
+              search_params = {
+                  #{search_params.map { |param, value| search_param_to_string(param, value) }.join(",\n")}
+              }
+
+              existing_values = {
+                #{multiple_or_search_parameters.map { |param| param + ': []' }.join(",\n")}
+              }
+
+              missing_values = {
+                #{multiple_or_search_parameters.map { |param| param + ': []' }.join(",\n")}
+              }
+
               #{
-                if multiple_or_search[:names].length > 2
+                multiple_or_search_parameters.map do |param|
                   %(
-                    Array.wrap(@#{sequence[:resource].underscore}_ary[patient]).each do |#{sequence[:resource].underscore}|
-                      #{search_params.gsub("@#{sequence[:resource].underscore}_ary[patient]", sequence[:resource].underscore.to_s)}
-                      #{reply_code}
-                      break if resolved_one
+                    search_value = resolve_element_from_path(@#{sequence[:resource].underscore}_ary[patient], '#{param}', &:present?)
+                    next unless search_value.present?
+
+                    existing_values[:#{param}] << search_value
+
+                    search_value = resolve_element_from_path(@#{sequence[:resource].underscore}_ary[patient], '#{param}') do |value|
+                      value.present? && existing_values[:#{param}].exclude?(value)
+                    end
+
+                    existing_values[:#{param}] << search_value if search_value.present?
+                  )
+                end.join("\n")
+              }
+
+              resolved_one = true
+
+              reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
+              validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
+              assert_response_ok(reply)
+              resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
+
+              #{
+                multiple_or_search_parameters.map do |param|
+                  %(
+                    missing_values[:#{param}] = existing_values[:#{param}].reject do |val|
+                      resolve_element_from_path(resources_returned, '#{param}') { |val_found| val_found == val }
                     end
                   )
-                else
-                  %(
-                    #{search_params}
-                    #{reply_code}
-                  )
-                end
+                end.join("\n")
               }
+
+              missing_value_message = missing_values.reject { |_k, v| v.empty? }.map { |k, v| "\#{v.join(',')} values from \#{k}" }.join(' and ')
+
+              assert missing_value_message.blank?, "Could not find \#{missing_value_message} in any of the resources returned"
+
+              break if resolved_one
             end
-            skip 'Cannot find second value for #{param} to perform a multipleOr search' unless found_second_val
           )
         end
+
         sequence[:tests] << test if test[:test_code].present?
       end
 
