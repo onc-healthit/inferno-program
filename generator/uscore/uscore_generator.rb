@@ -929,19 +929,10 @@ module Inferno
               }
 
               composite_or_parameters.each do |param|
-                search_value = resolve_element_from_path(@#{sequence[:resource].underscore}_ary[patient], param, &:present?)
-
-                while search_value.present?
-                  existing_values[param.to_sym] << search_value
-
-                  search_value = resolve_element_from_path(@#{sequence[:resource].underscore}_ary[patient], param) do |value|
-                    value.present? && existing_values[param.to_sym].exclude?(value)
-                  end
-                end
+                existing_values[param.to_sym] = @#{sequence[:resource].underscore}_ary[patient].map(&param.to_sym).compact.uniq
               end
 
               next if existing_values.values.any?(&:empty?)
-
 
               resolved_one = true
 
@@ -952,9 +943,7 @@ module Inferno
 
 
               composite_or_parameters.each do |param|
-                missing_values[param.to_sym] = existing_values[param.to_sym].reject do |val|
-                  resolve_element_from_path(resources_returned, param) { |val_found| val_found == val }
-                end
+                missing_values[param.to_sym] = existing_values[param.to_sym] - resources_returned.map(&param.to_sym)
               end
 
               missing_value_message = missing_values.reject { |_k, v| v.empty? }.map { |k, v| "\#{v.join(',')} values from \#{k}" }.join(' and ')
