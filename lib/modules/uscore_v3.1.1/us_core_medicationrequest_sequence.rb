@@ -733,6 +733,7 @@ module Inferno
 
         skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent'])
         resolved_one = false
+        composite_or_parameters = ['intent']
 
         patient_ids.each do |patient|
           next unless @medication_request_ary[patient].present?
@@ -750,16 +751,19 @@ module Inferno
             intent: []
           }
 
-          search_value = resolve_element_from_path(@medication_request_ary[patient], 'intent', &:present?)
-          next unless search_value.present?
+          composite_or_parameters.each do |param|
+            search_value = resolve_element_from_path(@medication_request_ary[patient], param, &:present?)
 
-          existing_values[:intent] << search_value
+            while search_value.present?
+              existing_values[param.to_sym] << search_value
 
-          search_value = resolve_element_from_path(@medication_request_ary[patient], 'intent') do |value|
-            value.present? && existing_values[:intent].exclude?(value)
+              search_value = resolve_element_from_path(@medication_request_ary[patient], param) do |value|
+                value.present? && existing_values[param.to_sym].exclude?(value)
+              end
+            end
           end
 
-          existing_values[:intent] << search_value if search_value.present?
+          next if existing_values.values.any?(&:empty?)
 
           resolved_one = true
 
@@ -768,8 +772,10 @@ module Inferno
           assert_response_ok(reply)
           resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
 
-          missing_values[:intent] = existing_values[:intent].reject do |val|
-            resolve_element_from_path(resources_returned, 'intent') { |val_found| val_found == val }
+          composite_or_parameters.each do |param|
+            missing_values[param.to_sym] = existing_values[param.to_sym].reject do |val|
+              resolve_element_from_path(resources_returned, param) { |val_found| val_found == val }
+            end
           end
 
           missing_value_message = missing_values.reject { |_k, v| v.empty? }.map { |k, v| "#{v.join(',')} values from #{k}" }.join(' and ')
@@ -781,6 +787,7 @@ module Inferno
 
         skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent', 'status'])
         resolved_one = false
+        composite_or_parameters = ['intent', 'status']
 
         patient_ids.each do |patient|
           next unless @medication_request_ary[patient].present?
@@ -801,27 +808,20 @@ module Inferno
             status: []
           }
 
-          search_value = resolve_element_from_path(@medication_request_ary[patient], 'intent', &:present?)
-          next unless search_value.present?
+          composite_or_parameters.each do |param|
+            search_value = resolve_element_from_path(@medication_request_ary[patient], param, &:present?)
 
-          existing_values[:intent] << search_value
+            while search_value.present?
+              existing_values[param.to_sym] << search_value
 
-          search_value = resolve_element_from_path(@medication_request_ary[patient], 'intent') do |value|
-            value.present? && existing_values[:intent].exclude?(value)
+              search_value = resolve_element_from_path(@medication_request_ary[patient], param) do |value|
+                value.present? && existing_values[param.to_sym].exclude?(value)
+              end
+            end
           end
 
-          existing_values[:intent] << search_value if search_value.present?
-
-          search_value = resolve_element_from_path(@medication_request_ary[patient], 'status', &:present?)
-          next unless search_value.present?
-
-          existing_values[:status] << search_value
-
-          search_value = resolve_element_from_path(@medication_request_ary[patient], 'status') do |value|
-            value.present? && existing_values[:status].exclude?(value)
-          end
-
-          existing_values[:status] << search_value if search_value.present?
+          binding.pry 
+          next if existing_values.values.any?(&:empty?)
 
           resolved_one = true
 
@@ -830,12 +830,10 @@ module Inferno
           assert_response_ok(reply)
           resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
 
-          missing_values[:intent] = existing_values[:intent].reject do |val|
-            resolve_element_from_path(resources_returned, 'intent') { |val_found| val_found == val }
-          end
-
-          missing_values[:status] = existing_values[:status].reject do |val|
-            resolve_element_from_path(resources_returned, 'status') { |val_found| val_found == val }
+          composite_or_parameters.each do |param|
+            missing_values[param.to_sym] = existing_values[param.to_sym].reject do |val|
+              resolve_element_from_path(resources_returned, param) { |val_found| val_found == val }
+            end
           end
 
           missing_value_message = missing_values.reject { |_k, v| v.empty? }.map { |k, v| "#{v.join(',')} values from #{k}" }.join(' and ')

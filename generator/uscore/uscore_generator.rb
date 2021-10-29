@@ -911,6 +911,7 @@ module Inferno
           test[:test_code] += %(
             #{skip_if_search_not_supported_code(sequence, search[:names])}
             resolved_one = false
+            composite_or_parameters = [#{multiple_or_search_parameters.map { |param| "'#{param}'" }.join(', ')}]
 
             patient_ids.each do |patient|
               #{"next unless @#{sequence[:resource].underscore}_ary[patient].present?" if regular_search_parameters.include?('patient')}
@@ -927,22 +928,20 @@ module Inferno
                 #{multiple_or_search_parameters.map { |param| param + ': []' }.join(",\n")}
               }
 
-              #{
-                multiple_or_search_parameters.map do |param|
-                  %(
-                    search_value = resolve_element_from_path(@#{sequence[:resource].underscore}_ary[patient], '#{param}', &:present?)
-                    next unless search_value.present?
+              composite_or_parameters.each do |param|
+                search_value = resolve_element_from_path(@#{sequence[:resource].underscore}_ary[patient], param, &:present?)
 
-                    existing_values[:#{param}] << search_value
+                while search_value.present?
+                  existing_values[param.to_sym] << search_value
 
-                    search_value = resolve_element_from_path(@#{sequence[:resource].underscore}_ary[patient], '#{param}') do |value|
-                      value.present? && existing_values[:#{param}].exclude?(value)
-                    end
+                  search_value = resolve_element_from_path(@#{sequence[:resource].underscore}_ary[patient], param) do |value|
+                    value.present? && existing_values[param.to_sym].exclude?(value)
+                  end
+                end
+              end
 
-                    existing_values[:#{param}] << search_value if search_value.present?
-                  )
-                end.join("\n")
-              }
+              next if existing_values.values.any?(&:empty?)
+
 
               resolved_one = true
 
@@ -951,15 +950,12 @@ module Inferno
               assert_response_ok(reply)
               resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
 
-              #{
-                multiple_or_search_parameters.map do |param|
-                  %(
-                    missing_values[:#{param}] = existing_values[:#{param}].reject do |val|
-                      resolve_element_from_path(resources_returned, '#{param}') { |val_found| val_found == val }
-                    end
-                  )
-                end.join("\n")
-              }
+
+              composite_or_parameters.each do |param|
+                missing_values[param.to_sym] = existing_values[param.to_sym].reject do |val|
+                  resolve_element_from_path(resources_returned, param) { |val_found| val_found == val }
+                end
+              end
 
               missing_value_message = missing_values.reject { |_k, v| v.empty? }.map { |k, v| "\#{v.join(',')} values from \#{k}" }.join(' and ')
 
