@@ -596,17 +596,6 @@ describe Inferno::Sequence::OncOpenIDConnectSequence do
       assert_match 'Bad response code: expected 200, 201, but found 401. ', exception.message
     end
 
-    it 'passes if fetching the user is rejected and the user is a Non US Core resource' do
-      payload = @decoded_payload.clone
-      payload['fhirUser'] = 'http://www.example.com/fhir/Person/123'
-      @sequence.instance_variable_set(:@decoded_payload, payload)
-
-      stub_request(:get, payload['fhirUser'])
-        .to_return(status: 401)
-
-      @sequence.run_test(@test)
-    end
-
     it 'fails if fetching the user returns invalid json' do
       stub_request(:get, @decoded_payload['fhirUser'])
         .to_return(status: 200, body: '{')

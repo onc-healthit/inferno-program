@@ -342,19 +342,12 @@ module Inferno
                "ID token `fhirUser` claim does not refer to a valid resource type (#{valid_fhir_user_resource_types.join(', ')}): #{fhir_user}"
 
         fhir_user_response = @client.get(fhir_user, @client.fhir_headers)
+        assert_response_ok fhir_user_response
+        assert_valid_json fhir_user_response.body
 
-        # SMART allows fhirUser be resource of type Patient, Practitioner, RelatedPerson, or Person
-        # Among these four resource types, Patient, and Practitioner are US Core resource types
-        # Since OncEHRLaunchSequence and OncStandaloneLaunchSequence request scopes for all US Core resource types
-        # US Core resource types (including Patient and Practitioner) have to be accessible.
-        if !unauthorized?(fhir_user_response.code) || Inferno::ValidationUtil::RESOURCES[:r4].keys.any? { |key| fhir_user.include?(key) }
-          assert_response_ok fhir_user_response
-          assert_valid_json fhir_user_response.body
+        response_resource_type = JSON.parse(fhir_user_response.body)['resourceType']
 
-          response_resource_type = JSON.parse(fhir_user_response.body)['resourceType']
-
-          assert valid_fhir_user_resource_types.include?(response_resource_type), "Resource from `fhirUser` claim was not an allowed resource type: #{response_resource_type}"
-        end
+        assert valid_fhir_user_resource_types.include?(response_resource_type), "Resource from `fhirUser` claim was not an allowed resource type: #{response_resource_type}"
       end
     end
   end
