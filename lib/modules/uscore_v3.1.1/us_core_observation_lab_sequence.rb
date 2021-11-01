@@ -654,7 +654,6 @@ module Inferno
             * Observation.category:Laboratory
             * category
             * code
-            * dataAbsentReason
             * effective[x]
             * status
             * subject

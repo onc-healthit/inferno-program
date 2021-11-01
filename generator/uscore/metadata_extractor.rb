@@ -566,17 +566,13 @@ module Inferno
         # ONC clarified that health IT developers that always provide HL7 FHIR "observation" values
         # are not required to demonstrate Health IT Module support for "dataAbsentReason" elements.
         # Remove MS check for dataAbsentReason and component.dataAbsentReason from vital sign profiles
-        vital_sign_sequences = metadata[:sequences].select do |sequence|
-          base_path = get_base_path(sequence[:profile])
-          profile_definition = @resource_by_path[base_path]
-          ['http://hl7.org/fhir/StructureDefinition/vitalsigns', 'http://hl7.org/fhir/StructureDefinition/oxygensat'].include?(profile_definition['baseDefinition'])
-        end
-
-        vital_sign_sequences.each do |sequence|
-          sequence[:must_supports][:elements].delete_if do |element|
-            ['dataAbsentReason', 'component.dataAbsentReason'].include?(element[:path])
+        metadata[:sequences]
+          .select { |sequence| sequence[:resource] == 'Observation' }
+          .each do |sequence|
+            sequence[:must_supports][:elements].delete_if do |element|
+              ['dataAbsentReason', 'component.dataAbsentReason'].include?(element[:path])
+            end
           end
-        end
 
         metadata
       end

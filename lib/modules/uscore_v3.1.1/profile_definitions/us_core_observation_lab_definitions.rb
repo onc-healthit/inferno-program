@@ -35,9 +35,6 @@ module Inferno
           }.freeze,
           {
             path: 'value'
-          }.freeze,
-          {
-            path: 'dataAbsentReason'
           }.freeze
         ].freeze
       }.freeze
