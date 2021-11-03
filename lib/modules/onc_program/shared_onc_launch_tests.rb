@@ -428,7 +428,7 @@ module Inferno
             skip_if_auth_failed
 
             # ONC CCG: health IT developers are permitted to scope US Core IG resources that do not exist in either the standard adopted at 170.213 (USCDI version 1)
-            # or the "Compartment Patient" section of the standard adopted at 170.215(a)(1) (HLY FHIR Release 4.0.1) as either patient/[Resource] or user/[Resource].
+            # or the "Compartment Patient" section of the standard adopted at 170.215(a)(1) (HL7 FHIR Release 4.0.1) as either patient/[Resource] or user/[Resource].
             patient_compartment_resource_types = [
               '*',
               'Patient',
