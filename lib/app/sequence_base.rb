@@ -732,8 +732,8 @@ module Inferno
           begin
             resolved_resource = value.read
           rescue ClientException => e
-            # Skip reference read error is the resource is not a US Core resource.
-            problems << "#{path} did not resolve: #{e}" if !unauthorized?(e.reply.response[:code]) || Inferno::ValidationUtil::RESOURCES[:r4].key?(reference_type)
+            # report error if the resource is a US Core resource type
+            problems << "#{path} did not resolve: #{e}" if Inferno::ValidationUtil::RESOURCES[:r4].key?(reference_type)
             next
           end
 
@@ -747,15 +747,6 @@ module Inferno
         Inferno.logger.info "Surpassed the maximum reference resolutions: #{max_resolutions}" if resolved_references.length > max_resolutions
 
         assert(problems.empty?, "\n* " + problems.join("\n* "))
-      end
-
-      def unauthorized?(response_code)
-        # This is intended for tests that are expecting the server to reject a
-        # resource request due to user not authorizing the application for that
-        # particular resource.  According to FHIR Security - Access Denied Response Handling
-        # (https://www.hl7.org/fhir/security.html#AccessDenied), Server MAY return 401 "Unauthorized",
-        # 403 "Forbidden", or 404 "Not Found"
-        [401, 403, 404].include?(response_code)
       end
 
       def save_delayed_sequence_references(resources, delayed_sequence_references)
