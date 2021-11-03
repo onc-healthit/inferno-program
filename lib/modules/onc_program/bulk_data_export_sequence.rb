@@ -15,7 +15,7 @@ module Inferno
 
       test_id_prefix 'BDE'
 
-      requires :bulk_url, :bulk_access_token, :bulk_lines_to_validate
+      requires :bulk_url, :bulk_access_token, :bulk_lines_to_validate, :bulk_timeout
 
       attr_accessor :run_all_kick_off_tests
 
@@ -91,6 +91,8 @@ module Inferno
 
       def check_export_status(url = @content_location, timeout: 180)
         skip 'Server response did not have Content-Location in header' unless url.present?
+
+        timeout = @instance.bulk_timeout if @instance.bulk_timeout.positive?
         reply = export_status_check(url, timeout)
 
         # server response status code could be 202 (still processing), 200 (complete) or 4xx/5xx error code

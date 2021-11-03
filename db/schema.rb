@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_08_04_135524) do
+ActiveRecord::Schema.define(version: 2021_10_20_161758) do
 
   create_table "inferno_models_information_messages", id: :string, limit: 500, force: :cascade do |t|
     t.text "message"
@@ -225,6 +225,7 @@ ActiveRecord::Schema.define(version: 2021_08_04_135524) do
     t.text "onc_visual_token_revocation_notes"
     t.string "onc_visual_native_application", limit: 50, default: "false"
     t.text "onc_visual_native_application_notes"
+    t.integer "bulk_timeout", default: 180
   end
 
 end

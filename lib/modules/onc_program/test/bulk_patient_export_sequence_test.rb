@@ -234,7 +234,8 @@ class BulkDataPatientExportSequenceTest < MiniTest::Test
       oauth_authorize_endpoint: 'http://oauth_reg.example.com/authorize',
       oauth_token_endpoint: 'http://oauth_reg.example.com/token',
       scopes: 'launch openid patient/*.* profile',
-      bulk_access_token: 99_897_979
+      bulk_access_token: 99_897_979,
+      bulk_timeout: 0
     )
 
     @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'r4'))

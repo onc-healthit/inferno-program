@@ -739,6 +739,18 @@
               ),              
               value: instance.bulk_lines_to_validate}); %>
 
+        <%= erb(:prerequisite_field,{},{prerequisite: :bulk_timeout,
+              instance: instance,
+              label: 'Export times out after',
+              description: %(
+                While testing, Inferno waits for the server to complete the exporting task. Inferno calculates the timeout as: 
+                totalTime = currentTimestamp - startTimestamp + waitTime. If the server supplies a Retry-After header with a delay time in seconds, 
+                Inferno uses the Retry-After value as waitTime. If the server does not supply a Retry-After header, Inferno
+                uses the exponential backoff approach mentioned in Bulk Data Export. If the calculated totalTime is greater than the timeout value
+                specified here, the Inferno bulk client stops testing.
+                Please enter an integer for the maxium wait time (in seconds).                 
+              ),              
+              value: instance.bulk_timeout}); %>
 
      
       </div>

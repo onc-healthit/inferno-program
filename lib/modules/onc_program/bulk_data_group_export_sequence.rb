@@ -15,7 +15,7 @@ module Inferno
 
       test_id_prefix 'BDGE'
 
-      requires :group_id, :bulk_url, :bulk_access_token, :bulk_lines_to_validate
+      requires :group_id, :bulk_url, :bulk_access_token, :bulk_lines_to_validate, :bulk_timeout
 
       def endpoint
         'Group'
