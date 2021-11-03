@@ -74,9 +74,6 @@ module Inferno
           }.freeze,
           {
             path: 'value.code'
-          }.freeze,
-          {
-            path: 'dataAbsentReason'
           }.freeze
         ].freeze
       }.freeze

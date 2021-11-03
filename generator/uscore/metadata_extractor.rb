@@ -274,11 +274,6 @@ module Inferno
       def add_must_support_elements(profile_definition, sequence)
         profile_elements = profile_definition['snapshot']['element']
         profile_elements.select { |el| el['mustSupport'] }.each do |element|
-          # not including components in vital-sign profiles because they don't make sense outside of BP
-          next if profile_definition['baseDefinition'] == 'http://hl7.org/fhir/StructureDefinition/vitalsigns' && element['path'].include?('component')
-          next if profile_definition['name'] == 'observation-bp' && element['path'].include?('Observation.value[x]')
-          next if profile_definition['name'].include?('Pediatric') && element['path'] == 'Observation.dataAbsentReason'
-
           if element['path'].end_with? 'extension'
             sequence[:must_supports][:extensions] <<
               {
@@ -528,12 +523,6 @@ module Inferno
         medication_request_sequence = metadata[:sequences].find { |sequence| sequence[:resource] == 'MedicationRequest' }
         set_first_search(medication_request_sequence, ['patient', 'intent'])
 
-        pulse_ox_sequence = metadata[:sequences].find { |sequence| sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-pulse-oximetry' }
-        pulse_ox_sequence[:must_supports][:elements].delete_if do |element|
-          path = element[:path]
-          (path.start_with? 'component.value') && (!path.include? '[x]') && (path != 'component.valueQuantity')
-        end
-
         # remove carrierAIDC and carrierHRF from implantable device must supports
         implantable_device_sequence = metadata[:sequences].find { |sequence| sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device' }
         implantable_device_sequence[:must_supports][:elements].delete_if do |element|
@@ -546,6 +535,45 @@ module Inferno
         document_reference_sequence[:must_supports][:elements].delete_if do |element|
           ['content.attachment.data', 'content.attachment.url'].include? element[:path]
         end
+
+        # exclude component from vital sign profiles except observation-bp and observation-pulse-ox
+        # observation-bp is excluded by profile_definition['differential']['element'].any? { |el| el['path'] == 'Observation.component' }
+        # observation-plux-ox is excluded by profile_definition['baseDefinition'] == 'http://hl7.org/fhir/StructureDefinition/vitalsigns'
+        unchanged_vital_sign_sequences = metadata[:sequences].select do |sequence|
+          base_path = get_base_path(sequence[:profile])
+          profile_definition = @resource_by_path[base_path]
+          is_vital_sign = profile_definition['baseDefinition'] == 'http://hl7.org/fhir/StructureDefinition/vitalsigns'
+          profile_changes_component = profile_definition['differential']['element'].any? { |el| el['path'] == 'Observation.component' }
+          is_vital_sign && !profile_changes_component
+        end
+
+        unchanged_vital_sign_sequences.each do |sequence|
+          sequence[:must_supports][:elements].delete_if do |element|
+            element[:path].include?('component')
+          end
+        end
+
+        # remove MS check for value[x] from Observation-bp
+        # Observation-bp profile uses Observation.component.value for Systolic and Diastolic pressures
+        bp_sequence = metadata[:sequences].find { |sequence| sequence[:profile] == 'http://hl7.org/fhir/StructureDefinition/bp' }
+        bp_sequence[:must_supports][:elements].delete_if do |element|
+          element[:path] == 'value[x]'
+        end
+        bp_sequence[:must_supports][:slices].delete_if do |slice|
+          slice[:path] == 'value[x]'
+        end
+
+        # ONC clarified that health IT developers that always provide HL7 FHIR "observation" values
+        # are not required to demonstrate Health IT Module support for "dataAbsentReason" elements.
+        # Remove MS check for dataAbsentReason and component.dataAbsentReason from vital sign profiles
+        metadata[:sequences]
+          .select { |sequence| sequence[:resource] == 'Observation' }
+          .each do |sequence|
+            sequence[:must_supports][:elements].delete_if do |element|
+              ['dataAbsentReason', 'component.dataAbsentReason'].include?(element[:path])
+            end
+          end
+
         metadata
       end
 

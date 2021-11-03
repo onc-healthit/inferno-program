@@ -22,6 +22,40 @@ module Inferno
                 }.freeze
               ].freeze
             }.freeze
+          }.freeze,
+          {
+            name: 'Observation.component:SystolicBP',
+            path: 'component',
+            discriminator: {
+              type: 'value',
+              values: [
+                {
+                  path: 'code.coding.code',
+                  value: '8480-6'
+                }.freeze,
+                {
+                  path: 'code.coding.system',
+                  value: 'http://loinc.org'
+                }.freeze
+              ].freeze
+            }.freeze
+          }.freeze,
+          {
+            name: 'Observation.component:DiastolicBP',
+            path: 'component',
+            discriminator: {
+              type: 'value',
+              values: [
+                {
+                  path: 'code.coding.code',
+                  value: '8462-4'
+                }.freeze,
+                {
+                  path: 'code.coding.system',
+                  value: 'http://loinc.org'
+                }.freeze
+              ].freeze
+            }.freeze
           }.freeze
         ].freeze,
         elements: [
@@ -52,7 +86,27 @@ module Inferno
             path: 'effective'
           }.freeze,
           {
-            path: 'dataAbsentReason'
+            path: 'component'
+          }.freeze,
+          {
+            path: 'component.value.system',
+            fixed_value: 'http://unitsofmeasure.org'
+          }.freeze,
+          {
+            path: 'component.value.code',
+            fixed_value: 'mm[Hg]'
+          }.freeze,
+          {
+            path: 'component.code'
+          }.freeze,
+          {
+            path: 'component.value'
+          }.freeze,
+          {
+            path: 'component.value.value'
+          }.freeze,
+          {
+            path: 'component.value.unit'
           }.freeze
         ].freeze
       }.freeze

@@ -658,7 +658,6 @@ module Inferno
             * category.coding.code
             * category.coding.system
             * code
-            * dataAbsentReason
             * effective[x]
             * status
             * subject

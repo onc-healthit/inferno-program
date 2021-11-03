@@ -125,9 +125,6 @@ module Inferno
             fixed_value: '%'
           }.freeze,
           {
-            path: 'dataAbsentReason'
-          }.freeze,
-          {
             path: 'component'
           }.freeze,
           {
@@ -161,9 +158,6 @@ module Inferno
           {
             path: 'component.value.code',
             fixed_value: '%'
-          }.freeze,
-          {
-            path: 'component.dataAbsentReason'
           }.freeze
         ].freeze
       }.freeze
