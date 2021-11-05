@@ -5,8 +5,8 @@ module Inferno
     class << self
       def config
         @config =
-          if File.file? 'terminology_config.yml'
-            YAML.load_file('terminology_config.yml')
+          if File.file? File.join('resources', 'terminology', 'terminology_config.yml')
+            YAML.load_file(File.join('resources', 'terminology', 'terminology_config.yml')).presence || {}
           else
             {}
           end

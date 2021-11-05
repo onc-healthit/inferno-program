@@ -5,12 +5,11 @@ services:
       context: ./
     volumes:
       - ./config.yml:/var/www/inferno/config.yml
-      - ./terminology_config.yml:/var/www/inferno/terminology_config.yml
       - ./data:/var/www/inferno/data
       - ./batch:/var/www/inferno/batch
       - type: bind
-        source: "./resources/terminology/validators"
-        target: "/var/www/inferno/resources/terminology/validators"
+        source: "./resources/terminology"
+        target: "/var/www/inferno/resources/terminology"
     depends_on:
       - validator_service
   validator_service:
