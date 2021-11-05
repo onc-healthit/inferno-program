@@ -26,22 +26,31 @@
       Nucleic Acids Res. 2004 Jan 1;32(Database issue):D267-70. doi: 10.1093/nar/gkh061.
       PubMed PMID: 14681409; PubMed Central PMCID: PMC308795.
     </p>
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Code System Name</th>
-          <th>Code System Versions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% Inferno::TerminologyConfiguration.allowed_systems_metadata&.each_value do |system| %>
+    <% if Inferno::Terminology.code_system_metadata.blank? && Inferno::Terminology.loaded_validators.present? %>
+    <p>
+      <strong>Note:</strong> The terminology loading system must be re-run in order to display which CodeSystems have been
+      loaded.  Please refer to the <a href='https://github.com/onc-healthit/inferno-program#terminology-support' target='blank'>README</a>
+      for information on how to load terminology.
+    </p>
+
+    <% else %>
+      <table class="table table-striped">
+        <thead>
           <tr>
-            <td><%= system[:name] %></td>
-            <td><%= system[:versions].join(', ') %></td>
+            <th>Code System Name</th>
+            <th>Code System Versions</th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% Inferno::TerminologyConfiguration.allowed_systems_metadata&.each_value do |system| %>
+            <tr>
+              <td><%= system[:name] %></td>
+              <td><%= system[:versions].join(', ') %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
   </div>
   <div>
     <h4>ValueSets and CodeSystems Currently Loaded</h4>
