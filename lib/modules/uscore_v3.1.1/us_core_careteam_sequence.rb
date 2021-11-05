@@ -433,37 +433,48 @@ module Inferno
         end
 
         skip_if_known_search_not_supported('CareTeam', ['patient', 'status'])
-
         resolved_one = false
+        composite_or_parameters = ['status']
 
-        found_second_val = false
         patient_ids.each do |patient|
           next unless @care_team_ary[patient].present?
 
           search_params = {
             'patient': patient,
-            'status': get_value_for_search_param(resolve_element_from_path(@care_team_ary[patient], 'status') { |el| get_value_for_search_param(el).present? })
+            'status': 'proposed,active,suspended,inactive,entered-in-error'
           }
 
-          next if search_params.any? { |_param, value| value.nil? }
+          existing_values = {
+            status: []
+          }
+
+          missing_values = {
+            status: []
+          }
+
+          composite_or_parameters.each do |param|
+            existing_values[param.to_sym] = @care_team_ary[patient].map(&param.to_sym).compact.uniq
+          end
+
+          next if existing_values.values.any?(&:empty?)
 
           resolved_one = true
 
-          second_status_val = resolve_element_from_path(@care_team_ary[patient], 'status') { |el| get_value_for_search_param(el) != search_params[:status] }
-          next if second_status_val.nil?
-
-          found_second_val = true
-          search_params[:status] += ',' + get_value_for_search_param(second_status_val)
           reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params)
           validate_search_reply(versioned_resource_class('CareTeam'), reply, search_params)
           assert_response_ok(reply)
           resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-          missing_values = search_params[:status].split(',').reject do |val|
-            resolve_element_from_path(resources_returned, 'status') { |val_found| val_found == val }
+
+          composite_or_parameters.each do |param|
+            missing_values[param.to_sym] = existing_values[param.to_sym] - resources_returned.map(&param.to_sym)
           end
-          assert missing_values.blank?, "Could not find #{missing_values.join(',')} values from status in any of the resources returned"
+
+          missing_value_message = missing_values.reject { |_k, v| v.empty? }.map { |k, v| "#{v.join(',')} values from #{k}" }.join(' and ')
+
+          assert missing_value_message.blank?, "Could not find #{missing_value_message} in any of the resources returned"
+
+          break if resolved_one
         end
-        skip 'Cannot find second value for status to perform a multipleOr search' unless found_second_val
       end
 
       test 'Every reference within CareTeam resources can be read.' do
