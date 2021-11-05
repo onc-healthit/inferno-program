@@ -59,7 +59,7 @@ describe Inferno::Sequence::OncStandaloneLaunchSequence do
       @instance.received_scopes = @sequence.required_scopes.join(' ')
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal 'Patient-level scope in the format: `patient/[ resource | * ].[ read | *]` was not received.', exception.message
+      assert_match(/^Request scopes .* were not granted by authorization server./, exception.message)
     end
 
     it 'fails when a badly formatted scope was requested' do
@@ -79,22 +79,28 @@ describe Inferno::Sequence::OncStandaloneLaunchSequence do
       assert_equal "'#{bad_resource_type}' must be either a valid resource type or '*'", exception.message
     end
 
-    it 'fails when a badly formatted scope was received' do
-      bad_scopes = ['patient/*/*', 'user/*.read', 'patient/*.*.*', 'patient/*.write']
+    it 'fails when not all patient compartment scopes were received' do
+      scopes = ['patient/Patient.read', 'patient/Condition.read', 'patient/Obervation.read']
       @instance.onc_sl_scopes = good_scopes
 
-      bad_scopes.each do |scope|
-        @instance.received_scopes = (@sequence.required_scopes + [scope]).join(' ')
-        exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
-
-        assert_equal "Received scope '#{scope}' does not follow the format: `patient/[ resource | * ].[ read | * ]`", exception.message
-      end
-
-      bad_resource_type = 'ValueSet'
-      @instance.received_scopes = @sequence.required_scopes.join(' ') + " patient/#{bad_resource_type}.*"
+      @instance.received_scopes = (@sequence.required_scopes + scopes).join(' ')
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal "'#{bad_resource_type}' must be either a valid resource type or '*'", exception.message
+      assert_match(/^Request scopes .* were not granted by authorization server./, exception.message)
+    end
+
+    it 'succeeds when server grants additional scopes' do
+      @instance.onc_sl_scopes = good_scopes
+      @instance.received_scopes = good_scopes + ' launch launch/encounter patient/Binary.read user/ValueSet.read'
+      @sequence.run_test(@test)
+    end
+
+    it 'succeeds when server grants additional non standard SMART scopes' do
+      scopes = ['abc', 'patient/*/*', 'patient/.', 'patient/*.', 'patient/*.*.*', 'patient/*.write']
+      @instance.onc_sl_scopes = good_scopes
+
+      @instance.received_scopes = good_scopes + " #{scopes.join(' ')}"
+      @sequence.run_test(@test)
     end
 
     it 'succeeds when the required scopes and a patient-level scope are present' do

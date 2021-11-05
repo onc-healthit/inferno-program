@@ -146,6 +146,52 @@ module Inferno
         skip_if @params.blank? || @params['error'].present?, oauth_redirect_failed_message
       end
 
+      def requested_scope_test(scopes, patient_compartment_resource_types, patient_or_user)
+        patient_scope_found = false
+
+        scopes.each do |scope|
+          bad_format_message = "Requested scope '#{scope}' does not follow the format: `#{patient_or_user}/[ resource | * ].[ read | * ]`"
+
+          scope_pieces = scope.split('/')
+          assert scope_pieces.count == 2, bad_format_message
+
+          resource_access = scope_pieces[1].split('.')
+          bad_resource_message = "'#{resource_access[0]}' must be either a valid resource type or '*'"
+
+          if patient_or_user == 'patient' && patient_compartment_resource_types.exclude?(resource_access[0])
+            assert ['user', 'patient'].include?(scope_pieces[0]), "Requested scope '#{scope}' must begin with either 'user/' or 'patient/'"
+          else
+            assert scope_pieces[0] == patient_or_user, bad_format_message
+          end
+
+          assert resource_access.count == 2, bad_format_message
+          assert valid_resource_types.include?(resource_access[0]), bad_resource_message
+          assert resource_access[1] =~ /^(\*|read)/, bad_format_message
+
+          patient_scope_found = true
+        end
+
+        assert patient_scope_found, "#{patient_or_user.capitalize}-level scope in the format: `#{patient_or_user}/[ resource | * ].[ read | *]` was not requested."
+      end
+
+      def received_scope_test(scopes, patient_compartment_resource_types)
+        granted_resource_types = []
+
+        scopes.each do |scope|
+          scope_pieces = scope.split('/')
+          next unless scope_pieces.count == 2
+
+          resource_access = scope_pieces[1].split('.')
+          next unless resource_access.count == 2
+
+          granted_resource_types << resource_access[0] if resource_access[1] =~ /^(\*|read)/
+        end
+
+        missing_resource_types = granted_resource_types.include?('*') ? [] : (patient_compartment_resource_types - granted_resource_types - ['*'])
+
+        assert missing_resource_types.empty?, "Request scopes #{missing_resource_types.join(', ')} were not granted by authorization server."
+      end
+
       module ClassMethods
         def auth_endpoint_tls_test(index:)
           test :auth_endpoint_tls do
@@ -381,6 +427,25 @@ module Inferno
 
             skip_if_auth_failed
 
+            # ONC CCG: health IT developers are permitted to scope US Core IG resources that do not exist in either the standard adopted at 170.213 (USCDI version 1)
+            # or the "Compartment Patient" section of the standard adopted at 170.215(a)(1) (HL7 FHIR Release 4.0.1) as either patient/[Resource] or user/[Resource].
+            patient_compartment_resource_types = [
+              '*',
+              'Patient',
+              'AllergyIntolerance',
+              'CarePlan',
+              'CareTeam',
+              'Condition',
+              'DiagnosticReport',
+              'DocumentReference',
+              'Goal',
+              'Immunization',
+              'MedicationRequest',
+              'Observation',
+              'Procedure',
+              'Provenance'
+            ].freeze
+
             [
               {
                 scopes: instance_scopes || '',
@@ -398,37 +463,16 @@ module Inferno
               assert missing_scopes.empty?, "Required scopes were not #{received_or_requested}: #{missing_scopes.join(', ')}"
 
               scopes -= required_scopes
-              # Other 'okay' scopes
-              scopes.delete('online_access')
 
-              patient_scope_found = false
+              # Other 'okay' scopes. Also scopes may include both 'launch' and 'launch/patient' for EHR launch and Standalone launch.
+              # 'launch/encounter' is mentioned by SMART App Launch though not in (g)(10) test procedure
+              scopes -= ['online_access', 'launch', 'launch/patient', 'launch/encounter']
 
-              scopes.each do |scope|
-                bad_format_message = "#{received_or_requested.capitalize} scope '#{scope}' does not follow the format: `#{patient_or_user}/[ resource | * ].[ read | * ]`"
-                scope_pieces = scope.split('/')
-
-                assert scope_pieces.count == 2, bad_format_message
-
-                resource_access = scope_pieces[1].split('.')
-                bad_resource_message = "'#{resource_access[0]}' must be either a valid resource type or '*'"
-
-                non_patient_compartment_resources = ['Encounter', 'Device', 'Location', 'Medication', 'Organization',
-                                                     'Practitioner', 'PractitionerRole', 'RelatedPerson']
-
-                if patient_or_user == 'patient' && non_patient_compartment_resources.include?(resource_access[0])
-                  assert ['user', 'patient'].include?(scope_pieces[0]), "#{received_or_requested.capitalize} scope '#{scope}' must begin with either 'user/' or 'patient/'"
-                else
-                  assert scope_pieces[0] == patient_or_user, bad_format_message
-                end
-
-                assert resource_access.count == 2, bad_format_message
-                assert valid_resource_types.include?(resource_access[0]), bad_resource_message
-                assert resource_access[1] =~ /^(\*|read)/, bad_format_message
-
-                patient_scope_found = true
+              if received_or_requested == 'requested'
+                requested_scope_test(scopes, patient_compartment_resource_types, patient_or_user)
+              else
+                received_scope_test(scopes, patient_compartment_resource_types)
               end
-
-              assert patient_scope_found, "#{patient_or_user.capitalize}-level scope in the format: `#{patient_or_user}/[ resource | * ].[ read | *]` was not #{received_or_requested}."
             end
           end
         end
