@@ -288,6 +288,22 @@ class SequenceBaseTest < MiniTest::Test
       assert_raises(Inferno::AssertionException) { @sequence.validate_reference_resolutions(@resource) }
     end
 
+    it 'raises an error if accessing external reference is rejected and the reference is a US Core resource' do
+      stub_request(:get, "#{@base_url}/#{@practitioner_reference_url}")
+        .to_return(status: 401, body: FHIR::OperationOutcome.new.to_json)
+
+      assert_raises(Inferno::AssertionException) { @sequence.validate_reference_resolutions(@resource) }
+    end
+
+    it 'passes if accessing external reference is rejected and the reference is not a US Core resource' do
+      service_request_reference_url = 'ServiceRequest/123'
+      observation_resource = FHIR::Observation.new(basedOn: [FHIR::Reference.new(reference: service_request_reference_url)])
+      stub_request(:get, "#{@base_url}/#{service_request_reference_url}")
+        .to_return(status: 401, body: FHIR::OperationOutcome.new.to_json)
+
+      @sequence.validate_reference_resolutions(observation_resource)
+    end
+
     it 'raises an error if a contained reference does not exist' do
       invalid_contained_resource = FHIR.from_contents(@resource.to_json)
       invalid_contained_resource.managingOrganization.reference = '#bad_reference'
