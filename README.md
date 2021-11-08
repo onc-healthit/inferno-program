@@ -163,8 +163,6 @@ Running instances of Inferno can be configured to exclude terminology validation
 for codes based on applicable categories of additional restrictions, as defined
 by the [UMLS license
 agreement](https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/license_agreement.html).
-instances of Inferno can be configured to not validate codes in CodeSystems
-based on these categories, or based on individual CodeSystems.
 
 By default, Inferno will not restrict validation of codes. To configure an
 instance of Inferno to exclude certain CodeSystems for validation, rename the
