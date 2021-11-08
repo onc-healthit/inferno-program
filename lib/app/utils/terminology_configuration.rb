@@ -39,6 +39,7 @@ module Inferno
 
       def system_allowed?(url)
         return true if explicitly_allowed_systems.include?(url)
+        return false if explicitly_prohibited_systems.include?(url)
 
         !prohibited_license_restriction_levels.include?(Terminology.code_system_metadata.dig(url, :restriction_level))
       end
