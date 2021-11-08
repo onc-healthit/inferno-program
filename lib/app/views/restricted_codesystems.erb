@@ -1,0 +1,17 @@
+<% if @restricted_codesystems.present? %>
+  <div class="row">
+    <div class="col">
+      <div class="container row row-no-padding" style="margin:auto;" >
+        <div class="col-12">
+          <div class="alert alert-secondary" role="alert" style="margin-top: 2rem; margin-bottom: 0;">
+            This running instance of Inferno does not validate codes from the <%=@restricted_codesystems.join(', ')%> CodeSystem(s) due
+            to licensing restrictions.  A warning will presented within tests if codes from these CodeSystems are encountered.  Please visit
+            <a href="https://github.com/onc-healthit/inferno-program#installation-and-deployment" target="_blank">the README</a> for information on downloading Inferno and loading these CodeSystems locally.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <div style="margin-top:50px"><!--buffer--></div>
+<% end %>

@@ -55,7 +55,11 @@ module Inferno
 
     def self.code_system_metadata
       @code_system_metadata ||=
-        YAML.load_file('resources/terminology/validators/bloom/metadata.yml')
+        if File.file? File.join('resources', 'terminology', 'validators', 'bloom', 'metadata.yml')
+          YAML.load_file(File.join('resources', 'terminology', 'validators', 'bloom', 'metadata.yml'))
+        else
+          {}
+        end
     end
 
     def self.load_valuesets_from_directory(directory, include_subdirectories = false)

@@ -80,6 +80,9 @@ module Inferno
         end
         modules = settings.modules.map { |m| Inferno::Module.get(m) }.compact
         @missing_validators = Inferno::Terminology.missing_validators
+        @restricted_codesystems = Inferno::TerminologyConfiguration.prohibited_systems.map do |code_system|
+          Inferno::Terminology.code_system_metadata[code_system][:abbreviation]
+        end
 
         erb :index_onc_program, {}, modules: modules, presets: presets, hide_header: true
       end

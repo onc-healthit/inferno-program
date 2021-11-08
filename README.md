@@ -123,6 +123,14 @@ Once the terminology building is done, the `.env` file should be deleted to remo
 
 Optionally, the files and folders in `tmp/terminology/` can be deleted after terminology building to free up space, as they are several GB in size. If you intend to re-run the terminology builder, these files can be left to speed up building in the future, since the builder will be able to skip the initial download/preprocessing steps.
 
+#### Verifying a Successful Terminology Build
+
+The following rake task will check that the built terminology contains the expected number of codes for each system:
+
+```ruby
+bundle exec rake terminology:check_built_terminology
+```
+
 #### Spot Checking the Terminology Files
 
 You can use the following `rake` command to spot check the validators to make sure they are installed correctly:
