@@ -202,11 +202,44 @@ For alternate installation options, please visit <a href='https://github.com/onc
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
 
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.8.0</div>
+    <p>
+      The Inferno Program Edition v1.8.0 release fixes a number of issues that may incorrectly cause systems to fail tests.
+      It also includes a minor fixes not directly related to test execution.
+      This release may result in some systems that previously passed to now fail due to additional MustSupport validations.
+    </p>
+    <p>
+      <i>Notice: Users that run Inferno Program Edition locally SHOULD rerun terminology build process, 
+      as 2021 version of some Code Systems are included in this release.
+      Please see <a href="https://github.com/onc-healthit/inferno-program/#terminology-support">the README</a> for instructions on how to
+      update your local copy of terminology files. Users MAY run this release without rebuilding terminology though tests may fail to 
+      validate codings from newer version of Code Systems.</i>
+    </p>    
+    <p>This version includes updates that:</p>
+    <ul>
+      <li>Adds MustSupport validation for Observation.component in FHIR Blood Pressue profile</li>
+      <li>Removes MustSupport validation for dataAbsentReason in Observation profiles so that systems that never provide Observation resources without a value are not required to support dataAbsentReason</li>
+      <li>Updates MustSupport validation on DocumentReference resources so that servers do not need to demonstrate support for both content.attachment.url and content.attachment.data</li>
+      <li>Updates composite-or searches focusing on server's search capabilities with multiple values</li>
+      <li>Allows authorization servers to grant additional scopes beyond what was requested by clients</li>
+      <li>Allows tester to include Person.read scopes in requested scope
+      <li>Restricts reference resolution and validation to US Core resources so that servers can reference resources outside of what clients have been granted</li>
+      <li>Removes check within the Bulk Data Export tests (BDE-02) that required systems to reject export requests with content-type other than what specified in Bulk Data Access IG v1.0.0</li>
+      <li>Adds UI input field for Bulk Data Export timeout setting</li>
+      <li>Adds system/Patient.read to the default Bulk Data scopes</li>
+      <li>Update terminology to newer version</li>
+    </ul>
+    </p>
+    <p>
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_8_0.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure.
+    </p>
+
     <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.7.0</div>
     <p>
     The Inferno Program Edition v1.7.0 release fixes a number of issues that may incorrectly cause systems to fail tests.
     It also includes a minor fixes not directly related to test execution.
-    This release may result in some systems that previously passed to now fail due to additional search tests.
+    This release may result in some systems that previously passed to now fail due to additional id data type validation.
     </p>
     <p>This version includes updates that:</p>
     <ul>
