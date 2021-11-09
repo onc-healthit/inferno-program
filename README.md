@@ -157,6 +157,23 @@ Should return:
 ✓ http://snomed.info/sct|91935009  is in http://snomed.info/sct
 ```
 
+#### Restricting access to CodeSystems based on licensing terms
+
+Running instances of Inferno can be configured to exclude terminology validation
+for codes based on applicable categories of additional restrictions, as defined
+by the [UMLS license
+agreement](https://www.nlm.nih.gov/research/umls/knowledge_sources/metathesaurus/release/license_agreement.html).
+
+By default, Inferno will not restrict validation of codes. To configure an
+instance of Inferno to exclude certain CodeSystems for validation, rename the
+`resources/terminology/terminology_config.yml.example` to
+`terminology_config.yml`, and update the file based on the example content.
+Inferno will provide an informational message on the landing page that describes
+which CodeSystems will not be validated in this running instance based on this
+configuration file.  If Inferno tests receive a code from an excluded
+CodeSystem, a warning indicating that Inferno cannot validate the code will be
+provided along with the test result.
+
 #### Manual build instructions
 
 If this Docker-based method does not work based on your architecture, manual setup and creation of the terminology validators is documented [on this wiki page](https://github.com/onc-healthit/inferno/wiki/Installing-Terminology-Validators#building-the-validators-without-docker)
