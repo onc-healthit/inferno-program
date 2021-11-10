@@ -195,10 +195,6 @@ module Inferno
             search_with_type.select! { |resource| resource.resourceType == 'CareTeam' }
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
-            search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-            search_with_type.select! { |resource| resource.resourceType == 'CareTeam' }
-            assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
-
             # Search by POST variant
             reply = get_resource_by_params(versioned_resource_class('CareTeam'), search_params, search_method: :post)
 
