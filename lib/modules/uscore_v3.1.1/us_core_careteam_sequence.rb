@@ -386,6 +386,7 @@ module Inferno
 
             * participant
             * participant.member
+            * participant.member.reference(US Core Patient Profile | US Core Practitioner Profile | US Core Organization Profile)
             * participant.role
             * status
             * subject
@@ -409,6 +410,13 @@ module Inferno
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        reference_found = @care_team_ary&.values&.flatten&.any? do |resource|
+          resource.participant&.any? do |participant|
+            participant.member&.reference&.match(%r{^(\S+/)?(Patient|Practitioner|Organization)/\S+})
+          end
+        end
+        missing_must_support_elements.append('Reference(US Core Patient Profile | US Core Practitioner Profile | US Core Organization Profile)') unless reference_found
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@care_team_ary&.values&.flatten&.length} provided CareTeam resource(s)"
