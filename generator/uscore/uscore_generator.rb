@@ -627,7 +627,7 @@ module Inferno
           must_support_list.append('* udiCarrier.carrierAIDC or udiCarrier.carrierHRF')
         when 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           is_careteam = true
-          must_support_list.append('* participant.member.reference(US Core Patient Profile | US Core Practitioner Profile | US Core Organization Profile)')
+          must_support_list.append('* participant.member.reference(US Core Patient Profile or US Core Practitioner Profile or US Core Organization Profile)')
         end
 
         test = {
@@ -707,7 +707,7 @@ module Inferno
                   participant.member&.reference&.match(%r{^(\\S+/)?(Patient|Practitioner|Organization)/\\S+})
                 end
               end
-              missing_must_support_elements.append('Reference(US Core Patient Profile | US Core Practitioner Profile | US Core Organization Profile)') unless reference_found
+              missing_must_support_elements.append('participant.memeber.reference(US Core Patient Profile or US Core Practitioner Profile or US Core Organization Profile)') unless reference_found
             )
           end
 

@@ -386,7 +386,7 @@ module Inferno
 
             * participant
             * participant.member
-            * participant.member.reference(US Core Patient Profile | US Core Practitioner Profile | US Core Organization Profile)
+            * participant.member.reference(US Core Patient Profile or US Core Practitioner Profile or US Core Organization Profile)
             * participant.role
             * status
             * subject
@@ -416,7 +416,7 @@ module Inferno
             participant.member&.reference&.match(%r{^(\S+/)?(Patient|Practitioner|Organization)/\S+})
           end
         end
-        missing_must_support_elements.append('Reference(US Core Patient Profile | US Core Practitioner Profile | US Core Organization Profile)') unless reference_found
+        missing_must_support_elements.append('participant.memeber.reference(US Core Patient Profile or US Core Practitioner Profile or US Core Organization Profile)') unless reference_found
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@care_team_ary&.values&.flatten&.length} provided CareTeam resource(s)"
