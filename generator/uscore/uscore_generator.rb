@@ -707,7 +707,10 @@ module Inferno
                   participant.member&.reference&.match(%r{^(\\S+/)?(Patient|Practitioner|Organization)/\\S+})
                 end
               end
-              missing_must_support_elements.append('participant.memeber.reference(US Core Patient Profile or US Core Practitioner Profile or US Core Organization Profile)') unless reference_found
+
+              unless reference_found
+                missing_must_support_elements.append('participant.memeber.reference(US Core Patient Profile or US Core Practitioner Profile or US Core Organization Profile)')
+              end
             )
           end
 
