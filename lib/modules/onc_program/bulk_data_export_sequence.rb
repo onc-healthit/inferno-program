@@ -47,7 +47,6 @@ module Inferno
         conformance = versioned_resource_class.from_contents(reply.body)
         assert conformance.present?, 'Cannot read server CapabilityStatement.'
 
-        # assert operation.present?, 'Server CapabilityStatement did not declare support for export operation in Group resource.'
         has_export = conformance.rest&.any? do |rest|
           rest.resource&.any? do |resource|
             resource.type == 'Group' &&
