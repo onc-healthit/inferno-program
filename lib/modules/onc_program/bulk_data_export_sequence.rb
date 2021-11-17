@@ -51,7 +51,7 @@ module Inferno
           rest.resource&.any? do |resource|
             resource.type == 'Group' &&
               resource.respond_to?(:operation) &&
-              resource.operation&.find { |op| op.definition.match(%r{^http://hl7.org/fhir/uv/bulkdata/OperationDefinition/group-export(\|\S*)?}) }
+              resource.operation&.find { |op| op.definition.match(%r{^http://hl7.org/fhir/uv/bulkdata/OperationDefinition/group-export(\|\S+)?}) }
           end
         end
 
