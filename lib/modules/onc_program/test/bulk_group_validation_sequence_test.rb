@@ -49,7 +49,8 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       stub_request(:get, @patient_file_location)
       .with(headers: @file_request_headers)
       .to_return(
-        status: 500  
+        status: 301,
+        headers: {location: 'http://nowhere.com'}
       )
 
       @sequence.run_test(@test)
