@@ -938,12 +938,10 @@ module Inferno
 
               reply = get_resource_by_params(versioned_resource_class('#{sequence[:resource]}'), search_params)
               validate_search_reply(versioned_resource_class('#{sequence[:resource]}'), reply, search_params)
-              assert_response_ok(reply)
               resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
-
-
+              applicable_resources_returned = resources_returned.reject { |entry| entry.class == FHIR::OperationOutcome }
               composite_or_parameters.each do |param|
-                missing_values[param.to_sym] = existing_values[param.to_sym] - resources_returned.map(&param.to_sym)
+                missing_values[param.to_sym] = existing_values[param.to_sym] - applicable_resources_returned.map(&param.to_sym)
               end
 
               missing_value_message = missing_values.reject { |_k, v| v.empty? }.map { |k, v| "\#{v.join(',')} values from \#{k}" }.join(' and ')
