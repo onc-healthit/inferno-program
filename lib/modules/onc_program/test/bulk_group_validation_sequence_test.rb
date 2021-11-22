@@ -9,8 +9,6 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
     @patient_file_location = 'https://www.example.com/patient_export.ndjson'
     @condition_file_location = 'https://www.example.com/condition_export.ndjson'
 
-    @patient_redirect_location = 'https://www.example.com/patient_export_redirect.ndjson'
-
     @patient_export = load_fixture_with_extension('bulk_data_patient.ndjson')
     @condition_export = load_fixture_with_extension('bulk_data_condition.ndjson')
 
