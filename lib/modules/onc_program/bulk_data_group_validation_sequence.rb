@@ -382,6 +382,15 @@ module Inferno
           block_response: response_block
         )
 
+        if ['301', '302', '303', '307'].include?(response.code) && response[:location].present?
+          response = RestClient::Request.execute(
+            method: :get,
+            url: response[:location],
+            headers: headers,
+            block_response: response_block
+          )
+        end
+
         response_for_log = {
           code: response.code,
           headers: response.header,
