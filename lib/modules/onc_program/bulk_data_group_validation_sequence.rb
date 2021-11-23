@@ -375,6 +375,8 @@ module Inferno
           end
         }
 
+        max_redirect = 5
+
         response = RestClient::Request.execute(
           method: :get,
           url: url,
@@ -382,10 +384,16 @@ module Inferno
           block_response: response_block
         )
 
-        if ['301', '302', '303', '307'].include?(response.code) && response[:location].present?
+        while ['301', '302', '303', '307'].include?(response.code) && response[:location].present? && max_redirect.positive?
+          max_redirect -= 1
+          redirect_url = response[:location]
+
+          # handle relative redirects
+          redirect_url = URI.parse(url).merge(redirect_url).to_s unless redirect_url.start_with?('http')
+
           response = RestClient::Request.execute(
             method: :get,
-            url: response[:location],
+            url: redirect_url,
             headers: headers,
             block_response: response_block
           )
