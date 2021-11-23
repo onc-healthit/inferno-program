@@ -47,18 +47,15 @@ module Inferno
         conformance = versioned_resource_class.from_contents(reply.body)
         assert conformance.present?, 'Cannot read server CapabilityStatement.'
 
-        operation = nil
-
-        conformance.rest&.each do |rest|
-          group = rest.resource&.find { |r| r.type == 'Group' && r.respond_to?(:operation) }
-
-          next if group.nil?
-
-          operation = group.operation&.find { |op| op.definition == 'http://hl7.org/fhir/uv/bulkdata/OperationDefinition/group-export' }
-          break if operation.present?
+        has_export = conformance.rest&.any? do |rest|
+          rest.resource&.any? do |resource|
+            resource.type == 'Group' &&
+              resource.respond_to?(:operation) &&
+              resource.operation&.find { |op| op.definition.match(%r{^http://hl7.org/fhir/uv/bulkdata/OperationDefinition/group-export(\|\S+)?}) }
+          end
         end
 
-        assert operation.present?, 'Server CapabilityStatement did not declare support for export operation in Group resource.'
+        assert has_export, 'Server CapabilityStatement did not declare support for export operation in Group resource.'
       end
 
       def check_export_kick_off
