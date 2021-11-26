@@ -29,36 +29,6 @@ module Inferno
 
       show_uris
 
-      def valid_resource_types
-        [
-          '*',
-          'Patient',
-          'AllergyIntolerance',
-          'CarePlan',
-          'CareTeam',
-          'Condition',
-          'Device',
-          'DiagnosticReport',
-          'DocumentReference',
-          'Encounter',
-          'Goal',
-          'Immunization',
-          'Location',
-          'Medication',
-          'MedicationOrder',
-          'MedicationRequest',
-          'MedicationStatement',
-          'Observation',
-          'Organization',
-          'Practitioner',
-          'PractitionerRole',
-          'Procedure',
-          'Provenance',
-          'RelatedPerson',
-          'Person'
-        ]
-      end
-
       def required_scopes
         ['openid', 'fhirUser', 'launch', 'offline_access']
       end

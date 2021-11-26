@@ -13,6 +13,37 @@ module Inferno
         []
       end
 
+      def valid_resource_types
+        [
+          '*',
+          'Patient',
+          'AllergyIntolerance',
+          'Binary',
+          'CarePlan',
+          'CareTeam',
+          'Condition',
+          'Device',
+          'DiagnosticReport',
+          'DocumentReference',
+          'Encounter',
+          'Goal',
+          'Immunization',
+          'Location',
+          'Medication',
+          'MedicationOrder',
+          'MedicationRequest',
+          'MedicationStatement',
+          'Observation',
+          'Organization',
+          'Person',
+          'Practitioner',
+          'PractitionerRole',
+          'Procedure',
+          'Provenance',
+          'RelatedPerson'
+        ]
+      end
+
       def skip_if_no_access_token
         skip_if @instance.token.blank?, 'No access token was received during the SMART launch'
       end

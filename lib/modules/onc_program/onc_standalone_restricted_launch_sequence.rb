@@ -28,36 +28,6 @@ module Inferno
 
       defines :token, :id_token, :refresh_token, :patient_id
 
-      def valid_resource_types
-        [
-          '*',
-          'Patient',
-          'AllergyIntolerance',
-          'CarePlan',
-          'CareTeam',
-          'Condition',
-          'Device',
-          'DiagnosticReport',
-          'DocumentReference',
-          'Encounter',
-          'Goal',
-          'Immunization',
-          'Location',
-          'Medication',
-          'MedicationOrder',
-          'MedicationRequest',
-          'MedicationStatement',
-          'Observation',
-          'Organization',
-          'Practitioner',
-          'PractitionerRole',
-          'Procedure',
-          'Provenance',
-          'RelatedPerson',
-          'Person'
-        ]
-      end
-
       def required_scopes
         ['launch/patient']
       end
