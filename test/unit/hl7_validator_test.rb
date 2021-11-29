@@ -45,7 +45,7 @@ describe Inferno::HL7Validator do
       result = @validator.validate(@resource, FHIR, @profile)
       assert_equal 2, result[:errors].length
       assert_equal 1, result[:warnings].length
-      assert_equal 4, result[:information].length
+      assert_equal 5, result[:information].length
     end
 
     it 'adds Resource id error' do

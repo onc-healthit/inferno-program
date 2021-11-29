@@ -30,6 +30,16 @@
     },
     {
       "severity": "error",
+      "code": "structure",
+      "details": {
+        "text": "The type 'DocumentReference' is not a valid Target for this element (must be one of [])"
+      },
+      "expression": [
+        "Observation.extension[0].value.ofType(Reference)"
+      ]
+    },
+    {
+      "severity": "error",
       "code": "code-invalid",
       "details": {
         "text": "This is a code-invalid error"
