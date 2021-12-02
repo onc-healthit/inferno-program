@@ -393,16 +393,16 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
     end
 
     it 'allows 301 redirect' do
-      patient_redirect_location = 'https://www.example.com/patient_export_redirect.ndjson'
+      patient_new_location = 'https://www.example.com/patient_export_redirect.ndjson'
 
       stub_request(:get, @patient_file_location)
         .with(headers: @file_request_headers)
         .to_return(
           status: 301,
-          headers: { location: patient_redirect_location }
+          headers: { location: patient_new_location }
         )
 
-      stub_request(:get, patient_redirect_location)
+      stub_request(:get, patient_new_location)
         .with(headers: @file_request_headers)
         .to_return(
           status: 200,
@@ -411,6 +411,52 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
         )
 
       @sequence.check_file_request(@file, 'Patient')
+    end
+
+    it 'allows 301 redirect with relative url' do
+      patient_old_location = 'https://www.example.com/old/patient_export_redirect.ndjson'
+      patient_new_location = '/new/patient_export_redirect.ndjson'
+      file = { 'type' => @file['type'], 'url' => patient_old_location, 'count' => @file['count'] }
+
+      stub_request(:get, patient_old_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 301,
+          headers: { location: patient_new_location }
+        )
+
+      stub_request(:get, 'https://www.example.com' + patient_new_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: @patient_export
+        )
+
+      @sequence.check_file_request(file, 'Patient')
+    end
+
+    it 'allows 301 redirect with relative url without /' do
+      patient_old_location = 'https://www.example.com/old/patient_export_redirect.ndjson'
+      patient_new_location = 'new/patient_export_redirect.ndjson'
+      file = { 'type' => @file['type'], 'url' => patient_old_location, 'count' => @file['count'] }
+
+      stub_request(:get, patient_old_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 301,
+          headers: { location: patient_new_location }
+        )
+
+      stub_request(:get, 'https://www.example.com/old/' + patient_new_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: @patient_export
+        )
+
+      @sequence.check_file_request(file, 'Patient')
     end
 
     it 'fails when content-type is invalid' do
