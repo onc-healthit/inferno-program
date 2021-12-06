@@ -617,6 +617,7 @@ module Inferno
                             sequence[:must_supports][:slices].map { |slice| "* #{slice[:name]}" }
 
         is_implantable_device_sequence = false
+        is_careteam = false
 
         case sequence[:profile]
         when 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-documentreference'
@@ -624,6 +625,9 @@ module Inferno
         when 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
           is_implantable_device_sequence = true
           must_support_list.append('* udiCarrier.carrierAIDC or udiCarrier.carrierHRF')
+        when 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
+          is_careteam = true
+          must_support_list.append('* participant.member.reference(US Core Patient Profile or US Core Practitioner Profile or US Core Organization Profile)')
         end
 
         test = {
@@ -693,6 +697,20 @@ module Inferno
               carrier_aidc_found = #{resource_array}&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierAIDC').present? }
               carrier_hrf_found = #{resource_array}&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierHRF').present? }
               missing_must_support_elements.append('udiCarrier.carrierAIDC or udiCarrier.carrierHRF') unless carrier_aidc_found || carrier_hrf_found
+            )
+          end
+
+          if is_careteam
+            test[:test_code] += %(
+              reference_found = #{resource_array}&.any? do |resource|
+                resource.participant&.any? do |participant|
+                  participant.member&.reference&.match(%r{^(\\S+/)?(Patient|Practitioner|Organization)/\\S+})
+                end
+              end
+
+              unless reference_found
+                missing_must_support_elements.append('participant.memeber.reference(US Core Patient Profile or US Core Practitioner Profile or US Core Organization Profile)')
+              end
             )
           end
 
