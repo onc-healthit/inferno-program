@@ -26,7 +26,8 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
       url: 'http://www.example.com',
       bulk_status_output: @status_response.to_json,
       bulk_access_token: 99_897_979,
-      bulk_lines_to_validate: ''
+      bulk_lines_to_validate: '',
+      bulk_redirect_token_required: true
     )
 
     @instance.instance_variable_set(:'@module', OpenStruct.new(fhir_version: 'r4'))
@@ -457,6 +458,29 @@ describe Inferno::Sequence::BulkDataGroupExportValidationSequence do
         )
 
       @sequence.check_file_request(file, 'Patient')
+    end
+
+    it 'remove security header when bulk_redirect_token_required is false' do
+      @instance.bulk_redirect_token_required = false
+      new_headers = @file_request_headers.except(:authorization)
+      patient_new_location = 'https://www.example.com/patient_export_redirect.ndjson'
+
+      stub_request(:get, @patient_file_location)
+        .with(headers: @file_request_headers)
+        .to_return(
+          status: 301,
+          headers: { location: patient_new_location }
+        )
+
+      stub_request(:get, patient_new_location)
+        .with(headers: new_headers)
+        .to_return(
+          status: 200,
+          headers: { content_type: 'application/fhir+ndjson' },
+          body: @patient_export
+        )
+
+      @sequence.check_file_request(@file, 'Patient')
     end
 
     it 'fails when content-type is invalid' do

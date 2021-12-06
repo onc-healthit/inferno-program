@@ -752,7 +752,22 @@
               ),              
               value: instance.bulk_timeout}); %>
 
-     
+      <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_redirect_token_required).map {|seq| seq.sequence_name}.join(',')%>" 
+              data-prerequisite="bulk_redirect_token_required">
+            <label style="display:block">Redirect requires authorization token
+              <small>When Bulk Data server redirects Bulk Data Output File request, 
+                if the same authorization token is required for redirected request.</small>
+            </label>
+            <div class="form-check form-check-inline" data-requiredby>
+              <input class="form-check-input" type="radio" name="redirect_token_yes" id="redirect_token_yes" value="true" <%=instance.bulk_redirect_token_required ? "checked" : "" %>>
+              <label class="form-check-label">Yes</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="redirect_token_no" id="redirect_token_no" value="false" <%=!instance.bulk_redirect_token_required ? "checked" : "" %>>
+              <label class="form-check-label">No</label>
+          </div>
+        </div>
+
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />

@@ -13,8 +13,7 @@ module Inferno
 
       test_id_prefix 'BDGV'
 
-      requires :bulk_status_output, :bulk_lines_to_validate, :bulk_patient_ids_in_group, :bulk_device_types_in_group
-
+      requires :bulk_status_output, :bulk_lines_to_validate, :bulk_patient_ids_in_group, :bulk_device_types_in_group, :bulk_redirect_token_required
       attr_accessor :requires_access_token, :output, :patient_ids_seen
 
       MAX_RECENT_LINE_SIZE = 100
@@ -89,7 +88,7 @@ module Inferno
 
       def check_file_request(file, klass, validate_all = true, lines_to_validate = 0, profile_definitions = [])
         headers = { accept: 'application/fhir+ndjson' }
-        headers['Authorization'] = "Bearer #{@instance.bulk_access_token}" if @requires_access_token && @instance.bulk_access_token.present?
+        headers[:authorization] = "Bearer #{@instance.bulk_access_token}" if @requires_access_token && @instance.bulk_access_token.present?
 
         line_count = 0
         validation_error_collection = {}
@@ -385,6 +384,8 @@ module Inferno
         )
 
         while ['301', '302', '303', '307'].include?(response.code) && response[:location].present? && max_redirect.positive?
+          headers.delete(:authorization) unless @instance.bulk_redirect_token_required
+
           max_redirect -= 1
           redirect_url = response[:location]
 
