@@ -75,9 +75,9 @@ module Inferno
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
             if value.include? '|'
-              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code&.casecmp?(coding_value) }
             else
-              codeable_concept.coding.any? { |coding| coding.code == value }
+              codeable_concept.coding.any? { |coding| coding.code&.casecmp?(value) }
             end
           end
           assert match_found, "category in Condition/#{resource.id} (#{values_found}) does not match category requested (#{value})"
@@ -88,9 +88,9 @@ module Inferno
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
             if value.include? '|'
-              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code&.casecmp?(coding_value) }
             else
-              codeable_concept.coding.any? { |coding| coding.code == value }
+              codeable_concept.coding.any? { |coding| coding.code&.casecmp?(value) }
             end
           end
           assert match_found, "clinical-status in Condition/#{resource.id} (#{values_found}) does not match clinical-status requested (#{value})"
@@ -112,9 +112,9 @@ module Inferno
           coding_value = value.split('|').last
           match_found = values_found.any? do |codeable_concept|
             if value.include? '|'
-              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code == coding_value }
+              codeable_concept.coding.any? { |coding| coding.system == coding_system && coding.code&.casecmp?(coding_value) }
             else
-              codeable_concept.coding.any? { |coding| coding.code == value }
+              codeable_concept.coding.any? { |coding| coding.code&.casecmp?(value) }
             end
           end
           assert match_found, "code in Condition/#{resource.id} (#{values_found}) does not match code requested (#{value})"
