@@ -68,7 +68,7 @@ module Inferno
 
       test_id_prefix 'USCDRRN'
 
-      requires :token, :patient_ids
+      requires :token, :patient_ids, :attachment_requires_token
       conformance_supports :DiagnosticReport
 
       def validate_resource_item(resource, property, value)

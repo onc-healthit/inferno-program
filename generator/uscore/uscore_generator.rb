@@ -62,6 +62,11 @@ module Inferno
           sequence[:versioned_profile] = get_versioned_url(sequence[:profile], sequence[:version])
           sequence[:versioned_base_url] = metadata[:versioned_base_url]
 
+          sequence[:required_variabes] = [':token']
+          sequence[:required_variabes] << ':patient_ids' unless sequence[:delayed_sequence]
+          sequence[:required_variabes] << ':device_codes' if sequence[:resource] == 'Device'
+          sequence[:required_variabes] << ':attachment_requires_token' if ['DocumentReference', 'DiagnosticReport'].include?(sequence[:resource])
+
           # read reference if sequence contains no search sequences
           create_read_test(sequence) if sequence[:delayed_sequence]
 
@@ -101,6 +106,7 @@ module Inferno
           create_must_support_test(sequence)
           create_multiple_or_test(sequence) unless sequence[:delayed_sequence]
           create_references_resolved_test(sequence)
+          create_attachment_test(sequence)
         end
       end
 
@@ -1002,6 +1008,10 @@ module Inferno
                 validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
               end)
         sequence[:tests] << test
+      end
+
+      def create_attachment_test(sequence)
+
       end
 
       def resolve_element_path(search_param_description, delayed_sequence)

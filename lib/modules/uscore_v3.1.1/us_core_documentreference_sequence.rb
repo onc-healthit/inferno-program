@@ -67,7 +67,7 @@ module Inferno
 
       test_id_prefix 'USCDR'
 
-      requires :token, :patient_ids
+      requires :token, :patient_ids, :attachment_requires_token
       conformance_supports :DocumentReference
 
       def validate_resource_item(resource, property, value)
