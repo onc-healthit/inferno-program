@@ -648,6 +648,26 @@
               value: instance.bulk_url,
               })%> 
 
+
+        <div class="form-group"
+          data-requiredby="<%= test_set.variable_required_by(:attachment_requires_token).map {|seq| seq.sequence_name}.join(',')%>"
+          data-prerequisite="attachment_requires_token"
+          id="op_attachment_requires_token"
+          >
+          <label style="display:block">Attachment Requires Access Token
+            <small>The server indicates whether downloading attachments requires access token. If access token is required, attachments must be accessible by a valid access token and SHALL not require 
+            the use of additional authentication credentials.</small>
+          </label>        
+          <div class="form-check form-check-inline" data-requiredby>
+            <input class="form-check-input" type="radio" name="attachment_requires_token" id="attachment_requires_token_on" value="true" <%=instance.attachment_requires_token ? "checked" : "" %>>
+            <label class="form-check-label" for="attachment_requires_token_on_active">Yes</label>
+          </div>            
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="attachment_requires_token" id="attachment_requires_token_off" value="false" <%=!instance.attachment_requires_token ? "checked" : "" %>>
+            <label class="form-check-label" for="attachment_requires_token_off_active">No</label>
+          </div>
+        </div>
+
         <%= erb(:prerequisite_field,{},{prerequisite: :bulk_token_endpoint,
               label: 'Backend Services Token Endpoint',
               description: 'The OAuth 2.0 Token Endpoint used by the Backend Services specification to provide bearer tokens.',

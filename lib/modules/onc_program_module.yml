@@ -141,6 +141,7 @@ test_sets:
           These resources will not be tested for FHIR search support.
         lock_variables: 
           - token
+          - attachment_requires_token
         sequences:
           - UsCoreR4CapabilityStatementSequence
           - USCore311PatientSequence
