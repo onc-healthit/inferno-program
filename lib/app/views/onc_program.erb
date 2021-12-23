@@ -655,8 +655,9 @@
           id="op_attachment_requires_token"
           >
           <label style="display:block">Attachment URL Authorization
-            <small>The server indicates the security mechnism requirement for accessing attachments. If SMART Bearer Token is required, attachments must be accessible by 
-            a valid access token and SHALL not require the use of additional authentication credentials.</small>
+            <small>Select SMART Bearer token if attachments are served from a location that accepts the same bearer token used for the SIngle Patient API.  
+            Select "Self-signed URL" if the attachments encode authorization information within the URL and bearer tokens are not required.  
+            Systems that use "Self-signed URLs" are expected to secure them in a manner consistent with SMART Bearer tokens.</small>
           </label>        
           <div class="form-check form-check-inline" data-requiredby>
             <input class="form-check-input" type="radio" name="attachment_requires_token" id="attachment_requires_token_on" value="true" <%=instance.attachment_requires_token ? "checked" : "" %>>

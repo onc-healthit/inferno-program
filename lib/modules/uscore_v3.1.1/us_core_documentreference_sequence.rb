@@ -807,7 +807,7 @@ module Inferno
         found_one_attachment = false
 
         @document_reference_ary&.values&.flatten&.each do |resource|
-          if validate_attachment_resolutions(resource, ["content.attachment"])
+          if validate_attachment_resolutions(resource, ['content.attachment'])
             found_one_attachment = true
             break
           end
