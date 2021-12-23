@@ -106,7 +106,7 @@ module Inferno
           create_must_support_test(sequence)
           create_multiple_or_test(sequence) unless sequence[:delayed_sequence]
           create_references_resolved_test(sequence)
-          create_attachment_test(sequence) if ['DiagnosticReport', 'DocumentReference'].include?(sequence[:resource])        
+          create_attachment_test(sequence)
         end
       end
 
@@ -1011,6 +1011,8 @@ module Inferno
       end
 
       def create_attachment_test(sequence)
+        return unless sequence[:attachments].present? && sequence[:attachments].any?
+
         test = {
           tests_that: "Every attachment within #{sequence[:resource]} resources can be read.",
           index: sequence[:tests].length + 1,
@@ -1029,12 +1031,12 @@ module Inferno
               found_one_attachment = false
 
               #{resource_array}&.each do |resource|
-                if validate_attachment_resolutions(resource, #{sequence[:class_name]}Definitions::MUST_SUPPORTS)
+                if validate_attachment_resolutions(resource, #{sequence[:attachments]})
                   found_one_attachment = true
                   break
                 end
               end
-            
+
               skip 'No attachment is accessible' unless found_one_attachment
             )
         sequence[:tests] << test

@@ -749,15 +749,27 @@ module Inferno
         assert(problems.empty?, "\n* " + problems.join("\n* "))
       end
 
-      def validate_attachment_resolutions(resource, must_supports)
-        walk_resource(resource) do |value, meta, path|
-          next if meta['type'] != 'Attachment'
+      def validate_attachment_resolutions(resource, paths)
+        walk_resource(resource) do |value, _meta, path|
+          next unless paths.include?(path)
           next if value.url.blank?
-          next unless must_supports[:elements].any?{ |element| element[:path] == path}
 
           headers = {}
           headers['Authorization'] = 'Bearer ' + @instance.token if @instance.attachment_requires_token
           reply = RestClient.get(value.url, headers)
+
+          request_for_log = {
+            method: 'GET',
+            url: value.url,
+            headers: headers
+          }
+
+          response_for_log = {
+            code: reply.code,
+            headers: reply.headers
+          }
+
+          LoggedRestClient.record_response(request_for_log, response_for_log)
 
           return true if reply.code == 200
         end

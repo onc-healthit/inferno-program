@@ -120,6 +120,7 @@ module Inferno
             add_terminology_bindings(profile_definition, new_sequence)
             add_search_param_descriptions(profile_definition, new_sequence)
             add_references(profile_definition, new_sequence)
+            add_attachments(profile_definition, new_sequence)
 
             metadata[:sequences] << new_sequence
           end
@@ -456,6 +457,11 @@ module Inferno
             profiles: ref_def['type'].first['targetProfile']
           }
         end
+      end
+
+      def add_attachments(profile_definition, sequence)
+        attachments = profile_definition['snapshot']['element'].select { |el| el['type'].present? && el['type'].first['code'] == 'Attachment' && el['mustSupport'] }
+        sequence[:attachments] = attachments.map { |el| el['path'].split('.', 2)[1] }
       end
 
       def add_mandatory_and_must_support_search_exclusions(metadata)

@@ -738,33 +738,6 @@ module Inferno
           validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
         end
       end
-
-      test 'Every attachment within DiagnosticReport resources can be read.' do
-        metadata do
-          id '14'
-          link 'https://www.hl7.org/fhir/datatypes.html#attachment'
-          description %(
-
-            This test will attempt to read an attachment in the resources from the first search.
-            The test will fail if Inferno fails to read any of those references.
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
-
-        found_one_attachment = false
-
-        @diagnostic_report_ary&.values&.flatten&.each do |resource|
-          if validate_attachment_resolutions(resource, USCore311DiagnosticreportLabSequenceDefinitions::MUST_SUPPORTS)
-            found_one_attachment = true
-            break
-          end
-        end
-
-        skip 'No attachment is accessible' unless found_one_attachment
-      end
     end
   end
 end

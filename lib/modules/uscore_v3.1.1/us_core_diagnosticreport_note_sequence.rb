@@ -748,7 +748,7 @@ module Inferno
         found_one_attachment = false
 
         @diagnostic_report_ary&.values&.flatten&.each do |resource|
-          if validate_attachment_resolutions(resource, USCore311DiagnosticreportNoteSequenceDefinitions::MUST_SUPPORTS)
+          if validate_attachment_resolutions(resource, ["presentedForm"])
             found_one_attachment = true
             break
           end
