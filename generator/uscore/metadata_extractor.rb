@@ -85,6 +85,7 @@ module Inferno
           searches: [],
           search_param_descriptions: {},
           references: [],
+          attachments: [],
           must_supports: {
             extensions: [],
             slices: [],

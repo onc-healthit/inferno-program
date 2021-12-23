@@ -65,7 +65,7 @@ module Inferno
           sequence[:required_variabes] = [':token']
           sequence[:required_variabes] << ':patient_ids' unless sequence[:delayed_sequence]
           sequence[:required_variabes] << ':device_codes' if sequence[:resource] == 'Device'
-          sequence[:required_variabes] << ':attachment_requires_token' if ['DocumentReference', 'DiagnosticReport'].include?(sequence[:resource])
+          sequence[:required_variabes] << ':attachment_requires_token' if sequence[:attachments].any?
 
           # read reference if sequence contains no search sequences
           create_read_test(sequence) if sequence[:delayed_sequence]
@@ -1011,7 +1011,7 @@ module Inferno
       end
 
       def create_attachment_test(sequence)
-        return unless sequence[:attachments].present? && sequence[:attachments].any?
+        return unless sequence[:attachments].any?
 
         test = {
           tests_that: "Every attachment within #{sequence[:resource]} resources can be read.",
