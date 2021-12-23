@@ -749,6 +749,22 @@ module Inferno
         assert(problems.empty?, "\n* " + problems.join("\n* "))
       end
 
+      def validate_attachment_resolutions(resource, must_supports)
+        walk_resource(resource) do |value, meta, path|
+          next if meta['type'] != 'Attachment'
+          next if value.url.blank?
+          next unless must_supports[:elements].any?{ |element| element[:path] == path}
+
+          headers = {}
+          headers['Authorization'] = 'Bearer ' + @instance.token if @instance.attachment_requires_token
+          reply = RestClient.get(value.url, headers)
+
+          return true if reply.code == 200
+        end
+
+        false
+      end
+
       def save_delayed_sequence_references(resources, delayed_sequence_references)
         resources.each do |resource|
           delayed_sequence_references.each do |delayed_sequence_reference|

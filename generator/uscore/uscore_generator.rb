@@ -106,7 +106,7 @@ module Inferno
           create_must_support_test(sequence)
           create_multiple_or_test(sequence) unless sequence[:delayed_sequence]
           create_references_resolved_test(sequence)
-          create_attachment_test(sequence)
+          create_attachment_test(sequence) if ['DiagnosticReport', 'DocumentReference'].include?(sequence[:resource])        
         end
       end
 
@@ -1011,7 +1011,33 @@ module Inferno
       end
 
       def create_attachment_test(sequence)
+        test = {
+          tests_that: "Every attachment within #{sequence[:resource]} resources can be read.",
+          index: sequence[:tests].length + 1,
+          link: 'https://www.hl7.org/fhir/datatypes.html#attachment',
+          description: %(
+            This test will attempt to read an attachment in the resources from the first search.
+            The test will fail if Inferno fails to read any of those references.
+          )
+        }
 
+        resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
+
+        test[:test_code] = %(
+              #{skip_if_not_found_code(sequence)}
+
+              found_one_attachment = false
+
+              #{resource_array}&.each do |resource|
+                if validate_attachment_resolutions(resource, #{sequence[:class_name]}Definitions::MUST_SUPPORTS)
+                  found_one_attachment = true
+                  break
+                end
+              end
+            
+              skip 'No attachment is accessible' unless found_one_attachment
+            )
+        sequence[:tests] << test
       end
 
       def resolve_element_path(search_param_description, delayed_sequence)
