@@ -1031,7 +1031,7 @@ module Inferno
               found_one_attachment = false
 
               #{resource_array}&.each do |resource|
-                if validate_attachment_resolutions(resource, #{sequence[:attachments]})
+                if validate_attachment_resolutions(resource, [#{sequence[:attachments].map { |ele| "'#{ele}'" }.join(', ')}])
                   found_one_attachment = true
                   break
                 end
