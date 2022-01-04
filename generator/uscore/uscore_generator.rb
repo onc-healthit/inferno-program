@@ -678,11 +678,14 @@ module Inferno
 
         if must_support_elements.present?
           test[:test_code] += %(
+            validated_resources = Set.new
             missing_must_support_elements = must_supports[:elements].reject do |element|
               #{resource_array}&.any? do |resource|
                 value_found = resolve_element_from_path(resource, element[:path]) do |value|
                   value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
-                  (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value])
+                  (value_without_extensions.present? || value_without_extensions == false) && 
+                  (element[:fixed_value].blank? || value == element[:fixed_value]) &&
+                  (value.class != FHIR::Reference || validate_reference_resolution(resource, value, validated_resources))
                 end
 
                 # Note that false.present? => false, which is why we need to add this extra check

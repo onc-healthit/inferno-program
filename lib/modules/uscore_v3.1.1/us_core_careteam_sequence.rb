@@ -7,7 +7,6 @@ module Inferno
   module Sequence
     class USCore311CareteamSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
-      include Inferno::Sequence::SharedTests
       include Inferno::USCore311ProfileDefinitions
 
       title 'CareTeam Tests'
@@ -394,15 +393,15 @@ module Inferno
 
         skip_if_not_found(resource_type: 'CareTeam', delayed: false)
         must_supports = USCore311CareteamSequenceDefinitions::MUST_SUPPORTS
-        validated_resources = Set.new
 
+        validated_resources = Set.new
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @care_team_ary&.values&.flatten&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) do |value|
-              binding.pry
               value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
-              (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value]) &&
-              (value.class != FHIR::Reference || validate_reference_resolution(resource, value, validated_resources))
+              (value_without_extensions.present? || value_without_extensions == false) &&
+                (element[:fixed_value].blank? || value == element[:fixed_value]) &&
+                (value.class != FHIR::Reference || validate_reference_resolution(resource, value, validated_resources))
             end
 
             # Note that false.present? => false, which is why we need to add this extra check
@@ -494,7 +493,7 @@ module Inferno
           optional
           description %(
 
-            This test has been deprecated after v1.8.2.
+            This test has been deprecated after v1.8.2. Reference validation is merged into MustSupport test.
 
           )
           versions :r4
