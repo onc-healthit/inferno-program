@@ -1014,7 +1014,7 @@ module Inferno
         return unless sequence[:attachments].any?
 
         test = {
-          tests_that: "Every attachment within #{sequence[:resource]} resources can be read.",
+          tests_that: "At least one attachment within #{sequence[:resource]} resources can be read.",
           index: sequence[:tests].length + 1,
           link: 'https://www.hl7.org/fhir/datatypes.html#attachment',
           description: %(

@@ -789,7 +789,7 @@ module Inferno
         end
       end
 
-      test 'Every attachment within DocumentReference resources can be read.' do
+      test 'At least one attachment within DocumentReference resources can be read.' do
         metadata do
           id '15'
           link 'https://www.hl7.org/fhir/datatypes.html#attachment'
@@ -807,7 +807,7 @@ module Inferno
         found_one_attachment = false
 
         @document_reference_ary&.values&.flatten&.each do |resource|
-          if validate_attachment_resolutions(resource, ['content.attachment'])
+          if validate_attachment_resolutions(resource, ['content.attachment.url'])
             found_one_attachment = true
             break
           end

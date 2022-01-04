@@ -461,7 +461,7 @@ module Inferno
       end
 
       def add_attachments(profile_definition, sequence)
-        attachments = profile_definition['snapshot']['element'].select { |el| el['type'].present? && el['type'].first['code'] == 'Attachment' && el['mustSupport'] }
+        attachments = profile_definition['snapshot']['element'].select { |el| el.dig('base','path') == 'Attachment.url' && el['mustSupport'] }
         sequence[:attachments] = attachments.map { |el| el['path'].split('.', 2)[1] }
       end
 

@@ -752,15 +752,15 @@ module Inferno
       def validate_attachment_resolutions(resource, paths)
         walk_resource(resource) do |value, _meta, path|
           next unless paths.include?(path)
-          next if value.url.blank?
+          next if value.blank?
 
           headers = {}
           headers['Authorization'] = 'Bearer ' + @instance.token if @instance.attachment_requires_token
-          reply = RestClient.get(value.url, headers)
+          reply = RestClient.get(value, headers)
 
           request_for_log = {
             method: 'GET',
-            url: value.url,
+            url: value,
             headers: headers
           }
 
