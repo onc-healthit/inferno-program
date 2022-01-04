@@ -694,61 +694,6 @@ module Inferno
         assert(errors.empty?, "\n* " + errors.join("\n* "))
       end
 
-      # Set max_resolutions in a single sequence to a large number by default
-      def validate_reference_resolutions(resource, resolved_references = Set.new, max_resolutions = 1_000_000)
-        problems = []
-
-        walk_resource(resource) do |value, meta, path|
-          next if meta['type'] != 'Reference'
-          next if value.reference.blank?
-          next if resolved_references.include?(value.reference)
-          break if resolved_references.length > max_resolutions
-
-          if value.contained?
-
-            # if reference_id is blank it is referring to itself, so we know it exists
-            next if value.reference_id.blank?
-
-            # otherwise check to make sure the base resource has the contained element
-            valid_contained = resource.contained.any? { |contained_resource| contained_resource&.id == value.reference_id }
-            problems << "#{path} has contained reference to id '#{value.reference_id}' that does not exist" unless valid_contained
-            next
-          end
-
-          # Should potentially update valid? method in fhir_dstu2_models
-          # to check for this type of thing
-          # e.g. "patient/54520" is invalid (fhir_client resource_class method would expect "Patient/54520")
-          if value.relative?
-            begin
-              value.resource_class
-            rescue NameError
-              problems << "#{path} has invalid resource type in reference: #{value.type}"
-              next
-            end
-          end
-          reference = value.reference
-          reference_type = value.resource_type
-
-          begin
-            resolved_resource = value.read
-          rescue ClientException => e
-            # report error if the resource is a US Core resource type
-            problems << "#{path} did not resolve: #{e}" if Inferno::ValidationUtil::RESOURCES[:r4].key?(reference_type)
-            next
-          end
-
-          if resolved_resource&.resourceType == reference_type
-            resolved_references.add(value.reference)
-          else
-            problems << "Expected #{reference} to refer to a #{reference_type} resource, but found a #{resolved_resource&.resourceType} resource."
-          end
-        end
-
-        Inferno.logger.info "Surpassed the maximum reference resolutions: #{max_resolutions}" if resolved_references.length > max_resolutions
-
-        assert(problems.empty?, "\n* " + problems.join("\n* "))
-      end
-
       def validate_reference_resolution(resource, value, resolved_references = Set.new)
         return false if value.class != FHIR::Reference || value.reference.blank?
         return true if resolved_references.include?(value.reference)
