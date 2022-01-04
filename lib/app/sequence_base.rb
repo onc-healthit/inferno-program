@@ -750,9 +750,12 @@ module Inferno
       end
 
       def validate_attachment_resolutions(resource, paths)
+        found_one_url = false
         walk_resource(resource) do |value, _meta, path|
           next unless paths.include?(path)
           next if value.blank?
+
+          found_one_url = true
 
           headers = {}
           headers['Authorization'] = 'Bearer ' + @instance.token if @instance.attachment_requires_token
@@ -774,7 +777,9 @@ module Inferno
           return true if reply.code == 200
         end
 
-        false
+        # It is OK if none of attachment has url though this may fail MustSupport test.
+        # Ex: All DocumentReference.content.attachment use embeded data
+        !found_one_url
       end
 
       def save_delayed_sequence_references(resources, delayed_sequence_references)
