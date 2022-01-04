@@ -1019,7 +1019,7 @@ module Inferno
           link: 'https://www.hl7.org/fhir/datatypes.html#attachment',
           description: %(
             This test will attempt to read an attachment in the resources from the first search.
-            The test will fail if Inferno fails to read any of those references.
+            The test will pass if Inferno successfully download at least one attachment.
           )
         }
 
