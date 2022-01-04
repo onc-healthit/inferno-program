@@ -6,7 +6,8 @@ require_relative './profile_definitions/<%=name.downcase%>_definitions'
 module Inferno
   module Sequence
     class <%=class_name%> < SequenceBase
-      include Inferno::DataAbsentReasonChecker  
+      include Inferno::DataAbsentReasonChecker
+      include Inferno::Sequence::SharedTests        
       include Inferno::USCore<%=reformatted_version%>ProfileDefinitions
 
       title '<%=title%> Tests'

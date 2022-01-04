@@ -7,6 +7,7 @@ module Inferno
   module Sequence
     class USCore311CareteamSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::Sequence::SharedTests
       include Inferno::USCore311ProfileDefinitions
 
       title 'CareTeam Tests'
@@ -393,12 +394,15 @@ module Inferno
 
         skip_if_not_found(resource_type: 'CareTeam', delayed: false)
         must_supports = USCore311CareteamSequenceDefinitions::MUST_SUPPORTS
+        validated_resources = Set.new
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @care_team_ary&.values&.flatten&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              binding.pry
               value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
-              (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value])
+              (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value]) &&
+              (value.class != FHIR::Reference || validate_reference_resolution(resource, value, validated_resources))
             end
 
             # Note that false.present? => false, which is why we need to add this extra check
@@ -487,22 +491,13 @@ module Inferno
         metadata do
           id '09'
           link 'http://hl7.org/fhir/references.html'
+          optional
           description %(
 
-            This test will attempt to read the first 50 reference found in the resources from the first search.
-            The test will fail if Inferno fails to read any of those references.
+            This test has been deprecated after v1.8.2.
 
           )
           versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
-
-        validated_resources = Set.new
-        max_resolutions = 50
-
-        @care_team_ary&.values&.flatten&.each do |resource|
-          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
         end
       end
     end

@@ -7,6 +7,7 @@ module Inferno
   module Sequence
     class USCore311ProvenanceSequence < SequenceBase
       include Inferno::DataAbsentReasonChecker
+      include Inferno::Sequence::SharedTests
       include Inferno::USCore311ProfileDefinitions
 
       title 'Provenance Tests'
@@ -202,22 +203,13 @@ module Inferno
         metadata do
           id '04'
           link 'http://hl7.org/fhir/references.html'
+          optional
           description %(
 
-            This test will attempt to read the first 50 reference found in the resources from the first search.
-            The test will fail if Inferno fails to read any of those references.
+            This test has been deprecated after v1.8.2.
 
           )
           versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'Provenance', delayed: true)
-
-        validated_resources = Set.new
-        max_resolutions = 50
-
-        @provenance_ary&.each do |resource|
-          validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
         end
       end
     end

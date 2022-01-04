@@ -986,21 +986,12 @@ module Inferno
           index: sequence[:tests].length + 1,
           link: 'http://hl7.org/fhir/references.html',
           description: %(
-            This test will attempt to read the first 50 reference found in the resources from the first search.
-            The test will fail if Inferno fails to read any of those references.
-          )
+            This test has been deprecated after v1.8.2. Reference validation is merged into MustSupport test.
+          ),
+          optional: true,
+          test_code: ''
         }
 
-        resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
-        test[:test_code] = %(
-              #{skip_if_not_found_code(sequence)}
-
-              validated_resources = Set.new
-              max_resolutions = 50
-
-              #{resource_array}&.each do |resource|
-                validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
-              end)
         sequence[:tests] << test
       end
 

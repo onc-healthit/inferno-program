@@ -749,6 +749,44 @@ module Inferno
         assert(problems.empty?, "\n* " + problems.join("\n* "))
       end
 
+      def validate_reference_resolution(resource, value, resolved_references = Set.new)
+        return false if value.class != FHIR::Reference || value.reference.blank?
+        return true if resolved_references.include?(value.reference)
+
+        if value.contained?
+
+          # if reference_id is blank it is referring to itself, so we know it exists
+          return true if value.reference_id.blank?
+
+          # otherwise check to make sure the base resource has the contained element
+          return resource.contained.any? { |contained_resource| contained_resource&.id == value.reference_id }
+        end
+
+        # Should potentially update valid? method in fhir_dstu2_models
+        # to check for this type of thing
+        # e.g. "patient/54520" is invalid (fhir_client resource_class method would expect "Patient/54520")
+        if value.relative?
+          begin
+            value.resource_class
+          rescue NameError
+            return false
+          end
+        end
+        reference_type = value.resource_type
+
+        begin
+          resolved_resource = value.read
+        rescue ClientException
+          return false
+        end
+
+        if resolved_resource&.resourceType == reference_type
+          resolved_references.add(value.reference)
+          return true
+        end
+        false
+      end
+
       def save_delayed_sequence_references(resources, delayed_sequence_references)
         resources.each do |resource|
           delayed_sequence_references.each do |delayed_sequence_reference|
