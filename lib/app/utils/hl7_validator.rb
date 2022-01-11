@@ -6,11 +6,14 @@ module Inferno
   # A validator that calls out to the HL7 validator API
   class HL7Validator
     ISSUE_DETAILS_FILTER = [
+      # This will be fixed with https://jira.hl7.org/browse/FHIR-28099
       %r{^Sub-extension url 'introspect' is not defined by the Extension http://fhir-registry\.smarthealthit\.org/StructureDefinition/oauth-uris$},
+      # This will be fixed with https://jira.hl7.org/browse/FHIR-28099
       %r{^Sub-extension url 'revoke' is not defined by the Extension http://fhir-registry\.smarthealthit\.org/StructureDefinition/oauth-uris$},
-      /is not a valid Target for this element \(must be one of \[\]\)$/, # This is fixed in FHIR Validator v5.3.8
-      /^vs-1: if Observation\.effective\[x\] is dateTime and has a value then that value shall be precise to the day/, # Invalid invariant in FHIR v4.0.1
-      /^us-core-1: Datetime must be at least to day/ # Invalid invariant in US Core v3.1.1
+      # Invalid invariant in FHIR v4.0.1
+      /^vs-1: 'if Observation\.effective\[x\] is dateTime and has a value then that value shall be precise to the day'/,
+      # Invalid invariant in US Core v3.1.1
+      /^us-core-1: 'Datetime must be at least to day.'/
     ].freeze
     @validator_url = nil
     attr_accessor :expected_version
@@ -31,29 +34,7 @@ module Inferno
       result = RestClient.post "#{@validator_url}/validate", resource.source_contents, params: { profile: profile_url }
       outcome = fhir_models_klass.from_contents(result.body)
 
-      result = issues_by_severity(outcome.issue)
-
-      id_errors = validate_resource_id(resource)
-
-      result[:errors].concat(id_errors)
-
-      result
-    end
-
-    # FHIR validator does not valid Resource.id /^[A-Za-z0-9\-\.]{1,64}$/
-    # So Inferno has to check Resource.id against this regex.
-    # This should be removed after FHIR validator fix
-    def validate_resource_id(resource)
-      errors = []
-
-      walk_resource(resource) do |value, meta, path|
-        next unless meta['type'] == 'id'
-        next unless value.present?
-
-        errors << "#{resource.resourceType}.#{path}: FHIR id value shall match Regex /^[A-Za-z0-9\-\.]{1,64}$/" unless value.match?(/^[A-Za-z0-9\-\.]{1,64}$/)
-      end
-
-      errors
+      issues_by_severity(outcome.issue)
     end
 
     # @return [String] the version of the validator currently being used or nil

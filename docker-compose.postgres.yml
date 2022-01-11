@@ -28,7 +28,7 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_USER: postgres
   validator_service:
-    image: infernocommunity/fhir-validator-service:v1.2.1
+    image: infernocommunity/fhir-validator-service:v2.1.0
     restart: unless-stopped
     networks:
       - inferno-production
