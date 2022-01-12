@@ -750,17 +750,21 @@ module Inferno
       end
 
       def validate_attachment_resolutions(resource, paths)
+        result = { found_attachment_url: false, response_code: 0 }
+
         walk_resource(resource) do |value, _meta, path|
           next unless paths.include?(path)
-          next if value.blank?
+          next if value.url.blank?
+
+          result[:found_attachment_url] = true
 
           headers = {}
           headers['Authorization'] = 'Bearer ' + @instance.token if @instance.attachment_requires_token
-          reply = RestClient.get(value, headers)
+          reply = RestClient.get(value.url, headers)
 
           request_for_log = {
             method: 'GET',
-            url: value,
+            url: value.url,
             headers: headers
           }
 
@@ -771,10 +775,12 @@ module Inferno
 
           LoggedRestClient.record_response(request_for_log, response_for_log)
 
-          return true if reply.code == 200
+          result[:response_code] = reply.code
+
+          break if reply.code == 200
         end
 
-        false
+        result
       end
 
       def save_delayed_sequence_references(resources, delayed_sequence_references)

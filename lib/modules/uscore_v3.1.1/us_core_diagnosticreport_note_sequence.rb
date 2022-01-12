@@ -68,7 +68,7 @@ module Inferno
 
       test_id_prefix 'USCDRRN'
 
-      requires :token, :patient_ids
+      requires :token, :patient_ids, :attachment_requires_token
       conformance_supports :DiagnosticReport
 
       def validate_resource_item(resource, property, value)
@@ -728,6 +728,39 @@ module Inferno
         @diagnostic_report_ary&.values&.flatten&.each do |resource|
           validate_reference_resolutions(resource, validated_resources, max_resolutions) if validated_resources.length < max_resolutions
         end
+      end
+
+      test 'At least one attachment within DiagnosticReport resources can be read.' do
+        metadata do
+          id '14'
+          link 'https://www.hl7.org/fhir/datatypes.html#attachment'
+          description %(
+
+            This test will attempt to read an attachment in the resources from the first search.
+            The test will pass if Inferno successfully downloads at least one attachment.
+
+          )
+          versions :r4
+        end
+
+        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
+
+        download_one_attachment = false
+        found_attachment_url = false
+
+        @diagnostic_report_ary&.values&.flatten&.each do |resource|
+          result = validate_attachment_resolutions(resource, ['presentedForm'])
+
+          if result[:response_code] == 200
+            download_one_attachment = true
+            break
+          end
+
+          found_attachment_url ||= result[:found_attachment_url]
+        end
+
+        # It is OK if none of the attachments has Attachment.url
+        skip 'No attachment is accessible' if !download_one_attachment && found_attachment_url
       end
     end
   end

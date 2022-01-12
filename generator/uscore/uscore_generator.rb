@@ -1028,16 +1028,23 @@ module Inferno
         test[:test_code] = %(
               #{skip_if_not_found_code(sequence)}
 
-              found_one_attachment = false
+              download_one_attachment = false
+              found_attachment_url = false
 
               #{resource_array}&.each do |resource|
-                if validate_attachment_resolutions(resource, [#{sequence[:attachments].map { |ele| "'#{ele}'" }.join(', ')}])
-                  found_one_attachment = true
-                  break
-                end
+              result = validate_attachment_resolutions(resource, [#{sequence[:attachments].map { |ele| "'#{ele}'" }.join(', ')}])
+
+              if result[:response_code] == 200
+                 download_one_attachment = true
+                 break
               end
 
-              skip 'No attachment is accessible' unless found_one_attachment
+              found_attachment_url ||= result[:found_attachment_url]
+              end
+
+
+              # It is OK if none of the attachments has Attachment.url
+              skip 'No attachment is accessible' if !download_one_attachment && found_attachment_url
             )
         sequence[:tests] << test
       end
