@@ -202,6 +202,27 @@ For alternate installation options, please visit <a href='https://github.com/onc
   <div class="tab-pane" style="font-size: 20px;" id="pills-notes" role="tabpanel" aria-labelledby="pills-notes-tab">
     <div style="padding: 15px 0; font-size: 30px;">Release Notes</div>
 
+    <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.9.0</div>
+    <p>
+      The Inferno Program Edition v1.9.0 release fixes a number of issues that may incorrectly cause systems to fail tests.
+      It also includes a minor fixes not directly related to test execution.
+      This release may result in some systems that previously passed to now fail due to Inferno Validator dependency update.
+    </p>
+    <i>Notice: Users that run Inferno Program Edition locally SHALL update Inferno Validator Service to v2.1.0.
+      Please see <a href="https://github.com/onc-healthit/inferno-program#validator-service">the README</a> for instructions on how to
+      update your local copy of Inferno Validator Service.
+    </i>
+    <p>This version includes updates that:</p>
+    <ul>
+      <li>Updates Inferno Validator dependency to v2.1.0.</li>
+      <li>Fixes issue where token search fails due to server implementation performing case insensitive token search.</li>
+    </ul>
+    </p>
+    <p>
+      Please see the <a href='<%=base_path%>/static/downloads/onc_program_matrix_1_9_0.xlsx'>Test Procedure Matrix</a> to view a mapping
+      between Inferno Tests and the 2015 Cures Update Test Procedure.
+    </p>
+
     <div style="padding: 0 0 15px 0; font-size: 24px;">Inferno Program Edition v1.8.2</div>
     <p>
       The Inferno Program Edition v1.8.2 release fixes three test issues that may incorrectly cause systems to fail tests.
