@@ -76,7 +76,7 @@ module Inferno
       test 'FHIR server makes SMART configuration available from well-known endpoint' do
         metadata do
           id '01'
-          link 'http://www.hl7.org/fhir/smart-app-launch/conformance/#using-well-known'
+          link 'https://hl7.org/fhir/smart-app-launch/STU2/conformance.html#using-well-known'
           description %(
             The authorization endpoints accepted by a FHIR resource server can
             be exposed as a Well-Known Uniform Resource Identifier
