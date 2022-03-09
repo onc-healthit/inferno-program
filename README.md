@@ -7,6 +7,8 @@ Status](https://travis-ci.org/onc-healthit/inferno-program.svg?branch=master)](h
 
 # Inferno Program Edition
 
+## ⚠️ The Inferno (g)(10) certification tests are moving to a [new repository](https://github.com/onc-healthit/onc-certification-g10-test-kit)! See [#441](https://github.com/onc-healthit/inferno-program/issues/441) for details.
+
 ## ONC 21st Century Cures Open API Certification Testing
 
 **Inferno Program Edition** is a streamlined testing tool for Health Level 7 (HL7®)
