@@ -52,6 +52,14 @@ end
 def execute(instance, sequences)
   client = FHIR::Client.for_testing_instance(instance)
 
+  # ONC Program specific updates
+  # These are updates made to home.rb that should exist in a more central location,
+  # but since inferno-program is being sunsetted they are copied here instead of refactored.
+  instance.bulk_data_jwks = Inferno::App::Endpoint.settings.bulk_data_jwks.to_json if Inferno::App::Endpoint.settings.respond_to? :bulk_data_jwks
+  if Inferno::App::Endpoint.settings.respond_to? :disable_bulk_data_require_access_token_test
+    instance.disable_bulk_data_require_access_token_test = Inferno::App::Endpoint.settings.disable_bulk_data_require_access_token_test
+  end
+
   sequence_results = []
 
   fails = false
@@ -84,7 +92,6 @@ def execute(instance, sequences)
     sequence_result = nil
 
     suppress_output { sequence_result = sequence_instance.start }
-
     sequence_results << sequence_result
 
     checkmark = "\u2713"
