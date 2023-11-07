@@ -52,7 +52,7 @@ wide range of host environments, including Windows, Linux and MacOS.
    project](https://github.com/onc-healthit/inferno-program/releases) to your local
    computer in a directory of your choice.
 3. Open a terminal in the directory where the project was downloaded (above).
-4. Run the command `docker-compose up --build` to start the server. This will
+4. Run the command `docker compose up --build` to start the server. This will
    automatically build the Docker image and launch Inferno, the HL7 FHIR Validator,
    and an NGINX web server, suitable for use in a single user environment.
    For information about running Inferno in a multi-user server environment,
@@ -61,7 +61,7 @@ wide range of host environments, including Windows, Linux and MacOS.
 5. Navigate to http://localhost:4567 to find the running application.
 
 If the docker image gets out of sync with the underlying system, such as when
-new dependencies are added to the application, you need to run `docker-compose
+new dependencies are added to the application, you need to run `docker compose
 up --build` to rebuild the containers.
 
 Check out the [Troubleshooting
@@ -92,7 +92,7 @@ Prerequisites:
 You can prebuild the terminology docker container by running the following command:
 
 ```sh
-docker-compose -f terminology_compose.yml build
+docker compose -f terminology_compose.yml build
 ```
 
 Once the container is built, you will have to add your UMLS API key to a file named `.env` at the root of the inferno project. This API key is used to authenticate the user to download the UMLS zip files. To find your UMLS API key, sign into [the UTS homepage](https://uts.nlm.nih.gov/uts/), click on `My Profile` in the top right, and copy the `API KEY` value from the `UMLS Licensee Profile`. 
@@ -114,7 +114,7 @@ We've included a template `.env` file in `.env.example`, with these values comme
 Once that file exists, you can run the terminology creation task by using the following command:
 
 ```sh
-docker-compose -f terminology_compose.yml up
+docker compose -f terminology_compose.yml up
 ```
 
 This will run the terminology creation steps in order. These tasks may take several hours. If the creation task is cancelled in progress and restarted, it will restart after the last _completed_ step. Intermediate files are saved to `tmp/terminology` in the Inferno repository that the Docker Compose job is run from, and the validators are saved to `resources/terminology/validators/bloom`, where Inferno can use them for validation.
@@ -212,9 +212,9 @@ be specified as part of the `validator_service` image declaration following
 an update through Git.
 
 To download the Docker files associated with the new version, run
-`docker-compose pull` in the Inferno directory. Once the new files are
-downloaded, you can update the version by running `docker-compose down`,
-followed by `docker-compose up --force-recreate`. This will restart Inferno
+`docker compose pull` in the Inferno directory. Once the new files are
+downloaded, you can update the version by running `docker compose down`,
+followed by `docker compose up --force-recreate`. This will restart Inferno
 and the validator service with the new service version.
 
 ### Updating the Validator Service outside of Docker
@@ -238,12 +238,12 @@ storage.
 To run this configuration, you use `docker-compose.postgres.yml`
 file:
 ```sh
-docker-compose -f docker-compose.postgres.yml up --build -d
+docker compose -f docker-compose.postgres.yml up --build -d
 ```
 
 To stop the service and destroy the containers, run:
 ```sh
-docker-compose -f docker-compose.postgres.yml down
+docker compose -f docker-compose.postgres.yml down
 ```
 
 This configuration will persist data if the container is stopped
@@ -252,7 +252,7 @@ and have it recreated from scratch the next time the application is started,
 you can run the following commands:
 
 ```sh
-docker-compose -f docker-compose.postgres.yml down
+docker compose -f docker-compose.postgres.yml down
 docker volume ls | grep inferno-pgdata # Lists active volumes
 docker volume rm inferno-program_inferno-pgdata # Volume name will end in inferno-pgdata
 ```
@@ -332,7 +332,7 @@ features and improvements in ways it can be used_
 Testing sequences can be run from the command line via a rake task which takes
 the sequence (or sequences) to be run and server url as arguments:
 ```sh
-docker-compose run inferno bundle exec rake db:create db:migrate inferno:execute[https://inferno.healthit.gov/reference-server/r4,onc_program,UsCoreR4CapabilityStatement,USCore311Patient]
+docker compose run inferno bundle exec rake db:create db:migrate inferno:execute[https://inferno.healthit.gov/reference-server/r4,onc_program,UsCoreR4CapabilityStatement,USCore311Patient]
 ```
 
 ### Running Automated Command Line Interface Scripts
@@ -342,7 +342,7 @@ execution. The provided `./batch/inferno.healthit.gov.json` shows an example of 
 and how it can be used.  The `execute_batch` task runs the script:
 
 ```sh
-docker-compose run inferno bundle exec rake db:create db:migrate inferno:execute_batch[./batch/inferno.healthit.gov.json]
+docker compose run inferno bundle exec rake db:create db:migrate inferno:execute_batch[./batch/inferno.healthit.gov.json]
 ```
 
 Inferno also provides a  `generate_script` rake task which prompts the user for
